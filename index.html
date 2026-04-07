@@ -54,8 +54,8 @@
     .gate-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
     .gate-input::placeholder { letter-spacing: 0.05em; color: var(--muted); }
     .gate-pw-wrap { position: relative; margin-bottom: 12px; }
-    .gate-pw-wrap .gate-input { margin-bottom: 0; padding-right: 48px; }
-    .gate-eye { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: transparent; border: none; cursor: pointer; font-size: 16px; opacity: 0.5; transition: opacity 0.2s; padding: 0; }
+    .gate-pw-wrap .gate-input { margin-bottom: 0; padding-right: 48px; width: 100%; }
+    .gate-eye { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: transparent; border: none; cursor: pointer; font-size: 16px; opacity: 0.5; transition: opacity 0.2s; padding: 0; line-height: 1; }
     .gate-eye:hover { opacity: 1; }
     .gate-remember { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; justify-content: flex-start; }
     .gate-btn { width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 10px; padding: 14px; font-family: var(--font-mono); font-size: 12px; font-weight: 700; cursor: pointer; letter-spacing: 0.1em; transition: all 0.2s; }
@@ -720,6 +720,7 @@
   function toggleGateEye() {
     const input = document.getElementById('gateInput');
     const eye = document.getElementById('gateEye');
+    if (!input || !eye) return;
     if (input.type === 'password') { input.type = 'text'; eye.style.opacity = '1'; }
     else { input.type = 'password'; eye.style.opacity = '0.5'; }
   }
