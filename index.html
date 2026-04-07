@@ -78,6 +78,12 @@
     .countdown { display: block; font-size: 10px; color: var(--accent-light); opacity: 0.8; }
     .refresh-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); padding: 8px 16px; border-radius: 8px; font-family: var(--font-mono); font-size: 11px; cursor: pointer; transition: all 0.2s; letter-spacing: 0.05em; }
     .refresh-btn:hover { border-color: var(--accent); color: var(--accent-light); }
+    .logout-btn {
+      background: transparent; border: 1px solid var(--border); color: var(--muted);
+      padding: 8px 16px; border-radius: 8px; font-family: var(--font-mono);
+      font-size: 11px; cursor: pointer; transition: all 0.2s; letter-spacing: 0.05em;
+    }
+    .logout-btn:hover { border-color: var(--red); color: var(--red); }
 
     /* YEAR/MONTH PICKER */
     .period-bar {
@@ -325,6 +331,7 @@
         <div class="header-right">
           <span class="sync-info" id="syncInfo">—<span class="countdown" id="countdown"></span></span>
           <button class="refresh-btn" onclick="manualRefresh()">↻ REFRESH</button>
+          <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
       </div>
 
@@ -339,8 +346,6 @@
 
       <nav class="nav-bar">
         <button class="nav-tab active" onclick="showTab('publishers', this)">📋 Publishers</button>
-        <button class="nav-tab" onclick="showTab('budget', this)">📊 Budget vs Spend</button>
-        <button class="nav-tab" onclick="showTab('payments', this)">💳 Payments</button>
         <button class="nav-tab" onclick="showTab('pubview', this); initPubView()">🔍 Publisher View</button>
         <button class="nav-tab" onclick="showTab('internal', this); renderInvoices()">🧾 Internal Sources</button>
       </nav>
@@ -703,7 +708,13 @@
     }
   }
 
-  // Check remember me on load
+  function logout() {
+    localStorage.removeItem('tf_finance_auth');
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('gate').style.display = 'flex';
+    document.getElementById('gateInput').value = '';
+    document.getElementById('gateError').textContent = '';
+  }
   (function checkRemembered() {
     const expiry = localStorage.getItem('tf_finance_auth');
     if (expiry && Date.now() < parseInt(expiry)) {
