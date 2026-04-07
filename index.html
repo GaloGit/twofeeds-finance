@@ -662,6 +662,8 @@
   </div><!-- /container -->
 </div><!-- /app -->
 
+<div class="toast" id="toast">✓ Saved</div>
+
 <script>
   // ── CONFIG ──
   const PASSWORD = 'finance2026'; // ← change this
@@ -795,7 +797,12 @@
   function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function loadLS(key) { try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch { return []; } }
   function saveLS(key, d) { localStorage.setItem(key, JSON.stringify(d)); }
-  function showToast(msg='✓ Saved') { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
+  function showToast(msg='✓ Saved') {
+    const t = document.getElementById('toast');
+    if (!t) return;
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+  }
 
   // ── NAV ──
   function showTab(name, btn) {
@@ -1076,9 +1083,10 @@
         saveLS(invKey(), invoices);
         renderInvoices();
       } catch(err) {
+        console.error('Invoice extraction error:', err);
         // Save with empty fields if extraction fails
         const invoices = loadLS(invKey());
-        invoices.push({ id: Date.now()+i, vendor:'', invoiceNum:'', date:'', amount:0, status:'review', filename: file.name });
+        invoices.push({ id: Date.now()+i, vendor:'', invoiceNum:'', date:'', amount:0, status:'review', filename: file.name, error: err.message });
         saveLS(invKey(), invoices);
         renderInvoices();
       }
@@ -1134,8 +1142,20 @@ Return only the JSON object, nothing else.`
 
     const data = await response.json();
     const text = data.content?.find(b => b.type === 'text')?.text || '{}';
-    const clean = text.replace(/```json|```/g, '').trim();
-    return JSON.parse(clean);
+
+    // Try to extract JSON even if wrapped in text
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('No JSON found in response');
+    const clean = jsonMatch[0];
+    const parsed = JSON.parse(clean);
+
+    // Normalize amount — remove spaces, currency symbols, commas
+    if (parsed.amount !== undefined) {
+      const amtStr = String(parsed.amount).replace(/[^0-9.]/g, '');
+      parsed.amount = parseFloat(amtStr) || 0;
+    }
+
+    return parsed;
   }
 
   function fileToBase64(file) {
