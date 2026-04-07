@@ -1141,6 +1141,7 @@ Return only the JSON object, nothing else.`
     }
 
     const data = await response.json();
+    console.log('AI raw response:', JSON.stringify(data));
     const text = data.content?.find(b => b.type === 'text')?.text || '{}';
 
     // Try to extract JSON even if wrapped in text
@@ -1148,6 +1149,7 @@ Return only the JSON object, nothing else.`
     if (!jsonMatch) throw new Error('No JSON found in response');
     const clean = jsonMatch[0];
     const parsed = JSON.parse(clean);
+    console.log('Parsed invoice data:', parsed);
 
     // Normalize amount — remove spaces, currency symbols, commas
     if (parsed.amount !== undefined) {
