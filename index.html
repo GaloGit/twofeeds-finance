@@ -749,7 +749,7 @@
     try {
       emailjs.init(EMAILJS_KEY);
       await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
-        email: email,
+        to_email: email,
         code: verificationCode,
       });
       document.getElementById('gateStep1').style.display = 'none';
