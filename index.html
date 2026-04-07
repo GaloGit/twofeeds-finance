@@ -695,7 +695,7 @@
   // ── CONFIG ──
   const PASSWORD = 'finance2026'; // ← change this
   const API = "https://script.google.com/macros/s/AKfycbzC7CO8g97fNI7h-Zbc2Vf43rM7iLdsaMXwOuXtsh6mWQpycz_0baJEktMWFrQfLH-s/exec";
-  const ANTHROPIC_KEY = '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'; // ← paste your Anthropic API key here
+  const ANTHROPIC_KEY = 'YOUR_KEY_HERE'; // ← paste your Anthropic API key here
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const START_YEAR = 2024;
 
@@ -1279,59 +1279,6 @@ Return only the JSON object, nothing else.`
     const parsed = JSON.parse(jsonMatch[0]);
     console.log('Parsed invoice data:', parsed);
 
-    if (parsed.amount !== undefined) {
-      const amtStr = String(parsed.amount).replace(/[^0-9.]/g, '');
-      parsed.amount = parseFloat(amtStr) || 0;
-    }
-
-    return parsed;
-  }
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 500,
-        messages: [{
-          role: 'user',
-          content: [
-            contentBlock,
-            {
-              type: 'text',
-              text: `Extract these fields from this invoice and return ONLY a raw JSON object, no markdown, no backticks, no explanation:
-{
-  "vendor": "the company/supplier who issued this invoice (not the recipient)",
-  "invoiceNum": "the invoice number or ID",
-  "date": "invoice date in YYYY-MM-DD format",
-  "amount": 0.00,
-  "needsReview": false
-}
-For amount: extract the total amount as a number only (no currency symbols, no spaces).
-For amounts with spaces as thousand separators (e.g. "38 737.40"), remove the spaces.
-Set needsReview to true only if a field is genuinely missing or unreadable.
-Return only the JSON object, nothing else.`
-            }
-          ]
-        }]
-      })
-    });
-
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      throw new Error(err?.error?.message || `Worker error ${response.status}`);
-    }
-
-    const data = await response.json();
-    console.log('AI raw response:', JSON.stringify(data));
-    const text = data.content?.find(b => b.type === 'text')?.text || '{}';
-
-    // Try to extract JSON even if wrapped in text
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error('No JSON found in response');
-    const clean = jsonMatch[0];
-    const parsed = JSON.parse(clean);
-    console.log('Parsed invoice data:', parsed);
-
-    // Normalize amount — remove spaces, currency symbols, commas
     if (parsed.amount !== undefined) {
       const amtStr = String(parsed.amount).replace(/[^0-9.]/g, '');
       parsed.amount = parseFloat(amtStr) || 0;
