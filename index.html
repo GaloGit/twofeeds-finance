@@ -134,6 +134,11 @@
 
     /* TABLE */
     .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 32px; }
+    .table-scroll { overflow-x: auto; overflow-y: auto; max-height: 70vh; -webkit-overflow-scrolling: touch; }
+    .table-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .table-scroll::-webkit-scrollbar-track { background: var(--surface2); }
+    .table-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .table-scroll::-webkit-scrollbar-thumb:hover { background: var(--accent); }
     table { width: 100%; border-collapse: collapse; }
     thead tr { background: var(--surface2); border-bottom: 1px solid var(--border); }
     th { padding: 13px 18px; text-align: left; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 400; }
@@ -163,6 +168,7 @@
     .status-select-dark:focus { border-color: var(--accent); }
     .status-select-dark option { background: var(--surface2); }
 
+    table thead th { position: sticky; top: 0; z-index: 2; background: var(--surface2); }
     .add-row td { padding: 12px 18px; background: var(--surface2); }
     .add-btn { background: transparent; border: 1px dashed var(--border); color: var(--muted); padding: 7px 18px; border-radius: 8px; font-family: var(--font-mono); font-size: 10px; cursor: pointer; transition: all 0.2s; letter-spacing: 0.05em; }
     .add-btn:hover { border-color: var(--accent); color: var(--accent-light); }
@@ -430,6 +436,7 @@
           </div>
         </div>
         <div class="table-wrap">
+          <div class="table-scroll">
           <table>
             <thead>
               <tr>
@@ -443,6 +450,7 @@
             </thead>
             <tbody id="publisherBody"></tbody>
           </table>
+          </div>
         </div>
 
         <!-- Chart -->
@@ -594,12 +602,14 @@
         </div>
 
         <div class="table-wrap">
+          <div class="table-scroll">
           <table>
             <thead>
               <tr><th>Period</th><th>Platform</th><th>Amount</th><th>Approval</th><th>Notes</th></tr>
             </thead>
             <tbody id="pubviewBody"></tbody>
           </table>
+          </div>
         </div>
 
         <!-- Timeline chart -->
@@ -674,6 +684,7 @@
 
       <!-- Invoice table -->
       <div class="table-wrap" id="invTableWrap" style="display:none">
+        <div class="table-scroll">
         <table>
           <thead>
             <tr>
@@ -688,6 +699,7 @@
           </thead>
           <tbody id="invBody"></tbody>
         </table>
+        </div>
       </div>
 
     </div>
