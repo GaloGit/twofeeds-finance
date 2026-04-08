@@ -695,6 +695,7 @@
   // ── CONFIG ──
   const PASSWORD = 'finance2026'; // ← change this
   const API = "https://script.google.com/macros/s/AKfycbzC7CO8g97fNI7h-Zbc2Vf43rM7iLdsaMXwOuXtsh6mWQpycz_0baJEktMWFrQfLH-s/exec";
+  const FINANCE_API = "https://script.google.com/macros/s/AKfycbzrx2BxVGKUnY06Xh0F_Anv9zNWxnxoj0w3WRTU1EnG4nCxIwTpK7FvqBWNyNTGimXC/exec";
   const WORKER_URL = 'https://twofeeds-ai.galredwork.workers.dev';
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const START_YEAR = 2024;
@@ -950,15 +951,22 @@
   function handleCSV(file) {
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = async function(e) {
       const text = e.target.result;
       const rows = parseCSV(text);
+      // Save to localStorage as cache
       saveLS(pubKey(), rows);
+      // Save to Google Sheets
+      try {
+        await fetch(FINANCE_API, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'savePublishers', period: periodKey(), rows })
+        });
+        showToast('✓ CSV imported — ' + rows.length + ' publishers');
+      } catch { showToast('✓ CSV saved locally'); }
       renderPublishers();
-      showToast('✓ CSV imported — ' + rows.length + ' publishers');
     };
     reader.readAsText(file);
-    // Reset input so same file can be re-uploaded
     document.getElementById('csvFileInput').value = '';
   }
 
@@ -1008,7 +1016,25 @@
     return result.map(s => s.replace(/^"|"$/g,''));
   }
 
-  function renderPublishers() {
+  async function renderPublishers() {
+    // Try to load from Google Sheets, fall back to localStorage cache
+    try {
+      const res = await fetch(`${FINANCE_API}?action=getPublishers&period=${periodKey()}`);
+      const json = await res.json();
+      if (json.success && json.data.length > 0) {
+        // Map sheet data to expected format
+        const rows = json.data.map((r, idx) => ({
+          id: idx,
+          name: r['Publisher Name'] || '',
+          platform: r['Platform'] || '',
+          amount: parseFloat(r['Amount']) || 0,
+          notes: r['Notes'] || '',
+          approval: r['Approval'] || '',
+        }));
+        saveLS(pubKey(), rows); // update cache
+      }
+    } catch { /* use cache */ }
+
     const all = loadLS(pubKey());
     const search = (document.getElementById('pubSearch')||{}).value || '';
     const filtered = all.filter(p => !search || p.name.toLowerCase().includes(search.toLowerCase()) || (p.platform||'').toLowerCase().includes(search.toLowerCase()));
@@ -1058,28 +1084,37 @@
     setTimeout(() => renderPubChart(all), 50);
   }
 
-  function updatePub(id, field, value) {
+  async function updatePub(id, field, value) {
     const rows = loadLS(pubKey());
     const r = rows.find(r => String(r.id) === String(id));
     if (!r) return;
     r[field] = field === 'amount' ? parseFloat(value)||0 : value;
-    saveLS(pubKey(), rows); renderPublishers(); showToast();
+    saveLS(pubKey(), rows);
+    // Sync all rows to Sheets
+    try { await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'savePublishers', period: periodKey(), rows }) }); } catch {}
+    renderPublishers(); showToast();
   }
 
-  function deletePub(id) {
-    saveLS(pubKey(), loadLS(pubKey()).filter(r => String(r.id) !== String(id)));
+  async function deletePub(id) {
+    const rows = loadLS(pubKey()).filter(r => String(r.id) !== String(id));
+    saveLS(pubKey(), rows);
+    try { await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'savePublishers', period: periodKey(), rows }) }); } catch {}
     renderPublishers();
   }
 
-  function addPubRow() {
+  async function addPubRow() {
     const rows = loadLS(pubKey());
     rows.push({ id: Date.now(), name: '', platform: '', amount: 0, notes: '', approval: '' });
-    saveLS(pubKey(), rows); renderPublishers();
+    saveLS(pubKey(), rows);
+    try { await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'savePublishers', period: periodKey(), rows }) }); } catch {}
+    renderPublishers();
   }
 
-  function clearPublishers() {
+  async function clearPublishers() {
     if (!confirm(`Clear all publisher data for ${periodLabel()}?`)) return;
-    localStorage.removeItem(pubKey()); renderPublishers();
+    localStorage.removeItem(pubKey());
+    try { await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'savePublishers', period: periodKey(), rows:[] }) }); } catch {}
+    renderPublishers();
   }
 
   function exportCSV() {
@@ -1195,8 +1230,7 @@
       procText.textContent = `Reading "${file.name}" (${i+1}/${fileArr.length})...`;
       try {
         const extracted = await extractInvoiceWithAI(file);
-        const invoices = loadLS(invKey());
-        invoices.push({
+        const invoice = {
           id: Date.now() + i,
           vendor: extracted.vendor || '',
           invoiceNum: extracted.invoiceNum || '',
@@ -1204,15 +1238,20 @@
           amount: extracted.amount || 0,
           status: extracted.needsReview ? 'review' : 'ok',
           filename: file.name,
-        });
+        };
+        const invoices = loadLS(invKey());
+        invoices.push(invoice);
         saveLS(invKey(), invoices);
+        // Save to Google Sheets
+        try { await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'saveInvoice', period: periodKey(), invoice }) }); } catch {}
         renderInvoices();
       } catch(err) {
         console.error('Invoice extraction error:', err);
-        // Save with empty fields if extraction fails
+        const invoice = { id: Date.now()+i, vendor:'', invoiceNum:'', date:'', amount:0, status:'review', filename: file.name };
         const invoices = loadLS(invKey());
-        invoices.push({ id: Date.now()+i, vendor:'', invoiceNum:'', date:'', amount:0, status:'review', filename: file.name, error: err.message });
+        invoices.push(invoice);
         saveLS(invKey(), invoices);
+        try { await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'saveInvoice', period: periodKey(), invoice }) }); } catch {}
         renderInvoices();
       }
     }
@@ -1291,7 +1330,25 @@ Return only the JSON object, nothing else.`
     });
   }
 
-  function renderInvoices() {
+  async function renderInvoices() {
+    // Load from Google Sheets, fall back to localStorage cache
+    try {
+      const res = await fetch(`${FINANCE_API}?action=getInvoices&period=${periodKey()}`);
+      const json = await res.json();
+      if (json.success && json.data.length > 0) {
+        const rows = json.data.map((r, idx) => ({
+          id: idx,
+          vendor: r['Vendor'] || '',
+          invoiceNum: r['Invoice #'] || '',
+          date: r['Date'] || '',
+          amount: parseFloat(r['Amount']) || 0,
+          status: r['Status'] || 'ok',
+          filename: r['Filename'] || '',
+        }));
+        saveLS(invKey(), rows);
+      }
+    } catch { /* use cache */ }
+
     const invoices = loadLS(invKey());
     const hasData = invoices.length > 0;
     const total = invoices.reduce((s,inv) => s+(parseFloat(inv.amount)||0), 0);
@@ -1347,26 +1404,29 @@ Return only the JSON object, nothing else.`
     input.select();
   }
 
-  function updateInvoice(i, field, value) {
+  async function updateInvoice(i, field, value) {
     const rows = loadLS(invKey());
     if (!rows[i]) return;
     rows[i][field] = field === 'amount' ? parseFloat(value)||0 : value;
-    if (rows[i].status === 'review') rows[i].status = 'ok'; // Mark as reviewed once edited
+    if (rows[i].status === 'review') rows[i].status = 'ok';
     saveLS(invKey(), rows);
+    try { await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'updateInvoice', period: periodKey(), index: i, field, value }) }); } catch {}
     renderInvoices();
     showToast();
   }
 
-  function deleteInvoice(i) {
+  async function deleteInvoice(i) {
     const rows = loadLS(invKey());
     rows.splice(i, 1);
     saveLS(invKey(), rows);
+    try { await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'deleteInvoice', period: periodKey(), index: i }) }); } catch {}
     renderInvoices();
   }
 
-  function clearInvoices() {
+  async function clearInvoices() {
     if (!confirm(`Clear all invoices for ${periodLabel()}?`)) return;
     localStorage.removeItem(invKey());
+    try { await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'clearInvoices', period: periodKey() }) }); } catch {}
     renderInvoices();
   }
 
