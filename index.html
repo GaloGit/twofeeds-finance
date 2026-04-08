@@ -695,7 +695,7 @@
   // ── CONFIG ──
   const PASSWORD = 'finance2026'; // ← change this
   const API = "https://script.google.com/macros/s/AKfycbzC7CO8g97fNI7h-Zbc2Vf43rM7iLdsaMXwOuXtsh6mWQpycz_0baJEktMWFrQfLH-s/exec";
-  const WORKER_URL = 'https://twofeeds-api.galredwork.workers.dev';
+  const WORKER_URL = 'https://twofeeds-ai.galredwork.workers.dev';
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const START_YEAR = 2024;
 
@@ -1316,8 +1316,9 @@ Return only the JSON object, nothing else.`
         <td><input class="editable" value="${esc(inv.vendor)}" onblur="updateInvoice(${i},'vendor',this.value)" placeholder="Vendor name"/></td>
         <td><input class="editable mono" value="${esc(inv.invoiceNum)}" onblur="updateInvoice(${i},'invoiceNum',this.value)" placeholder="INV-001" style="width:110px"/></td>
         <td><input class="editable mono" type="date" value="${esc(inv.date)}" onblur="updateInvoice(${i},'date',this.value)" style="width:140px"/></td>
-        <td class="mono text-green" style="font-weight:700;white-space:nowrap">
-          $<input class="editable mono" type="number" value="${inv.amount||0}" onblur="updateInvoice(${i},'amount',this.value)" style="width:90px;display:inline;color:var(--green)"/>
+        <td class="mono text-green" style="font-weight:700;white-space:nowrap"
+          onclick="editInvAmount(this, ${i}, ${inv.amount||0})" style="cursor:pointer">
+          $${Number(inv.amount||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
         </td>
         <td><span class="inv-status-badge ${inv.status==='ok'?'ok':'review'}">${inv.status==='ok'?'✓ Extracted':'⚠ Review'}</span></td>
         <td>
@@ -1328,6 +1329,22 @@ Return only the JSON object, nothing else.`
         </td>
       </tr>`).join('') +
       `<tr class="add-row"><td colspan="7"><button class="add-btn" onclick="document.getElementById('invFileInput').click()">+ Upload More Invoices</button></td></tr>`;
+  }
+
+  function editInvAmount(td, i, currentVal) {
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.value = currentVal;
+    input.className = 'editable mono';
+    input.style.cssText = 'width:100px;color:var(--green);font-weight:700';
+    input.onblur = () => {
+      updateInvoice(i, 'amount', input.value);
+    };
+    input.onkeydown = e => { if (e.key === 'Enter') input.blur(); };
+    td.innerHTML = '';
+    td.appendChild(input);
+    input.focus();
+    input.select();
   }
 
   function updateInvoice(i, field, value) {
