@@ -1159,16 +1159,20 @@
     renderPublishers();
   }
 
-  function exportCSV() {
-    const rows = loadLS(pubKey());
-    if (!rows.length) return;
-    const header = 'Publisher Name,Platform,Amount,Notes';
-    const lines = rows.map(r => `"${r.name}","${r.platform}","${r.amount}","${r.notes}"`);
-    const blob = new Blob([header + '\n' + lines.join('\n')], {type:'text/csv'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `publishers_${periodKey()}.csv`;
-    a.click();
+  async function exportCSV() {
+    try {
+      const res = await fetch(`${FINANCE_API}?action=getPublishers&period=${periodKey()}`);
+      const json = await res.json();
+      const rows = json.data || [];
+      if (!rows.length) { showToast('No publishers to export'); return; }
+      const header = 'Publisher Name,Platform,Amount,Notes,Approval';
+      const lines = rows.map(r => `"${r['Publisher Name']||''}","${r['Platform']||''}","${r['Amount']||0}","${r['Notes']||''}","${r['Approval']||''}"`);
+      const blob = new Blob([header+'\n'+lines.join('\n')], {type:'text/csv'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `publishers_${periodKey()}.csv`;
+      a.click();
+    } catch { showToast('⚠ Export failed'); }
   }
 
   // ── BUDGET ──
@@ -1483,47 +1487,60 @@ Return only the JSON object, nothing else.`
   let pvCurrentPublisher = null;
   let pvAllPublishers = []; // {name, periods, total}
 
-  function getAllStoredPeriods() {
-    // Scan all localStorage keys for publisher data
-    const periods = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith('tf_pub_')) {
-        const period = key.replace('tf_pub_', ''); // e.g. "2024-03"
-        const [yr, mo] = period.split('-');
-        if (yr && mo) periods.push({ key, year: parseInt(yr), month: parseInt(mo) - 1, period });
+  async function buildPublisherIndex() {
+    // Fetch all publisher data from Google Sheets (all periods)
+    const map = {};
+    const currentYear = new Date().getFullYear();
+    const fetches = [];
+
+    // Build all period keys from 2024 to current year
+    for (let y = START_YEAR; y <= currentYear; y++) {
+      for (let m = 1; m <= 12; m++) {
+        const period = `${y}-${String(m).padStart(2,'0')}`;
+        fetches.push(
+          fetch(`${FINANCE_API}?action=getPublishers&period=${period}`)
+            .then(r => r.json())
+            .then(json => {
+              if (!json.success || !json.data.length) return;
+              json.data.forEach(r => {
+                const name = r['Publisher Name'] || '';
+                const key = name.trim().toLowerCase();
+                if (!key) return;
+                const year = y;
+                const month = m - 1;
+                const amount = parseFloat(r['Amount']) || 0;
+                if (!map[key]) map[key] = { displayName: name, total: 0, periods: 0, entries: [] };
+                map[key].entries.push({
+                  name, year, month, period,
+                  platform: r['Platform'] || '',
+                  amount,
+                  notes: r['Notes'] || '',
+                  approval: r['Approval'] || '',
+                });
+                map[key].total += amount;
+                map[key].periods++;
+              });
+            })
+            .catch(() => {})
+        );
       }
     }
-    return periods.sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month);
-  }
 
-  function buildPublisherIndex() {
-    const periods = getAllStoredPeriods();
-    const map = {}; // normalized name → {displayName, entries:[{period,year,month,amount,...}]}
-    periods.forEach(p => {
-      const rows = loadLS(p.key);
-      rows.forEach(r => {
-        const key = (r.name||'').trim().toLowerCase();
-        if (!key) return;
-        if (!map[key]) map[key] = { displayName: r.name, total: 0, periods: 0, entries: [] };
-        map[key].entries.push({ ...r, year: p.year, month: p.month, period: p.period });
-        map[key].total += (r.amount || 0);
-        map[key].periods++;
-        // Keep the most-seen display name
-      });
-    });
+    await Promise.all(fetches);
     pvAllPublishers = Object.values(map).sort((a, b) => b.total - a.total);
     return pvAllPublishers;
   }
 
-  function initPubView() {
-    buildPublisherIndex();
-    clearPubView();
+  async function initPubView() {
+    document.getElementById('pubviewEmpty').style.display = 'block';
+    document.getElementById('pubviewResults').style.display = 'none';
+    document.getElementById('pubviewInput').value = '';
+    document.getElementById('pubviewSelect').innerHTML = '<option value="">Loading publishers...</option>';
+    await buildPublisherIndex();
     populatePubSelect();
   }
 
   function populatePubSelect() {
-    buildPublisherIndex();
     const sel = document.getElementById('pubviewSelect');
     sel.innerHTML = '<option value="">— Select publisher —</option>' +
       pvAllPublishers
@@ -1552,7 +1569,7 @@ Return only the JSON object, nothing else.`
       return;
     }
 
-    buildPublisherIndex();
+    // Use already-loaded index (populated by initPubView)
     const matches = pvAllPublishers.filter(p => p.displayName.toLowerCase().includes(q));
 
     if (matches.length === 0) {
@@ -1608,7 +1625,7 @@ Return only the JSON object, nothing else.`
   }
 
   function renderPubView(name) {
-    buildPublisherIndex();
+    // Use already-loaded pvAllPublishers index (populated by initPubView)
     const pub = pvAllPublishers.find(p => p.displayName === name);
     if (!pub) { showPubViewEmpty(); return; }
 
