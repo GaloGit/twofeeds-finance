@@ -358,6 +358,8 @@
         </div>
         <div class="header-right">
           <span class="sync-info" id="syncInfo">—<span class="countdown" id="countdown"></span></span>
+          <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);border:1px solid var(--border);padding:4px 10px;border-radius:6px">v1.0</span>
+          <span id="headerUser" style="font-family:var(--font-mono);font-size:10px;color:var(--accent-light)"></span>
           <button class="refresh-btn" onclick="manualRefresh()">↻ REFRESH</button>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -815,6 +817,7 @@
     localStorage.setItem('tf_current_user', pendingEmail);
     document.getElementById('gate').style.display = 'none';
     document.getElementById('app').style.display = 'block';
+    document.getElementById('headerUser').textContent = pendingEmail;
     init();
   }
 
@@ -854,6 +857,8 @@
     if (expiry && Date.now() < parseInt(expiry)) {
       document.getElementById('gate').style.display = 'none';
       document.getElementById('app').style.display = 'block';
+      const user = localStorage.getItem('tf_current_user') || '';
+      if (user) document.getElementById('headerUser').textContent = user;
       init();
     }
   })();
@@ -910,13 +915,35 @@
   function startCountdown() {
     setInterval(() => {
       secondsLeft--;
-      if (secondsLeft <= 0) { secondsLeft = 60; loadFromSheet(); }
+      if (secondsLeft <= 0) {
+        secondsLeft = 60;
+        loadFromSheet();
+        // Auto-refresh active tab data from Sheets
+        const activeTab = document.querySelector('.page.active');
+        if (activeTab) {
+          const id = activeTab.id;
+          if (id === 'tab-publishers') renderPublishers();
+          else if (id === 'tab-internal') renderInvoices();
+        }
+      }
       const el = document.getElementById('countdown');
       if (el) el.textContent = `next sync in ${secondsLeft}s`;
     }, 1000);
   }
 
-  function manualRefresh() { secondsLeft = 60; loadFromSheet(); }
+  function manualRefresh() {
+    secondsLeft = 60;
+    loadFromSheet();
+    // Also reload whichever tab is currently active
+    const activeTab = document.querySelector('.page.active');
+    if (activeTab) {
+      const id = activeTab.id;
+      if (id === 'tab-publishers') renderPublishers();
+      else if (id === 'tab-internal') renderInvoices();
+      else if (id === 'tab-pubview') initPubView();
+    }
+    showToast('↻ Refreshed');
+  }
 
   // ── SHEET ──
   async function loadFromSheet() {
