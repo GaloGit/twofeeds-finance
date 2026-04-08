@@ -942,11 +942,18 @@
   function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function loadLS(key) { try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch { return []; } }
   function saveLS(key, d) { localStorage.setItem(key, JSON.stringify(d)); }
-  function showToast(msg='✓ Saved') {
+  function showToast(msg='✓ Saved', isError=false) {
     const t = document.getElementById('toast');
     if (!t) return;
-    t.textContent = msg; t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2000);
+    t.textContent = msg;
+    t.style.color = isError ? 'var(--red)' : 'var(--green)';
+    t.style.borderColor = isError ? 'rgba(239,68,68,0.3)' : '';
+    t.classList.add('show');
+    setTimeout(() => {
+      t.classList.remove('show');
+      t.style.color = '';
+      t.style.borderColor = '';
+    }, isError ? 4000 : 2000);
   }
 
   // ── NAV ──
@@ -1285,9 +1292,21 @@
       const procEl = document.getElementById('invProcessing');
       const procText = document.getElementById('invProcText');
       procEl.style.display = 'flex';
-      procText.textContent = `Reading "${file.name}" (${i+1}/${fileArr.length})...`;
+      procText.textContent = `Extracting "${file.name}" (${i+1}/${fileArr.length})...`;
       try {
         const extracted = await extractInvoiceWithAI(file);
+
+        // Validate — must have at least vendor or amount
+        if (!extracted.vendor && !extracted.amount) {
+          showToast(`⚠ Could not extract data from "${file.name}" — please fill in manually`);
+          // Save as review so user can fill in manually
+          const invoice = { vendor: '', invoiceNum: '', date: '', amount: 0, status: 'review', filename: file.name };
+          const user = localStorage.getItem('tf_current_user') || 'unknown';
+          await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'saveInvoice', period: periodKey(), invoice, user }) });
+          renderInvoices();
+          continue;
+        }
+
         const invoice = {
           vendor: extracted.vendor || '',
           invoiceNum: extracted.invoiceNum || '',
@@ -1298,13 +1317,13 @@
         };
         const user = localStorage.getItem('tf_current_user') || 'unknown';
         await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'saveInvoice', period: periodKey(), invoice, user }) });
+        showToast(`✓ "${file.name}" extracted successfully`);
         renderInvoices();
       } catch(err) {
         console.error('Invoice extraction error:', err);
-        const invoice = { vendor:'', invoiceNum:'', date:'', amount:0, status:'review', filename: file.name };
-        const user = localStorage.getItem('tf_current_user') || 'unknown';
-        try { await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'saveInvoice', period: periodKey(), invoice, user }) }); } catch {}
-        renderInvoices();
+        // Show error — do NOT save empty record
+        showToast(`⚠ Failed to extract "${file.name}": ${err.message}`, true);
+        procEl.style.display = 'none';
       }
     }
     document.getElementById('invProcessing').style.display = 'none';
@@ -1388,15 +1407,28 @@ Return only the JSON object, nothing else.`
       const res = await fetch(`${FINANCE_API}?action=getInvoices&period=${periodKey()}`);
       const json = await res.json();
       if (json.success) {
-        invoices = (json.data || []).map((r, idx) => ({
-          id: idx,
-          vendor: r['Vendor'] || '',
-          invoiceNum: r['Invoice #'] || '',
-          date: r['Date'] || '',
-          amount: parseFloat(r['Amount']) || 0,
-          status: r['Status'] || 'ok',
-          filename: r['Filename'] || '',
-        }));
+        invoices = (json.data || []).map((r, idx) => {
+          // Normalize date — Sheets may return date objects
+          let date = r['Date'] || '';
+          if (date instanceof Date || (typeof date === 'object' && date !== null)) {
+            date = date.toISOString ? date.toISOString().split('T')[0] : '';
+          } else if (typeof date === 'number') {
+            // Excel serial date
+            const d = new Date((date - 25569) * 86400 * 1000);
+            date = d.toISOString().split('T')[0];
+          } else {
+            date = String(date).trim();
+          }
+          return {
+            id: idx,
+            vendor: r['Vendor'] || '',
+            invoiceNum: r['Invoice #'] || '',
+            date,
+            amount: parseFloat(r['Amount']) || 0,
+            status: r['Status'] || 'ok',
+            filename: r['Filename'] || '',
+          };
+        });
       }
     } catch {
       showToast('⚠ Could not load invoices from sheet.');
