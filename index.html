@@ -398,6 +398,12 @@
         </div>
       </div>
 
+      <!-- Sync info bar -->
+      <div id="pubSyncBar" style="display:none;font-family:var(--font-mono);font-size:11px;color:var(--muted);padding:10px 0 16px;display:flex;align-items:center;gap:8px">
+        <span style="color:var(--accent-light)">↑</span>
+        <span id="pubSyncText">—</span>
+      </div>
+
       <!-- Upload area (shown when no data) -->
       <div id="uploadArea" class="upload-area" onclick="document.getElementById('csvFileInput').click()"
         ondragover="event.preventDefault();this.classList.add('drag')"
@@ -794,6 +800,7 @@
     if (document.getElementById('rememberMe').checked) {
       localStorage.setItem('tf_finance_auth', Date.now() + 7 * 24 * 60 * 60 * 1000);
     }
+    localStorage.setItem('tf_current_user', pendingEmail);
     document.getElementById('gate').style.display = 'none';
     document.getElementById('app').style.display = 'block';
     init();
@@ -954,13 +961,16 @@
     reader.onload = async function(e) {
       const text = e.target.result;
       const rows = parseCSV(text);
+      const user = localStorage.getItem('tf_current_user') || 'unknown';
+      const timestamp = new Date().toISOString();
       // Save to localStorage as cache
       saveLS(pubKey(), rows);
+      saveLS(`${pubKey()}_sync`, { user, timestamp, count: rows.length });
       // Save to Google Sheets
       try {
         await fetch(FINANCE_API, {
           method: 'POST',
-          body: JSON.stringify({ action: 'savePublishers', period: periodKey(), rows })
+          body: JSON.stringify({ action: 'savePublishers', period: periodKey(), rows, user, timestamp })
         });
         showToast('✓ CSV imported — ' + rows.length + ' publishers');
       } catch { showToast('✓ CSV saved locally'); }
@@ -1031,7 +1041,14 @@
           notes: r['Notes'] || '',
           approval: r['Approval'] || '',
         }));
-        saveLS(pubKey(), rows); // update cache
+        saveLS(pubKey(), rows);
+        // Store sync info from sheet timestamp
+        if (json.data[0] && json.data[0]['Timestamp']) {
+          const existing = loadLS(`${pubKey()}_sync`);
+          if (!existing || !existing.user) {
+            saveLS(`${pubKey()}_sync`, { user: 'team member', timestamp: json.data[0]['Timestamp'], count: rows.length });
+          }
+        }
       }
     } catch { /* use cache */ }
 
@@ -1053,6 +1070,19 @@
     const hasData = all.length > 0;
     document.getElementById('uploadArea').style.display = hasData ? 'none' : 'block';
     document.getElementById('publisherTableWrap').style.display = hasData ? 'block' : 'none';
+
+    // Show sync info
+    const syncBar = document.getElementById('pubSyncBar');
+    const syncInfo = loadLS(`${pubKey()}_sync`);
+    if (hasData && syncInfo && syncInfo.user) {
+      const d = new Date(syncInfo.timestamp);
+      const when = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+      document.getElementById('pubSyncText').textContent =
+        `Last uploaded by ${syncInfo.user} on ${when} · ${syncInfo.count || all.length} publishers`;
+      syncBar.style.display = 'flex';
+    } else {
+      syncBar.style.display = 'none';
+    }
 
     if (!hasData) return;
 
