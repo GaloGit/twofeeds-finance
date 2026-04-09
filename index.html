@@ -1345,6 +1345,8 @@
 
   function handleCSV(file) {
     if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { showToast('⚠ CSV file too large (max 5MB)'); return; }
+    if (!file.name.toLowerCase().endsWith('.csv') && file.type !== 'text/csv') { showToast('⚠ Only CSV files are accepted'); return; }
     const reader = new FileReader();
     reader.onload = async function(e) {
       const text = e.target.result;
@@ -1654,9 +1656,20 @@
     handleInvFiles(e.dataTransfer.files);
   }
 
+  const ALLOWED_INV_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
+  const ALLOWED_INV_EXTS = ['.pdf', '.jpg', '.jpeg', '.png'];
+
   async function handleInvFiles(files) {
     if (!files || !files.length) return;
-    const fileArr = Array.from(files);
+    const fileArr = Array.from(files).filter(file => {
+      if (file.size > 10 * 1024 * 1024) { showToast(`⚠ "${file.name}" too large (max 10MB)`); return false; }
+      const ext = '.' + file.name.split('.').pop().toLowerCase();
+      if (!ALLOWED_INV_TYPES.includes(file.type) && !ALLOWED_INV_EXTS.includes(ext)) {
+        showToast(`⚠ "${file.name}" is not a supported file type (PDF, JPG, PNG only)`); return false;
+      }
+      return true;
+    });
+    if (!fileArr.length) return;
     for (let i = 0; i < fileArr.length; i++) {
       const file = fileArr[i];
       const procEl = document.getElementById('invProcessing');
@@ -1972,7 +1985,7 @@
     }
 
     document.getElementById('pubviewDropdown').innerHTML = matches.map((p, i) =>
-      `<div class="pubview-option" data-i="${i}" onclick="selectPublisher('${esc(p.displayName)}')">
+      `<div class="pubview-option" data-i="${i}" data-name="${esc(p.displayName)}" onclick="selectPublisher(this.dataset.name)">
         <span class="pubview-option-name">${esc(p.displayName)}</span>
         <span class="pubview-option-meta">${p.periods} period${p.periods!==1?'s':''} · ${fmt(p.total)}</span>
       </div>`).join('');
@@ -2084,7 +2097,7 @@
   });
 </script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha512-CQBWl4fJHWbryGE+Pc7UAxWMUMNMWzWxF4SQo9CgkJIN1kx6djDQZjh3Y8SZ1d+6I+1zze6Z7kHXO7q3UyZAWw==" crossorigin="anonymous"></script>
 <script>
   let pubChartInstance = null;
   let pvChartInstance = null;
@@ -2273,6 +2286,6 @@
     });
   }
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4.4.1/dist/email.min.js" integrity="sha512-IBPHmNWySlzT5RaPmlKa8qWkIYgIT+sbpDOm2DiYtWI/GKzv5BKrrCSikC9U//cIJBFdvrP60t9Z0GNUFzCkqQ==" crossorigin="anonymous"></script>
 </body>
 </html>
