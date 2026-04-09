@@ -476,8 +476,9 @@
         </div>
         <div class="header-right">
           <span class="sync-info" id="syncInfo">—<span class="countdown" id="countdown"></span></span>
-          <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);border:1px solid var(--border);padding:4px 10px;border-radius:6px">v1.0</span>
+          <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);border:1px solid var(--border);padding:4px 10px;border-radius:6px">v1.6</span>
           <span id="headerUser" style="font-family:var(--font-mono);font-size:10px;color:var(--accent-light)"></span>
+          <span id="roleBadge" style="display:none;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700"></span>
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <button class="refresh-btn" onclick="manualRefresh()">↻ REFRESH</button>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
@@ -842,6 +843,53 @@
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const START_YEAR = 2024;
 
+  // ── ROLES ──
+  // Add emails here to control access:
+  // EDITORS can upload, edit, and delete data
+  // VIEWERS can see everything but cannot make changes
+  // Anyone not listed defaults to VIEWER
+  const EDITORS = [
+    'gal@thing02.com',
+    'galredwork@gmail.com',
+    // add more editor emails here ↓
+  ];
+
+  function isEditor() {
+    const user = localStorage.getItem('tf_current_user') || '';
+    return EDITORS.map(e => e.toLowerCase()).includes(user.toLowerCase());
+  }
+
+  function applyRoleUI() {
+    const badge = document.getElementById('roleBadge');
+    if (isEditor()) {
+      if (badge) {
+        badge.textContent = 'EDITOR';
+        badge.style.cssText = 'display:inline;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700;background:rgba(124,58,237,0.2);color:var(--accent-light);border:1px solid var(--accent)';
+      }
+    } else {
+      if (badge) {
+        badge.textContent = 'VIEWER';
+        badge.style.cssText = 'display:inline;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700;background:rgba(245,158,11,0.15);color:var(--amber);border:1px solid var(--amber)';
+      }
+      // Hide all edit/delete/upload controls for viewers
+      document.querySelectorAll('.clear-btn, .add-btn').forEach(el => el.style.display = 'none');
+      const uploadArea = document.getElementById('uploadArea');
+      const invUploadArea = document.getElementById('invUploadArea');
+      if (uploadArea) { uploadArea.style.pointerEvents = 'none'; uploadArea.style.opacity = '0.5'; }
+      if (invUploadArea) { invUploadArea.style.pointerEvents = 'none'; invUploadArea.style.opacity = '0.5'; }
+      document.querySelectorAll('input.editable, textarea.editable').forEach(el => {
+        el.readOnly = true;
+        el.style.cursor = 'default';
+      });
+      showToast('👁 Viewer mode — read only');
+    }
+  }
+
+  // ── CONFIRM DELETE HELPER ──
+  function confirmDelete(message) {
+    return confirm(`⚠️ ${message}\n\nThis cannot be undone.`);
+  }
+
   // ── STATE ──
   let secondsLeft = 60;
   let selectedYear = new Date().getFullYear();
@@ -941,6 +989,7 @@
     document.getElementById('app').style.display = 'block';
     document.getElementById('headerUser').textContent = pendingEmail;
     init();
+    setTimeout(applyRoleUI, 500);
   }
 
   function backToStep1() {
@@ -997,6 +1046,7 @@
       const user = localStorage.getItem('tf_current_user') || '';
       if (user) document.getElementById('headerUser').textContent = user;
       init();
+      setTimeout(applyRoleUI, 500);
     }
   })();
 
@@ -1306,6 +1356,7 @@
   }
 
   async function deletePub(id) {
+    if (!confirmDelete('Delete this publisher from the list?')) return;
     try {
       const res = await fetch(`${FINANCE_API}?action=getPublishers&period=${periodKey()}`);
       const json = await res.json();
@@ -1335,7 +1386,7 @@
   }
 
   async function clearPublishers() {
-    if (!confirm(`Clear all publisher data for ${periodLabel()}?`)) return;
+    if (!confirmDelete(`Clear ALL publisher data for ${periodLabel()}?`)) return;
     try {
       await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'savePublishers', period: periodKey(), rows: [], user: localStorage.getItem('tf_current_user')||'unknown', timestamp: new Date().toISOString() }) });
     } catch { showToast('⚠ Clear failed'); }
@@ -1660,6 +1711,7 @@ Return only the JSON object, nothing else.`
   }
 
   async function deleteInvoice(i) {
+    if (!confirmDelete('Delete this invoice?')) return;
     try {
       await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'deleteInvoice', period: periodKey(), index: i }) });
     } catch { showToast('⚠ Delete failed'); }
@@ -1667,7 +1719,7 @@ Return only the JSON object, nothing else.`
   }
 
   async function clearInvoices() {
-    if (!confirm(`Clear all invoices for ${periodLabel()}?`)) return;
+    if (!confirmDelete(`Clear ALL invoices for ${periodLabel()}?`)) return;
     try {
       await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'clearInvoices', period: periodKey() }) });
     } catch { showToast('⚠ Clear failed'); }
