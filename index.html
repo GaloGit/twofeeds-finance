@@ -476,7 +476,7 @@
         </div>
         <div class="header-right">
           <span class="sync-info" id="syncInfo">—<span class="countdown" id="countdown"></span></span>
-          <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);border:1px solid var(--border);padding:4px 10px;border-radius:6px">v1.6</span>
+          <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);border:1px solid var(--border);padding:4px 10px;border-radius:6px">v1.7</span>
           <span id="headerUser" style="font-family:var(--font-mono);font-size:10px;color:var(--accent-light)"></span>
           <span id="roleBadge" style="display:none;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700"></span>
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
@@ -501,6 +501,7 @@
         <button class="nav-tab active" onclick="showTab('publishers', this)">📋 Publishers</button>
         <button class="nav-tab" onclick="showTab('pubview', this); initPubView()">🔍 Publisher View</button>
         <button class="nav-tab" onclick="showTab('internal', this); renderInvoices()">🧾 Internal Sources</button>
+        <button class="nav-tab" id="settingsTab" style="display:none;margin-left:auto;color:var(--muted)" onclick="showTab('settings', this); renderSettings()">⚙️ Settings</button>
       </nav>
     </header>
 
@@ -829,6 +830,63 @@
 
     </div>
 
+    <!-- SETTINGS PAGE (admin only) -->
+    <div class="page" id="tab-settings">
+      <div class="section-header" style="margin-bottom:28px">
+        <div>
+          <div class="section-title">⚙️ Access Settings</div>
+          <div class="section-sub">Manage who can view or edit the system · visible only to admin</div>
+        </div>
+      </div>
+
+      <!-- Add user form -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:24px">
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:16px">Add or Update User</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+          <div style="flex:1;min-width:200px">
+            <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Email Address</div>
+            <input type="email" id="settingsEmail" placeholder="user@example.com"
+              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+          </div>
+          <div>
+            <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Role</div>
+            <select id="settingsRole" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;cursor:pointer">
+              <option value="editor">✏️ Editor</option>
+              <option value="viewer">👁 Viewer</option>
+            </select>
+          </div>
+          <button onclick="addSettingsUser()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.05em;white-space:nowrap">+ ADD USER</button>
+        </div>
+      </div>
+
+      <!-- Users table -->
+      <div class="table-wrap">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Added</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="settingsBody">
+              <tr><td colspan="5" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;font-family:var(--font-mono);font-size:11px;color:var(--muted);line-height:1.8;margin-top:8px">
+        <strong style="color:var(--text)">How roles work:</strong><br>
+        ✏️ <strong style="color:var(--accent-light)">Editor</strong> — can upload CSVs, edit amounts, delete rows, upload invoices<br>
+        👁 <strong style="color:var(--amber)">Viewer</strong> — can see all data but cannot make any changes<br>
+        Changes take effect on the user's next login.
+      </div>
+    </div>
+
   </div><!-- /container -->
 </div><!-- /app -->
 
@@ -844,23 +902,28 @@
   const START_YEAR = 2024;
 
   // ── ROLES ──
-  // Add emails here to control access:
-  // EDITORS can upload, edit, and delete data
-  // VIEWERS can see everything but cannot make changes
-  // Anyone not listed defaults to VIEWER
-  const EDITORS = [
+  const ADMIN = 'gal@thing02.com'; // only this user sees Settings tab
+  let EDITORS = [
     'gal@thing02.com',
     'galredwork@gmail.com',
-    // add more editor emails here ↓
-  ];
+  ]; // will be overridden by Google Sheets settings on load
+
+  function isAdmin() {
+    return (localStorage.getItem('tf_current_user')||'').toLowerCase() === ADMIN.toLowerCase();
+  }
 
   function isEditor() {
-    const user = localStorage.getItem('tf_current_user') || '';
-    return EDITORS.map(e => e.toLowerCase()).includes(user.toLowerCase());
+    const user = (localStorage.getItem('tf_current_user') || '').toLowerCase();
+    return EDITORS.map(e => e.toLowerCase()).includes(user);
   }
 
   function applyRoleUI() {
     const badge = document.getElementById('roleBadge');
+    // Show settings tab only for admin
+    if (isAdmin()) {
+      const st = document.getElementById('settingsTab');
+      if (st) st.style.display = 'block';
+    }
     if (isEditor()) {
       if (badge) {
         badge.textContent = 'EDITOR';
@@ -871,18 +934,110 @@
         badge.textContent = 'VIEWER';
         badge.style.cssText = 'display:inline;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700;background:rgba(245,158,11,0.15);color:var(--amber);border:1px solid var(--amber)';
       }
-      // Hide all edit/delete/upload controls for viewers
       document.querySelectorAll('.clear-btn, .add-btn').forEach(el => el.style.display = 'none');
       const uploadArea = document.getElementById('uploadArea');
       const invUploadArea = document.getElementById('invUploadArea');
       if (uploadArea) { uploadArea.style.pointerEvents = 'none'; uploadArea.style.opacity = '0.5'; }
       if (invUploadArea) { invUploadArea.style.pointerEvents = 'none'; invUploadArea.style.opacity = '0.5'; }
       document.querySelectorAll('input.editable, textarea.editable').forEach(el => {
-        el.readOnly = true;
-        el.style.cursor = 'default';
+        el.readOnly = true; el.style.cursor = 'default';
       });
       showToast('👁 Viewer mode — read only');
     }
+  }
+
+  // ── SETTINGS ──
+  let settingsUsers = [];
+
+  async function loadSettingsFromSheet() {
+    try {
+      const res = await fetch(`${FINANCE_API}?action=getSettings`);
+      const json = await res.json();
+      if (json.success && json.data.length > 0) {
+        settingsUsers = json.data;
+        // Update EDITORS list from sheet
+        EDITORS = settingsUsers.filter(u => u.role === 'editor').map(u => u.email);
+      }
+    } catch { /* use defaults */ }
+  }
+
+  async function renderSettings() {
+    const body = document.getElementById('settingsBody');
+    body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>';
+    try {
+      const res = await fetch(`${FINANCE_API}?action=getSettings`);
+      const json = await res.json();
+      settingsUsers = json.data || [];
+    } catch { settingsUsers = []; }
+
+    if (!settingsUsers.length) {
+      body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No users configured yet. Add users above.</td></tr>';
+      return;
+    }
+
+    body.innerHTML = settingsUsers.map((u, i) => `
+      <tr>
+        <td class="mono text-muted">${i+1}</td>
+        <td style="font-family:var(--font-mono);font-size:12px">${esc(u.email)}</td>
+        <td>
+          <span style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:3px 10px;border-radius:4px;${
+            u.role === 'editor'
+              ? 'background:rgba(124,58,237,0.2);color:var(--accent-light);border:1px solid var(--accent)'
+              : 'background:rgba(245,158,11,0.15);color:var(--amber);border:1px solid var(--amber)'
+          }">${u.role === 'editor' ? '✏️ Editor' : '👁 Viewer'}</span>
+        </td>
+        <td class="mono text-muted" style="font-size:10px">${u.added ? new Date(u.added).toLocaleDateString() : '—'}</td>
+        <td>
+          <div style="display:flex;gap:6px">
+            <button onclick="toggleUserRole(${i})" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:6px;font-family:var(--font-mono);font-size:9px;cursor:pointer">
+              Switch to ${u.role === 'editor' ? 'Viewer' : 'Editor'}
+            </button>
+            <button onclick="removeSettingsUser(${i})" style="background:transparent;border:1px solid var(--border);color:var(--red);padding:4px 10px;border-radius:6px;font-family:var(--font-mono);font-size:9px;cursor:pointer">✕</button>
+          </div>
+        </td>
+      </tr>`).join('');
+  }
+
+  async function addSettingsUser() {
+    const email = document.getElementById('settingsEmail').value.trim().toLowerCase();
+    const role = document.getElementById('settingsRole').value;
+    if (!email || !email.includes('@')) { setGateError('Please enter a valid email.'); return; }
+
+    // Check if already exists — update role instead
+    const existing = settingsUsers.find(u => u.email.toLowerCase() === email);
+    if (existing) { existing.role = role; }
+    else { settingsUsers.push({ email, role, added: new Date().toISOString() }); }
+
+    await saveSettings();
+    document.getElementById('settingsEmail').value = '';
+    showToast('✓ User saved');
+    renderSettings();
+  }
+
+  async function removeSettingsUser(i) {
+    if (!confirmDelete(`Remove ${settingsUsers[i].email} from the system?`)) return;
+    settingsUsers.splice(i, 1);
+    await saveSettings();
+    showToast('✓ User removed');
+    renderSettings();
+  }
+
+  async function toggleUserRole(i) {
+    settingsUsers[i].role = settingsUsers[i].role === 'editor' ? 'viewer' : 'editor';
+    await saveSettings();
+    showToast('✓ Role updated');
+    renderSettings();
+  }
+
+  async function saveSettings() {
+    try {
+      await fetch(FINANCE_API, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'saveSettings', users: settingsUsers })
+      });
+      // Update local EDITORS list
+      EDITORS = settingsUsers.filter(u => u.role === 'editor').map(u => u.email);
+    } catch { showToast('⚠ Failed to save settings'); }
   }
 
   // ── CONFIRM DELETE HELPER ──
@@ -989,7 +1144,7 @@
     document.getElementById('app').style.display = 'block';
     document.getElementById('headerUser').textContent = pendingEmail;
     init();
-    setTimeout(applyRoleUI, 500);
+    loadSettingsFromSheet().then(() => setTimeout(applyRoleUI, 300));
   }
 
   function backToStep1() {
@@ -1046,7 +1201,7 @@
       const user = localStorage.getItem('tf_current_user') || '';
       if (user) document.getElementById('headerUser').textContent = user;
       init();
-      setTimeout(applyRoleUI, 500);
+      loadSettingsFromSheet().then(() => setTimeout(applyRoleUI, 300));
     }
   })();
 
@@ -1557,46 +1712,23 @@
 
     const response = await fetch(WORKER_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 500,
-        messages: [{
-          role: 'user',
-          content: [
-            contentBlock,
-            {
-              type: 'text',
-              text: `Extract these fields from this invoice and return ONLY a raw JSON object, no markdown, no backticks, no explanation:
-{
-  "vendor": "the company/supplier who issued this invoice (not the recipient)",
-  "invoiceNum": "the invoice number or ID",
-  "date": "invoice date in YYYY-MM-DD format",
-  "amount": 0.00,
-  "needsReview": false
-}
-For amount: extract the total amount as a number only (no currency symbols, no spaces).
-For amounts with spaces as thousand separators (e.g. "38 737.40"), remove the spaces.
-Set needsReview to true only if a field is genuinely missing or unreadable.
-Return only the JSON object, nothing else.`
-            }
-          ]
-        }]
-      })
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Access-Token': 'tf-2026-xK9mP3qL8nR5vW2j'
+      },
+      body: JSON.stringify({ fileData: base64, mediaType })
     });
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
-      throw new Error(err?.error?.message || `Worker error ${response.status}`);
+      throw new Error(err?.error || `Worker error ${response.status}`);
     }
 
     const data = await response.json();
     console.log('AI raw response:', JSON.stringify(data));
-    const text = data.content?.find(b => b.type === 'text')?.text || '{}';
 
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error('No JSON found in response');
-    const parsed = JSON.parse(jsonMatch[0]);
+    // Worker returns extracted fields directly
+    const parsed = data;
     console.log('Parsed invoice data:', parsed);
 
     if (parsed.amount !== undefined) {
