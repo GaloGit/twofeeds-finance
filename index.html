@@ -1477,6 +1477,8 @@
   }
 
   function onPeriodChange() {
+    // Clear cache for the new period so data always re-renders on period switch
+    Object.keys(_cache).forEach(k => delete _cache[k]);
     renderPublishers();
     renderBudget();
     renderPayments();
@@ -1576,6 +1578,25 @@
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
     document.getElementById('tab-' + name).classList.add('active');
     btn.classList.add('active');
+  }
+
+  // ── SMART DIFF HELPERS ──
+  // Cache last-rendered data per tab to avoid unnecessary re-renders
+  const _cache = {};
+  function _isSame(key, data) {
+    const s = JSON.stringify(data);
+    if (_cache[key] === s) return true;
+    _cache[key] = s;
+    return false;
+  }
+  // Update a single cell value in-place without touching DOM structure
+  function _patchCell(row, colIndex, newHtml) {
+    const td = row.cells[colIndex];
+    if (td && td.innerHTML !== newHtml) td.innerHTML = newHtml;
+  }
+  function _patchText(row, colIndex, text) {
+    const td = row.cells[colIndex];
+    if (td && td.textContent !== String(text)) td.textContent = text;
   }
 
   // ── PUBLISHERS ──
@@ -1679,6 +1700,10 @@
     } catch {
       showToast('⚠ Could not load publishers from sheet.');
     }
+
+    // ── Skip everything if data is identical to last render ──
+    if (_isSame('pub_' + periodKey(), all)) return;
+
     const search = (document.getElementById('pubSearch')||{}).value || '';
     const filtered = all.filter(p => !search || p.name.toLowerCase().includes(search.toLowerCase()) || (p.platform||'').toLowerCase().includes(search.toLowerCase()));
 
@@ -1711,10 +1736,31 @@
 
     if (!hasData) return;
 
-    document.getElementById('publisherBody').innerHTML = filtered.map((p, i) => {
+    const monthName = ['January','February','March','April','May','June','July','August','September','October','November','December'][selectedMonth];
+    const tbody = document.getElementById('publisherBody');
+    const existingRows = tbody.querySelectorAll('tr:not(.add-row)');
+
+    // ── Try in-place patch (same rows, only values changed) ──
+    if (existingRows.length === filtered.length) {
+      filtered.forEach((p, i) => {
+        const row = existingRows[i];
+        if (!row) return;
+        const fmtAmt = '$' + Number(p.amount).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+        // patch amount cell (col 3) — most likely to change
+        _patchText(row, 3, fmtAmt);
+        // patch input values without disrupting focus
+        const inputs = row.querySelectorAll('input.editable');
+        if (inputs[0] && document.activeElement !== inputs[0]) inputs[0].value = p.name;
+        if (inputs[1] && document.activeElement !== inputs[1]) inputs[1].value = p.platform;
+        if (inputs[2] && document.activeElement !== inputs[2]) inputs[2].value = p.notes;
+      });
+      setTimeout(() => renderPubChart(all), 50);
+      return;
+    }
+
+    // ── Full rebuild only when row count changed ──
+    tbody.innerHTML = filtered.map((p, i) => {
       const fmtAmt = '$' + Number(p.amount).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
-      const monthName = ['January','February','March','April','May','June','July','August','September','October','November','December'][selectedMonth];
-      // Get short publisher name (strip anything in parentheses)
       const shortName = (p.name||'').replace(/\s*\(.*?\)\s*/g,'').trim();
       const approvalText = `${shortName} Numbers Approval mail ${monthName} ${selectedYear}`;
       const approvalCell = p.approval
@@ -1735,11 +1781,13 @@
     }).join('') +
       (isAdmin()||isEditor() ? `<tr class="add-row"><td colspan="6"><button class="add-btn" onclick="addPubRow()">+ Add Publisher Manually</button></td></tr>` : '');
 
-    // Render chart after table
     setTimeout(() => renderPubChart(all), 50);
   }
 
+  function _invalidateCache(prefix) { delete _cache[prefix + periodKey()]; }
+
   async function updatePub(id, field, value) {
+    _invalidateCache('pub_');
     // Get current data from sheet, update, save back
     try {
       const res = await fetch(`${FINANCE_API}?action=getPublishers&period=${periodKey()}`);
@@ -1758,6 +1806,7 @@
   }
 
   async function deletePub(id) {
+    _invalidateCache('pub_');
     if (!confirmDelete('Delete this publisher from the list?')) return;
     try {
       const res = await fetch(`${FINANCE_API}?action=getPublishers&period=${periodKey()}`);
@@ -1773,6 +1822,7 @@
   }
 
   async function addPubRow() {
+    _invalidateCache('pub_');
     try {
       const res = await fetch(`${FINANCE_API}?action=getPublishers&period=${periodKey()}`);
       const json = await res.json();
@@ -1788,6 +1838,7 @@
   }
 
   async function clearPublishers() {
+    _invalidateCache('pub_');
     if (!confirmDelete(`Clear ALL publisher data for ${periodLabel()}?`)) return;
     try {
       await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'savePublishers', period: periodKey(), rows: [], user: localStorage.getItem('tf_current_user')||'unknown', timestamp: new Date().toISOString() }) });
@@ -2047,6 +2098,10 @@
     } catch {
       showToast('⚠ Could not load invoices from sheet.');
     }
+
+    // ── Skip everything if data is identical to last render ──
+    if (_isSame('inv_' + periodKey(), invoices)) return;
+
     const hasData = invoices.length > 0;
     const total = invoices.reduce((s,inv) => s+(parseFloat(inv.amount)||0), 0);
     const extracted = invoices.filter(inv => inv.status === 'ok').length;
@@ -2107,6 +2162,7 @@
   }
 
   async function updateInvoice(i, field, value) {
+    _invalidateCache('inv_');
     try {
       await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'updateInvoice', period: periodKey(), index: i, field, value }) });
       showToast();
@@ -2115,6 +2171,7 @@
   }
 
   async function deleteInvoice(i) {
+    _invalidateCache('inv_');
     if (!confirmDelete('Delete this invoice?')) return;
     try {
       await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'deleteInvoice', period: periodKey(), index: i }) });
@@ -2123,6 +2180,7 @@
   }
 
   async function clearInvoices() {
+    _invalidateCache('inv_');
     if (!confirmDelete(`Clear ALL invoices for ${periodLabel()}?`)) return;
     try {
       await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'clearInvoices', period: periodKey() }) });
