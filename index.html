@@ -192,16 +192,6 @@
     .text-red { color: var(--red); }
     .text-muted { color: var(--muted); }
 
-    /* PROGRESS */
-    .progress-wrap { width: 100%; background: var(--surface3); border-radius: 4px; height: 6px; overflow: hidden; margin-top: 4px; }
-    .progress-bar { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
-    .progress-bar.ok { background: var(--green); }
-    .progress-bar.warn { background: var(--amber); }
-    .progress-bar.over { background: var(--red); }
-
-    .status-select-dark { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: var(--font-mono); font-size: 10px; padding: 4px 8px; cursor: pointer; outline: none; transition: border-color 0.2s; }
-    .status-select-dark:focus { border-color: var(--accent); }
-    .status-select-dark option { background: var(--surface2); }
 
     table thead th { position: sticky; top: 0; z-index: 2; background: var(--surface2); font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text); }
     .add-row td { padding: 12px 18px; background: var(--surface2); }
@@ -518,7 +508,7 @@
         </div>
         <div class="header-right">
           <span class="sync-info" id="syncInfo">—<span class="countdown" id="countdown"></span></span>
-          <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);border:1px solid var(--border);padding:4px 10px;border-radius:6px">v2.2</span>
+          <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);border:1px solid var(--border);padding:4px 10px;border-radius:6px">v2.3</span>
           <span id="headerUser" style="font-family:var(--font-mono);font-size:10px;color:var(--accent-light)"></span>
           <span id="roleBadge" style="display:none;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700"></span>
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
@@ -542,11 +532,11 @@
       </div>
 
       <nav class="nav-bar">
-        <button class="nav-tab active" onclick="showTab('publishers', this)">📋 Publishers</button>
-        <button class="nav-tab" onclick="showTab('pubview', this); initPubView()">🔍 Publisher View</button>
-        <button class="nav-tab" onclick="showTab('internal', this); renderInvoices()">🧾 Internal Sources</button>
-        <button class="nav-tab" onclick="showTab('mediabuy', this); renderMediaBuying()">📺 Media Buying</button>
-        <button class="nav-tab" onclick="showTab('costsummary', this); renderCostSummary()">💰 Cost Summary</button>
+        <button class="nav-tab active" id="navTab_publishers" style="display:none" onclick="showTab('publishers', this)">📋 Publishers</button>
+        <button class="nav-tab" id="navTab_pubview" style="display:none" onclick="showTab('pubview', this); initPubView()">🔍 Publisher View</button>
+        <button class="nav-tab" id="navTab_internal" style="display:none" onclick="showTab('internal', this); renderInvoices()">🧾 Internal Sources</button>
+        <button class="nav-tab" id="navTab_mediabuy" style="display:none" onclick="showTab('mediabuy', this); renderMediaBuying()">📺 Media Buying</button>
+        <button class="nav-tab" id="navTab_costsummary" style="display:none" onclick="showTab('costsummary', this); renderCostSummary()">💰 Cost Summary</button>
         <button class="nav-tab" id="settingsTab" style="display:none;margin-left:auto;color:var(--muted)" onclick="showTab('settings', this); renderSettings()">⚙️ Settings</button>
       </nav>
     </header>
@@ -636,76 +626,6 @@
           </div>
         </div>
 
-      </div>
-    </div>
-
-    <!-- BUDGET TAB -->
-    <div class="page" id="tab-budget">
-      <div class="summary-grid">
-        <div class="summary-card green" style="animation-delay:0.05s">
-          <div class="card-label">Total Budget</div>
-          <div class="card-value" id="totalBudget">$0</div>
-          <div class="card-sub">across campaigns</div>
-        </div>
-        <div class="summary-card amber" style="animation-delay:0.1s">
-          <div class="card-label">Total Spend</div>
-          <div class="card-value" id="totalSpend">$0</div>
-          <div class="card-sub">to date</div>
-        </div>
-        <div class="summary-card blue" style="animation-delay:0.15s">
-          <div class="card-label">Remaining</div>
-          <div class="card-value" id="totalRemaining">$0</div>
-          <div class="card-sub">available</div>
-        </div>
-        <div class="summary-card red" style="animation-delay:0.2s">
-          <div class="card-label">Avg Pacing</div>
-          <div class="card-value" id="avgPacing">0%</div>
-          <div class="card-sub">budget utilized</div>
-        </div>
-      </div>
-      <div class="section-header">
-        <div><div class="section-title">Campaign Budget Tracker</div><div class="section-sub">Manual entries · editable</div></div>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Campaign</th><th>Platform</th><th>Budget ($)</th><th>Spend ($)</th><th>Remaining</th><th>Pacing</th></tr></thead>
-          <tbody id="budgetBody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- PAYMENTS TAB -->
-    <div class="page" id="tab-payments">
-      <div class="summary-grid">
-        <div class="summary-card green" style="animation-delay:0.05s">
-          <div class="card-label">Paid</div>
-          <div class="card-value" id="totalPaid">$0</div>
-          <div class="card-sub" id="countPaid">0 payments</div>
-        </div>
-        <div class="summary-card amber" style="animation-delay:0.1s">
-          <div class="card-label">Pending</div>
-          <div class="card-value" id="totalPending">$0</div>
-          <div class="card-sub" id="countPending">0 payments</div>
-        </div>
-        <div class="summary-card red" style="animation-delay:0.15s">
-          <div class="card-label">Overdue</div>
-          <div class="card-value" id="totalOverdue">$0</div>
-          <div class="card-sub" id="countOverdue">0 payments</div>
-        </div>
-        <div class="summary-card blue" style="animation-delay:0.2s">
-          <div class="card-label">Total Volume</div>
-          <div class="card-value" id="totalVolume">$0</div>
-          <div class="card-sub">all payments</div>
-        </div>
-      </div>
-      <div class="section-header">
-        <div><div class="section-title">Vendor Payments</div><div class="section-sub">Track outgoing payments</div></div>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Vendor</th><th>Amount ($)</th><th>Due Date</th><th>Status</th><th>Notes</th></tr></thead>
-          <tbody id="paymentsBody"></tbody>
-        </table>
       </div>
     </div>
 
@@ -825,7 +745,7 @@
         <div class="summary-card blue" style="animation-delay:0.05s">
           <div class="card-label">Invoices</div>
           <div class="card-value" id="invCount" style="font-family:Arial">0</div>
-          <div class="card-sub">uploaded this period</div>
+          <div class="card-sub" id="invPeriodSub">—</div>
         </div>
         <div class="summary-card amber" style="animation-delay:0.1s">
           <div class="card-label">Total Amount</div>
@@ -1088,14 +1008,16 @@
             <tbody id="settingsBody">
               <tr><td colspan="5" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>
             </tbody>
+            <!-- permission sub-rows injected by renderSettings() -->
           </table>
         </div>
       </div>
 
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;font-family:var(--font-mono);font-size:11px;color:var(--muted);line-height:1.8;margin-top:8px">
-        <strong style="color:var(--text)">How roles work:</strong><br>
-        ✏️ <strong style="color:var(--accent-light)">Editor</strong> — can upload CSVs, edit amounts, delete rows, upload invoices<br>
-        👁 <strong style="color:var(--amber)">Viewer</strong> — can see all data but cannot make any changes<br>
+        <strong style="color:var(--text)">How access works:</strong><br>
+        👁 <strong style="color:var(--blue)">View</strong> — the tab is visible in the nav for that user<br>
+        ✏️ <strong style="color:var(--green)">Edit</strong> — the user can make changes in that tab<br>
+        New users have <strong style="color:var(--red)">no tab access</strong> by default — admin must grant access. Use the <strong style="color:var(--text)">⚡ Access</strong> button to expand per-tab toggles per user.<br>
         Changes take effect on the user's next login.
       </div>
     </div>
@@ -1108,7 +1030,6 @@
 <script>
   // ── CONFIG ──
   const PASSWORD = 'finance2026'; // ← change this
-  const API = "https://script.google.com/macros/s/AKfycbzC7CO8g97fNI7h-Zbc2Vf43rM7iLdsaMXwOuXtsh6mWQpycz_0baJEktMWFrQfLH-s/exec";
   const FINANCE_API = "https://script.google.com/macros/s/AKfycbxbuqDqum6p2jewYic-esj7FQgwneRXpDbHtWWoxx9tdSdH9qE5KWFX1VV8dEk7ITZ6/exec";
   const WORKER_URL = 'https://twofeeds-ai.galredwork.workers.dev';
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -1130,14 +1051,38 @@
     return EDITORS.map(e => e.toLowerCase()).includes(user);
   }
 
+  // ── TAB PERMISSIONS ──
+  const TAB_DEFS = [
+    { key: 'publishers',   label: '📋 Publishers',       hasEdit: true  },
+    { key: 'pubview',      label: '🔍 Publisher View',   hasEdit: false },
+    { key: 'internal',     label: '🧾 Internal Sources', hasEdit: true  },
+    { key: 'mediabuy',     label: '📺 Media Buying',     hasEdit: true  },
+    { key: 'costsummary',  label: '💰 Cost Summary',     hasEdit: false },
+  ];
+
+  function defaultTabs() {
+    const t = {};
+    TAB_DEFS.forEach(d => {
+      t[d.key] = d.hasEdit ? { view: false, edit: false } : { view: false };
+    });
+    return t;
+  }
+
+  // Returns true if the current user can edit a given tab
+  function canEditTab(key) {
+    if (isAdmin()) return true;
+    const user = (localStorage.getItem('tf_current_user')||'').toLowerCase();
+    const su = settingsUsers.find(u => u.email.toLowerCase() === user);
+    if (!su) return false;
+    return su.tabs?.[key]?.edit === true;
+  }
+
   function applyRoleUI() {
     const badge = document.getElementById('roleBadge');
-    // Show settings tab only for admin
-    if (isAdmin()) {
-      const st = document.getElementById('settingsTab');
-      if (st) st.style.display = 'block';
-    }
-    if (isAdmin()) {
+    const admin = isAdmin();
+
+    // ── Role badge ──
+    if (admin) {
       if (badge) {
         badge.textContent = 'ADMIN';
         badge.style.cssText = 'display:inline;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700;background:rgba(56,189,248,0.15);color:var(--blue);border:1px solid var(--blue)';
@@ -1152,15 +1097,79 @@
         badge.textContent = 'VIEWER';
         badge.style.cssText = 'display:inline;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700;background:rgba(245,158,11,0.15);color:var(--amber);border:1px solid var(--amber)';
       }
-      document.querySelectorAll('.clear-btn, .add-btn').forEach(el => el.style.display = 'none');
-      const uploadArea = document.getElementById('uploadArea');
-      const invUploadArea = document.getElementById('invUploadArea');
-      if (uploadArea) { uploadArea.style.pointerEvents = 'none'; uploadArea.style.opacity = '0.5'; }
-      if (invUploadArea) { invUploadArea.style.pointerEvents = 'none'; invUploadArea.style.opacity = '0.5'; }
-      document.querySelectorAll('input.editable, textarea.editable').forEach(el => {
-        el.readOnly = true; el.style.cursor = 'default';
+    }
+
+    // ── Settings tab — admin only ──
+    const st = document.getElementById('settingsTab');
+    if (st) st.style.display = admin ? 'block' : 'none';
+
+    // ── Tab visibility ──
+    if (admin) {
+      // Admin sees all tabs
+      TAB_DEFS.forEach(d => {
+        const btn = document.getElementById('navTab_' + d.key);
+        if (btn) btn.style.display = 'block';
       });
-      showToast('👁 Viewer mode — read only');
+    } else {
+      const user = (localStorage.getItem('tf_current_user')||'').toLowerCase();
+      const su = settingsUsers.find(u => u.email.toLowerCase() === user);
+      const tabs = su?.tabs || defaultTabs();
+
+      let visibleCount = 0;
+      TAB_DEFS.forEach(d => {
+        const btn = document.getElementById('navTab_' + d.key);
+        const viewOk = tabs[d.key]?.view === true;
+        if (btn) btn.style.display = viewOk ? 'block' : 'none';
+        if (viewOk) visibleCount++;
+      });
+
+      if (visibleCount === 0) {
+        showToast('⚠ No tab access yet. Contact your admin.');
+      }
+    }
+
+    // ── Inject CSS for per-tab edit restrictions ──
+    // Uses a dynamic <style> tag so restrictions apply even to dynamically-rendered buttons
+    let permStyle = document.getElementById('_permStyles');
+    if (!permStyle) {
+      permStyle = document.createElement('style');
+      permStyle.id = '_permStyles';
+      document.head.appendChild(permStyle);
+    }
+    if (admin) {
+      permStyle.textContent = ''; // no restrictions
+    } else {
+      const user = (localStorage.getItem('tf_current_user')||'').toLowerCase();
+      const su = settingsUsers.find(u => u.email.toLowerCase() === user);
+      const tabs = su?.tabs || defaultTabs();
+      let css = '';
+      TAB_DEFS.filter(d => d.hasEdit).forEach(d => {
+        if (!tabs[d.key]?.edit) {
+          css += `
+            #tab-${d.key} .clear-btn,
+            #tab-${d.key} .add-btn { display: none !important; }
+            #tab-${d.key} input.editable,
+            #tab-${d.key} textarea.editable { pointer-events: none !important; cursor: default !important; }
+            #tab-${d.key} .upload-area,
+            #tab-${d.key} [id*="UploadArea"] { pointer-events: none !important; opacity: 0.5 !important; }
+          `;
+        }
+      });
+      permStyle.textContent = css;
+    }
+
+    // ── Auto-navigate to first visible tab ──
+    const activeTab = document.querySelector('.nav-tab.active');
+    const activeHidden = activeTab && activeTab.style.display === 'none';
+    if (activeHidden) {
+      const firstVisible = TAB_DEFS.find(d => {
+        const btn = document.getElementById('navTab_' + d.key);
+        return btn && btn.style.display !== 'none';
+      });
+      if (firstVisible) {
+        const btn = document.getElementById('navTab_' + firstVisible.key);
+        if (btn) btn.click();
+      }
     }
   }
 
@@ -1172,8 +1181,10 @@
       const res = await fetch(`${FINANCE_API}?action=getSettings`);
       const json = await res.json();
       if (json.success && json.data.length > 0) {
-        settingsUsers = json.data;
-        // Update EDITORS list from sheet
+        settingsUsers = json.data.map(u => ({
+          ...u,
+          tabs: u.tabs && typeof u.tabs === 'object' ? u.tabs : defaultTabs()
+        }));
         EDITORS = settingsUsers.filter(u => u.role === 'editor').map(u => u.email);
       }
     } catch { /* use defaults */ }
@@ -1185,7 +1196,10 @@
     try {
       const res = await fetch(`${FINANCE_API}?action=getSettings`);
       const json = await res.json();
-      settingsUsers = json.data || [];
+      settingsUsers = (json.data || []).map(u => ({
+        ...u,
+        tabs: u.tabs && typeof u.tabs === 'object' ? u.tabs : defaultTabs()
+      }));
     } catch { settingsUsers = []; }
 
     if (!settingsUsers.length) {
@@ -1193,7 +1207,36 @@
       return;
     }
 
-    body.innerHTML = settingsUsers.map((u, i) => `
+    const btnBase = 'font-family:var(--font-mono);font-size:9px;border-radius:6px;cursor:pointer;padding:4px 10px;border:1px solid';
+
+    body.innerHTML = settingsUsers.map((u, i) => {
+      const tabs = u.tabs || defaultTabs();
+
+      // Build permission grid for this user
+      const permsHtml = TAB_DEFS.map(d => {
+        const viewOn = tabs[d.key]?.view === true;
+        const editOn = d.hasEdit ? tabs[d.key]?.edit === true : null;
+        const viewStyle = viewOn
+          ? `background:rgba(56,189,248,0.15);color:var(--blue);border-color:var(--blue)`
+          : `background:var(--surface3);color:var(--muted);border-color:var(--border)`;
+        const editStyle = editOn
+          ? `background:rgba(34,197,94,0.15);color:var(--green);border-color:var(--green)`
+          : `background:var(--surface3);color:var(--muted);border-color:var(--border)`;
+        return `
+          <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)">
+            <span style="flex:1;font-family:var(--font-mono);font-size:11px;color:var(--text)">${d.label}</span>
+            <button onclick="toggleTabPerm(${i},'${d.key}','view')"
+              style="${btnBase} var(--border);${viewStyle};min-width:64px">
+              👁 ${viewOn ? 'ON' : 'OFF'}
+            </button>
+            ${d.hasEdit ? `<button onclick="toggleTabPerm(${i},'${d.key}','edit')"
+              style="${btnBase} var(--border);${editStyle};min-width:72px">
+              ✏️ ${editOn ? 'ON' : 'OFF'}
+            </button>` : `<span style="min-width:72px;display:inline-block"></span>`}
+          </div>`;
+      }).join('');
+
+      return `
       <tr>
         <td class="mono text-muted">${i+1}</td>
         <td style="font-family:var(--font-mono);font-size:12px">${esc(u.email)}</td>
@@ -1206,14 +1249,27 @@
         </td>
         <td class="mono text-muted" style="font-size:10px">${u.added ? new Date(u.added).toLocaleDateString() : '—'}</td>
         <td>
-          <div style="display:flex;gap:6px">
-            <button onclick="toggleUserRole(${i})" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:6px;font-family:var(--font-mono);font-size:9px;cursor:pointer">
-              Switch to ${u.role === 'editor' ? 'Viewer' : 'Editor'}
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button onclick="togglePermsRow(${i})" style="${btnBase} var(--accent);background:rgba(124,58,237,0.15);color:var(--accent-light)">⚡ Access</button>
+            <button onclick="toggleUserRole(${i})" style="${btnBase} var(--border);background:var(--surface2);color:var(--muted)">
+              → ${u.role === 'editor' ? 'Viewer' : 'Editor'}
             </button>
-            <button onclick="removeSettingsUser(${i})" style="background:transparent;border:1px solid var(--border);color:var(--red);padding:4px 10px;border-radius:6px;font-family:var(--font-mono);font-size:9px;cursor:pointer">✕</button>
+            <button onclick="removeSettingsUser(${i})" style="${btnBase} var(--border);background:transparent;color:var(--red)">✕</button>
           </div>
         </td>
-      </tr>`).join('');
+      </tr>
+      <tr id="permsRow_${i}" style="display:none">
+        <td colspan="5" style="padding:0">
+          <div style="background:var(--surface2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:12px 20px">
+            <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px">
+              Tab Permissions — ${esc(u.email)}
+              &nbsp;·&nbsp; <span style="color:var(--blue)">👁 View</span> = show tab &nbsp;·&nbsp; <span style="color:var(--green)">✏️ Edit</span> = allow changes
+            </div>
+            ${permsHtml}
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
   }
 
   async function addSettingsUser() {
@@ -1221,10 +1277,10 @@
     const role = document.getElementById('settingsRole').value;
     if (!email || !email.includes('@')) { setGateError('Please enter a valid email.'); return; }
 
-    // Check if already exists — update role instead
+    // Check if already exists — update role instead, preserve tabs
     const existing = settingsUsers.find(u => u.email.toLowerCase() === email);
     if (existing) { existing.role = role; }
-    else { settingsUsers.push({ email, role, added: new Date().toISOString() }); }
+    else { settingsUsers.push({ email, role, added: new Date().toISOString(), tabs: defaultTabs() }); }
 
     await saveSettings();
     document.getElementById('settingsEmail').value = '';
@@ -1247,6 +1303,29 @@
     renderSettings();
   }
 
+  function togglePermsRow(i) {
+    const row = document.getElementById('permsRow_' + i);
+    if (!row) return;
+    row.style.display = row.style.display === 'none' ? '' : 'none';
+  }
+
+  async function toggleTabPerm(i, key, type) {
+    if (!settingsUsers[i].tabs) settingsUsers[i].tabs = defaultTabs();
+    if (!settingsUsers[i].tabs[key]) settingsUsers[i].tabs[key] = { view: false, edit: false };
+    settingsUsers[i].tabs[key][type] = !settingsUsers[i].tabs[key][type];
+    await saveSettings();
+    showToast('✓ Permissions updated');
+    // Re-render but keep perm rows open
+    const openRows = Array.from(document.querySelectorAll('[id^="permsRow_"]'))
+      .filter(r => r.style.display !== 'none')
+      .map(r => parseInt(r.id.replace('permsRow_', '')));
+    await renderSettings();
+    openRows.forEach(idx => {
+      const row = document.getElementById('permsRow_' + idx);
+      if (row) row.style.display = '';
+    });
+  }
+
   async function saveSettings() {
     try {
       await fetch(FINANCE_API, {
@@ -1267,7 +1346,6 @@
   let secondsLeft = 60;
   let selectedYear = new Date().getFullYear();
   let selectedMonth = new Date().getMonth(); // 0-indexed
-  let sheetCampaigns = [];
 
   // ── EMAILJS CONFIG ──
   const EMAILJS_SERVICE  = 'service_a0sa856';
@@ -1363,7 +1441,7 @@
     document.getElementById('app').style.display = 'block';
     document.getElementById('headerUser').textContent = pendingEmail;
     init();
-    loadSettingsFromSheet().then(() => { setTimeout(applyRoleUI, 300); dismissCurtain(); });
+    loadSettingsFromSheet().then(() => { applyRoleUI(); dismissCurtain(); });
   }
 
   function backToStep1() {
@@ -1438,16 +1516,13 @@
       const user = localStorage.getItem('tf_current_user') || '';
       if (user) document.getElementById('headerUser').textContent = user;
       init();
-      loadSettingsFromSheet().then(() => { setTimeout(applyRoleUI, 300); dismissCurtain(); });
+      loadSettingsFromSheet().then(() => { applyRoleUI(); dismissCurtain(); });
     }
   })();
 
   // ── INIT ──
   function init() {
     buildPeriodPicker();
-    loadFromSheet();
-    renderBudget();
-    renderPayments();
     renderPublishers();
     startCountdown();
   }
@@ -1480,8 +1555,6 @@
     // Clear cache for the new period so data always re-renders on period switch
     Object.keys(_cache).forEach(k => delete _cache[k]);
     renderPublishers();
-    renderBudget();
-    renderPayments();
     const activeTab = document.querySelector('.page.active');
     if (activeTab && activeTab.id === 'tab-internal') renderInvoices();
     if (activeTab && activeTab.id === 'tab-mediabuy') renderMediaBuying();
@@ -1502,7 +1575,6 @@
       secondsLeft--;
       if (secondsLeft <= 0) {
         secondsLeft = 60;
-        loadFromSheet();
         // Auto-refresh active tab data from Sheets
         const activeTab = document.querySelector('.page.active');
         if (activeTab) {
@@ -1520,7 +1592,6 @@
 
   function manualRefresh() {
     secondsLeft = 60;
-    loadFromSheet();
     // Also reload whichever tab is currently active
     const activeTab = document.querySelector('.page.active');
     if (activeTab) {
@@ -1534,27 +1605,8 @@
     showToast('↻ Refreshed');
   }
 
-  // ── SHEET ──
-  async function loadFromSheet() {
-    try {
-      const res = await fetch(API);
-      const json = await res.json();
-      sheetCampaigns = (json.data || []).map(c => ({
-        name: c['Campaign Name'] || '—',
-        platform: c['Platform'] || '—',
-        budget: parseFloat(c['Budget']) || 0,
-        spend: parseFloat(c['Spend']) || 0,
-      }));
-      document.getElementById('syncInfo').innerHTML =
-        'Synced ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) +
-        `<span class="countdown" id="countdown">next sync in ${secondsLeft}s</span>`;
-    } catch { sheetCampaigns = []; }
-    renderBudget();
-  }
-
   // ── UTILS ──
   function fmt(n) { return '$' + Number(n).toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:0}); }
-  function pct(spend, budget) { return budget > 0 ? Math.round((spend / budget) * 100) : 0; }
   function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function loadLS(key) { try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch { return []; } }
   function saveLS(key, d) { localStorage.setItem(key, JSON.stringify(d)); }
@@ -1610,6 +1662,7 @@
   }
 
   function handleCSV(file) {
+    if (!canEditTab('publishers')) { showToast('⚠ No edit access to Publishers'); return; }
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) { showToast('⚠ CSV file too large (max 5MB)'); return; }
     if (!file.name.toLowerCase().endsWith('.csv') && file.type !== 'text/csv') { showToast('⚠ Only CSV files are accepted'); return; }
@@ -1787,6 +1840,7 @@
   function _invalidateCache(prefix) { delete _cache[prefix + periodKey()]; }
 
   async function updatePub(id, field, value) {
+    if (!canEditTab('publishers')) { showToast('⚠ No edit access to Publishers'); return; }
     _invalidateCache('pub_');
     // Get current data from sheet, update, save back
     try {
@@ -1806,6 +1860,7 @@
   }
 
   async function deletePub(id) {
+    if (!canEditTab('publishers')) { showToast('⚠ No edit access to Publishers'); return; }
     _invalidateCache('pub_');
     if (!confirmDelete('Delete this publisher from the list?')) return;
     try {
@@ -1822,6 +1877,7 @@
   }
 
   async function addPubRow() {
+    if (!canEditTab('publishers')) { showToast('⚠ No edit access to Publishers'); return; }
     _invalidateCache('pub_');
     try {
       const res = await fetch(`${FINANCE_API}?action=getPublishers&period=${periodKey()}`);
@@ -1838,6 +1894,7 @@
   }
 
   async function clearPublishers() {
+    if (!canEditTab('publishers')) { showToast('⚠ No edit access to Publishers'); return; }
     _invalidateCache('pub_');
     if (!confirmDelete(`Clear ALL publisher data for ${periodLabel()}?`)) return;
     try {
@@ -1862,87 +1919,6 @@
     } catch { showToast('⚠ Export failed'); }
   }
 
-  // ── BUDGET ──
-  function renderBudget() {
-    const manual = loadLS(`tf_budget_${periodKey()}`);
-    const all = [...sheetCampaigns.map(c=>({...c,source:'sheet'})), ...manual.map(c=>({...c,source:'manual'}))];
-    let totB=0, totS=0;
-    all.forEach(c => { totB+=c.budget; totS+=c.spend; });
-    document.getElementById('totalBudget').textContent = fmt(totB);
-    document.getElementById('totalSpend').textContent = fmt(totS);
-    document.getElementById('totalRemaining').textContent = fmt(totB-totS);
-    document.getElementById('avgPacing').textContent = totB>0 ? Math.round((totS/totB)*100)+'%' : '0%';
-
-    if (all.length === 0) {
-      document.getElementById('budgetBody').innerHTML =
-        `<tr class="empty-row"><td colspan="6">No campaigns for ${periodLabel()}.</td></tr>
-         <tr class="add-row"><td colspan="6"><button class="add-btn" onclick="addBudgetRow()">+ Add Campaign</button></td></tr>`;
-      return;
-    }
-
-    document.getElementById('budgetBody').innerHTML = all.map((c,i) => {
-      const p = pct(c.spend, c.budget);
-      const barClass = p>=100?'over':p>=80?'warn':'ok';
-      const mi = i - sheetCampaigns.length;
-      const isM = c.source==='manual';
-      return `<tr style="animation-delay:${i*0.04}s">
-        <td>${isM?`<input class="editable" value="${esc(c.name)}" onblur="updateBudget(${mi},'name',this.value)" placeholder="Name"/>`:esc(c.name)}</td>
-        <td>${isM?`<input class="editable" value="${esc(c.platform)}" onblur="updateBudget(${mi},'platform',this.value)" style="width:100px"/>`:esc(c.platform)}</td>
-        <td>${isM?`<input class="editable mono" type="number" value="${c.budget}" onblur="updateBudget(${mi},'budget',this.value)" style="width:100px"/>`:fmt(c.budget)}</td>
-        <td>${isM?`<input class="editable mono" type="number" value="${c.spend}" onblur="updateBudget(${mi},'spend',this.value)" style="width:100px"/>`:fmt(c.spend)}</td>
-        <td class="mono ${c.budget-c.spend<0?'text-red':'text-green'}">${fmt(c.budget-c.spend)}</td>
-        <td style="min-width:120px">
-          <div style="display:flex;align-items:center;gap:8px">
-            <span class="mono" style="font-size:11px;width:32px">${p}%</span>
-            <div class="progress-wrap" style="flex:1"><div class="progress-bar ${barClass}" style="width:${Math.min(p,100)}%"></div></div>
-            ${isM?`<button class="add-btn" style="padding:2px 8px;font-size:9px" onclick="deleteBudget(${mi})">✕</button>`:''}
-          </div>
-        </td>
-      </tr>`;
-    }).join('') +
-    `<tr class="add-row"><td colspan="6"><button class="add-btn" onclick="addBudgetRow()">+ Add Campaign</button></td></tr>`;
-  }
-
-  function addBudgetRow() { const r=loadLS(`tf_budget_${periodKey()}`); r.push({name:'',platform:'',budget:0,spend:0}); saveLS(`tf_budget_${periodKey()}`,r); renderBudget(); }
-  function updateBudget(i,f,v) { const r=loadLS(`tf_budget_${periodKey()}`); if(!r[i])return; r[i][f]=f==='budget'||f==='spend'?parseFloat(v)||0:v; saveLS(`tf_budget_${periodKey()}`,r); renderBudget(); showToast(); }
-  function deleteBudget(i) { const r=loadLS(`tf_budget_${periodKey()}`); r.splice(i,1); saveLS(`tf_budget_${periodKey()}`,r); renderBudget(); }
-
-  // ── PAYMENTS ──
-  function renderPayments() {
-    const rows = loadLS(`tf_payments_${periodKey()}`);
-    const paid=rows.filter(r=>r.status==='Paid'), pending=rows.filter(r=>r.status==='Pending'), overdue=rows.filter(r=>r.status==='Overdue');
-    const sum=arr=>arr.reduce((s,r)=>s+(parseFloat(r.amount)||0),0);
-    document.getElementById('totalPaid').textContent=fmt(sum(paid));
-    document.getElementById('countPaid').textContent=paid.length+' payment'+(paid.length!==1?'s':'');
-    document.getElementById('totalPending').textContent=fmt(sum(pending));
-    document.getElementById('countPending').textContent=pending.length+' payment'+(pending.length!==1?'s':'');
-    document.getElementById('totalOverdue').textContent=fmt(sum(overdue));
-    document.getElementById('countOverdue').textContent=overdue.length+' payment'+(overdue.length!==1?'s':'');
-    document.getElementById('totalVolume').textContent=fmt(sum(rows));
-
-    document.getElementById('paymentsBody').innerHTML=(rows.length===0
-      ?`<tr class="empty-row"><td colspan="5">No payments for ${periodLabel()}.</td></tr>`
-      :rows.map((r,i)=>`<tr style="animation-delay:${i*0.04}s">
-          <td><input class="editable" value="${esc(r.vendor)}" onblur="updatePayment(${i},'vendor',this.value)" placeholder="Vendor"/></td>
-          <td><input class="editable mono" type="number" value="${r.amount||0}" onblur="updatePayment(${i},'amount',this.value)" style="width:110px"/></td>
-          <td><input class="editable mono" type="date" value="${r.due||''}" onblur="updatePayment(${i},'due',this.value)" style="width:140px"/></td>
-          <td><select class="status-select-dark" onchange="updatePayment(${i},'status',this.value)">
-            <option ${r.status==='Pending'?'selected':''}>Pending</option>
-            <option ${r.status==='Paid'?'selected':''}>Paid</option>
-            <option ${r.status==='Overdue'?'selected':''}>Overdue</option>
-          </select></td>
-          <td style="display:flex;align-items:center;gap:8px">
-            <input class="editable" value="${esc(r.notes)}" onblur="updatePayment(${i},'notes',this.value)" placeholder="Notes..."/>
-            <button class="add-btn" style="padding:2px 8px;font-size:9px" onclick="deletePayment(${i})">✕</button>
-          </td>
-        </tr>`).join(''))
-      +`<tr class="add-row"><td colspan="5"><button class="add-btn" onclick="addPayment()">+ Add Payment</button></td></tr>`;
-  }
-
-  function addPayment() { const r=loadLS(`tf_payments_${periodKey()}`); r.push({vendor:'',amount:0,due:'',status:'Pending',notes:''}); saveLS(`tf_payments_${periodKey()}`,r); renderPayments(); }
-  function updatePayment(i,f,v) { const r=loadLS(`tf_payments_${periodKey()}`); if(!r[i])return; r[i][f]=f==='amount'?parseFloat(v)||0:v; saveLS(`tf_payments_${periodKey()}`,r); renderPayments(); showToast(); }
-  function deletePayment(i) { const r=loadLS(`tf_payments_${periodKey()}`); r.splice(i,1); saveLS(`tf_payments_${periodKey()}`,r); renderPayments(); }
-
   // ── INTERNAL SOURCES ──
   function invKey() { return `tf_invoices_${periodKey()}`; }
 
@@ -1956,6 +1932,7 @@
   const ALLOWED_INV_EXTS = ['.pdf', '.jpg', '.jpeg', '.png'];
 
   async function handleInvFiles(files) {
+    if (!canEditTab('internal')) { showToast('⚠ No edit access to Internal Sources'); return; }
     if (!files || !files.length) return;
     const fileArr = Array.from(files).filter(file => {
       if (file.size > 10 * 1024 * 1024) { showToast(`⚠ "${file.name}" too large (max 10MB)`); return false; }
@@ -2119,6 +2096,7 @@
       document.getElementById('invExtracted').textContent = extracted;
       document.getElementById('invReview').textContent = review;
       document.getElementById('invPeriodLabel').textContent = periodLabel();
+      document.getElementById('invPeriodSub').textContent = periodLabel();
     }
 
     document.getElementById('invBody').innerHTML = invoices.map((inv, i) => `
@@ -2162,6 +2140,7 @@
   }
 
   async function updateInvoice(i, field, value) {
+    if (!canEditTab('internal')) { showToast('⚠ No edit access to Internal Sources'); return; }
     _invalidateCache('inv_');
     try {
       await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'updateInvoice', period: periodKey(), index: i, field, value }) });
@@ -2171,6 +2150,7 @@
   }
 
   async function deleteInvoice(i) {
+    if (!canEditTab('internal')) { showToast('⚠ No edit access to Internal Sources'); return; }
     _invalidateCache('inv_');
     if (!confirmDelete('Delete this invoice?')) return;
     try {
@@ -2180,6 +2160,7 @@
   }
 
   async function clearInvoices() {
+    if (!canEditTab('internal')) { showToast('⚠ No edit access to Internal Sources'); return; }
     _invalidateCache('inv_');
     if (!confirmDelete(`Clear ALL invoices for ${periodLabel()}?`)) return;
     try {
@@ -2206,6 +2187,7 @@
 
   // ── MEDIA BUYING ──
   function handleMediaCSV(file) {
+    if (!canEditTab('mediabuy')) { showToast('⚠ No edit access to Media Buying'); return; }
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) { showToast('⚠ CSV file too large (max 5MB)'); return; }
     if (!file.name.toLowerCase().endsWith('.csv') && file.type !== 'text/csv') { showToast('⚠ Only CSV files are accepted'); return; }
@@ -2288,6 +2270,7 @@
   }
 
   async function updateMedia(id, field, value) {
+    if (!canEditTab('mediabuy')) { showToast('⚠ No edit access to Media Buying'); return; }
     try {
       const res = await fetch(`${FINANCE_API}?action=getMediaBuying&period=${periodKey()}`);
       const data = await res.json();
@@ -2301,6 +2284,7 @@
   }
 
   async function deleteMedia(id) {
+    if (!canEditTab('mediabuy')) { showToast('⚠ No edit access to Media Buying'); return; }
     if (!confirmDelete('Delete this row?')) return;
     try {
       const res = await fetch(`${FINANCE_API}?action=getMediaBuying&period=${periodKey()}`);
@@ -2312,6 +2296,7 @@
   }
 
   async function addMediaRow() {
+    if (!canEditTab('mediabuy')) { showToast('⚠ No edit access to Media Buying'); return; }
     try {
       const res = await fetch(`${FINANCE_API}?action=getMediaBuying&period=${periodKey()}`);
       const data = await res.json();
@@ -2323,6 +2308,7 @@
   }
 
   async function clearMediaBuying() {
+    if (!canEditTab('mediabuy')) { showToast('⚠ No edit access to Media Buying'); return; }
     if (!confirmDelete(`Clear ALL Media Buying data for ${periodLabel()}?`)) return;
     try {
       await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'clearMediaBuying', period: periodKey() }) });
