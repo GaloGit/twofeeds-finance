@@ -130,8 +130,10 @@
       font-size: 10px; cursor: pointer; transition: all 0.2s; letter-spacing: 0.05em;
       white-space: nowrap;
     }
-    .year-btn:hover, .month-btn:hover { border-color: var(--accent); color: var(--accent-light); }
-    .year-btn.active, .month-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .month-btn:hover { border-color: var(--accent); color: var(--accent-light); }
+    .month-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .year-btn:hover { border-color: #a855f7; color: #c084fc; }
+    .year-btn.active { background: #a855f7; color: #fff; border-color: #a855f7; box-shadow: 0 0 12px rgba(168,85,247,0.35); }
     .period-divider { color: var(--border); font-size: 14px; margin: 0 2px; flex-shrink: 0; }
 
     /* NAV */
@@ -307,6 +309,14 @@
     .inv-upload-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
     .inv-upload-sub { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
     .inv-upload-sub span { color: var(--accent-light); cursor: pointer; text-decoration: underline; }
+    /* Compact strip shown when invoices already exist */
+    .inv-upload-area.compact {
+      padding: 12px 20px; margin: 12px 0 16px;
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+    }
+    .inv-upload-area.compact .inv-upload-icon { font-size: 18px; margin: 0; }
+    .inv-upload-area.compact .inv-upload-title { font-size: 13px; margin: 0; }
+    .inv-upload-area.compact .inv-upload-sub { display: none; }
 
     .inv-processing { display: flex; align-items: center; gap: 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 24px; margin-bottom: 20px; }
     .inv-proc-spinner { width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
@@ -413,9 +423,41 @@
       .nav-tab { padding: 8px 10px; font-size: 8px; }
       .year-btn, .month-btn { padding: 4px 8px; font-size: 8px; }
     }
+  /* ── LOADING CURTAIN ── */
+  #loadingCurtain {
+    position: fixed; inset: 0; z-index: 9999;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    background: rgba(14, 11, 26, 0.55);
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity 0.6s ease, backdrop-filter 0.6s ease;
+  }
+  body.light-mode #loadingCurtain { background: rgba(244, 242, 255, 0.55); }
+  #loadingCurtain.fade-out { opacity: 0; pointer-events: none; }
+  #loadingCurtain.hidden { display: none; }
+  #loadingInner { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+  #loadingLogo { width: 88px; height: 88px; object-fit: contain; animation: loadPulse 1.8s ease-in-out infinite; filter: drop-shadow(0 0 24px rgba(124,58,237,0.5)); }
+  #loadingWordmark { font-family: var(--font-display); font-size: 22px; font-weight: 800; color: var(--text); letter-spacing: 0.5px; opacity: 0.9; }
+  #loadingSpinner {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes loadPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.75;transform:scale(0.93)} }
+  @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
+
+<!-- LOADING CURTAIN -->
+<div id="loadingCurtain" style="display:none">
+  <div id="loadingInner">
+    <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" onerror="this.style.display='none'"/>
+    <div id="loadingWordmark">TwoFeeds Finance</div>
+    <div id="loadingSpinner"></div>
+  </div>
+</div>
 
 <!-- GATE — Step 1: Email + Password -->
 <div id="gate">
@@ -476,12 +518,14 @@
         </div>
         <div class="header-right">
           <span class="sync-info" id="syncInfo">—<span class="countdown" id="countdown"></span></span>
-          <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);border:1px solid var(--border);padding:4px 10px;border-radius:6px">v1.7</span>
+          <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);border:1px solid var(--border);padding:4px 10px;border-radius:6px">v2.1</span>
           <span id="headerUser" style="font-family:var(--font-mono);font-size:10px;color:var(--accent-light)"></span>
           <span id="roleBadge" style="display:none;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700"></span>
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-          <button class="refresh-btn" onclick="manualRefresh()">↻ REFRESH</button>
-          <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
+            <button class="refresh-btn" onclick="manualRefresh()" style="padding:5px 16px;font-size:10px">↻ REFRESH</button>
+          </div>
         </div>
       </div>
 
@@ -501,6 +545,8 @@
         <button class="nav-tab active" onclick="showTab('publishers', this)">📋 Publishers</button>
         <button class="nav-tab" onclick="showTab('pubview', this); initPubView()">🔍 Publisher View</button>
         <button class="nav-tab" onclick="showTab('internal', this); renderInvoices()">🧾 Internal Sources</button>
+        <button class="nav-tab" onclick="showTab('mediabuy', this); renderMediaBuying()">📺 Media Buying</button>
+        <button class="nav-tab" onclick="showTab('costsummary', this); renderCostSummary()">💰 Cost Summary</button>
         <button class="nav-tab" id="settingsTab" style="display:none;margin-left:auto;color:var(--muted)" onclick="showTab('settings', this); renderSettings()">⚙️ Settings</button>
       </nav>
     </header>
@@ -698,14 +744,14 @@
       <div id="pubviewResults" style="display:none">
         <div class="summary-grid" style="margin-top:24px">
           <div class="summary-card amber" style="animation-delay:0.05s">
-            <div class="card-label">Total Paid</div>
+            <div class="card-label" id="pvLabelTotal">Total Paid</div>
             <div class="card-value" id="pvTotal">$0</div>
-            <div class="card-sub">all periods combined</div>
+            <div class="card-sub" id="pvSubTotal">all periods combined</div>
           </div>
           <div class="summary-card blue" style="animation-delay:0.1s">
-            <div class="card-label">Active Months</div>
+            <div class="card-label" id="pvLabelMonths">Active Months</div>
             <div class="card-value" id="pvMonths" style="font-family:Arial">0</div>
-            <div class="card-sub">periods with data</div>
+            <div class="card-sub" id="pvSubMonths">periods with data</div>
           </div>
           <div class="summary-card green" style="animation-delay:0.15s">
             <div class="card-label">Monthly Average</div>
@@ -731,7 +777,7 @@
           <div class="table-scroll">
           <table>
             <thead>
-              <tr><th>Period</th><th>Platform</th><th>Amount</th><th>Approval</th><th>Notes</th></tr>
+              <tr><th id="pvTh1">Period</th><th id="pvTh2">Platform</th><th id="pvTh3">Amount</th><th id="pvTh4">Approval</th><th id="pvTh5">Notes</th></tr>
             </thead>
             <tbody id="pubviewBody"></tbody>
           </table>
@@ -828,6 +874,173 @@
         </div>
       </div>
 
+      <!-- Invoice Chart -->
+      <div class="chart-wrap" id="invChartWrap" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+          <div>
+            <div class="chart-title" id="invChartTitle">Amount by Vendor</div>
+            <div class="chart-sub" id="invChartSub">—</div>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="invChart"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- MEDIA BUYING TAB -->
+    <div class="page" id="tab-mediabuy">
+      <div class="summary-grid">
+        <div class="summary-card blue" style="animation-delay:0.05s">
+          <div class="card-label">Entries</div>
+          <div class="card-value" id="mbCount">0</div>
+          <div class="card-sub" id="mbPeriodLabel">—</div>
+        </div>
+        <div class="summary-card amber" style="animation-delay:0.1s">
+          <div class="card-label">Total CPC</div>
+          <div class="card-value" id="mbTotal">$0</div>
+          <div class="card-sub">this period</div>
+        </div>
+        <div class="summary-card green" style="animation-delay:0.15s">
+          <div class="card-label">Avg CPC</div>
+          <div class="card-value" id="mbAvg">$0</div>
+          <div class="card-sub">mean per entry</div>
+        </div>
+        <div class="summary-card red" style="animation-delay:0.2s">
+          <div class="card-label">Top DSP</div>
+          <div class="card-value" id="mbTop" style="font-size:16px;line-height:1.3">—</div>
+          <div class="card-sub" id="mbTopAmt">—</div>
+        </div>
+      </div>
+
+      <!-- Upload area -->
+      <div id="mbUploadArea" class="upload-area" onclick="document.getElementById('mbFileInput').click()"
+        ondragover="event.preventDefault();this.classList.add('drag')"
+        ondragleave="this.classList.remove('drag')"
+        ondrop="event.preventDefault();handleMediaCSV(event.dataTransfer.files[0])">
+        <div class="upload-icon">📺</div>
+        <div class="upload-title">Upload Media Buying CSV</div>
+        <div class="upload-sub">Drag & drop or <span onclick="event.stopPropagation();document.getElementById('mbFileInput').click()">browse file</span></div>
+        <div class="upload-sub" style="margin-top:8px">Expected columns: DSP, GEO, CPC</div>
+        <input type="file" id="mbFileInput" accept=".csv" onchange="handleMediaCSV(this.files[0])"/>
+      </div>
+
+      <!-- Table (shown when data loaded) -->
+      <div id="mbTableWrap" style="display:none">
+        <div class="pub-toolbar">
+          <div class="pub-search-wrap">
+            <span class="pub-search-icon">🔍</span>
+            <input type="text" class="pub-search" id="mbSearch" placeholder="Search DSP or GEO..." oninput="renderMediaBuying()"/>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="export-btn" onclick="exportMediaCSV()">↓ Export CSV</button>
+            <button class="clear-btn" onclick="clearMediaBuying()">✕ Clear</button>
+            <button class="add-btn" onclick="document.getElementById('mbFileInput').click()">↑ Re-upload CSV</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>DSP</th>
+                <th>GEO</th>
+                <th>CPC</th>
+              </tr>
+            </thead>
+            <tbody id="mbBody"></tbody>
+          </table>
+          </div>
+        </div>
+
+        <!-- Chart -->
+        <div class="chart-wrap" id="mbChartWrap" style="display:none">
+          <div class="chart-header">
+            <div class="chart-title" id="mbChartTitle">CPC by DSP</div>
+            <div class="chart-sub" id="mbChartSub">—</div>
+          </div>
+          <div class="chart-container">
+            <canvas id="mbChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COST SUMMARY TAB -->
+    <div class="page" id="tab-costsummary">
+
+      <!-- Summary cards -->
+      <div class="summary-grid">
+        <div class="summary-card amber" style="animation-delay:0.05s">
+          <div class="card-label">Publishers</div>
+          <div class="card-value" id="csPubTotal">$0</div>
+          <div class="card-sub" id="csPeriodLabel">—</div>
+        </div>
+        <div class="summary-card blue" style="animation-delay:0.1s">
+          <div class="card-label">Internal Sources</div>
+          <div class="card-value" id="csIntTotal">$0</div>
+          <div class="card-sub">KZN · GSM · Octava · JiniAds</div>
+        </div>
+        <div class="summary-card green" style="animation-delay:0.15s">
+          <div class="card-label">Grand Total</div>
+          <div class="card-value" id="csGrandTotal">$0</div>
+          <div class="card-sub">all categories</div>
+        </div>
+        <div class="summary-card red" style="animation-delay:0.2s">
+          <div class="card-label">Largest Category</div>
+          <div class="card-value" id="csTopCat" style="font-size:16px;line-height:1.3">—</div>
+          <div class="card-sub" id="csTopCatAmt">—</div>
+        </div>
+      </div>
+
+      <!-- Breakdown -->
+      <div class="section-header" style="margin-top:24px">
+        <div>
+          <div class="section-title">Cost Breakdown</div>
+          <div class="section-sub" id="csSub">Select a period to load data</div>
+        </div>
+      </div>
+
+      <div class="table-wrap" id="csTableWrap">
+        <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Group</th>
+              <th>Amount</th>
+              <th>% of Total</th>
+            </tr>
+          </thead>
+          <tbody id="csBody"></tbody>
+        </table>
+        </div>
+      </div>
+
+      <!-- Bar chart -->
+      <div class="chart-wrap" id="csChartWrap" style="display:none;margin-top:24px">
+        <div class="chart-header">
+          <div class="chart-title" id="csChartTitle">Cost by Category</div>
+          <div class="chart-sub" id="csChartSub">—</div>
+        </div>
+        <div class="chart-container">
+          <canvas id="csChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Pie chart -->
+      <div class="chart-wrap" id="csPieWrap" style="display:none;margin-top:24px">
+        <div class="chart-header">
+          <div class="chart-title" id="csPieTitle">Cost Share</div>
+          <div class="chart-sub" id="csPieSub">—</div>
+        </div>
+        <div class="chart-container" style="height:320px;max-width:420px;margin:0 auto">
+          <canvas id="csPieChart"></canvas>
+        </div>
+      </div>
+
     </div>
 
     <!-- SETTINGS PAGE (admin only) -->
@@ -896,7 +1109,7 @@
   // ── CONFIG ──
   const PASSWORD = 'finance2026'; // ← change this
   const API = "https://script.google.com/macros/s/AKfycbzC7CO8g97fNI7h-Zbc2Vf43rM7iLdsaMXwOuXtsh6mWQpycz_0baJEktMWFrQfLH-s/exec";
-  const FINANCE_API = "https://script.google.com/macros/s/AKfycbxElUpNAjgLNaY0DE3SQEWlDGizrGanFjQpT8w3ddFP3kbpQJSP13EHCmYZDSzm_AWD/exec";
+  const FINANCE_API = "https://script.google.com/macros/s/AKfycbxbuqDqum6p2jewYic-esj7FQgwneRXpDbHtWWoxx9tdSdH9qE5KWFX1VV8dEk7ITZ6/exec";
   const WORKER_URL = 'https://twofeeds-ai.galredwork.workers.dev';
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const START_YEAR = 2024;
@@ -924,7 +1137,12 @@
       const st = document.getElementById('settingsTab');
       if (st) st.style.display = 'block';
     }
-    if (isEditor()) {
+    if (isAdmin()) {
+      if (badge) {
+        badge.textContent = 'ADMIN';
+        badge.style.cssText = 'display:inline;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700;background:rgba(56,189,248,0.15);color:var(--blue);border:1px solid var(--blue)';
+      }
+    } else if (isEditor()) {
       if (badge) {
         badge.textContent = 'EDITOR';
         badge.style.cssText = 'display:inline;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700;background:rgba(124,58,237,0.2);color:var(--accent-light);border:1px solid var(--accent)';
@@ -1140,11 +1358,12 @@
       localStorage.setItem('tf_finance_auth', Date.now() + 7 * 24 * 60 * 60 * 1000);
     }
     localStorage.setItem('tf_current_user', pendingEmail);
+    showCurtain();
     document.getElementById('gate').style.display = 'none';
     document.getElementById('app').style.display = 'block';
     document.getElementById('headerUser').textContent = pendingEmail;
     init();
-    loadSettingsFromSheet().then(() => setTimeout(applyRoleUI, 300));
+    loadSettingsFromSheet().then(() => { setTimeout(applyRoleUI, 300); dismissCurtain(); });
   }
 
   function backToStep1() {
@@ -1183,25 +1402,43 @@
     localStorage.setItem('tf_theme', isLight ? 'light' : 'dark');
   }
 
-  // Apply saved theme on load
+  // Apply saved theme on load, falling back to system preference
   (function applyTheme() {
-    if (localStorage.getItem('tf_theme') === 'light') {
+    const saved = localStorage.getItem('tf_theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const isLight = saved ? saved === 'light' : !prefersDark;
+    if (isLight) {
       document.body.classList.add('light-mode');
       const btn = document.getElementById('themeBtn');
       if (btn) btn.textContent = '🌑';
     }
   })();
 
+  function showCurtain() {
+    const curtain = document.getElementById('loadingCurtain');
+    if (!curtain) return;
+    curtain.classList.remove('hidden', 'fade-out');
+    curtain.style.display = 'flex';
+  }
+
+  function dismissCurtain() {
+    const curtain = document.getElementById('loadingCurtain');
+    if (!curtain) return;
+    curtain.classList.add('fade-out');
+    setTimeout(() => { curtain.classList.add('hidden'); curtain.style.display = 'none'; }, 650);
+  }
+
   // Check remember me on load
   (function checkRemembered() {
     const expiry = localStorage.getItem('tf_finance_auth');
     if (expiry && Date.now() < parseInt(expiry)) {
+      showCurtain();
       document.getElementById('gate').style.display = 'none';
       document.getElementById('app').style.display = 'block';
       const user = localStorage.getItem('tf_current_user') || '';
       if (user) document.getElementById('headerUser').textContent = user;
       init();
-      loadSettingsFromSheet().then(() => setTimeout(applyRoleUI, 300));
+      loadSettingsFromSheet().then(() => { setTimeout(applyRoleUI, 300); dismissCurtain(); });
     }
   })();
 
@@ -1243,6 +1480,10 @@
     renderPublishers();
     renderBudget();
     renderPayments();
+    const activeTab = document.querySelector('.page.active');
+    if (activeTab && activeTab.id === 'tab-internal') renderInvoices();
+    if (activeTab && activeTab.id === 'tab-mediabuy') renderMediaBuying();
+    if (activeTab && activeTab.id === 'tab-costsummary') renderCostSummary();
   }
 
   function periodKey() {
@@ -1266,6 +1507,8 @@
           const id = activeTab.id;
           if (id === 'tab-publishers') renderPublishers();
           else if (id === 'tab-internal') renderInvoices();
+          else if (id === 'tab-mediabuy') renderMediaBuying();
+          else if (id === 'tab-costsummary') renderCostSummary();
         }
       }
       const el = document.getElementById('countdown');
@@ -1282,6 +1525,8 @@
       const id = activeTab.id;
       if (id === 'tab-publishers') renderPublishers();
       else if (id === 'tab-internal') renderInvoices();
+      else if (id === 'tab-mediabuy') renderMediaBuying();
+      else if (id === 'tab-costsummary') renderCostSummary();
       else if (id === 'tab-pubview') initPubView();
     }
     showToast('↻ Refreshed');
@@ -1483,12 +1728,12 @@
         <td class="mono text-green" style="white-space:nowrap;font-weight:700">${fmtAmt}</td>
         <td>${approvalCell}</td>
         <td style="display:flex;align-items:center;gap:8px">
-          <input class="editable" value="${esc(p.notes)}" onblur="updatePub('${p.id}','notes',this.value)" placeholder="Notes..."/>
-          <button class="add-btn" style="padding:2px 8px;font-size:9px;white-space:nowrap" onclick="deletePub('${p.id}')">✕</button>
+          <input class="editable" value="${esc(p.notes)}" onblur="updatePub('${p.id}','notes',this.value)" placeholder="Notes..." ${isAdmin()||isEditor()?'':'readonly style="cursor:default"'}/>
+          ${isAdmin()||isEditor() ? `<button class="add-btn" style="padding:2px 8px;font-size:9px;white-space:nowrap" onclick="deletePub('${p.id}')">✕</button>` : ''}
         </td>
       </tr>`;
     }).join('') +
-      `<tr class="add-row"><td colspan="6"><button class="add-btn" onclick="addPubRow()">+ Add Publisher Manually</button></td></tr>`;
+      (isAdmin()||isEditor() ? `<tr class="add-row"><td colspan="6"><button class="add-btn" onclick="addPubRow()">+ Add Publisher Manually</button></td></tr>` : '');
 
     // Render chart after table
     setTimeout(() => renderPubChart(all), 50);
@@ -1768,7 +2013,7 @@
       const json = await res.json();
       if (json.success) {
         invoices = (json.data || []).map((r, idx) => {
-          // Normalize date — Sheets may return date objects
+          // Normalize date — Sheets may return Date objects, ISO strings, or Excel serial numbers
           let date = r['Date'] || '';
           if (date instanceof Date || (typeof date === 'object' && date !== null)) {
             date = date.toISOString ? date.toISOString().split('T')[0] : '';
@@ -1778,6 +2023,15 @@
             date = d.toISOString().split('T')[0];
           } else {
             date = String(date).trim();
+            // Handle ISO timestamp strings like "2026-03-31T21:00:00.000Z"
+            // Sheets serializes dates in UTC — use local time to recover the original date
+            if (/^\d{4}-\d{2}-\d{2}T/.test(date)) {
+              const d = new Date(date);
+              const y = d.getFullYear();
+              const m = String(d.getMonth() + 1).padStart(2, '0');
+              const day = String(d.getDate()).padStart(2, '0');
+              date = `${y}-${m}-${day}`;
+            }
           }
           return {
             id: idx,
@@ -1801,6 +2055,8 @@
     document.getElementById('invSummaryGrid').style.display = hasData ? 'grid' : 'none';
     document.getElementById('invToolbar').style.display = hasData ? 'flex' : 'none';
     document.getElementById('invTableWrap').style.display = hasData ? 'block' : 'none';
+    // Collapse upload area to compact strip when invoices exist
+    document.getElementById('invUploadArea').classList.toggle('compact', hasData);
 
     if (hasData) {
       document.getElementById('invCount').textContent = invoices.length;
@@ -1829,6 +2085,9 @@
         </td>
       </tr>`).join('') +
       `<tr class="add-row"><td colspan="7"><button class="add-btn" onclick="document.getElementById('invFileInput').click()">+ Upload More Invoices</button></td></tr>`;
+
+    // Render chart after table
+    setTimeout(() => renderInvChart(invoices), 50);
   }
 
   function editInvAmount(td, i, currentVal) {
@@ -1887,10 +2146,240 @@
     } catch { showToast('⚠ Export failed'); }
   }
 
+  // ── MEDIA BUYING ──
+  function handleMediaCSV(file) {
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { showToast('⚠ CSV file too large (max 5MB)'); return; }
+    if (!file.name.toLowerCase().endsWith('.csv') && file.type !== 'text/csv') { showToast('⚠ Only CSV files are accepted'); return; }
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+      const lines = e.target.result.trim().split('\n');
+      if (lines.length < 2) { showToast('⚠ CSV has no data rows'); return; }
+      const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,'').toLowerCase());
+      const findCol = (...names) => { for (const n of names) { const i = headers.findIndex(h => h.includes(n)); if (i !== -1) return i; } return -1; };
+      const dspCol = findCol('dsp','platform','network','channel','campaign','name');
+      const geoCol = findCol('geo','region','country','location');
+      const cpcCol = findCol('cpc','amount','cost','spend','price','budget');
+      const rows = lines.slice(1).filter(l => l.trim()).map(line => {
+        const cols = parseCSVLine(line);
+        return {
+          dsp: dspCol >= 0 ? (cols[dspCol]||'').trim() : '',
+          geo: geoCol >= 0 ? (cols[geoCol]||'').trim() : '',
+          cpc: cpcCol >= 0 ? parseFloat((cols[cpcCol]||'0').replace(/[^0-9.]/g,'')) || 0 : 0,
+        };
+      }).filter(r => r.dsp);
+      try {
+        await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveMediaBuying', period: periodKey(), rows }) });
+        showToast('✓ CSV imported — ' + rows.length + ' entries');
+        renderMediaBuying();
+      } catch { showToast('⚠ Failed to save. Check connection.'); }
+    };
+    reader.readAsText(file);
+    document.getElementById('mbFileInput').value = '';
+  }
+
+  async function renderMediaBuying() {
+    let all = [];
+    try {
+      const res = await fetch(`${FINANCE_API}?action=getMediaBuying&period=${periodKey()}`);
+      const data = await res.json();
+      if (data.success) {
+        all = (data.data || []).map((r, idx) => ({
+          id: idx,
+          dsp: r['DSP'] || '',
+          geo: r['GEO'] || '',
+          cpc: parseFloat(r['CPC']) || 0,
+        }));
+      }
+    } catch { showToast('⚠ Could not load media buying data.'); }
+
+    const search = (document.getElementById('mbSearch')||{}).value || '';
+    const filtered = all.filter(r => !search ||
+      (r.dsp||'').toLowerCase().includes(search.toLowerCase()) ||
+      (r.geo||'').toLowerCase().includes(search.toLowerCase()));
+
+    const total = all.reduce((s,r) => s + (r.cpc||0), 0);
+    const avg   = all.length > 0 ? total / all.length : 0;
+    const top   = all.length > 0 ? all.reduce((a,b) => (b.cpc||0)>(a.cpc||0)?b:a, all[0]) : null;
+
+    document.getElementById('mbCount').textContent = all.length;
+    document.getElementById('mbTotal').textContent = fmt(total);
+    document.getElementById('mbAvg').textContent   = fmt(avg);
+    document.getElementById('mbPeriodLabel').textContent = periodLabel();
+    document.getElementById('mbTop').textContent    = top ? top.dsp : '—';
+    document.getElementById('mbTopAmt').textContent = top ? fmt(top.cpc) : '—';
+
+    const hasData = all.length > 0;
+    document.getElementById('mbUploadArea').style.display = hasData ? 'none' : 'block';
+    document.getElementById('mbTableWrap').style.display  = hasData ? 'block' : 'none';
+    if (!hasData) return;
+
+    document.getElementById('mbBody').innerHTML = filtered.map((r, i) => `
+      <tr style="animation-delay:${i*0.03}s">
+        <td class="mono text-muted">${i+1}</td>
+        <td><input class="editable" value="${esc(r.dsp)}" onblur="updateMedia(${r.id},'dsp',this.value)" placeholder="DSP name"/></td>
+        <td><input class="editable" value="${esc(r.geo)}" onblur="updateMedia(${r.id},'geo',this.value)" placeholder="GEO" style="width:120px"/></td>
+        <td class="mono text-green" style="white-space:nowrap;font-weight:700">$${Number(r.cpc||0).toLocaleString(undefined,{minimumFractionDigits:10,maximumFractionDigits:10})}</td>
+        <td style="text-align:center">
+          ${isAdmin()||isEditor() ? `<button class="add-btn" style="padding:2px 8px;font-size:9px" onclick="deleteMedia(${r.id})">✕</button>` : ''}
+        </td>
+      </tr>`).join('') +
+      (isAdmin()||isEditor() ? `<tr class="add-row"><td colspan="4"><button class="add-btn" onclick="addMediaRow()">+ Add Row Manually</button></td></tr>` : '');
+
+    setTimeout(() => renderMbChart(all), 50);
+  }
+
+  async function updateMedia(id, field, value) {
+    try {
+      const res = await fetch(`${FINANCE_API}?action=getMediaBuying&period=${periodKey()}`);
+      const data = await res.json();
+      const rows = (data.data || []).map((r, idx) => ({ id: idx, dsp: r['DSP']||'', geo: r['GEO']||'', cpc: parseFloat(r['CPC'])||0 }));
+      const r = rows.find(r => r.id === id);
+      if (r) r[field] = field === 'cpc' ? parseFloat(value)||0 : value;
+      await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveMediaBuying', period: periodKey(), rows }) });
+      showToast();
+    } catch { showToast('⚠ Save failed'); }
+    renderMediaBuying();
+  }
+
+  async function deleteMedia(id) {
+    if (!confirmDelete('Delete this row?')) return;
+    try {
+      const res = await fetch(`${FINANCE_API}?action=getMediaBuying&period=${periodKey()}`);
+      const data = await res.json();
+      const rows = (data.data || []).map((r, idx) => ({ id: idx, dsp: r['DSP']||'', geo: r['GEO']||'', cpc: parseFloat(r['CPC'])||0 })).filter(r => r.id !== id);
+      await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveMediaBuying', period: periodKey(), rows }) });
+    } catch { showToast('⚠ Delete failed'); }
+    renderMediaBuying();
+  }
+
+  async function addMediaRow() {
+    try {
+      const res = await fetch(`${FINANCE_API}?action=getMediaBuying&period=${periodKey()}`);
+      const data = await res.json();
+      const rows = (data.data || []).map(r => ({ dsp: r['DSP']||'', geo: r['GEO']||'', cpc: parseFloat(r['CPC'])||0 }));
+      rows.push({ dsp: '', geo: '', cpc: 0 });
+      await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveMediaBuying', period: periodKey(), rows }) });
+    } catch { showToast('⚠ Add failed'); }
+    renderMediaBuying();
+  }
+
+  async function clearMediaBuying() {
+    if (!confirmDelete(`Clear ALL Media Buying data for ${periodLabel()}?`)) return;
+    try {
+      await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'clearMediaBuying', period: periodKey() }) });
+    } catch { showToast('⚠ Clear failed'); }
+    renderMediaBuying();
+  }
+
+  function exportMediaCSV() {
+    fetch(`${FINANCE_API}?action=getMediaBuying&period=${periodKey()}`)
+      .then(r => r.json())
+      .then(data => {
+        const rows = data.data || [];
+        if (!rows.length) { showToast('No data to export'); return; }
+        const header = 'Period,DSP,GEO,CPC';
+        const lines = rows.map(r => `"${periodKey()}","${r['DSP']||''}","${r['GEO']||''}","${r['CPC']||0}"`);
+        const blob = new Blob([header+'\n'+lines.join('\n')], {type:'text/csv'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `media_buying_${periodKey()}.csv`;
+        a.click();
+      })
+      .catch(() => showToast('⚠ Export failed'));
+  }
+
+  // ── COST SUMMARY ──
+  const CS_GROUPS = ['KZN', 'GSM', 'Octava', 'JiniAds'];
+
+  function csMatchGroup(vendorName) {
+    const name = (vendorName || '').toLowerCase();
+    for (const g of CS_GROUPS) {
+      if (name.includes(g.toLowerCase())) return g;
+    }
+    return 'Other';
+  }
+
+  async function renderCostSummary() {
+    // Fetch publishers + invoices in parallel
+    const [pubRes, invRes] = await Promise.all([
+      fetch(`${FINANCE_API}?action=getPublishers&period=${periodKey()}`).then(r=>r.json()).catch(()=>({success:false,data:[]})),
+      fetch(`${FINANCE_API}?action=getInvoices&period=${periodKey()}`).then(r=>r.json()).catch(()=>({success:false,data:[]})),
+    ]);
+
+    const pubRows = pubRes.success ? (pubRes.data || []) : [];
+    const invRows = invRes.success ? (invRes.data || []) : [];
+
+    const pubTotal = pubRows.reduce((s,r) => s + (parseFloat(r['Amount'])||0), 0);
+
+    // Group internal sources
+    const groupTotals = {};
+    CS_GROUPS.forEach(g => { groupTotals[g] = 0; });
+    groupTotals['Other'] = 0;
+    invRows.forEach(r => {
+      const g = csMatchGroup(r['Vendor'] || '');
+      groupTotals[g] += parseFloat(r['Amount']) || 0;
+    });
+
+    const intTotal   = Object.values(groupTotals).reduce((s,v) => s+v, 0);
+    const grandTotal = pubTotal + intTotal;
+
+    // All categories (for largest + chart)
+    const allCats = [
+      { name: 'Publishers', amount: pubTotal, color: 'rgba(245,158,11,0.85)' },
+      ...CS_GROUPS.map((g,i) => ({
+        name: g, amount: groupTotals[g],
+        color: ['rgba(124,58,237,0.85)','rgba(56,189,248,0.85)','rgba(34,197,94,0.85)','rgba(239,68,68,0.85)'][i],
+      })),
+      ...(groupTotals['Other'] > 0 ? [{ name: 'Other Internal', amount: groupTotals['Other'], color: 'rgba(168,85,247,0.85)' }] : []),
+    ];
+    const topCat = [...allCats].sort((a,b) => b.amount - a.amount)[0];
+
+    // Stat cards
+    document.getElementById('csPubTotal').textContent    = fmt(pubTotal);
+    document.getElementById('csIntTotal').textContent    = fmt(intTotal);
+    document.getElementById('csGrandTotal').textContent  = fmt(grandTotal);
+    document.getElementById('csPeriodLabel').textContent = periodLabel();
+    document.getElementById('csTopCat').textContent      = topCat ? topCat.name : '—';
+    document.getElementById('csTopCatAmt').textContent   = topCat ? fmt(topCat.amount) : '—';
+    document.getElementById('csSub').textContent =
+      `${periodLabel()} · ${pubRows.length} publisher${pubRows.length!==1?'s':''} · ${invRows.length} invoice${invRows.length!==1?'s':''}`;
+
+    // Table rows
+    const tableRows = [
+      { category: 'Publishers', group: '—', amount: pubTotal, isPub: true },
+      ...CS_GROUPS.map(g => ({ category: 'Internal Sources', group: g, amount: groupTotals[g] })),
+      ...(groupTotals['Other'] > 0 ? [{ category: 'Internal Sources', group: 'Other', amount: groupTotals['Other'] }] : []),
+    ];
+
+    const fmtAmt = v => '$' + Number(v).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+    const pct    = v => grandTotal > 0 ? ((v/grandTotal)*100).toFixed(1)+'%' : '0.0%';
+
+    document.getElementById('csBody').innerHTML =
+      tableRows.map((r, i) => `
+        <tr style="animation-delay:${i*0.04}s">
+          <td style="color:${r.isPub ? 'var(--accent-light)' : 'var(--muted)'}${r.isPub ? ';font-weight:700' : ''}">${r.category}</td>
+          <td style="font-weight:${r.isPub?'700':'400'}">${r.group}</td>
+          <td class="mono text-green" style="font-weight:700;white-space:nowrap">${fmtAmt(r.amount)}</td>
+          <td class="mono text-muted">${pct(r.amount)}</td>
+        </tr>`).join('') +
+      `<tr style="border-top:2px solid var(--border)">
+        <td colspan="2" style="font-weight:800;color:var(--text)">Grand Total</td>
+        <td class="mono" style="font-weight:800;color:var(--accent-light);white-space:nowrap">${fmtAmt(grandTotal)}</td>
+        <td class="mono" style="font-weight:800">100%</td>
+      </tr>`;
+
+    const activeCats = allCats.filter(c => c.amount > 0);
+    setTimeout(() => renderCsChart(activeCats, grandTotal), 50);
+    setTimeout(() => renderCsPieChart(activeCats, grandTotal), 80);
+  }
+
   // ── PUBLISHER VIEW ──
   let pvFocusIndex = -1;
   let pvCurrentPublisher = null;
-  let pvAllPublishers = []; // {name, periods, total}
+  let pvCurrentType = 'publisher'; // 'publisher' | 'vendor'
+  let pvAllPublishers = []; // {displayName, periods, total, entries}
+  let pvAllVendors = [];   // {displayName, periods, total, entries}
 
   async function buildPublisherIndex() {
     // Fetch all publisher data from Google Sheets (all periods)
@@ -1936,31 +2425,74 @@
     return pvAllPublishers;
   }
 
+  async function buildVendorIndex() {
+    const map = {};
+    const currentYear = new Date().getFullYear();
+    const fetches = [];
+    for (let y = START_YEAR; y <= currentYear; y++) {
+      for (let m = 1; m <= 12; m++) {
+        const period = `${y}-${String(m).padStart(2,'0')}`;
+        fetches.push(
+          fetch(`${FINANCE_API}?action=getInvoices&period=${period}`)
+            .then(r => r.json())
+            .then(json => {
+              if (!json.success || !json.data.length) return;
+              json.data.forEach(r => {
+                const name = (r['Vendor'] || '').trim();
+                const key = name.toLowerCase();
+                if (!key) return;
+                const amount = parseFloat(r['Amount']) || 0;
+                if (!map[key]) map[key] = { displayName: name, total: 0, periodSet: new Set(), entries: [] };
+                map[key].entries.push({ vendor: name, year: y, month: m - 1, period, invoiceNum: r['Invoice #'] || '', amount, status: r['Status'] || 'ok' });
+                map[key].total += amount;
+                map[key].periodSet.add(period);
+              });
+            })
+            .catch(() => {})
+        );
+      }
+    }
+    await Promise.all(fetches);
+    pvAllVendors = Object.values(map).map(v => ({ displayName: v.displayName, total: v.total, periods: v.periodSet.size, entries: v.entries })).sort((a,b) => b.total - a.total);
+    return pvAllVendors;
+  }
+
   async function initPubView() {
     document.getElementById('pubviewEmpty').style.display = 'block';
     document.getElementById('pubviewResults').style.display = 'none';
     document.getElementById('pubviewInput').value = '';
-    document.getElementById('pubviewSelect').innerHTML = '<option value="">Loading publishers...</option>';
-    await buildPublisherIndex();
+    document.getElementById('pubviewSelect').innerHTML = '<option value="">Loading...</option>';
+    await Promise.all([buildPublisherIndex(), buildVendorIndex()]);
     populatePubSelect();
   }
 
   function populatePubSelect() {
     const sel = document.getElementById('pubviewSelect');
-    sel.innerHTML = '<option value="">— Select publisher —</option>' +
-      pvAllPublishers
-        .sort((a,b) => a.displayName.localeCompare(b.displayName))
-        .map(p => `<option value="${esc(p.displayName)}">${esc(p.displayName)} (${p.periods} period${p.periods!==1?'s':''} · ${fmt(p.total)})</option>`)
-        .join('');
+    const pubOpts = pvAllPublishers
+      .sort((a,b) => a.displayName.localeCompare(b.displayName))
+      .map(p => `<option value="pub:${esc(p.displayName)}">📋 ${esc(p.displayName)} (${p.periods} period${p.periods!==1?'s':''} · ${fmt(p.total)})</option>`)
+      .join('');
+    const venOpts = pvAllVendors
+      .sort((a,b) => a.displayName.localeCompare(b.displayName))
+      .map(v => `<option value="ven:${esc(v.displayName)}">🧾 ${esc(v.displayName)} (${v.periods} period${v.periods!==1?'s':''} · ${fmt(v.total)})</option>`)
+      .join('');
+    sel.innerHTML = '<option value="">— Select publisher or vendor —</option>' +
+      (pubOpts ? `<optgroup label="📋 Publishers">${pubOpts}</optgroup>` : '') +
+      (venOpts ? `<optgroup label="🧾 Internal Sources">${venOpts}</optgroup>` : '');
   }
 
-  function onPubViewSelect(name) {
-    if (!name) { clearPubView(); return; }
+  function onPubViewSelect(value) {
+    if (!value) { clearPubView(); return; }
+    let type = 'publisher', name = value;
+    if (value.startsWith('ven:')) { type = 'vendor'; name = value.slice(4); }
+    else if (value.startsWith('pub:')) { name = value.slice(4); }
+    pvCurrentType = type;
+    pvCurrentPublisher = name;
     document.getElementById('pubviewInput').value = name;
     document.getElementById('pubviewClear').style.display = 'block';
     document.getElementById('pubviewDropdown').style.display = 'none';
-    pvCurrentPublisher = name;
-    renderPubView(name);
+    if (type === 'vendor') renderVendorView(name);
+    else renderPubView(name);
   }
 
   function onPubViewSearch() {
@@ -1974,19 +2506,20 @@
       return;
     }
 
-    // Use already-loaded index (populated by initPubView)
-    const matches = pvAllPublishers.filter(p => p.displayName.toLowerCase().includes(q));
+    const pubMatches = pvAllPublishers.filter(p => p.displayName.toLowerCase().includes(q)).map(p => ({...p, type:'publisher'}));
+    const venMatches = pvAllVendors.filter(v => v.displayName.toLowerCase().includes(q)).map(v => ({...v, type:'vendor'}));
+    const allMatches = [...pubMatches, ...venMatches];
 
-    if (matches.length === 0) {
+    if (allMatches.length === 0) {
       document.getElementById('pubviewDropdown').innerHTML =
-        `<div class="pubview-option"><span class="pubview-option-name text-muted">No publishers found</span></div>`;
+        `<div class="pubview-option"><span class="pubview-option-name text-muted">No results found</span></div>`;
       document.getElementById('pubviewDropdown').style.display = 'block';
       return;
     }
 
-    document.getElementById('pubviewDropdown').innerHTML = matches.map((p, i) =>
-      `<div class="pubview-option" data-i="${i}" data-name="${esc(p.displayName)}" onclick="selectPublisher(this.dataset.name)">
-        <span class="pubview-option-name">${esc(p.displayName)}</span>
+    document.getElementById('pubviewDropdown').innerHTML = allMatches.map((p, i) =>
+      `<div class="pubview-option" data-i="${i}" data-name="${esc(p.displayName)}" data-type="${p.type}" onclick="selectPublisher(this.dataset.name,this.dataset.type)">
+        <span class="pubview-option-name">${p.type==='vendor'?'🧾':'📋'} ${esc(p.displayName)}</span>
         <span class="pubview-option-meta">${p.periods} period${p.periods!==1?'s':''} · ${fmt(p.total)}</span>
       </div>`).join('');
     document.getElementById('pubviewDropdown').style.display = 'block';
@@ -2006,17 +2539,20 @@
     if (pvFocusIndex >= 0) items[pvFocusIndex].scrollIntoView({ block: 'nearest' });
   }
 
-  function selectPublisher(name) {
+  function selectPublisher(name, type = 'publisher') {
+    pvCurrentType = type;
     pvCurrentPublisher = name;
     document.getElementById('pubviewInput').value = name;
-    document.getElementById('pubviewSelect').value = name;
+    document.getElementById('pubviewSelect').value = (type === 'vendor' ? 'ven:' : 'pub:') + name;
     document.getElementById('pubviewDropdown').style.display = 'none';
     document.getElementById('pubviewClear').style.display = 'block';
-    renderPubView(name);
+    if (type === 'vendor') renderVendorView(name);
+    else renderPubView(name);
   }
 
   function clearPubView() {
     pvCurrentPublisher = null;
+    pvCurrentType = 'publisher';
     document.getElementById('pubviewInput').value = '';
     document.getElementById('pubviewClear').style.display = 'none';
     document.getElementById('pubviewDropdown').style.display = 'none';
@@ -2029,7 +2565,79 @@
     document.getElementById('pubviewResults').style.display = 'none';
   }
 
+  function renderVendorView(name) {
+    const vendor = pvAllVendors.find(v => v.displayName === name);
+    if (!vendor) { showPubViewEmpty(); return; }
+
+    const entries = [...vendor.entries].sort((a,b) => a.year!==b.year ? a.year-b.year : a.month-b.month);
+    const total = entries.reduce((s,e) => s+(e.amount||0), 0);
+    const shortMonths = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    // Group by period to find peak and build chart data
+    const periodMap = {};
+    entries.forEach(e => { periodMap[e.period] = (periodMap[e.period]||0) + (e.amount||0); });
+    const peakEntry = Object.entries(periodMap).sort((a,b)=>b[1]-a[1])[0];
+    const avgPerPeriod = vendor.periods > 0 ? total / vendor.periods : 0;
+
+    // Stat card labels → vendor mode
+    document.getElementById('pvLabelTotal').textContent = 'Total Spent';
+    document.getElementById('pvSubTotal').textContent = 'all periods combined';
+    document.getElementById('pvLabelMonths').textContent = 'Active Periods';
+    document.getElementById('pvSubMonths').textContent = 'periods with invoices';
+    document.getElementById('pvTotal').textContent = fmt(total);
+    document.getElementById('pvMonths').textContent = vendor.periods;
+    document.getElementById('pvAvg').textContent = fmt(avgPerPeriod);
+    if (peakEntry) {
+      const [py, pm] = peakEntry[0].split('-');
+      document.getElementById('pvPeak').textContent = fmt(peakEntry[1]);
+      document.getElementById('pvPeakLabel').textContent = `${shortMonths[parseInt(pm)-1]} ${py}`;
+    } else {
+      document.getElementById('pvPeak').textContent = '$0';
+      document.getElementById('pvPeakLabel').textContent = '—';
+    }
+
+    document.getElementById('pvTitle').textContent = name + ' — Invoice History';
+    document.getElementById('pvSubtitle').textContent = `${entries.length} invoice${entries.length!==1?'s':''} across ${vendor.periods} period${vendor.periods!==1?'s':''}`;
+
+    // Table headers → vendor mode
+    document.getElementById('pvTh1').textContent = 'Period';
+    document.getElementById('pvTh2').textContent = 'Invoice #';
+    document.getElementById('pvTh3').textContent = 'Amount';
+    document.getElementById('pvTh4').textContent = 'Status';
+    document.getElementById('pvTh5').textContent = '—';
+
+    document.getElementById('pubviewBody').innerHTML = entries.map((e, i) => `
+      <tr style="animation-delay:${i*0.03}s">
+        <td class="mono" style="white-space:nowrap;color:var(--accent-light)">${shortMonths[e.month]} ${e.year}</td>
+        <td class="mono text-muted" style="font-size:11px">${esc(e.invoiceNum||'—')}</td>
+        <td class="mono text-green" style="font-weight:700;white-space:nowrap">$${Number(e.amount).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+        <td><span class="inv-status-badge ${e.status==='ok'?'ok':'review'}">${e.status==='ok'?'✓ Extracted':'⚠ Review'}</span></td>
+        <td class="text-muted">—</td>
+      </tr>`).join('');
+
+    document.getElementById('pubviewEmpty').style.display = 'none';
+    document.getElementById('pubviewResults').style.display = 'block';
+
+    // Timeline chart — entries grouped by period
+    const chartEntries = Object.entries(periodMap).map(([period, amount]) => {
+      const [y, m] = period.split('-');
+      return { year: parseInt(y), month: parseInt(m)-1, amount };
+    }).sort((a,b) => a.year!==b.year ? a.year-b.year : a.month-b.month);
+    setTimeout(() => renderPvChart(chartEntries), 50);
+  }
+
   function renderPubView(name) {
+    // Reset to publisher table headers and card labels
+    document.getElementById('pvLabelTotal').textContent = 'Total Paid';
+    document.getElementById('pvSubTotal').textContent = 'all periods combined';
+    document.getElementById('pvLabelMonths').textContent = 'Active Months';
+    document.getElementById('pvSubMonths').textContent = 'periods with data';
+    document.getElementById('pvTh1').textContent = 'Period';
+    document.getElementById('pvTh2').textContent = 'Platform';
+    document.getElementById('pvTh3').textContent = 'Amount';
+    document.getElementById('pvTh4').textContent = 'Approval';
+    document.getElementById('pvTh5').textContent = 'Notes';
+
     // Use already-loaded pvAllPublishers index (populated by initPubView)
     const pub = pvAllPublishers.find(p => p.displayName === name);
     if (!pub) { showPubViewEmpty(); return; }
@@ -2075,6 +2683,21 @@
 
   function exportPubView() {
     if (!pvCurrentPublisher) return;
+    const shortMonths = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    if (pvCurrentType === 'vendor') {
+      const vendor = pvAllVendors.find(v => v.displayName === pvCurrentPublisher);
+      if (!vendor) return;
+      const header = 'Vendor,Period,Invoice #,Amount,Status';
+      const lines = [...vendor.entries]
+        .sort((a,b) => a.year!==b.year?a.year-b.year:a.month-b.month)
+        .map(e => `"${e.vendor}","${shortMonths[e.month]} ${e.year}","${e.invoiceNum||''}","${e.amount||0}","${e.status||'ok'}"`);
+      const blob = new Blob([header+'\n'+lines.join('\n')], {type:'text/csv'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `${pvCurrentPublisher.replace(/\s+/g,'_')}_invoices.csv`;
+      a.click();
+      return;
+    }
     const pub = pvAllPublishers.find(p => p.displayName === pvCurrentPublisher);
     if (!pub) return;
     const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -2101,6 +2724,334 @@
 <script>
   let pubChartInstance = null;
   let pvChartInstance = null;
+  let invChartInstance = null;
+  let mbChartInstance  = null;
+  let csChartInstance    = null;
+  let csPieChartInstance = null;
+
+  function renderCsPieChart(cats, grandTotal) {
+    const canvas = document.getElementById('csPieChart');
+    const wrap   = document.getElementById('csPieWrap');
+    if (!canvas || !wrap) return;
+    if (!cats || cats.length === 0 || grandTotal === 0) { wrap.style.display = 'none'; return; }
+    wrap.style.display = 'block';
+
+    const labels  = cats.map(c => c.name);
+    const amounts = cats.map(c => c.amount);
+    const bgColors = cats.map(c => c.color);
+
+    document.getElementById('csPieTitle').textContent = `Cost Share — ${periodLabel()}`;
+    document.getElementById('csPieSub').textContent   =
+      cats.map(c => `${c.name}: ${grandTotal > 0 ? ((c.amount/grandTotal)*100).toFixed(1) : 0}%`).join(' · ');
+
+    if (csPieChartInstance) { csPieChartInstance.destroy(); csPieChartInstance = null; }
+
+    requestAnimationFrame(() => { csPieChartInstance = new Chart(canvas, {
+      type: 'pie',
+      data: {
+        labels,
+        datasets: [{
+          data: amounts,
+          backgroundColor: bgColors,
+          borderColor: bgColors.map(c => c.replace('0.85','1')),
+          borderWidth: 2,
+          hoverOffset: 10,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'bottom',
+            labels: {
+              color: '#9d8ec8',
+              font: { family: 'Space Mono', size: 11 },
+              boxWidth: 14,
+              padding: 18,
+              generateLabels: chart => chart.data.labels.map((label, i) => ({
+                text: `${label}  $${Number(chart.data.datasets[0].data[i]).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}  (${grandTotal > 0 ? ((chart.data.datasets[0].data[i]/grandTotal)*100).toFixed(1) : 0}%)`,
+                fillStyle: chart.data.datasets[0].backgroundColor[i],
+                strokeStyle: chart.data.datasets[0].borderColor[i],
+                lineWidth: 1,
+                hidden: false,
+                index: i,
+              }))
+            }
+          },
+          tooltip: {
+            backgroundColor: '#16112b', borderColor: '#2e2550', borderWidth: 1,
+            titleColor: '#f0eeff', bodyColor: '#9d5ff7',
+            titleFont: { family: 'Syne', weight: '800', size: 13 },
+            bodyFont: { family: 'Space Mono', size: 11 },
+            padding: 12,
+            callbacks: {
+              label: ctx => ` $${Number(ctx.parsed).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}  (${grandTotal > 0 ? ((ctx.parsed/grandTotal)*100).toFixed(1) : 0}%)`,
+            }
+          }
+        }
+      }
+    }); });
+  }
+
+  function renderCsChart(cats, grandTotal) {
+    const canvas = document.getElementById('csChart');
+    const wrap   = document.getElementById('csChartWrap');
+    if (!canvas || !wrap) return;
+    if (!cats || cats.length === 0 || grandTotal === 0) { wrap.style.display = 'none'; return; }
+    wrap.style.display = 'block';
+
+    const labels  = cats.map(c => c.name);
+    const amounts = cats.map(c => c.amount);
+    const bgColors = cats.map(c => c.color);
+
+    document.getElementById('csChartTitle').textContent = `Cost by Category — ${periodLabel()}`;
+    document.getElementById('csChartSub').textContent   =
+      `${cats.length} categories · Total: ${fmt(grandTotal)}`;
+
+    if (csChartInstance) { csChartInstance.destroy(); csChartInstance = null; }
+
+    requestAnimationFrame(() => { csChartInstance = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Amount ($)',
+          data: amounts,
+          backgroundColor: bgColors,
+          borderColor: bgColors.map(c => c.replace('0.85','1')),
+          borderWidth: 1,
+          borderRadius: 6,
+          borderSkipped: false,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#16112b', borderColor: '#2e2550', borderWidth: 1,
+            titleColor: '#f0eeff', bodyColor: '#9d5ff7',
+            titleFont: { family: 'Syne', weight: '800', size: 13 },
+            bodyFont: { family: 'Space Mono', size: 11 },
+            padding: 12,
+            callbacks: {
+              label: ctx => ' $' + Number(ctx.parsed.y).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}),
+              afterLabel: ctx => ` ${grandTotal > 0 ? ((ctx.parsed.y/grandTotal)*100).toFixed(1) : 0}% of total`,
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(46,37,80,0.5)' },
+            ticks: { color: '#7b6ea8', font: { family: 'Space Mono', size: 11 } }
+          },
+          y: {
+            grid: { color: 'rgba(46,37,80,0.5)' },
+            ticks: {
+              color: '#7b6ea8', font: { family: 'Space Mono', size: 11 },
+              callback: v => '$' + Number(v).toLocaleString()
+            }
+          }
+        }
+      }
+    }); });
+  }
+
+  function renderMbChart(rows) {
+    const canvas = document.getElementById('mbChart');
+    const wrap   = document.getElementById('mbChartWrap');
+    if (!canvas || !wrap) return;
+    if (!rows || rows.length === 0) { wrap.style.display = 'none'; return; }
+    wrap.style.display = 'block';
+
+    // Grouped by DSP (X axis), one dataset per GEO
+    const dsps     = [...new Set(rows.map(r => r.dsp || 'Unknown'))];
+    const geos     = [...new Set(rows.map(r => r.geo || 'Unknown'))];
+    const colors   = [
+      'rgba(124,58,237,0.8)','rgba(56,189,248,0.8)','rgba(34,197,94,0.8)',
+      'rgba(245,158,11,0.8)','rgba(239,68,68,0.8)','rgba(168,85,247,0.8)',
+      'rgba(251,113,133,0.8)','rgba(52,211,153,0.8)',
+    ];
+
+    // Build map: dsp → geo → cpc
+    const cpcMap = {};
+    rows.forEach(r => {
+      const d = r.dsp || 'Unknown', g = r.geo || 'Unknown';
+      if (!cpcMap[d]) cpcMap[d] = {};
+      cpcMap[d][g] = (cpcMap[d][g] || 0) + (r.cpc || 0);
+    });
+
+    const datasets = geos.map((geo, i) => ({
+      label: geo,
+      data: dsps.map(dsp => cpcMap[dsp]?.[geo] || 0),
+      backgroundColor: colors[i % colors.length],
+      borderColor: colors[i % colors.length].replace('0.8','1'),
+      borderWidth: 1,
+      borderRadius: 4,
+      borderSkipped: false,
+    }));
+
+    const labels   = dsps.map(d => d.length > 18 ? d.slice(0,16)+'…' : d);
+    const totalCpc = rows.reduce((s,r) => s+(r.cpc||0), 0);
+
+    document.getElementById('mbChartTitle').textContent = `CPC by DSP per GEO — ${periodLabel()}`;
+    document.getElementById('mbChartSub').textContent =
+      `${dsps.length} DSP${dsps.length!==1?'s':''} · ${geos.length} GEO${geos.length!==1?'s':''} · Total: $${totalCpc.toFixed(10)}`;
+
+    if (mbChartInstance) { mbChartInstance.destroy(); mbChartInstance = null; }
+
+    // Plugin: draw GEO label below each bar, above the DSP tick label
+    const geoLabelPlugin = {
+      id: 'mbGeoLabels',
+      afterDraw(chart) {
+        const { ctx, chartArea } = chart;
+        chart.data.datasets.forEach((dataset, di) => {
+          const meta = chart.getDatasetMeta(di);
+          if (meta.hidden) return;
+          const color = colors[di % colors.length].replace('0.8','1');
+          ctx.save();
+          ctx.font = 'bold 8px "Space Mono",monospace';
+          ctx.fillStyle = color;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'top';
+          meta.data.forEach(bar => {
+            ctx.fillText(dataset.label, bar.x, chartArea.bottom + 4);
+          });
+          ctx.restore();
+        });
+      }
+    };
+
+    requestAnimationFrame(() => { mbChartInstance = new Chart(canvas, {
+      type: 'bar',
+      data: { labels, datasets },
+      plugins: [geoLabelPlugin],
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#16112b', borderColor: '#2e2550', borderWidth: 1,
+            titleColor: '#f0eeff', bodyColor: '#9d5ff7',
+            titleFont: { family: 'Syne', weight: '800', size: 13 },
+            bodyFont: { family: 'Space Mono', size: 11 },
+            padding: 12,
+            callbacks: {
+              label: ctx => ` ${ctx.dataset.label}: $${Number(ctx.parsed.y).toFixed(10)}`,
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(46,37,80,0.5)' },
+            ticks: {
+              color: '#7b6ea8',
+              font: { family: 'Space Mono', size: 11 },
+              maxRotation: 35,
+              padding: 22,   // push DSP label down to make room for GEO labels
+            }
+          },
+          y: {
+            grid: { color: 'rgba(46,37,80,0.5)' },
+            ticks: {
+              color: '#7b6ea8', font: { family: 'Space Mono', size: 11 },
+              callback: v => '$' + Number(v).toFixed(10)
+            }
+          }
+        }
+      }
+    }); });
+  }
+
+  function renderInvChart(invoices) {
+    const canvas = document.getElementById('invChart');
+    const wrap = document.getElementById('invChartWrap');
+    if (!canvas || !wrap) return;
+    if (!invoices || invoices.length === 0) { wrap.style.display = 'none'; return; }
+    wrap.style.display = 'block';
+
+    // Group by vendor, sum amounts
+    const vendorMap = {};
+    invoices.forEach(inv => {
+      const v = inv.vendor || 'Unknown';
+      vendorMap[v] = (vendorMap[v] || 0) + (parseFloat(inv.amount) || 0);
+    });
+    const sorted = Object.entries(vendorMap).sort((a,b) => b[1]-a[1]);
+    const labels = sorted.map(([v]) => v.length > 22 ? v.slice(0,20)+'…' : v);
+    const amounts = sorted.map(([,a]) => a);
+    const total = amounts.reduce((s,a) => s+a, 0);
+
+    const colors = [
+      'rgba(124,58,237,0.8)','rgba(56,189,248,0.8)','rgba(34,197,94,0.8)',
+      'rgba(245,158,11,0.8)','rgba(239,68,68,0.8)','rgba(168,85,247,0.8)',
+      'rgba(251,113,133,0.8)','rgba(52,211,153,0.8)',
+    ];
+    const bgColors = sorted.map((_,i) => colors[i % colors.length]);
+
+    document.getElementById('invChartTitle').textContent = `Amount by Vendor — ${periodLabel()}`;
+    document.getElementById('invChartSub').textContent =
+      `${sorted.length} vendor${sorted.length!==1?'s':''} · Total: ${fmt(total)}`;
+
+    if (invChartInstance) { invChartInstance.destroy(); invChartInstance = null; }
+
+    // Wait for layout reflow after display:block before Chart.js measures dimensions
+    requestAnimationFrame(() => { invChartInstance = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Amount ($)',
+          data: amounts,
+          backgroundColor: bgColors,
+          borderColor: bgColors.map(c => c.replace('0.8','1')),
+          borderWidth: 1,
+          borderRadius: 6,
+          borderSkipped: false,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#16112b',
+            borderColor: '#2e2550',
+            borderWidth: 1,
+            titleColor: '#f0eeff',
+            bodyColor: '#9d5ff7',
+            titleFont: { family: 'Syne', weight: '800', size: 13 },
+            bodyFont: { family: 'Space Mono', size: 11 },
+            padding: 12,
+            callbacks: {
+              label: ctx => ' $' + Number(ctx.parsed.y).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}),
+              afterLabel: ctx => {
+                const pct = total > 0 ? ((ctx.parsed.y/total)*100).toFixed(1) : 0;
+                return ` ${pct}% of total`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(46,37,80,0.5)' },
+            ticks: { color: '#7b6ea8', font: { family: 'Space Mono', size: 11 }, maxRotation: 35 }
+          },
+          y: {
+            grid: { color: 'rgba(46,37,80,0.5)' },
+            ticks: {
+              color: '#7b6ea8', font: { family: 'Space Mono', size: 11 },
+              callback: v => '$' + Number(v).toLocaleString()
+            }
+          }
+        }
+      }
+    }); }); // end Chart + requestAnimationFrame
+  }
 
   function renderPvChart(entries) {
     const canvas = document.getElementById('pvChart');
@@ -2173,13 +3124,13 @@
         scales: {
           x: {
             grid: { color: 'rgba(46,37,80,0.5)' },
-            ticks: { color: '#7b6ea8', font: { family: 'Space Mono', size: 9 } }
+            ticks: { color: '#7b6ea8', font: { family: 'Space Mono', size: 11 } }
           },
           y: {
             grid: { color: 'rgba(46,37,80,0.5)' },
             ticks: {
               color: '#7b6ea8',
-              font: { family: 'Space Mono', size: 9 },
+              font: { family: 'Space Mono', size: 11 },
               callback: v => '$' + Number(v).toLocaleString()
             }
           }
@@ -2268,7 +3219,7 @@
             grid: { color: 'rgba(46,37,80,0.5)' },
             ticks: {
               color: '#7b6ea8',
-              font: { family: 'Space Mono', size: 9 },
+              font: { family: 'Space Mono', size: 11 },
               maxRotation: 35,
               minRotation: 20,
             }
@@ -2277,7 +3228,7 @@
             grid: { color: 'rgba(46,37,80,0.5)' },
             ticks: {
               color: '#7b6ea8',
-              font: { family: 'Space Mono', size: 9 },
+              font: { family: 'Space Mono', size: 11 },
               callback: v => '$' + Number(v).toLocaleString()
             }
           }
