@@ -521,7 +521,7 @@
           <span id="roleBadge" style="display:none;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700"></span>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.0.6</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.0.7</span>
           </div>
           <div style="display:flex;flex-direction:column;gap:5px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
@@ -1348,6 +1348,13 @@
   // ── CAMPAIGN MANAGERS ──
   let campaignMgrs = [];
 
+  // Render a flag image from flagcdn.com (works on all browsers including Windows)
+  function countryFlagImg(code, size = '20x15') {
+    if (!code || code.length !== 2) return '';
+    const c = code.toLowerCase();
+    return `<img src="https://flagcdn.com/${size}/${c}.png" alt="${code.toUpperCase()}" style="vertical-align:middle;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,0.3)" onerror="this.style.display='none'">`;
+  }
+
   // Convert Google Drive share links to direct image URLs
   function resolvePhotoUrl(url) {
     if (!url) return '';
@@ -1416,7 +1423,7 @@
       const startFmt = m.startDate ? new Date(m.startDate).toLocaleDateString() : '—';
       const endFmt   = m.endDate   ? new Date(m.endDate).toLocaleDateString()   : '—';
       const addedFmt = m.added     ? new Date(m.added).toLocaleDateString()     : '—';
-      const flag     = countryFlag(m.country||'');
+      const flag     = countryFlagImg(m.country||'');
       const photoSrc = resolvePhotoUrl(m.photoUrl);
       const avatar   = photoSrc
         ? `<img src="${esc(photoSrc)}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--border);margin-right:8px;vertical-align:middle;flex-shrink:0" onerror="this.style.display='none'">`
@@ -1451,7 +1458,7 @@
                 ? `<img src="${esc(photoSrc)}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:3px solid var(--accent);box-shadow:0 0 20px var(--accent-glow);flex-shrink:0" onerror="this.style.display='none'">`
                 : `<div style="width:64px;height:64px;border-radius:50%;background:var(--surface3);border:3px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:var(--accent-light);flex-shrink:0">${esc((m.name||'?')[0].toUpperCase())}</div>`}
               <div>
-                <div style="font-size:18px;font-weight:700">${esc(m.name||'—')} <span style="font-size:22px">${flag}</span></div>
+                <div style="font-size:18px;font-weight:700;display:flex;align-items:center;gap:8px">${esc(m.name||'—')} ${countryFlagImg(m.country||'','32x24')}</div>
                 <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">${esc(m.email||'')}</div>
                 <div style="font-family:var(--font-mono);font-size:10px;color:${isLive?'var(--green)':'var(--amber)'};margin-top:2px">${isLive?'🟢 Live':'⏸ Paused'} · ${duration}</div>
               </div>
@@ -1477,7 +1484,7 @@
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Country Code</div>
                 <div style="display:flex;align-items:center;gap:8px">
                   <input class="editable mono" value="${esc(m.country||'')}" onblur="updateCampaignMgr(${i},'country',this.value)" placeholder="US / GB / DE…" maxlength="2" style="width:80px;text-transform:uppercase"/>
-                  <span style="font-size:24px" id="cmFlag_${i}">${flag||'🏳️'}</span>
+                  <span id="cmFlag_${i}">${countryFlagImg(m.country||'','20x15')}</span>
                 </div>
               </div>
               <div>
@@ -1561,10 +1568,10 @@
     if (!campaignMgrs[i]) return;
     if (field === 'country') value = value.toUpperCase().slice(0, 2);
     campaignMgrs[i][field] = value;
-    // Live-update flag emoji
+    // Live-update flag image
     if (field === 'country') {
       const flagEl = document.getElementById('cmFlag_' + i);
-      if (flagEl) flagEl.textContent = countryFlag(value) || '🏳️';
+      if (flagEl) flagEl.innerHTML = countryFlagImg(value, '20x15');
     }
     // Re-render table row when photo or name changes so avatar updates
     if (field === 'photoUrl' || field === 'name') {
