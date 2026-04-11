@@ -1084,7 +1084,7 @@
                 <th>Email</th>
                 <th>Role</th>
                 <th>Added</th>
-                <th>Last Login</th>
+                <th style="white-space:nowrap">Last Login</th>
                 <th></th>
               </tr>
             </thead>
@@ -1475,15 +1475,15 @@
       <tr>
         <td class="mono text-muted">${i+1}</td>
         <td style="font-family:var(--font-mono);font-size:12px">${esc(u.email)}</td>
-        <td>
-          <span style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:3px 10px;border-radius:4px;${
+        <td style="white-space:nowrap">
+          <span style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:3px 10px;border-radius:4px;white-space:nowrap;display:inline-block;${
             u.role === 'editor'
               ? 'background:rgba(124,58,237,0.2);color:var(--accent-light);border:1px solid var(--accent)'
               : 'background:rgba(245,158,11,0.15);color:var(--amber);border:1px solid var(--amber)'
           }">${u.role === 'editor' ? '✏️ Editor' : '👁 Viewer'}</span>
         </td>
-        <td class="mono text-muted" style="font-size:10px">${u.added ? new Date(u.added).toLocaleDateString() : '—'}</td>
-        <td class="mono text-muted" style="font-size:10px">${lastLoginStr}</td>
+        <td class="mono text-muted" style="font-size:10px;white-space:nowrap">${u.added ? new Date(u.added).toLocaleDateString() : '—'}</td>
+        <td class="mono text-muted" style="font-size:10px;white-space:nowrap">${lastLoginStr}</td>
         <td>
           <div style="display:flex;gap:6px;flex-wrap:wrap">
             <button onclick="togglePermsRow(${i})" style="${btnBase} var(--accent);background:rgba(124,58,237,0.15);color:var(--accent-light)">⚡ Access</button>
@@ -1545,8 +1545,8 @@
       if (badge) {
         badge.textContent = newRole === 'editor' ? '✏️ Editor' : '👁 Viewer';
         badge.style.cssText = newRole === 'editor'
-          ? 'font-family:var(--font-mono);font-size:10px;font-weight:700;padding:3px 10px;border-radius:4px;background:rgba(124,58,237,0.2);color:var(--accent-light);border:1px solid var(--accent)'
-          : 'font-family:var(--font-mono);font-size:10px;font-weight:700;padding:3px 10px;border-radius:4px;background:rgba(245,158,11,0.15);color:var(--amber);border:1px solid var(--amber)';
+          ? 'font-family:var(--font-mono);font-size:10px;font-weight:700;padding:3px 10px;border-radius:4px;white-space:nowrap;display:inline-block;background:rgba(124,58,237,0.2);color:var(--accent-light);border:1px solid var(--accent)'
+          : 'font-family:var(--font-mono);font-size:10px;font-weight:700;padding:3px 10px;border-radius:4px;white-space:nowrap;display:inline-block;background:rgba(245,158,11,0.15);color:var(--amber);border:1px solid var(--amber)';
       }
     }
 
