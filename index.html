@@ -1202,6 +1202,10 @@
       }));
     } catch { settingsUsers = []; }
 
+    // Re-apply role UI with fresh data (updates nav tabs + edit restrictions)
+    EDITORS = settingsUsers.filter(u => u.role === 'editor').map(u => u.email);
+    applyRoleUI();
+
     if (!settingsUsers.length) {
       body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No users configured yet. Add users above.</td></tr>';
       return;
