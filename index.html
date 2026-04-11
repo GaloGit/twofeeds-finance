@@ -552,12 +552,12 @@
         <div class="summary-card amber" style="animation-delay:0.1s">
           <div class="card-label">Total Payable</div>
           <div class="card-value" id="pubTotal">$0</div>
-          <div class="card-sub">this period</div>
+          <div class="card-sub" id="pubTotalSub">—</div>
         </div>
         <div class="summary-card green" style="animation-delay:0.15s">
           <div class="card-label">Avg per Publisher</div>
           <div class="card-value" id="pubAvg">$0</div>
-          <div class="card-sub">mean payment</div>
+          <div class="card-sub" id="pubAvgSub">—</div>
         </div>
         <div class="summary-card red" style="animation-delay:0.2s">
           <div class="card-label">Top Publisher</div>
@@ -750,7 +750,7 @@
         <div class="summary-card amber" style="animation-delay:0.1s">
           <div class="card-label">Total Amount</div>
           <div class="card-value" id="invTotal">$0</div>
-          <div class="card-sub">sum of invoices</div>
+          <div class="card-sub" id="invTotalSub">—</div>
         </div>
         <div class="summary-card green" style="animation-delay:0.15s">
           <div class="card-label">Extracted</div>
@@ -820,7 +820,7 @@
         <div class="summary-card amber" style="animation-delay:0.1s">
           <div class="card-label">Total CPC</div>
           <div class="card-value" id="mbTotal">$0</div>
-          <div class="card-sub">this period</div>
+          <div class="card-sub" id="mbTotalSub">—</div>
         </div>
         <div class="summary-card green" style="animation-delay:0.15s">
           <div class="card-label">Avg CPC</div>
@@ -901,12 +901,12 @@
         <div class="summary-card blue" style="animation-delay:0.1s">
           <div class="card-label">Internal Sources</div>
           <div class="card-value" id="csIntTotal">$0</div>
-          <div class="card-sub">KZN · GSM · Octava · JiniAds</div>
+          <div class="card-sub" id="csIntSub">—</div>
         </div>
         <div class="summary-card green" style="animation-delay:0.15s">
           <div class="card-label">Grand Total</div>
           <div class="card-value" id="csGrandTotal">$0</div>
-          <div class="card-sub">all categories</div>
+          <div class="card-sub" id="csGrandSub">—</div>
         </div>
         <div class="summary-card red" style="animation-delay:0.2s">
           <div class="card-label">Largest Category</div>
@@ -1779,6 +1779,8 @@
     document.getElementById('pubTotal').textContent = fmt(total);
     document.getElementById('pubAvg').textContent = fmt(avg);
     document.getElementById('pubPeriodLabel').textContent = periodLabel();
+    document.getElementById('pubTotalSub').textContent = periodLabel();
+    document.getElementById('pubAvgSub').textContent = periodLabel();
     document.getElementById('pubTop').textContent = top ? top.name : '—';
     document.getElementById('pubTopAmt').textContent = top ? fmt(top.amount) : '—';
 
@@ -2108,6 +2110,7 @@
       document.getElementById('invReview').textContent = review;
       document.getElementById('invPeriodLabel').textContent = periodLabel();
       document.getElementById('invPeriodSub').textContent = periodLabel();
+      document.getElementById('invTotalSub').textContent = periodLabel();
     }
 
     document.getElementById('invBody').innerHTML = invoices.map((inv, i) => `
@@ -2257,6 +2260,7 @@
     document.getElementById('mbTotal').textContent = fmt(total);
     document.getElementById('mbAvg').textContent   = fmt(avg);
     document.getElementById('mbPeriodLabel').textContent = periodLabel();
+    document.getElementById('mbTotalSub').textContent = periodLabel();
     document.getElementById('mbTop').textContent    = top ? top.dsp : '—';
     document.getElementById('mbTopAmt').textContent = top ? fmt(top.cpc) : '—';
 
@@ -2395,6 +2399,8 @@
     document.getElementById('csIntTotal').textContent    = fmt(intTotal);
     document.getElementById('csGrandTotal').textContent  = fmt(grandTotal);
     document.getElementById('csPeriodLabel').textContent = periodLabel();
+    document.getElementById('csIntSub').textContent = periodLabel();
+    document.getElementById('csGrandSub').textContent = periodLabel();
     document.getElementById('csTopCat').textContent      = topCat ? topCat.name : '—';
     document.getElementById('csTopCatAmt').textContent   = topCat ? fmt(topCat.amount) : '—';
     document.getElementById('csSub').textContent =
