@@ -515,7 +515,7 @@
           <span id="roleBadge" style="display:none;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700"></span>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v2.6</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v2.7</span>
           </div>
           <div style="display:flex;flex-direction:column;gap:5px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
@@ -542,7 +542,7 @@
         <button class="nav-tab" id="navTab_internal" style="display:none" onclick="showTab('internal', this); renderInvoices()">🧾 Internal Sources</button>
         <button class="nav-tab" id="navTab_mediabuy" style="display:none" onclick="showTab('mediabuy', this); renderMediaBuying()">📺 Media Buying</button>
         <button class="nav-tab" id="navTab_costsummary" style="display:none" onclick="showTab('costsummary', this); renderCostSummary()">💰 Cost Summary</button>
-        <button class="nav-tab" id="settingsTab" style="display:none;margin-left:auto;color:var(--muted)" onclick="showTab('settings', this); renderSettings()">⚙️ Settings</button>
+        <button class="nav-tab" id="settingsTab" style="display:none;margin-left:auto;color:var(--muted)" onclick="showTab('settings', this); renderSettings(); populateConfigFields()">⚙️ Settings</button>
       </nav>
     </header>
 
@@ -1017,11 +1017,12 @@
                 <th>Email</th>
                 <th>Role</th>
                 <th>Added</th>
+                <th>Last Login</th>
                 <th></th>
               </tr>
             </thead>
             <tbody id="settingsBody">
-              <tr><td colspan="5" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>
+              <tr><td colspan="6" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>
             </tbody>
             <!-- permission sub-rows injected by renderSettings() -->
           </table>
@@ -1035,6 +1036,67 @@
         New users have <strong style="color:var(--red)">no tab access</strong> by default — admin must grant access. Use the <strong style="color:var(--text)">⚡ Access</strong> button to expand per-tab toggles per user.<br>
         Changes take effect on the user's next login.
       </div>
+
+      <!-- ── SYSTEM CONFIG ── -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;margin-top:28px">
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:18px">⚙️ System Configuration</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px">
+
+          <div>
+            <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Auto-Refresh Interval (seconds)</div>
+            <input type="number" id="cfgRefresh" min="10" max="3600" placeholder="60"
+              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+          </div>
+
+          <div>
+            <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Session Timeout (minutes, 0 = off)</div>
+            <input type="number" id="cfgSession" min="0" max="480" placeholder="0"
+              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+          </div>
+
+          <div>
+            <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Invoice Overdue Threshold (days)</div>
+            <input type="number" id="cfgReminder" min="1" max="365" placeholder="7"
+              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+          </div>
+
+          <div>
+            <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Change App Password</div>
+            <input type="password" id="cfgPassword" placeholder="New password..."
+              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+          </div>
+
+        </div>
+        <div style="margin-top:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <button onclick="saveConfig()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 24px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.05em">💾 SAVE CONFIG</button>
+          <span id="cfgStatus" style="font-family:var(--font-mono);font-size:11px;color:var(--green);opacity:0;transition:opacity 0.3s"></span>
+        </div>
+      </div>
+
+      <!-- ── ACTIVITY LOG ── -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;margin-top:28px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:12px;flex-wrap:wrap">
+          <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase">📋 Activity Log <span style="color:var(--muted);font-size:10px">(last 200 entries)</span></div>
+          <button onclick="loadActivityLog()" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:8px 16px;font-family:var(--font-mono);font-size:10px;cursor:pointer;letter-spacing:0.05em">↻ Refresh</button>
+        </div>
+        <div class="table-wrap">
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>User</th>
+                  <th>Action</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody id="activityLogBody">
+                <tr><td colspan="4" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Click Refresh to load activity log</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
 
   </div><!-- /container -->
@@ -1044,7 +1106,8 @@
 
 <script>
   // ── CONFIG ──
-  const PASSWORD = 'finance2026'; // ← change this
+  let appPassword = 'finance2026'; // overridden by Config sheet on load
+  let appConfig = { refreshInterval: 60, sessionTimeout: 0, invoiceReminderDays: 7 };
   const FINANCE_API = "https://script.google.com/macros/s/AKfycby4nFoFJDmzb1XpNGVp7k6eR7iF6eUnjrRiYv5IA6taGog4vFDNT4fd26S03KLkRjQO/exec";
   const WORKER_URL = 'https://twofeeds-ai.galredwork.workers.dev';
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -1207,7 +1270,7 @@
 
   async function renderSettings() {
     const body = document.getElementById('settingsBody');
-    body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>';
+    body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>';
     try {
       const res = await fetch(`${FINANCE_API}?action=getSettings`);
       const json = await res.json();
@@ -1222,7 +1285,7 @@
     applyRoleUI();
 
     if (!settingsUsers.length) {
-      body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No users configured yet. Add users above.</td></tr>';
+      body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No users configured yet. Add users above.</td></tr>';
       return;
     }
 
@@ -1255,6 +1318,10 @@
           </div>`;
       }).join('');
 
+      const lastLoginStr = u.lastLogin ? (() => {
+        const d = new Date(u.lastLogin);
+        return isNaN(d) ? '—' : `${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}`;
+      })() : '—';
       return `
       <tr>
         <td class="mono text-muted">${i+1}</td>
@@ -1267,6 +1334,7 @@
           }">${u.role === 'editor' ? '✏️ Editor' : '👁 Viewer'}</span>
         </td>
         <td class="mono text-muted" style="font-size:10px">${u.added ? new Date(u.added).toLocaleDateString() : '—'}</td>
+        <td class="mono text-muted" style="font-size:10px">${lastLoginStr}</td>
         <td>
           <div style="display:flex;gap:6px;flex-wrap:wrap">
             <button onclick="togglePermsRow(${i})" style="${btnBase} var(--accent);background:rgba(124,58,237,0.15);color:var(--accent-light)">⚡ Access</button>
@@ -1278,7 +1346,7 @@
         </td>
       </tr>
       <tr id="permsRow_${i}" style="display:none">
-        <td colspan="5" style="padding:0">
+        <td colspan="6" style="padding:0">
           <div style="background:var(--surface2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:12px 20px">
             <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px">
               Tab Permissions — ${esc(u.email)}
@@ -1388,6 +1456,122 @@
   let selectedYears  = new Set([new Date().getFullYear()]);
   let selectedMonths = new Set([new Date().getMonth()]); // 0-indexed; empty = ALL months
 
+  // ── APP CONFIG (loaded from Config sheet) ──
+  async function loadConfig() {
+    try {
+      const res  = await fetch(`${FINANCE_API}?action=getConfig`);
+      const data = await res.json();
+      if (data.success && data.data) {
+        const c = data.data;
+        if (c.password)             appPassword = c.password;
+        if (c.refreshInterval)      appConfig.refreshInterval      = parseInt(c.refreshInterval) || 60;
+        if (c.sessionTimeout)       appConfig.sessionTimeout       = parseInt(c.sessionTimeout)  || 0;
+        if (c.invoiceReminderDays)  appConfig.invoiceReminderDays  = parseInt(c.invoiceReminderDays) || 7;
+        secondsLeft = appConfig.refreshInterval;
+      }
+    } catch {}
+  }
+
+  // Load config immediately so password is ready before login
+  loadConfig();
+
+  // ── ACTIVITY LOG ──
+  function logActivity(action, details = '') {
+    const user = localStorage.getItem('tf_current_user') || 'unknown';
+    fetch(FINANCE_API, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'logActivity', user, actAction: action, details })
+    }).catch(() => {});
+  }
+
+  // ── SESSION TIMEOUT ──
+  let _lastActivity = Date.now();
+  let _sessionTimer = null;
+  ['mousemove','keydown','click','touchstart'].forEach(ev =>
+    document.addEventListener(ev, () => { _lastActivity = Date.now(); }, { passive: true })
+  );
+
+  function startSessionTimeout() {
+    if (_sessionTimer) clearInterval(_sessionTimer);
+    const mins = appConfig.sessionTimeout || 0;
+    if (!mins) return;
+    _sessionTimer = setInterval(() => {
+      if (Date.now() - _lastActivity > mins * 60 * 1000) {
+        clearInterval(_sessionTimer);
+        logout();
+        showToast('⏱ Session expired — logged out');
+      }
+    }, 30000);
+  }
+
+  // ── SYSTEM CONFIG ──
+  async function saveConfig() {
+    const refresh   = parseInt(document.getElementById('cfgRefresh').value)  || appConfig.refreshInterval;
+    const session   = parseInt(document.getElementById('cfgSession').value)  || 0;
+    const reminder  = parseInt(document.getElementById('cfgReminder').value) || appConfig.invoiceReminderDays;
+    const newPw     = document.getElementById('cfgPassword').value.trim();
+
+    const config = {
+      refreshInterval: refresh,
+      sessionTimeout: session,
+      invoiceReminderDays: reminder,
+    };
+    if (newPw) config.password = newPw;
+
+    try {
+      await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveConfig', config }) });
+      // Apply immediately
+      appConfig.refreshInterval     = refresh;
+      appConfig.sessionTimeout      = session;
+      appConfig.invoiceReminderDays = reminder;
+      secondsLeft = refresh;
+      if (newPw) { appPassword = newPw; }
+      document.getElementById('cfgPassword').value = '';
+      // Restart session timer with new value
+      startSessionTimeout();
+      logActivity('save_config', `Updated system config`);
+      const status = document.getElementById('cfgStatus');
+      status.textContent = '✓ Saved!';
+      status.style.opacity = '1';
+      setTimeout(() => { status.style.opacity = '0'; }, 2500);
+    } catch { showToast('⚠ Failed to save config'); }
+  }
+
+  function populateConfigFields() {
+    const r = document.getElementById('cfgRefresh');
+    const s = document.getElementById('cfgSession');
+    const d = document.getElementById('cfgReminder');
+    if (r) r.value = appConfig.refreshInterval || 60;
+    if (s) s.value = appConfig.sessionTimeout  || 0;
+    if (d) d.value = appConfig.invoiceReminderDays || 7;
+  }
+
+  // ── ACTIVITY LOG ──
+  async function loadActivityLog() {
+    const body = document.getElementById('activityLogBody');
+    if (!body) return;
+    body.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:24px">Loading...</td></tr>';
+    try {
+      const res  = await fetch(`${FINANCE_API}?action=getActivityLog`);
+      const data = await res.json();
+      const rows = data.data || [];
+      if (!rows.length) {
+        body.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:24px">No activity recorded yet.</td></tr>';
+        return;
+      }
+      body.innerHTML = rows.map(r => {
+        let ts = r.timestamp;
+        try { ts = new Date(r.timestamp).toLocaleString(); } catch {}
+        return `<tr>
+          <td class="mono text-muted" style="font-size:10px;white-space:nowrap">${esc(ts)}</td>
+          <td style="font-family:var(--font-mono);font-size:11px">${esc(r.user)}</td>
+          <td style="font-family:var(--font-mono);font-size:11px;color:var(--accent-light)">${esc(r.action)}</td>
+          <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">${esc(r.details)}</td>
+        </tr>`;
+      }).join('');
+    } catch { body.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--red);font-family:var(--font-mono);font-size:11px;padding:24px">Failed to load activity log.</td></tr>'; }
+  }
+
   // ── EMAILJS CONFIG ──
   const EMAILJS_SERVICE  = 'service_a0sa856';
   const EMAILJS_TEMPLATE = 'template_czp06lg';
@@ -1419,7 +1603,7 @@
     const pass  = document.getElementById('gateInput').value;
     if (!email) { setGateError('Please enter your email.'); return; }
     if (!pass)  { setGateError('Please enter your password.'); return; }
-    if (pass !== PASSWORD) { setGateError('Incorrect password. Try again.'); document.getElementById('gateInput').value=''; return; }
+    if (pass !== appPassword) { setGateError('Incorrect password. Try again.'); document.getElementById('gateInput').value=''; return; }
 
     const btn = document.getElementById('gateBtn1');
     btn.textContent = 'Sending code...';
@@ -1477,12 +1661,15 @@
       localStorage.setItem('tf_finance_auth', Date.now() + 7 * 24 * 60 * 60 * 1000);
     }
     localStorage.setItem('tf_current_user', pendingEmail);
+    // Track last login timestamp
+    fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'updateLastLogin', email: pendingEmail }) }).catch(() => {});
+    logActivity('login', `Logged in`);
     showCurtain();
     document.getElementById('gate').style.display = 'none';
     document.getElementById('app').style.display = 'block';
     document.getElementById('headerUser').textContent = pendingEmail;
     init();
-    loadSettingsFromSheet().then(() => { applyRoleUI(); dismissCurtain(); });
+    loadSettingsFromSheet().then(() => { applyRoleUI(); startSessionTimeout(); dismissCurtain(); });
   }
 
   function backToStep1() {
@@ -1557,7 +1744,7 @@
       const user = localStorage.getItem('tf_current_user') || '';
       if (user) document.getElementById('headerUser').textContent = user;
       init();
-      loadSettingsFromSheet().then(() => { applyRoleUI(); dismissCurtain(); });
+      loadSettingsFromSheet().then(() => { applyRoleUI(); startSessionTimeout(); dismissCurtain(); });
     }
   })();
 
@@ -1710,7 +1897,7 @@
     setInterval(() => {
       secondsLeft--;
       if (secondsLeft <= 0) {
-        secondsLeft = 60;
+        secondsLeft = appConfig.refreshInterval || 60;
         // Auto-refresh active tab data from Sheets
         const activeTab = document.querySelector('.page.active');
         if (activeTab) {
@@ -1727,7 +1914,7 @@
   }
 
   function manualRefresh() {
-    secondsLeft = 60;
+    secondsLeft = appConfig.refreshInterval || 60;
     // Also reload whichever tab is currently active
     const activeTab = document.querySelector('.page.active');
     if (activeTab) {
@@ -1814,6 +2001,7 @@
           method: 'POST',
           body: JSON.stringify({ action: 'savePublishers', period: periodKey(), rows, user, timestamp })
         });
+        logActivity('import_publishers', `Imported ${rows.length} publishers for ${periodKey()}`);
         showToast('✓ CSV imported — ' + rows.length + ' publishers');
         renderPublishers();
       } catch {
@@ -1993,6 +2181,7 @@
       if (r) r[field] = field === 'amount' ? parseFloat(value)||0 : value;
       const user = localStorage.getItem('tf_current_user') || 'unknown';
       await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'savePublishers', period: periodKey(), rows, user, timestamp: new Date().toISOString() }) });
+      logActivity('edit_publisher', `Updated ${field} for publisher #${id} in ${periodKey()}`);
       showToast();
     } catch { showToast('⚠ Save failed'); }
     renderPublishers();
@@ -2011,6 +2200,7 @@
       })).filter(r => String(r.id) !== String(id));
       const user = localStorage.getItem('tf_current_user') || 'unknown';
       await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'savePublishers', period: periodKey(), rows, user, timestamp: new Date().toISOString() }) });
+      logActivity('delete_publisher', `Deleted publisher #${id} from ${periodKey()}`);
     } catch { showToast('⚠ Delete failed'); }
     renderPublishers();
   }
@@ -2029,6 +2219,7 @@
       rows.push({ id: rows.length, name: '', platform: '', amount: 0, notes: '', approval: '' });
       const user = localStorage.getItem('tf_current_user') || 'unknown';
       await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'savePublishers', period: periodKey(), rows, user, timestamp: new Date().toISOString() }) });
+      logActivity('add_publisher', `Added new publisher row to ${periodKey()}`);
     } catch { showToast('⚠ Add failed'); }
     renderPublishers();
   }
@@ -2040,6 +2231,7 @@
     if (!confirmDelete(`Clear ALL publisher data for ${periodLabel()}?`)) return;
     try {
       await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'savePublishers', period: periodKey(), rows: [], user: localStorage.getItem('tf_current_user')||'unknown', timestamp: new Date().toISOString() }) });
+      logActivity('clear_publishers', `Cleared all publishers for ${periodKey()}`);
     } catch { showToast('⚠ Clear failed'); }
     renderPublishers();
   }
@@ -2115,6 +2307,7 @@
         };
         const user = localStorage.getItem('tf_current_user') || 'unknown';
         await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'saveInvoice', period: periodKey(), invoice, user }) });
+        logActivity('add_invoice', `Extracted invoice "${file.name}" for ${periodKey()}`);
         showToast(`✓ "${file.name}" extracted successfully`);
         renderInvoices();
       } catch(err) {
@@ -2238,24 +2431,37 @@
       document.getElementById('invPeriodSub').textContent = periodLabel();
     }
 
-    document.getElementById('invBody').innerHTML = invoices.map((inv, i) => `
-      <tr style="animation-delay:${i*0.03}s">
+    const reminderDays = appConfig.invoiceReminderDays || 7;
+    const now = Date.now();
+    document.getElementById('invBody').innerHTML = invoices.map((inv, i) => {
+      const isWaiting = inv.status !== 'paid';
+      let overdue = false;
+      if (isWaiting && inv.date) {
+        const invDate = new Date(inv.date);
+        if (!isNaN(invDate)) overdue = (now - invDate.getTime()) > reminderDays * 86400 * 1000;
+      }
+      return `
+      <tr style="animation-delay:${i*0.03}s${overdue ? ';background:rgba(239,68,68,0.05)' : ''}">
         <td class="mono text-muted">${i+1}</td>
         <td><input class="editable" value="${esc(inv.vendor)}" onblur="updateInvoice(${i},'vendor',this.value)" placeholder="Vendor name"/></td>
         <td><input class="editable mono" value="${esc(inv.invoiceNum)}" onblur="updateInvoice(${i},'invoiceNum',this.value)" placeholder="INV-001" style="width:110px"/></td>
         <td><input class="editable mono" type="date" value="${esc(inv.date)}" onblur="updateInvoice(${i},'date',this.value)" style="width:140px"/></td>
-        <td class="mono text-green" style="font-weight:700;white-space:nowrap"
-          onclick="editInvAmount(this, ${i}, ${inv.amount||0})" style="cursor:pointer">
+        <td class="mono text-green" style="font-weight:700;white-space:nowrap;cursor:pointer"
+          onclick="editInvAmount(this, ${i}, ${inv.amount||0})">
           $${Number(inv.amount||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
         </td>
-        <td><span class="inv-status-badge ${inv.status==='paid'?'paid':'waiting'}" onclick="toggleInvStatus(${i}, this)">${inv.status==='paid'?'✓ Paid':'⏳ Waiting'}</span></td>
+        <td>
+          <span class="inv-status-badge ${inv.status==='paid'?'paid':'waiting'}" onclick="toggleInvStatus(${i}, this)">${inv.status==='paid'?'✓ Paid':'⏳ Waiting'}</span>
+          ${overdue ? `<span title="Unpaid for more than ${reminderDays} days" style="margin-left:4px;font-size:12px;cursor:default">🔴</span>` : ''}
+        </td>
         <td>
           <div style="display:flex;align-items:center;gap:8px">
             <span class="inv-filename" title="${esc(inv.filename)}">${esc(inv.filename)}</span>
             <button class="add-btn" style="padding:2px 8px;font-size:9px" onclick="deleteInvoice(${i})">✕</button>
           </div>
         </td>
-      </tr>`).join('') +
+      </tr>`;
+    }).join('') +
       `<tr style="border-top:2px solid var(--border);background:var(--surface2)">
         <td colspan="4" style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.08em;padding:12px 18px;text-transform:uppercase">Total</td>
         <td class="mono text-green" style="font-size:15px;font-weight:700;white-space:nowrap;padding:12px 18px">${fmt(invoices.reduce((s,inv)=>s+(parseFloat(inv.amount)||0),0))}</td>
@@ -2308,7 +2514,7 @@
     _invalidateCache('inv_');
     try {
       await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'updateInvoice', period: periodKey(), index: i, field, value }) });
-      if (!silent) showToast();
+      if (!silent) { logActivity('edit_invoice', `Updated ${field} on invoice #${i+1} in ${periodKey()}`); showToast(); }
     } catch { showToast('⚠ Update failed'); }
     if (!silent) renderInvoices();
   }
@@ -2319,6 +2525,7 @@
     if (!confirmDelete('Delete this invoice?')) return;
     try {
       await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'deleteInvoice', period: periodKey(), index: i }) });
+      logActivity('delete_invoice', `Deleted invoice #${i+1} from ${periodKey()}`);
     } catch { showToast('⚠ Delete failed'); }
     renderInvoices();
   }
@@ -2329,6 +2536,7 @@
     if (!confirmDelete(`Clear ALL invoices for ${periodLabel()}?`)) return;
     try {
       await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'clearInvoices', period: periodKey() }) });
+      logActivity('clear_invoices', `Cleared all invoices for ${periodKey()}`);
     } catch { showToast('⚠ Clear failed'); }
     renderInvoices();
   }
@@ -2375,6 +2583,7 @@
       }).filter(r => r.dsp);
       try {
         await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveMediaBuying', period: periodKey(), rows }) });
+        logActivity('import_mediabuy', `Imported ${rows.length} media buying rows for ${periodKey()}`);
         showToast('✓ CSV imported — ' + rows.length + ' entries');
         renderMediaBuying();
       } catch { showToast('⚠ Failed to save. Check connection.'); }
@@ -2441,6 +2650,7 @@
       const r = rows.find(r => r.id === id);
       if (r) r[field] = field === 'cpc' ? parseFloat(value)||0 : value;
       await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveMediaBuying', period: periodKey(), rows }) });
+      logActivity('edit_mediabuy', `Updated ${field} for media buy #${id} in ${periodKey()}`);
       showToast();
     } catch { showToast('⚠ Save failed'); }
     renderMediaBuying();
@@ -2454,6 +2664,7 @@
       const data = await res.json();
       const rows = (data.data || []).map((r, idx) => ({ id: idx, dsp: r['DSP']||'', geo: r['GEO']||'', cpc: parseFloat(r['CPC'])||0 })).filter(r => r.id !== id);
       await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveMediaBuying', period: periodKey(), rows }) });
+      logActivity('delete_mediabuy', `Deleted media buy #${id} from ${periodKey()}`);
     } catch { showToast('⚠ Delete failed'); }
     renderMediaBuying();
   }
@@ -2466,6 +2677,7 @@
       const rows = (data.data || []).map(r => ({ dsp: r['DSP']||'', geo: r['GEO']||'', cpc: parseFloat(r['CPC'])||0 }));
       rows.push({ dsp: '', geo: '', cpc: 0 });
       await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveMediaBuying', period: periodKey(), rows }) });
+      logActivity('add_mediabuy', `Added new media buy row to ${periodKey()}`);
     } catch { showToast('⚠ Add failed'); }
     renderMediaBuying();
   }
@@ -2476,6 +2688,7 @@
     if (!confirmDelete(`Clear ALL Media Buying data for ${periodLabel()}?`)) return;
     try {
       await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'clearMediaBuying', period: periodKey() }) });
+      logActivity('clear_mediabuy', `Cleared all media buying data for ${periodKey()}`);
     } catch { showToast('⚠ Clear failed'); }
     renderMediaBuying();
   }
