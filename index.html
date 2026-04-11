@@ -542,7 +542,8 @@
         <button class="nav-tab" id="navTab_internal" style="display:none" onclick="showTab('internal', this); renderInvoices()">🧾 Internal Sources</button>
         <button class="nav-tab" id="navTab_mediabuy" style="display:none" onclick="showTab('mediabuy', this); renderMediaBuying()">📺 Media Buying</button>
         <button class="nav-tab" id="navTab_costsummary" style="display:none" onclick="showTab('costsummary', this); renderCostSummary()">💰 Cost Summary</button>
-        <button class="nav-tab" id="settingsTab" style="display:none;margin-left:auto;color:var(--muted)" onclick="showTab('settings', this); renderSettings(); populateConfigFields()">⚙️ Settings</button>
+        <button class="nav-tab" id="campaignMgrTab" style="display:none;margin-left:auto;color:var(--muted)" onclick="showTab('campaignmgr', this); renderCampaignMgr()">👥 Campaign Managers</button>
+        <button class="nav-tab" id="settingsTab" style="display:none;color:var(--muted)" onclick="showTab('settings', this); renderSettings(); populateConfigFields()">⚙️ Settings</button>
       </nav>
     </header>
 
@@ -978,6 +979,72 @@
 
     </div>
 
+    <!-- CAMPAIGN MANAGERS PAGE (admin only) -->
+    <div class="page" id="tab-campaignmgr">
+      <div class="section-header" style="margin-bottom:28px">
+        <div>
+          <div class="section-title">👥 Campaign Managers</div>
+          <div class="section-sub">Manage campaign managers and their assigned campaigns · visible only to admin</div>
+        </div>
+      </div>
+
+      <!-- Add manager form -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:24px">
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:16px">Add Campaign Manager</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+          <div style="flex:1;min-width:180px">
+            <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Full Name</div>
+            <input type="text" id="cmName" placeholder="e.g. John Smith"
+              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+          </div>
+          <div style="flex:1;min-width:180px">
+            <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Email</div>
+            <input type="email" id="cmEmail" placeholder="manager@example.com"
+              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+          </div>
+          <div style="flex:1;min-width:150px">
+            <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Phone</div>
+            <input type="text" id="cmPhone" placeholder="+1 555 000 0000"
+              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+          </div>
+          <div style="flex:1;min-width:150px">
+            <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Assigned Campaigns</div>
+            <input type="text" id="cmCampaigns" placeholder="e.g. DSP, Push, Native"
+              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+          </div>
+          <div style="flex:1;min-width:140px">
+            <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Notes</div>
+            <input type="text" id="cmNotes" placeholder="Optional notes"
+              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+          </div>
+          <button onclick="addCampaignMgr()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.05em;white-space:nowrap">+ ADD</button>
+        </div>
+      </div>
+
+      <!-- Managers table -->
+      <div class="table-wrap">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Campaigns</th>
+                <th>Notes</th>
+                <th>Added</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="cmBody">
+              <tr><td colspan="8" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <!-- SETTINGS PAGE (admin only) -->
     <div class="page" id="tab-settings">
       <div class="section-header" style="margin-bottom:28px">
@@ -1178,9 +1245,11 @@
       }
     }
 
-    // ── Settings tab — admin only ──
+    // ── Admin-only tabs (Settings + Campaign Managers) ──
     const st = document.getElementById('settingsTab');
     if (st) st.style.display = admin ? 'block' : 'none';
+    const cmt = document.getElementById('campaignMgrTab');
+    if (cmt) cmt.style.display = admin ? 'block' : 'none';
 
     // ── Tab visibility ──
     if (admin) {
@@ -1250,6 +1319,85 @@
         if (btn) btn.click();
       }
     }
+  }
+
+  // ── CAMPAIGN MANAGERS ──
+  let campaignMgrs = [];
+
+  async function renderCampaignMgr() {
+    const body = document.getElementById('cmBody');
+    body.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>';
+    try {
+      const res  = await fetch(`${FINANCE_API}?action=getCampaignMgrs`);
+      const json = await res.json();
+      campaignMgrs = json.data || [];
+    } catch { campaignMgrs = []; }
+    _renderCmTable();
+  }
+
+  function _renderCmTable() {
+    const body = document.getElementById('cmBody');
+    if (!body) return;
+    if (!campaignMgrs.length) {
+      body.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No campaign managers yet. Add one above.</td></tr>';
+      return;
+    }
+    const btnBase = 'font-family:var(--font-mono);font-size:9px;border-radius:6px;cursor:pointer;padding:4px 10px;border:1px solid';
+    body.innerHTML = campaignMgrs.map((m, i) => `
+      <tr>
+        <td class="mono text-muted">${i+1}</td>
+        <td><input class="editable" value="${esc(m.name||'')}" onblur="updateCampaignMgr(${i},'name',this.value)" placeholder="Full name"/></td>
+        <td><input class="editable mono" value="${esc(m.email||'')}" onblur="updateCampaignMgr(${i},'email',this.value)" placeholder="email@example.com" style="width:180px"/></td>
+        <td><input class="editable mono" value="${esc(m.phone||'')}" onblur="updateCampaignMgr(${i},'phone',this.value)" placeholder="+1 555 000 0000" style="width:140px"/></td>
+        <td><input class="editable" value="${esc(m.campaigns||'')}" onblur="updateCampaignMgr(${i},'campaigns',this.value)" placeholder="DSP, Push..." style="width:160px"/></td>
+        <td><input class="editable" value="${esc(m.notes||'')}" onblur="updateCampaignMgr(${i},'notes',this.value)" placeholder="Notes..."/></td>
+        <td class="mono text-muted" style="font-size:10px;white-space:nowrap">${m.added ? new Date(m.added).toLocaleDateString() : '—'}</td>
+        <td>
+          <button onclick="deleteCampaignMgr(${i})" style="${btnBase} var(--border);background:transparent;color:var(--red)">✕</button>
+        </td>
+      </tr>`).join('');
+  }
+
+  async function addCampaignMgr() {
+    const name      = document.getElementById('cmName').value.trim();
+    const email     = document.getElementById('cmEmail').value.trim().toLowerCase();
+    const phone     = document.getElementById('cmPhone').value.trim();
+    const campaigns = document.getElementById('cmCampaigns').value.trim();
+    const notes     = document.getElementById('cmNotes').value.trim();
+    if (!name) { showToast('⚠ Name is required'); return; }
+    campaignMgrs.push({ name, email, phone, campaigns, notes, added: new Date().toISOString() });
+    _renderCmTable();
+    ['cmName','cmEmail','cmPhone','cmCampaigns','cmNotes'].forEach(id => { document.getElementById(id).value = ''; });
+    await _saveCampaignMgrs();
+    showToast('✓ Campaign manager added');
+    logActivity('add_campaign_mgr', `Added ${name}`);
+  }
+
+  async function updateCampaignMgr(i, field, value) {
+    if (!campaignMgrs[i]) return;
+    campaignMgrs[i][field] = value;
+    await _saveCampaignMgrs();
+    showToast();
+    logActivity('edit_campaign_mgr', `Updated ${field} for ${campaignMgrs[i]?.name||i}`);
+  }
+
+  async function deleteCampaignMgr(i) {
+    if (!confirmDelete(`Remove ${campaignMgrs[i]?.name || 'this manager'}?`)) return;
+    const name = campaignMgrs[i]?.name || '';
+    campaignMgrs.splice(i, 1);
+    _renderCmTable();
+    await _saveCampaignMgrs();
+    showToast('✓ Removed');
+    logActivity('delete_campaign_mgr', `Deleted ${name}`);
+  }
+
+  async function _saveCampaignMgrs() {
+    try {
+      await fetch(FINANCE_API, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'saveCampaignMgrs', managers: campaignMgrs })
+      });
+    } catch { showToast('⚠ Failed to save'); }
   }
 
   // ── SETTINGS ──
