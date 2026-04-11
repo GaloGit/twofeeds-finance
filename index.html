@@ -521,7 +521,7 @@
           <span id="roleBadge" style="display:none;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700"></span>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.0.7</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.0.8</span>
           </div>
           <div style="display:flex;flex-direction:column;gap:5px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
@@ -1355,15 +1355,17 @@
     return `<img src="https://flagcdn.com/${size}/${c}.png" alt="${code.toUpperCase()}" style="vertical-align:middle;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,0.3)" onerror="this.style.display='none'">`;
   }
 
-  // Convert Google Drive share links to direct image URLs
+  // Extract Google Drive file ID from any share link format
+  function _driveId(url) {
+    const m = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    return m ? m[1] : null;
+  }
+
+  // Convert Google Drive share links to a direct image URL
   function resolvePhotoUrl(url) {
     if (!url) return '';
-    // https://drive.google.com/file/d/FILE_ID/view...
-    const driveMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-    if (driveMatch) return `https://lh3.googleusercontent.com/d/${driveMatch[1]}`;
-    // https://drive.google.com/open?id=FILE_ID
-    const openMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-    if (openMatch) return `https://lh3.googleusercontent.com/d/${openMatch[1]}`;
+    const id = _driveId(url);
+    if (id) return `https://drive.google.com/thumbnail?id=${id}&sz=w400`;
     return url;
   }
 
@@ -1425,8 +1427,9 @@
       const addedFmt = m.added     ? new Date(m.added).toLocaleDateString()     : '—';
       const flag     = countryFlagImg(m.country||'');
       const photoSrc = resolvePhotoUrl(m.photoUrl);
+      const fallbackSrc = (m.photoUrl && _driveId(m.photoUrl)) ? `https://drive.google.com/uc?export=view&id=${_driveId(m.photoUrl)}` : '';
       const avatar   = photoSrc
-        ? `<img src="${esc(photoSrc)}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--border);margin-right:8px;vertical-align:middle;flex-shrink:0" onerror="this.style.display='none'">`
+        ? `<img src="${esc(photoSrc)}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--border);margin-right:8px;vertical-align:middle;flex-shrink:0" onerror="if('${esc(fallbackSrc)}'){this.src='${esc(fallbackSrc)}';this.onerror=null;}else{this.style.display='none'}">`
         : `<span style="width:32px;height:32px;border-radius:50%;background:var(--surface3);border:2px solid var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--muted);margin-right:8px;vertical-align:middle;flex-shrink:0">${esc((m.name||'?')[0].toUpperCase())}</span>`;
       return `
       <tr style="cursor:pointer" onclick="toggleCmRow(${i}, event)">
@@ -1455,7 +1458,7 @@
             <!-- Avatar header -->
             <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)">
               ${photoSrc
-                ? `<img src="${esc(photoSrc)}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:3px solid var(--accent);box-shadow:0 0 20px var(--accent-glow);flex-shrink:0" onerror="this.style.display='none'">`
+                ? `<img src="${esc(photoSrc)}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:3px solid var(--accent);box-shadow:0 0 20px var(--accent-glow);flex-shrink:0" onerror="if('${esc(fallbackSrc)}'){this.src='${esc(fallbackSrc)}';this.onerror=null;}else{this.style.display='none'}">`
                 : `<div style="width:64px;height:64px;border-radius:50%;background:var(--surface3);border:3px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:var(--accent-light);flex-shrink:0">${esc((m.name||'?')[0].toUpperCase())}</div>`}
               <div>
                 <div style="font-size:18px;font-weight:700;display:flex;align-items:center;gap:8px">${esc(m.name||'—')} ${countryFlagImg(m.country||'','32x24')}</div>
