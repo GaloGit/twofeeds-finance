@@ -1959,6 +1959,7 @@
       localStorage.setItem('tf_finance_auth', Date.now() + 7 * 24 * 60 * 60 * 1000);
     }
     localStorage.setItem('tf_current_user', pendingEmail);
+    sessionStorage.setItem('tf_session_user', pendingEmail); // persists through refresh
     // Track last login timestamp
     fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'updateLastLogin', email: pendingEmail }) }).catch(() => {});
     logActivity('login', `Logged in`);
@@ -1981,6 +1982,7 @@
 
   function logout() {
     localStorage.removeItem('tf_finance_auth');
+    sessionStorage.removeItem('tf_session_user');
     clearInterval(codeTimerInterval);
     verificationCode = '';
     document.getElementById('app').style.display = 'none';
@@ -2042,15 +2044,22 @@
     setTimeout(() => { curtain.classList.add('hidden'); curtain.style.display = 'none'; }, 650);
   }
 
-  // Check remember me on load
+  // Restore session on page load (refresh or "remember me")
   (function checkRemembered() {
-    const expiry = localStorage.getItem('tf_finance_auth');
-    if (expiry && Date.now() < parseInt(expiry)) {
+    const sessionUser  = sessionStorage.getItem('tf_session_user');
+    const rememberExp  = localStorage.getItem('tf_finance_auth');
+    const isRemembered = rememberExp && Date.now() < parseInt(rememberExp);
+
+    if (sessionUser || isRemembered) {
+      const user = sessionUser || localStorage.getItem('tf_current_user') || '';
+      if (!user) return; // no user info — fall through to login
+      // Make sure sessionStorage is always populated so refresh keeps working
+      sessionStorage.setItem('tf_session_user', user);
+      localStorage.setItem('tf_current_user', user);
       showCurtain();
       document.getElementById('gate').style.display = 'none';
       document.getElementById('app').style.display = 'block';
-      const user = localStorage.getItem('tf_current_user') || '';
-      if (user) document.getElementById('headerUser').textContent = user;
+      document.getElementById('headerUser').textContent = user;
       init();
       loadSettingsFromSheet().then(() => { applyRoleUI(); startSessionTimeout(); dismissCurtain(); });
     }
