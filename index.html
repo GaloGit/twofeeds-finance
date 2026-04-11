@@ -521,7 +521,7 @@
           <span id="roleBadge" style="display:none;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700"></span>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.0.8</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.0.9</span>
           </div>
           <div style="display:flex;flex-direction:column;gap:5px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
@@ -1435,7 +1435,7 @@
       <tr style="cursor:pointer" onclick="toggleCmRow(${i}, event)">
         <td class="mono text-muted">${i+1}</td>
         <td style="white-space:nowrap;font-weight:600;min-width:140px">
-          <div style="display:flex;align-items:center">${avatar}${esc(m.name||'—')} ${flag}</div>
+          <div style="display:flex;align-items:center;gap:6px">${avatar}<span>${esc(m.name||'—')}</span>${flag ? `<span style="margin-left:2px">${flag}</span>` : ''}</div>
         </td>
         <td style="font-family:var(--font-mono);font-size:11px">${esc(m.email||'—')}</td>
         <td style="white-space:nowrap">
@@ -1521,6 +1521,13 @@
                 <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">${addedFmt}</div>
               </div>
             </div>
+            <!-- Save button -->
+            <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:flex;justify-content:flex-end">
+              <button id="cmSaveBtn_${i}" onclick="saveCmDetail(${i})"
+                style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 22px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.05em;transition:all 0.2s">
+                💾 Save Changes
+              </button>
+            </div>
           </div>
         </td>
       </tr>`;
@@ -1567,36 +1574,42 @@
     logActivity('add_campaign_mgr', `Added ${name} (${status})`);
   }
 
-  async function updateCampaignMgr(i, field, value) {
+  // Only updates in-memory — call saveCmDetail(i) to persist to sheet
+  function updateCampaignMgr(i, field, value) {
     if (!campaignMgrs[i]) return;
     if (field === 'country') value = value.toUpperCase().slice(0, 2);
     campaignMgrs[i][field] = value;
-    // Live-update flag image
+    // Live-update flag image instantly
     if (field === 'country') {
       const flagEl = document.getElementById('cmFlag_' + i);
       if (flagEl) flagEl.innerHTML = countryFlagImg(value, '20x15');
     }
-    // Re-render table row when photo or name changes so avatar updates
-    if (field === 'photoUrl' || field === 'name') {
-      _invalidateCmCache();
-      _renderCmTable();
-      return;
+    // Recalculate duration live
+    if (field === 'startDate' || field === 'endDate') {
+      const isLive   = (campaignMgrs[i].status || 'live') === 'live';
+      const duration = calcCmDuration(campaignMgrs[i].startDate, isLive ? null : campaignMgrs[i].endDate);
+      const detail   = document.getElementById('cmDetail_' + i);
+      if (detail) {
+        const durEl = detail.querySelector('.cm-duration-val');
+        if (durEl) durEl.textContent = duration;
+        const mainRow = detail.previousElementSibling;
+        if (mainRow) { const cells = mainRow.querySelectorAll('td'); if (cells[4]) cells[4].textContent = duration; }
+      }
     }
-    // Recalculate duration live in the detail panel
-    const isLive   = (campaignMgrs[i].status || 'live') === 'live';
-    const duration = calcCmDuration(campaignMgrs[i].startDate, isLive ? null : campaignMgrs[i].endDate);
-    const detail   = document.getElementById('cmDetail_' + i);
-    if (detail) {
-      // update the Duration display inside the expanded panel
-      const durEl = detail.querySelector('.cm-duration-val');
-      if (durEl) durEl.textContent = duration;
-      // update the main row duration cell (col 4)
-      const mainRow = detail.previousElementSibling;
-      if (mainRow) { const cells = mainRow.querySelectorAll('td'); if (cells[4]) cells[4].textContent = duration; }
-    }
+    // Mark row as having unsaved changes
+    const saveBtn = document.getElementById('cmSaveBtn_' + i);
+    if (saveBtn) { saveBtn.style.background = 'var(--amber)'; saveBtn.textContent = '💾 Save Changes'; }
+  }
+
+  async function saveCmDetail(i) {
+    if (!campaignMgrs[i]) return;
+    const saveBtn = document.getElementById('cmSaveBtn_' + i);
+    if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving…'; }
+    _invalidateCmCache();
     await _saveCampaignMgrs();
-    showToast();
-    logActivity('edit_campaign_mgr', `Updated ${field} for ${campaignMgrs[i]?.name||i}`);
+    _renderCmTable();
+    showToast(`✓ ${campaignMgrs[i].name || 'Manager'} saved`);
+    logActivity('edit_campaign_mgr', `Saved details for ${campaignMgrs[i].name||i}`);
   }
 
   async function deleteCampaignMgr(i) {
