@@ -173,6 +173,7 @@
     /* TABLE */
     .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 32px; }
     .table-scroll { overflow-x: auto; overflow-y: auto; max-height: 70vh; -webkit-overflow-scrolling: touch; }
+    tfoot tr { position: sticky; bottom: 0; z-index: 2; background: var(--surface2); box-shadow: 0 -2px 0 var(--border); }
     .table-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
     .table-scroll::-webkit-scrollbar-track { background: var(--surface2); }
     .table-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
@@ -622,6 +623,7 @@
               </tr>
             </thead>
             <tbody id="publisherBody"></tbody>
+            <tfoot id="publisherTfoot"></tfoot>
           </table>
           </div>
         </div>
@@ -801,6 +803,7 @@
             </tr>
           </thead>
           <tbody id="invBody"></tbody>
+          <tfoot id="invTfoot"></tfoot>
         </table>
         </div>
       </div>
@@ -2324,12 +2327,16 @@
         </td>
       </tr>`;
     }).join('') +
-      `<tr style="border-top:2px solid var(--border);background:var(--surface2)">
+      (isAdmin()||isEditor() ? `<tr class="add-row"><td colspan="6"><button class="add-btn" onclick="addPubRow()">+ Add Publisher Manually</button></td></tr>` : '');
+
+    // ── Pinned total row in tfoot ──
+    const pubTfoot = document.getElementById('publisherTfoot');
+    if (pubTfoot) pubTfoot.innerHTML = `
+      <tr>
         <td colspan="3" style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.08em;padding:12px 18px;text-transform:uppercase">Total</td>
         <td class="mono text-green" style="font-size:15px;font-weight:700;white-space:nowrap;padding:12px 18px">${fmt(filtered.reduce((s,p)=>s+(parseFloat(p.amount)||0),0))}</td>
         <td colspan="2"></td>
-      </tr>` +
-      (isAdmin()||isEditor() ? `<tr class="add-row"><td colspan="6"><button class="add-btn" onclick="addPubRow()">+ Add Publisher Manually</button></td></tr>` : '');
+      </tr>`;
 
     setTimeout(() => renderPubChart(all), 50);
   }
@@ -2632,12 +2639,16 @@
         </td>
       </tr>`;
     }).join('') +
-      `<tr style="border-top:2px solid var(--border);background:var(--surface2)">
+      `<tr class="add-row"><td colspan="7"><button class="add-btn" onclick="document.getElementById('invFileInput').click()">+ Upload More Invoices</button></td></tr>`;
+
+    // ── Pinned total row in tfoot ──
+    const invTfoot = document.getElementById('invTfoot');
+    if (invTfoot) invTfoot.innerHTML = `
+      <tr>
         <td colspan="4" style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.08em;padding:12px 18px;text-transform:uppercase">Total</td>
         <td class="mono text-green" style="font-size:15px;font-weight:700;white-space:nowrap;padding:12px 18px">${fmt(invoices.reduce((s,inv)=>s+(parseFloat(inv.amount)||0),0))}</td>
         <td colspan="2"></td>
-      </tr>` +
-      `<tr class="add-row"><td colspan="7"><button class="add-btn" onclick="document.getElementById('invFileInput').click()">+ Upload More Invoices</button></td></tr>`;
+      </tr>`;
 
     // Render chart after table
     setTimeout(() => renderInvChart(invoices), 50);
