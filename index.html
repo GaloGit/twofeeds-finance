@@ -2127,9 +2127,15 @@
 
     if (!hasData) return;
 
-    const monthName = ['January','February','March','April','May','June','July','August','September','October','November','December'][selectedMonth];
+    const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const _selMonths = [...selectedMonths].sort();
+    const _selYears  = [...selectedYears].sort();
+    const _approvalPeriod = (_selMonths.length === 1 && _selYears.length === 1)
+      ? `${MONTH_NAMES[_selMonths[0]]} ${_selYears[0]}`
+      : periodLabel();
+
     const tbody = document.getElementById('publisherBody');
-    const existingRows = tbody.querySelectorAll('tr:not(.add-row)');
+    const existingRows = tbody.querySelectorAll('tr:not(.add-row):not(.total-row)');
 
     // ── Try in-place patch (same rows, only values changed) ──
     if (existingRows.length === filtered.length) {
@@ -2153,7 +2159,7 @@
     tbody.innerHTML = filtered.map((p, i) => {
       const fmtAmt = '$' + Number(p.amount).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
       const shortName = (p.name||'').replace(/\s*\(.*?\)\s*/g,'').trim();
-      const approvalText = `${shortName} Numbers Approval mail ${monthName} ${selectedYear}`;
+      const approvalText = `${shortName} Numbers Approval mail ${_approvalPeriod}`;
       const approvalCell = p.approval
         ? `<a href="${esc(p.approval)}" target="_blank" style="color:var(--accent-light);text-decoration:none;font-family:var(--font-mono);font-size:11px;white-space:nowrap;border-bottom:1px solid var(--border);padding-bottom:1px;" title="${esc(p.approval)}">${esc(approvalText)}</a>`
         : `<span class="text-muted" style="font-family:var(--font-mono);font-size:10px;">—</span>`;
