@@ -1070,6 +1070,7 @@
         <div style="margin-top:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
           <button onclick="saveConfig()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 24px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.05em">💾 SAVE CONFIG</button>
           <span id="cfgStatus" style="font-family:var(--font-mono);font-size:11px;color:var(--green);opacity:0;transition:opacity 0.3s"></span>
+          <span id="cfgLastUpdated" style="font-family:var(--font-mono);font-size:10px;color:var(--muted)"></span>
         </div>
       </div>
 
@@ -1530,11 +1531,25 @@
       // Restart session timer with new value
       startSessionTimeout();
       logActivity('save_config', `Updated system config`);
+      // Store last-updated timestamp
+      const now = new Date().toISOString();
+      localStorage.setItem('tf_config_updated', now);
       const status = document.getElementById('cfgStatus');
       status.textContent = '✓ Saved!';
       status.style.opacity = '1';
       setTimeout(() => { status.style.opacity = '0'; }, 2500);
+      _renderCfgLastUpdated(now);
     } catch { showToast('⚠ Failed to save config'); }
+  }
+
+  function _renderCfgLastUpdated(iso) {
+    const el = document.getElementById('cfgLastUpdated');
+    if (!el) return;
+    if (!iso) { el.textContent = ''; return; }
+    try {
+      const d = new Date(iso);
+      el.textContent = `Last updated: ${d.toLocaleDateString()} at ${d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}`;
+    } catch { el.textContent = ''; }
   }
 
   function populateConfigFields() {
@@ -1544,6 +1559,7 @@
     if (r) r.value = appConfig.refreshInterval || 60;
     if (s) s.value = appConfig.sessionTimeout  || 0;
     if (d) d.value = appConfig.invoiceReminderDays || 7;
+    _renderCfgLastUpdated(localStorage.getItem('tf_config_updated'));
   }
 
   // ── ACTIVITY LOG ──
