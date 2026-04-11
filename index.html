@@ -1614,11 +1614,13 @@
     const monthWrap = document.getElementById('monthBtns');
     monthWrap.innerHTML = '';
 
+    const allMonths = selectedMonths.size === 12;
     const allMonthBtn = document.createElement('button');
-    allMonthBtn.className = 'all-btn' + (selectedMonths.size === 0 ? ' active' : '');
+    allMonthBtn.className = 'all-btn' + (allMonths ? ' active' : '');
     allMonthBtn.textContent = 'ALL';
     allMonthBtn.onclick = () => {
-      selectedMonths.clear();
+      // Select all 12 months explicitly so every button lights up
+      for (let m = 0; m < 12; m++) selectedMonths.add(m);
       buildPeriodPicker();
       onPeriodChange();
     };
@@ -1672,13 +1674,13 @@
     const months = [...selectedMonths].sort();
     const yearStr = years.length === 1 ? String(years[0])
       : `${years[0]}–${years[years.length-1]}`;
-    if (selectedMonths.size === 0) return `All ${yearStr}`;
+    if (selectedMonths.size === 0 || selectedMonths.size === 12) return `All ${yearStr}`;
     const monthNames = months.map(m => MONTHS[m]);
     return `${monthNames.join(', ')} ${yearStr}`;
   }
 
   // True only when exactly 1 year + 1 month selected (required for writes)
-  function isSinglePeriod() { return selectedYears.size === 1 && selectedMonths.size === 1; }
+  function isSinglePeriod() { return selectedYears.size === 1 && selectedMonths.size === 1 && selectedMonths.size !== 12; }
 
   // Fetch data for all selected periods, smart-merging results
   async function fetchPeriodData(action) {
