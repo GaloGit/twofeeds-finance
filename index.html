@@ -521,7 +521,7 @@
           <span id="roleBadge" style="display:none;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700"></span>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.0</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.0.1</span>
           </div>
           <div style="display:flex;flex-direction:column;gap:5px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
@@ -1454,6 +1454,10 @@
                 <input class="editable mono" value="${esc(m.email||'')}" onblur="updateCampaignMgr(${i},'email',this.value)" placeholder="email@example.com" style="width:100%"/>
               </div>
               <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Commission Paid</div>
+                <input class="editable mono" value="${esc(m.commission||'')}" onblur="updateCampaignMgr(${i},'commission',this.value)" placeholder="e.g. $500 / 10%" style="width:100%"/>
+              </div>
+              <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Added</div>
                 <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">${addedFmt}</div>
               </div>
@@ -1495,7 +1499,7 @@
     const endDate   = document.getElementById('cmEndDate').value;
     const notes     = document.getElementById('cmNotes').value.trim();
     if (!name) { showToast('⚠ Name is required'); return; }
-    campaignMgrs.push({ name, email, phone, campaigns, status, startDate, endDate, notes, added: new Date().toISOString() });
+    campaignMgrs.push({ name, email, phone, campaigns, status, startDate, endDate, notes, commission: '', added: new Date().toISOString() });
     _renderCmTable();
     ['cmName','cmEmail','cmPhone','cmCampaigns','cmNotes','cmStartDate','cmEndDate'].forEach(id => { document.getElementById(id).value = ''; });
     document.getElementById('cmStatus').value = 'live';
