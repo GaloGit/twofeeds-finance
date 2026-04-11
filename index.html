@@ -521,7 +521,7 @@
           <span id="roleBadge" style="display:none;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700"></span>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.0.3</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.0.4</span>
           </div>
           <div style="display:flex;flex-direction:column;gap:5px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
@@ -1421,6 +1421,14 @@
           <div style="background:var(--surface2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:16px 20px">
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px">
               <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Name</div>
+                <input class="editable" value="${esc(m.name||'')}" onblur="updateCampaignMgr(${i},'name',this.value)" placeholder="Full name" style="width:100%"/>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Email</div>
+                <input class="editable mono" value="${esc(m.email||'')}" onblur="updateCampaignMgr(${i},'email',this.value)" placeholder="email@example.com" style="width:100%"/>
+              </div>
+              <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Phone</div>
                 <input class="editable mono" value="${esc(m.phone||'')}" onblur="updateCampaignMgr(${i},'phone',this.value)" placeholder="+1 555 000 0000" style="width:100%"/>
               </div>
@@ -1429,8 +1437,8 @@
                 <input class="editable" value="${esc(m.campaigns||'')}" onblur="updateCampaignMgr(${i},'campaigns',this.value)" placeholder="DSP, Push…" style="width:100%"/>
               </div>
               <div>
-                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Notes</div>
-                <input class="editable" value="${esc(m.notes||'')}" onblur="updateCampaignMgr(${i},'notes',this.value)" placeholder="Notes…" style="width:100%"/>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Commission Paid</div>
+                <input class="editable mono" value="${esc(m.commission||'')}" onblur="updateCampaignMgr(${i},'commission',this.value)" placeholder="e.g. $500 / 10%" style="width:100%"/>
               </div>
               <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Start Date</div>
@@ -1446,16 +1454,8 @@
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:2px">${startFmt} → ${isLive ? 'Present' : endFmt}</div>
               </div>
               <div>
-                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Name</div>
-                <input class="editable" value="${esc(m.name||'')}" onblur="updateCampaignMgr(${i},'name',this.value)" placeholder="Full name" style="width:100%"/>
-              </div>
-              <div>
-                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Email</div>
-                <input class="editable mono" value="${esc(m.email||'')}" onblur="updateCampaignMgr(${i},'email',this.value)" placeholder="email@example.com" style="width:100%"/>
-              </div>
-              <div>
-                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Commission Paid</div>
-                <input class="editable mono" value="${esc(m.commission||'')}" onblur="updateCampaignMgr(${i},'commission',this.value)" placeholder="e.g. $500 / 10%" style="width:100%"/>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Notes</div>
+                <input class="editable" value="${esc(m.notes||'')}" onblur="updateCampaignMgr(${i},'notes',this.value)" placeholder="Notes…" style="width:100%"/>
               </div>
               <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Added</div>
