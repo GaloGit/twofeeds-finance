@@ -2008,8 +2008,9 @@
   }
 
   function onPeriodChange() {
-    // Clear cache so data re-renders on period switch
+    // Clear both caches so data re-fetches on period switch
     Object.keys(_cache).forEach(k => delete _cache[k]);
+    Object.keys(_rawCache).forEach(k => delete _rawCache[k]);
     renderPublishers();
     const activeTab = document.querySelector('.page.active');
     if (activeTab && activeTab.id === 'tab-internal') renderInvoices();
@@ -2065,6 +2066,9 @@
       secondsLeft--;
       if (secondsLeft <= 0) {
         secondsLeft = appConfig.refreshInterval || 60;
+        // Clear raw cache so auto-refresh actually fetches fresh data
+        Object.keys(_rawCache).forEach(k => delete _rawCache[k]);
+        Object.keys(_cache).forEach(k => delete _cache[k]);
         // Auto-refresh active tab data from Sheets
         const activeTab = document.querySelector('.page.active');
         if (activeTab) {
@@ -2082,6 +2086,9 @@
 
   function manualRefresh() {
     secondsLeft = appConfig.refreshInterval || 60;
+    // Clear raw cache so next render fetches fresh data from sheet
+    Object.keys(_rawCache).forEach(k => delete _rawCache[k]);
+    Object.keys(_cache).forEach(k => delete _cache[k]);
     // Also reload whichever tab is currently active
     const activeTab = document.querySelector('.page.active');
     if (activeTab) {
@@ -2125,6 +2132,7 @@
   // ── SMART DIFF HELPERS ──
   // Cache last-rendered data per tab to avoid unnecessary re-renders
   const _cache = {};
+  const _rawCache = {}; // stores mapped data arrays — skips network fetch on tab switch
   function _isSame(key, data) {
     const s = JSON.stringify(data);
     if (_cache[key] === s) return true;
@@ -2226,24 +2234,31 @@
   }
 
   async function renderPublishers() {
+    const cacheKey = 'pub_' + periodKey();
     let all = [];
     let syncInfo = null;
-    try {
-      const data = await fetchPeriodData('getPublishers');
-      all = data.map((r, idx) => ({
-          id: idx,
-          name: r['Publisher Name'] || '',
-          platform: r['Platform'] || '',
-          amount: parseFloat(r['Amount']) || 0,
-          notes: r['Notes'] || '',
-          approval: r['Approval'] || '',
-        }));
-    } catch {
-      showToast('⚠ Could not load publishers from sheet.');
+    if (_rawCache[cacheKey]) {
+      // Use in-memory data — no network fetch
+      all = _rawCache[cacheKey];
+    } else {
+      try {
+        const data = await fetchPeriodData('getPublishers');
+        all = data.map((r, idx) => ({
+            id: idx,
+            name: r['Publisher Name'] || '',
+            platform: r['Platform'] || '',
+            amount: parseFloat(r['Amount']) || 0,
+            notes: r['Notes'] || '',
+            approval: r['Approval'] || '',
+          }));
+        _rawCache[cacheKey] = all; // store for next tab switch
+      } catch {
+        showToast('⚠ Could not load publishers from sheet.');
+      }
     }
 
-    // ── Skip everything if data is identical to last render ──
-    if (_isSame('pub_' + periodKey(), all)) return;
+    // ── Skip re-render if DOM is already up to date ──
+    if (_isSame(cacheKey, all)) return;
 
     const search = (document.getElementById('pubSearch')||{}).value || '';
     const filtered = all.filter(p => !search || p.name.toLowerCase().includes(search.toLowerCase()) || (p.platform||'').toLowerCase().includes(search.toLowerCase()));
@@ -2341,7 +2356,13 @@
     setTimeout(() => renderPubChart(all), 50);
   }
 
-  function _invalidateCache(prefix) { delete _cache[prefix + periodKey()]; }
+  function _invalidateCache(prefix) {
+    const k = prefix + periodKey();
+    delete _cache[k];
+    delete _rawCache[k];
+    // Also invalidate the raw API rows used by Cost Summary
+    delete _rawCache[k + '_raw'];
+  }
 
   async function updatePub(id, field, value) {
     if (!canEditTab('publishers')) { showToast('⚠ No edit access to Publishers'); return; }
@@ -2547,46 +2568,50 @@
   }
 
   async function renderInvoices() {
+    const cacheKey = 'inv_' + periodKey();
     let invoices = [];
-    try {
-      const rawData = await fetchPeriodData('getInvoices');
-      invoices = rawData.map((r, idx) => {
-          // Normalize date — Sheets may return Date objects, ISO strings, or Excel serial numbers
-          let date = r['Date'] || '';
-          if (date instanceof Date || (typeof date === 'object' && date !== null)) {
-            date = date.toISOString ? date.toISOString().split('T')[0] : '';
-          } else if (typeof date === 'number') {
-            // Excel serial date
-            const d = new Date((date - 25569) * 86400 * 1000);
-            date = d.toISOString().split('T')[0];
-          } else {
-            date = String(date).trim();
-            // Handle ISO timestamp strings like "2026-03-31T21:00:00.000Z"
-            // Sheets serializes dates in UTC — use local time to recover the original date
-            if (/^\d{4}-\d{2}-\d{2}T/.test(date)) {
-              const d = new Date(date);
-              const y = d.getFullYear();
-              const m = String(d.getMonth() + 1).padStart(2, '0');
-              const day = String(d.getDate()).padStart(2, '0');
-              date = `${y}-${m}-${day}`;
+    if (_rawCache[cacheKey]) {
+      // Use in-memory data — no network fetch
+      invoices = _rawCache[cacheKey];
+    } else {
+      try {
+        const rawData = await fetchPeriodData('getInvoices');
+        invoices = rawData.map((r, idx) => {
+            // Normalize date — Sheets may return Date objects, ISO strings, or Excel serial numbers
+            let date = r['Date'] || '';
+            if (date instanceof Date || (typeof date === 'object' && date !== null)) {
+              date = date.toISOString ? date.toISOString().split('T')[0] : '';
+            } else if (typeof date === 'number') {
+              const d = new Date((date - 25569) * 86400 * 1000);
+              date = d.toISOString().split('T')[0];
+            } else {
+              date = String(date).trim();
+              if (/^\d{4}-\d{2}-\d{2}T/.test(date)) {
+                const d = new Date(date);
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                date = `${y}-${m}-${day}`;
+              }
             }
-          }
-          return {
-            id: idx,
-            vendor: r['Vendor'] || '',
-            invoiceNum: r['Invoice #'] || '',
-            date,
-            amount: parseFloat(r['Amount']) || 0,
-            status: r['Status'] || 'ok',
-            filename: r['Filename'] || '',
-          };
-        });
-    } catch {
-      showToast('⚠ Could not load invoices from sheet.');
+            return {
+              id: idx,
+              vendor: r['Vendor'] || '',
+              invoiceNum: r['Invoice #'] || '',
+              date,
+              amount: parseFloat(r['Amount']) || 0,
+              status: r['Status'] || 'ok',
+              filename: r['Filename'] || '',
+            };
+          });
+        _rawCache[cacheKey] = invoices; // store for next tab switch
+      } catch {
+        showToast('⚠ Could not load invoices from sheet.');
+      }
     }
 
-    // ── Skip everything if data is identical to last render ──
-    if (_isSame('inv_' + periodKey(), invoices)) return;
+    // ── Skip re-render if DOM is already up to date ──
+    if (_isSame(cacheKey, invoices)) return;
 
     const hasData = invoices.length > 0;
     const total = invoices.reduce((s,inv) => s+(parseFloat(inv.amount)||0), 0);
@@ -2774,16 +2799,22 @@
   }
 
   async function renderMediaBuying() {
+    const cacheKey = 'mb_' + periodKey();
     let all = [];
-    try {
-      const data = await fetchPeriodData('getMediaBuying');
-      all = data.map((r, idx) => ({
-        id: idx,
-        dsp: r['DSP'] || '',
-        geo: r['GEO'] || '',
-        cpc: parseFloat(r['CPC']) || 0,
-      }));
-    } catch { showToast('⚠ Could not load media buying data.'); }
+    if (_rawCache[cacheKey]) {
+      all = _rawCache[cacheKey];
+    } else {
+      try {
+        const data = await fetchPeriodData('getMediaBuying');
+        all = data.map((r, idx) => ({
+          id: idx,
+          dsp: r['DSP'] || '',
+          geo: r['GEO'] || '',
+          cpc: parseFloat(r['CPC']) || 0,
+        }));
+        _rawCache[cacheKey] = all;
+      } catch { showToast('⚠ Could not load media buying data.'); }
+    }
 
     const search = (document.getElementById('mbSearch')||{}).value || '';
     const filtered = all.filter(r => !search ||
@@ -2824,6 +2855,7 @@
 
   async function updateMedia(id, field, value) {
     if (!canEditTab('mediabuy')) { showToast('⚠ No edit access to Media Buying'); return; }
+    _invalidateCache('mb_');
     try {
       const res = await fetch(`${FINANCE_API}?action=getMediaBuying&period=${periodKey()}`);
       const data = await res.json();
@@ -2839,6 +2871,7 @@
 
   async function deleteMedia(id) {
     if (!canEditTab('mediabuy')) { showToast('⚠ No edit access to Media Buying'); return; }
+    _invalidateCache('mb_');
     if (!confirmDelete('Delete this row?')) return;
     try {
       const res = await fetch(`${FINANCE_API}?action=getMediaBuying&period=${periodKey()}`);
@@ -2852,6 +2885,7 @@
 
   async function addMediaRow() {
     if (!canEditTab('mediabuy')) { showToast('⚠ No edit access to Media Buying'); return; }
+    _invalidateCache('mb_');
     try {
       const res = await fetch(`${FINANCE_API}?action=getMediaBuying&period=${periodKey()}`);
       const data = await res.json();
@@ -2867,6 +2901,7 @@
     if (!canEditTab('mediabuy')) { showToast('⚠ No edit access to Media Buying'); return; }
     if (!isSinglePeriod()) { showToast('⚠ Select a single month to clear'); return; }
     if (!confirmDelete(`Clear ALL Media Buying data for ${periodLabel()}?`)) return;
+    _invalidateCache('mb_');
     try {
       await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'clearMediaBuying', period: periodKey() }) });
       logActivity('clear_mediabuy', `Cleared all media buying data for ${periodKey()}`);
@@ -2903,11 +2938,22 @@
   }
 
   async function renderCostSummary() {
-    // Fetch publishers + invoices in parallel using multi-period aware helper
-    const [pubRows, invRows] = await Promise.all([
-      fetchPeriodData('getPublishers').catch(() => []),
-      fetchPeriodData('getInvoices').catch(() => []),
-    ]);
+    const pKey = 'pub_' + periodKey();
+    const iKey = 'inv_' + periodKey();
+    // Use cached raw API rows if available; otherwise fetch both in parallel
+    let pubRows, invRawRows;
+    if (_rawCache[pKey + '_raw'] && _rawCache[iKey + '_raw']) {
+      pubRows    = _rawCache[pKey + '_raw'];
+      invRawRows = _rawCache[iKey + '_raw'];
+    } else {
+      [pubRows, invRawRows] = await Promise.all([
+        fetchPeriodData('getPublishers').catch(() => []),
+        fetchPeriodData('getInvoices').catch(() => []),
+      ]);
+      _rawCache[pKey + '_raw'] = pubRows;
+      _rawCache[iKey + '_raw'] = invRawRows;
+    }
+    const invRows = invRawRows;
 
     const pubTotal = pubRows.reduce((s,r) => s + (parseFloat(r['Amount'])||0), 0);
 
