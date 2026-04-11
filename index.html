@@ -323,6 +323,11 @@
     .inv-status-badge.paid { background: rgba(34,197,94,0.12); color: var(--green); border: 1px solid rgba(34,197,94,0.25); }
     .inv-status-badge.waiting { background: rgba(245,158,11,0.12); color: var(--amber); border: 1px solid rgba(245,158,11,0.25); }
 
+    .cm-status { display: inline-block; padding: 3px 10px; border-radius: 20px; font-family: var(--font-mono); font-size: 10px; font-weight: 700; cursor: pointer; user-select: none; transition: opacity 0.15s; white-space: nowrap; }
+    .cm-status:hover { opacity: 0.75; }
+    .cm-live { background: rgba(34,197,94,0.12); color: var(--green); border: 1px solid rgba(34,197,94,0.25); }
+    .cm-paused { background: rgba(245,158,11,0.12); color: var(--amber); border: 1px solid rgba(245,158,11,0.25); }
+
     .inv-filename { font-family: var(--font-mono); font-size: 10px; color: var(--muted); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -995,29 +1000,46 @@
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:24px">
         <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:16px">Add Campaign Manager</div>
         <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
-          <div style="flex:1;min-width:180px">
+          <div style="flex:1;min-width:160px">
             <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Full Name</div>
             <input type="text" id="cmName" placeholder="e.g. John Smith"
               style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
           </div>
-          <div style="flex:1;min-width:180px">
+          <div style="flex:1;min-width:160px">
             <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Email</div>
             <input type="email" id="cmEmail" placeholder="manager@example.com"
               style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
           </div>
-          <div style="flex:1;min-width:150px">
+          <div style="flex:1;min-width:130px">
             <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Phone</div>
             <input type="text" id="cmPhone" placeholder="+1 555 000 0000"
               style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
           </div>
-          <div style="flex:1;min-width:150px">
-            <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Assigned Campaigns</div>
-            <input type="text" id="cmCampaigns" placeholder="e.g. DSP, Push, Native"
+          <div style="flex:1;min-width:130px">
+            <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Campaigns</div>
+            <input type="text" id="cmCampaigns" placeholder="DSP, Push, Native"
               style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
           </div>
-          <div style="flex:1;min-width:140px">
+          <div style="flex:1;min-width:120px">
+            <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Status</div>
+            <select id="cmStatus" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;cursor:pointer">
+              <option value="live">🟢 Live</option>
+              <option value="paused">⏸ Paused</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:130px">
+            <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Start Date</div>
+            <input type="date" id="cmStartDate"
+              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+          </div>
+          <div style="flex:1;min-width:130px">
+            <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">End Date <span style="opacity:0.5">(if terminated)</span></div>
+            <input type="date" id="cmEndDate"
+              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+          </div>
+          <div style="flex:1;min-width:120px">
             <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Notes</div>
-            <input type="text" id="cmNotes" placeholder="Optional notes"
+            <input type="text" id="cmNotes" placeholder="Optional"
               style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
           </div>
           <button onclick="addCampaignMgr()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.05em;white-space:nowrap">+ ADD</button>
@@ -1033,15 +1055,13 @@
                 <th>#</th>
                 <th>Name</th>
                 <th>Email</th>
-                <th>Phone</th>
-                <th>Campaigns</th>
-                <th>Notes</th>
-                <th>Added</th>
+                <th>Status</th>
+                <th>Duration</th>
                 <th></th>
               </tr>
             </thead>
             <tbody id="cmBody">
-              <tr><td colspan="8" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>
+              <tr><td colspan="6" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>
             </tbody>
           </table>
         </div>
@@ -1327,9 +1347,25 @@
   // ── CAMPAIGN MANAGERS ──
   let campaignMgrs = [];
 
+  function calcCmDuration(startDate, endDate) {
+    if (!startDate) return '—';
+    const start = new Date(startDate);
+    if (isNaN(start)) return '—';
+    const end = endDate ? new Date(endDate) : new Date();
+    if (isNaN(end) || end < start) return '—';
+    let years  = end.getFullYear() - start.getFullYear();
+    let months = end.getMonth()    - start.getMonth();
+    let days   = end.getDate()     - start.getDate();
+    if (days   < 0) { months--; days   += 30; }
+    if (months < 0) { years--;  months += 12; }
+    if (years  > 0) return `${years}y ${months}m`;
+    if (months > 0) return `${months}m ${days}d`;
+    return `${days}d`;
+  }
+
   async function renderCampaignMgr() {
     const body = document.getElementById('cmBody');
-    body.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>';
+    body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>';
     try {
       const res  = await fetch(`${FINANCE_API}?action=getCampaignMgrs`);
       const json = await res.json();
@@ -1342,23 +1378,102 @@
     const body = document.getElementById('cmBody');
     if (!body) return;
     if (!campaignMgrs.length) {
-      body.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No campaign managers yet. Add one above.</td></tr>';
+      body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No campaign managers yet. Add one above.</td></tr>';
       return;
     }
     const btnBase = 'font-family:var(--font-mono);font-size:9px;border-radius:6px;cursor:pointer;padding:4px 10px;border:1px solid';
-    body.innerHTML = campaignMgrs.map((m, i) => `
-      <tr>
+    body.innerHTML = campaignMgrs.map((m, i) => {
+      const isLive   = (m.status || 'live') === 'live';
+      const duration = calcCmDuration(m.startDate, isLive ? null : m.endDate);
+      const startFmt = m.startDate ? new Date(m.startDate).toLocaleDateString() : '—';
+      const endFmt   = m.endDate   ? new Date(m.endDate).toLocaleDateString()   : '—';
+      const addedFmt = m.added     ? new Date(m.added).toLocaleDateString()     : '—';
+      return `
+      <tr style="cursor:pointer" onclick="toggleCmRow(${i}, event)">
         <td class="mono text-muted">${i+1}</td>
-        <td style="white-space:nowrap"><input class="editable" value="${esc(m.name||'')}" onblur="updateCampaignMgr(${i},'name',this.value)" placeholder="Full name" style="min-width:140px"/></td>
-        <td><input class="editable mono" value="${esc(m.email||'')}" onblur="updateCampaignMgr(${i},'email',this.value)" placeholder="email@example.com" style="width:180px"/></td>
-        <td><input class="editable mono" value="${esc(m.phone||'')}" onblur="updateCampaignMgr(${i},'phone',this.value)" placeholder="+1 555 000 0000" style="width:140px"/></td>
-        <td><input class="editable" value="${esc(m.campaigns||'')}" onblur="updateCampaignMgr(${i},'campaigns',this.value)" placeholder="DSP, Push..." style="width:160px"/></td>
-        <td><input class="editable" value="${esc(m.notes||'')}" onblur="updateCampaignMgr(${i},'notes',this.value)" placeholder="Notes..." style="min-width:120px"/></td>
-        <td class="mono text-muted" style="font-size:10px;white-space:nowrap">${m.added ? new Date(m.added).toLocaleDateString() : '—'}</td>
-        <td>
-          <button onclick="deleteCampaignMgr(${i})" style="${btnBase} var(--border);background:transparent;color:var(--red)">✕</button>
+        <td style="white-space:nowrap;font-weight:600;min-width:140px">${esc(m.name||'—')}</td>
+        <td style="font-family:var(--font-mono);font-size:11px">${esc(m.email||'—')}</td>
+        <td style="white-space:nowrap">
+          <span class="cm-status ${isLive ? 'cm-live' : 'cm-paused'}"
+            onclick="toggleCmStatus(${i}, this); event.stopPropagation()">
+            ${isLive ? '🟢 Live' : '⏸ Paused'}
+          </span>
         </td>
-      </tr>`).join('');
+        <td class="mono" style="font-size:11px;white-space:nowrap;color:var(--muted)">${duration}</td>
+        <td style="white-space:nowrap">
+          <button onclick="event.stopPropagation(); toggleCmRow(${i}, event)"
+            style="${btnBase} var(--accent);background:rgba(124,58,237,0.15);color:var(--accent-light)" title="Show details">▾</button>
+          <button onclick="event.stopPropagation(); deleteCampaignMgr(${i})"
+            style="${btnBase} var(--border);background:transparent;color:var(--red);margin-left:4px">✕</button>
+        </td>
+      </tr>
+      <tr id="cmDetail_${i}" style="display:none">
+        <td colspan="6" style="padding:0">
+          <div style="background:var(--surface2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:16px 20px">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px">
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Phone</div>
+                <input class="editable mono" value="${esc(m.phone||'')}" onblur="updateCampaignMgr(${i},'phone',this.value)" placeholder="+1 555 000 0000" style="width:100%"/>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Campaigns</div>
+                <input class="editable" value="${esc(m.campaigns||'')}" onblur="updateCampaignMgr(${i},'campaigns',this.value)" placeholder="DSP, Push…" style="width:100%"/>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Notes</div>
+                <input class="editable" value="${esc(m.notes||'')}" onblur="updateCampaignMgr(${i},'notes',this.value)" placeholder="Notes…" style="width:100%"/>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Start Date</div>
+                <input class="editable mono" type="date" value="${esc(m.startDate||'')}" onblur="updateCampaignMgr(${i},'startDate',this.value)" style="width:100%"/>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">End Date</div>
+                <input class="editable mono" type="date" value="${esc(m.endDate||'')}" onblur="updateCampaignMgr(${i},'endDate',this.value)" style="width:100%"/>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Time Active</div>
+                <div style="font-family:var(--font-mono);font-size:16px;font-weight:700;color:${isLive ? 'var(--green)' : 'var(--amber)'}">${duration}</div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:2px">${startFmt} → ${isLive ? 'Present' : endFmt}</div>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Name</div>
+                <input class="editable" value="${esc(m.name||'')}" onblur="updateCampaignMgr(${i},'name',this.value)" placeholder="Full name" style="width:100%"/>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Email</div>
+                <input class="editable mono" value="${esc(m.email||'')}" onblur="updateCampaignMgr(${i},'email',this.value)" placeholder="email@example.com" style="width:100%"/>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Added</div>
+                <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">${addedFmt}</div>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function toggleCmRow(i, e) {
+    if (e) e.stopPropagation();
+    const detail = document.getElementById('cmDetail_' + i);
+    if (!detail) return;
+    const isOpen = detail.style.display !== 'none';
+    detail.style.display = isOpen ? 'none' : '';
+    // flip the toggle button arrow
+    const btn = detail.previousElementSibling?.querySelector('button');
+    if (btn) btn.textContent = isOpen ? '▾' : '▴';
+  }
+
+  function toggleCmStatus(i, badge) {
+    const newStatus = (campaignMgrs[i].status || 'live') === 'live' ? 'paused' : 'live';
+    campaignMgrs[i].status = newStatus;
+    // Update badge instantly
+    badge.className = `cm-status ${newStatus === 'live' ? 'cm-live' : 'cm-paused'}`;
+    badge.textContent = newStatus === 'live' ? '🟢 Live' : '⏸ Paused';
+    _saveCampaignMgrs().then(() => showToast(`✓ ${campaignMgrs[i].name} → ${newStatus}`));
+    logActivity('cm_status', `${campaignMgrs[i].name} set to ${newStatus}`);
   }
 
   async function addCampaignMgr() {
@@ -1366,19 +1481,35 @@
     const email     = document.getElementById('cmEmail').value.trim().toLowerCase();
     const phone     = document.getElementById('cmPhone').value.trim();
     const campaigns = document.getElementById('cmCampaigns').value.trim();
+    const status    = document.getElementById('cmStatus').value;
+    const startDate = document.getElementById('cmStartDate').value;
+    const endDate   = document.getElementById('cmEndDate').value;
     const notes     = document.getElementById('cmNotes').value.trim();
     if (!name) { showToast('⚠ Name is required'); return; }
-    campaignMgrs.push({ name, email, phone, campaigns, notes, added: new Date().toISOString() });
+    campaignMgrs.push({ name, email, phone, campaigns, status, startDate, endDate, notes, added: new Date().toISOString() });
     _renderCmTable();
-    ['cmName','cmEmail','cmPhone','cmCampaigns','cmNotes'].forEach(id => { document.getElementById(id).value = ''; });
+    ['cmName','cmEmail','cmPhone','cmCampaigns','cmNotes','cmStartDate','cmEndDate'].forEach(id => { document.getElementById(id).value = ''; });
+    document.getElementById('cmStatus').value = 'live';
     await _saveCampaignMgrs();
     showToast('✓ Campaign manager added');
-    logActivity('add_campaign_mgr', `Added ${name}`);
+    logActivity('add_campaign_mgr', `Added ${name} (${status})`);
   }
 
   async function updateCampaignMgr(i, field, value) {
     if (!campaignMgrs[i]) return;
     campaignMgrs[i][field] = value;
+    // Recalculate duration live in the detail panel
+    const isLive   = (campaignMgrs[i].status || 'live') === 'live';
+    const duration = calcCmDuration(campaignMgrs[i].startDate, isLive ? null : campaignMgrs[i].endDate);
+    const detail   = document.getElementById('cmDetail_' + i);
+    if (detail) {
+      // update the Duration display inside the expanded panel
+      const durEl = detail.querySelector('.cm-duration-val');
+      if (durEl) durEl.textContent = duration;
+      // update the main row duration cell (col 4)
+      const mainRow = detail.previousElementSibling;
+      if (mainRow) { const cells = mainRow.querySelectorAll('td'); if (cells[4]) cells[4].textContent = duration; }
+    }
     await _saveCampaignMgrs();
     showToast();
     logActivity('edit_campaign_mgr', `Updated ${field} for ${campaignMgrs[i]?.name||i}`);
