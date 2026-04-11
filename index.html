@@ -1346,11 +1346,11 @@
     body.innerHTML = campaignMgrs.map((m, i) => `
       <tr>
         <td class="mono text-muted">${i+1}</td>
-        <td><input class="editable" value="${esc(m.name||'')}" onblur="updateCampaignMgr(${i},'name',this.value)" placeholder="Full name"/></td>
+        <td style="white-space:nowrap"><input class="editable" value="${esc(m.name||'')}" onblur="updateCampaignMgr(${i},'name',this.value)" placeholder="Full name" style="min-width:140px"/></td>
         <td><input class="editable mono" value="${esc(m.email||'')}" onblur="updateCampaignMgr(${i},'email',this.value)" placeholder="email@example.com" style="width:180px"/></td>
         <td><input class="editable mono" value="${esc(m.phone||'')}" onblur="updateCampaignMgr(${i},'phone',this.value)" placeholder="+1 555 000 0000" style="width:140px"/></td>
         <td><input class="editable" value="${esc(m.campaigns||'')}" onblur="updateCampaignMgr(${i},'campaigns',this.value)" placeholder="DSP, Push..." style="width:160px"/></td>
-        <td><input class="editable" value="${esc(m.notes||'')}" onblur="updateCampaignMgr(${i},'notes',this.value)" placeholder="Notes..."/></td>
+        <td><input class="editable" value="${esc(m.notes||'')}" onblur="updateCampaignMgr(${i},'notes',this.value)" placeholder="Notes..." style="min-width:120px"/></td>
         <td class="mono text-muted" style="font-size:10px;white-space:nowrap">${m.added ? new Date(m.added).toLocaleDateString() : '—'}</td>
         <td>
           <button onclick="deleteCampaignMgr(${i})" style="${btnBase} var(--border);background:transparent;color:var(--red)">✕</button>
