@@ -106,8 +106,8 @@
     .logo h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
     .logo span { font-size: 11px; color: var(--muted); font-family: var(--font-mono); display: block; margin-top: 2px; }
     .header-right { display: flex; align-items: center; gap: 12px; }
-    .sync-info { font-family: var(--font-mono); font-size: 11px; color: var(--muted); text-align: right; line-height: 1.8; }
-    .countdown { display: block; font-size: 10px; color: var(--accent-light); opacity: 0.8; }
+    .sync-info { display: none; }
+    .countdown { display: none; }
     .refresh-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); padding: 8px 16px; border-radius: 8px; font-family: var(--font-mono); font-size: 11px; cursor: pointer; transition: all 0.2s; letter-spacing: 0.05em; }
     .refresh-btn:hover { border-color: var(--accent); color: var(--accent-light); }
     .logout-btn {
@@ -511,11 +511,12 @@
           </div>
         </div>
         <div class="header-right">
-          <span class="sync-info" id="syncInfo">—<span class="countdown" id="countdown"></span></span>
-          <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);border:1px solid var(--border);padding:4px 10px;border-radius:6px">v2.5</span>
           <span id="headerUser" style="font-family:var(--font-mono);font-size:10px;color:var(--accent-light)"></span>
           <span id="roleBadge" style="display:none;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700"></span>
-          <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+            <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v2.5</span>
+          </div>
           <div style="display:flex;flex-direction:column;gap:5px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
             <button class="refresh-btn" onclick="manualRefresh()" style="padding:5px 16px;font-size:10px">↻ REFRESH</button>
