@@ -1364,12 +1364,19 @@
   }
 
   async function renderCampaignMgr() {
+    if (_rawCache['cm']) {
+      // Use pre-fetched data — no network fetch needed
+      campaignMgrs = _rawCache['cm'];
+      _renderCmTable();
+      return;
+    }
     const body = document.getElementById('cmBody');
     body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>';
     try {
       const res  = await fetch(`${FINANCE_API}?action=getCampaignMgrs`);
       const json = await res.json();
       campaignMgrs = json.data || [];
+      _rawCache['cm'] = campaignMgrs;
     } catch { campaignMgrs = []; }
     _renderCmTable();
   }
@@ -1526,10 +1533,11 @@
   }
 
   async function _saveCampaignMgrs() {
+    _rawCache['cm'] = campaignMgrs; // keep cache in sync with current state
     try {
       await fetch(FINANCE_API, {
         method: 'POST',
-        body: JSON.stringify({ action: 'saveCampaignMgrs', managers: campaignMgrs })
+        body: JSON.stringify({ action: 'saveCampaignMgrs', rows: campaignMgrs })
       });
     } catch { showToast('⚠ Failed to save'); }
   }
@@ -2076,10 +2084,11 @@
   async function prefetchAllData() {
     const pk = periodKey();
     try {
-      const [pubData, invData, mbData] = await Promise.all([
+      const [pubData, invData, mbData, cmRes] = await Promise.all([
         fetchPeriodData('getPublishers').catch(() => []),
         fetchPeriodData('getInvoices').catch(() => []),
         fetchPeriodData('getMediaBuying').catch(() => []),
+        fetch(`${FINANCE_API}?action=getCampaignMgrs`).then(r => r.json()).catch(() => ({ data: [] })),
       ]);
 
       // Publishers
@@ -2118,10 +2127,18 @@
       _rawCache['pub_' + pk + '_raw'] = pubData;
       _rawCache['inv_' + pk + '_raw'] = invData;
 
+      // Campaign Managers (no period — global list)
+      campaignMgrs = cmRes.data || [];
+      _rawCache['cm'] = campaignMgrs;
+
     } catch { /* silent — individual tabs will fall back to their own fetch */ }
 
-    // Now render the active tab (Publishers) from cache
+    // Pre-render ALL tab DOMs in the background so switching is instant
     renderPublishers();
+    renderInvoices();
+    renderMediaBuying();
+    renderCostSummary();
+    _renderCmTable();
   }
 
   // ── PERIOD PICKER ──
