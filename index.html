@@ -552,12 +552,12 @@
         <div class="summary-card amber" style="animation-delay:0.1s">
           <div class="card-label">Total Payable</div>
           <div class="card-value" id="pubTotal">$0</div>
-          <div class="card-sub" id="pubTotalSub">—</div>
+          <div class="card-sub">this period</div>
         </div>
         <div class="summary-card green" style="animation-delay:0.15s">
           <div class="card-label">Avg per Publisher</div>
           <div class="card-value" id="pubAvg">$0</div>
-          <div class="card-sub" id="pubAvgSub">—</div>
+          <div class="card-sub">mean payment</div>
         </div>
         <div class="summary-card red" style="animation-delay:0.2s">
           <div class="card-label">Top Publisher</div>
@@ -586,14 +586,19 @@
 
       <!-- Publisher table (shown when data loaded) -->
       <div id="publisherTableWrap" style="display:none">
+        <div class="inv-toolbar">
+          <div class="section-title">Publisher List — <span id="pubListPeriodLabel" style="color:var(--accent-light)"></span></div>
+          <div style="display:flex;gap:8px">
+            <button class="export-btn" onclick="exportCSV()">↓ Export CSV</button>
+            <button class="clear-btn" onclick="clearPublishers()">✕ Clear All</button>
+          </div>
+        </div>
         <div class="pub-toolbar">
           <div class="pub-search-wrap">
             <span class="pub-search-icon">🔍</span>
             <input type="text" class="pub-search" id="pubSearch" placeholder="Search publishers..." oninput="renderPublishers()"/>
           </div>
           <div style="display:flex;gap:8px">
-            <button class="export-btn" onclick="exportCSV()">↓ Export CSV</button>
-            <button class="clear-btn" onclick="clearPublishers()">✕ Clear</button>
             <button class="add-btn" onclick="document.getElementById('csvFileInput').click()">↑ Re-upload CSV</button>
           </div>
         </div>
@@ -750,7 +755,7 @@
         <div class="summary-card amber" style="animation-delay:0.1s">
           <div class="card-label">Total Amount</div>
           <div class="card-value" id="invTotal">$0</div>
-          <div class="card-sub" id="invTotalSub">—</div>
+          <div class="card-sub">sum of invoices</div>
         </div>
         <div class="summary-card green" style="animation-delay:0.15s">
           <div class="card-label">Extracted</div>
@@ -820,7 +825,7 @@
         <div class="summary-card amber" style="animation-delay:0.1s">
           <div class="card-label">Total CPC</div>
           <div class="card-value" id="mbTotal">$0</div>
-          <div class="card-sub" id="mbTotalSub">—</div>
+          <div class="card-sub">this period</div>
         </div>
         <div class="summary-card green" style="animation-delay:0.15s">
           <div class="card-label">Avg CPC</div>
@@ -848,14 +853,19 @@
 
       <!-- Table (shown when data loaded) -->
       <div id="mbTableWrap" style="display:none">
+        <div class="inv-toolbar">
+          <div class="section-title">Media Buying — <span id="mbListPeriodLabel" style="color:var(--accent-light)"></span></div>
+          <div style="display:flex;gap:8px">
+            <button class="export-btn" onclick="exportMediaCSV()">↓ Export CSV</button>
+            <button class="clear-btn" onclick="clearMediaBuying()">✕ Clear All</button>
+          </div>
+        </div>
         <div class="pub-toolbar">
           <div class="pub-search-wrap">
             <span class="pub-search-icon">🔍</span>
             <input type="text" class="pub-search" id="mbSearch" placeholder="Search DSP or GEO..." oninput="renderMediaBuying()"/>
           </div>
           <div style="display:flex;gap:8px">
-            <button class="export-btn" onclick="exportMediaCSV()">↓ Export CSV</button>
-            <button class="clear-btn" onclick="clearMediaBuying()">✕ Clear</button>
             <button class="add-btn" onclick="document.getElementById('mbFileInput').click()">↑ Re-upload CSV</button>
           </div>
         </div>
@@ -901,12 +911,12 @@
         <div class="summary-card blue" style="animation-delay:0.1s">
           <div class="card-label">Internal Sources</div>
           <div class="card-value" id="csIntTotal">$0</div>
-          <div class="card-sub" id="csIntSub">—</div>
+          <div class="card-sub">KZN · GSM · Octava · JiniAds</div>
         </div>
         <div class="summary-card green" style="animation-delay:0.15s">
           <div class="card-label">Grand Total</div>
           <div class="card-value" id="csGrandTotal">$0</div>
-          <div class="card-sub" id="csGrandSub">—</div>
+          <div class="card-sub">all categories</div>
         </div>
         <div class="summary-card red" style="animation-delay:0.2s">
           <div class="card-label">Largest Category</div>
@@ -918,7 +928,7 @@
       <!-- Breakdown -->
       <div class="section-header" style="margin-top:24px">
         <div>
-          <div class="section-title">Cost Breakdown</div>
+          <div class="section-title">Cost Breakdown — <span id="csListPeriodLabel" style="color:var(--accent-light)"></span></div>
           <div class="section-sub" id="csSub">Select a period to load data</div>
         </div>
       </div>
@@ -1779,8 +1789,7 @@
     document.getElementById('pubTotal').textContent = fmt(total);
     document.getElementById('pubAvg').textContent = fmt(avg);
     document.getElementById('pubPeriodLabel').textContent = periodLabel();
-    document.getElementById('pubTotalSub').textContent = periodLabel();
-    document.getElementById('pubAvgSub').textContent = periodLabel();
+    document.getElementById('pubListPeriodLabel').textContent = periodLabel();
     document.getElementById('pubTop').textContent = top ? top.name : '—';
     document.getElementById('pubTopAmt').textContent = top ? fmt(top.amount) : '—';
 
@@ -2110,7 +2119,6 @@
       document.getElementById('invReview').textContent = review;
       document.getElementById('invPeriodLabel').textContent = periodLabel();
       document.getElementById('invPeriodSub').textContent = periodLabel();
-      document.getElementById('invTotalSub').textContent = periodLabel();
     }
 
     document.getElementById('invBody').innerHTML = invoices.map((inv, i) => `
@@ -2260,7 +2268,7 @@
     document.getElementById('mbTotal').textContent = fmt(total);
     document.getElementById('mbAvg').textContent   = fmt(avg);
     document.getElementById('mbPeriodLabel').textContent = periodLabel();
-    document.getElementById('mbTotalSub').textContent = periodLabel();
+    document.getElementById('mbListPeriodLabel').textContent = periodLabel();
     document.getElementById('mbTop').textContent    = top ? top.dsp : '—';
     document.getElementById('mbTopAmt').textContent = top ? fmt(top.cpc) : '—';
 
@@ -2399,8 +2407,7 @@
     document.getElementById('csIntTotal').textContent    = fmt(intTotal);
     document.getElementById('csGrandTotal').textContent  = fmt(grandTotal);
     document.getElementById('csPeriodLabel').textContent = periodLabel();
-    document.getElementById('csIntSub').textContent = periodLabel();
-    document.getElementById('csGrandSub').textContent = periodLabel();
+    document.getElementById('csListPeriodLabel').textContent = periodLabel();
     document.getElementById('csTopCat').textContent      = topCat ? topCat.name : '—';
     document.getElementById('csTopCatAmt').textContent   = topCat ? fmt(topCat.amount) : '—';
     document.getElementById('csSub').textContent =
