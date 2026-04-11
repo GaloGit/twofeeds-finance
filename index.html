@@ -1385,11 +1385,8 @@
 
   // ── STATE ──
   let secondsLeft = 60;
-  let selectedYear = new Date().getFullYear();
-  // selectedPeriods: Set of "YYYY-MM" strings. Empty = ALL months for selectedYear.
-  let selectedPeriods = new Set([
-    `${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`
-  ]);
+  let selectedYears  = new Set([new Date().getFullYear()]);
+  let selectedMonths = new Set([new Date().getMonth()]); // 0-indexed; empty = ALL months
 
   // ── EMAILJS CONFIG ──
   const EMAILJS_SERVICE  = 'service_a0sa856';
@@ -1575,16 +1572,38 @@
   function buildPeriodPicker() {
     const currentYear = new Date().getFullYear();
 
-    // ── Year buttons ──
+    // ── Year buttons (multi-select) ──
     const yearWrap = document.getElementById('yearBtns');
     yearWrap.innerHTML = '';
+
+    // ALL years button
+    const allYearBtn = document.createElement('button');
+    const allYearsActive = selectedYears.size === (currentYear - START_YEAR + 1);
+    allYearBtn.className = 'all-btn' + (allYearsActive ? ' active' : '');
+    allYearBtn.textContent = 'ALL';
+    allYearBtn.onclick = () => {
+      if (allYearsActive) {
+        // deselect all → keep current year
+        selectedYears = new Set([currentYear]);
+      } else {
+        selectedYears = new Set();
+        for (let y = START_YEAR; y <= currentYear; y++) selectedYears.add(y);
+      }
+      buildPeriodPicker();
+      onPeriodChange();
+    };
+    yearWrap.appendChild(allYearBtn);
+
     for (let y = START_YEAR; y <= currentYear; y++) {
       const btn = document.createElement('button');
-      btn.className = 'year-btn' + (y === selectedYear ? ' active' : '');
+      btn.className = 'year-btn' + (selectedYears.has(y) ? ' active' : '');
       btn.textContent = y;
       btn.onclick = () => {
-        selectedYear = y;
-        selectedPeriods.clear(); // reset to ALL when switching year
+        if (selectedYears.has(y) && selectedYears.size > 1) {
+          selectedYears.delete(y); // always keep at least one
+        } else {
+          selectedYears.add(y);
+        }
         buildPeriodPicker();
         onPeriodChange();
       };
@@ -1595,33 +1614,41 @@
     const monthWrap = document.getElementById('monthBtns');
     monthWrap.innerHTML = '';
 
-    // ALL button
-    const allBtn = document.createElement('button');
-    allBtn.className = 'all-btn' + (selectedPeriods.size === 0 ? ' active' : '');
-    allBtn.textContent = 'ALL';
-    allBtn.onclick = () => {
-      selectedPeriods.clear();
+    const allMonthBtn = document.createElement('button');
+    allMonthBtn.className = 'all-btn' + (selectedMonths.size === 0 ? ' active' : '');
+    allMonthBtn.textContent = 'ALL';
+    allMonthBtn.onclick = () => {
+      selectedMonths.clear();
       buildPeriodPicker();
       onPeriodChange();
     };
-    monthWrap.appendChild(allBtn);
+    monthWrap.appendChild(allMonthBtn);
 
     MONTHS.forEach((m, i) => {
-      const key = `${selectedYear}-${String(i+1).padStart(2,'0')}`;
       const btn = document.createElement('button');
-      btn.className = 'month-btn' + (selectedPeriods.has(key) ? ' active' : '');
+      btn.className = 'month-btn' + (selectedMonths.has(i) ? ' active' : '');
       btn.textContent = m;
       btn.onclick = () => {
-        if (selectedPeriods.has(key)) {
-          selectedPeriods.delete(key);
-        } else {
-          selectedPeriods.add(key);
-        }
+        if (selectedMonths.has(i)) selectedMonths.delete(i);
+        else selectedMonths.add(i);
         buildPeriodPicker();
         onPeriodChange();
       };
       monthWrap.appendChild(btn);
     });
+  }
+
+  // Derive the full Set of "YYYY-MM" period strings from current selections
+  function getSelectedPeriods() {
+    const years  = [...selectedYears].sort();
+    const months = selectedMonths.size > 0
+      ? [...selectedMonths].sort()
+      : [0,1,2,3,4,5,6,7,8,9,10,11]; // ALL months
+    const periods = new Set();
+    years.forEach(y => months.forEach(m => {
+      periods.add(`${y}-${String(m+1).padStart(2,'0')}`);
+    }));
+    return periods;
   }
 
   function onPeriodChange() {
@@ -1635,40 +1662,42 @@
   }
 
   function periodKey() {
-    if (selectedPeriods.size === 0) return `${selectedYear}-ALL`;
-    if (selectedPeriods.size === 1) return [...selectedPeriods][0];
-    return [...selectedPeriods].sort().join(',');
+    const periods = [...getSelectedPeriods()].sort();
+    if (periods.length === 1) return periods[0];
+    return periods.join(',');
   }
 
   function periodLabel() {
-    if (selectedPeriods.size === 0) return `All ${selectedYear}`;
-    const sorted = [...selectedPeriods].sort();
-    if (sorted.length === 1) {
-      const [y, m] = sorted[0].split('-');
-      return `${MONTHS[parseInt(m)-1]} ${y}`;
-    }
-    const monthNames = sorted.map(p => MONTHS[parseInt(p.split('-')[1])-1]);
-    return `${monthNames.join(', ')} ${sorted[0].split('-')[0]}`;
+    const years  = [...selectedYears].sort();
+    const months = [...selectedMonths].sort();
+    const yearStr = years.length === 1 ? String(years[0])
+      : `${years[0]}–${years[years.length-1]}`;
+    if (selectedMonths.size === 0) return `All ${yearStr}`;
+    const monthNames = months.map(m => MONTHS[m]);
+    return `${monthNames.join(', ')} ${yearStr}`;
   }
 
-  // Returns true only when exactly one period is selected (required for writes)
-  function isSinglePeriod() { return selectedPeriods.size === 1; }
+  // True only when exactly 1 year + 1 month selected (required for writes)
+  function isSinglePeriod() { return selectedYears.size === 1 && selectedMonths.size === 1; }
 
-  // Fetch data for currently selected periods, merging if multi-select
+  // Fetch data for all selected periods, smart-merging results
   async function fetchPeriodData(action) {
-    if (selectedPeriods.size === 0) {
-      // ALL — fetch everything, filter to selectedYear client-side
+    const periods = getSelectedPeriods();
+    if (periods.size === 0) return [];
+
+    // If many periods, fetch all data once and filter client-side (more efficient)
+    if (periods.size > 4 || selectedMonths.size === 0) {
       const res = await fetch(`${FINANCE_API}?action=${action}`);
       const json = await res.json();
-      return (json.data || []).filter(r => String(r['Period']||'').startsWith(String(selectedYear)));
+      return (json.data || []).filter(r => periods.has(r['Period']));
     }
-    if (selectedPeriods.size === 1) {
-      const period = [...selectedPeriods][0];
-      const res = await fetch(`${FINANCE_API}?action=${action}&period=${period}`);
+
+    // Few specific periods — parallel fetch
+    if (periods.size === 1) {
+      const res = await fetch(`${FINANCE_API}?action=${action}&period=${[...periods][0]}`);
       return (await res.json()).data || [];
     }
-    // Multi-period — parallel fetches, merged
-    const results = await Promise.all([...selectedPeriods].map(p =>
+    const results = await Promise.all([...periods].map(p =>
       fetch(`${FINANCE_API}?action=${action}&period=${p}`).then(r => r.json())
     ));
     return results.flatMap(r => r.data || []);
