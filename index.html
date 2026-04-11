@@ -521,7 +521,7 @@
           <span id="roleBadge" style="display:none;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700"></span>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v3.9</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.0</span>
           </div>
           <div style="display:flex;flex-direction:column;gap:5px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
@@ -1383,6 +1383,7 @@
   }
 
   function _renderCmTable() {
+    if (_isSame('cm', campaignMgrs)) return;
     const body = document.getElementById('cmBody');
     if (!body) return;
     if (!campaignMgrs.length) {
@@ -1534,7 +1535,7 @@
   }
 
   async function _saveCampaignMgrs() {
-    _rawCache['cm'] = campaignMgrs; // keep cache in sync with current state
+    _invalidateCmCache(); // force re-render on next write, keep rawCache current
     try {
       await fetch(FINANCE_API, {
         method: 'POST',
@@ -2580,8 +2581,14 @@
     const k = prefix + periodKey();
     delete _cache[k];
     delete _rawCache[k];
-    // Also invalidate the raw API rows used by Cost Summary
+    // Also invalidate raw API rows and Cost Summary cache
     delete _rawCache[k + '_raw'];
+    delete _cache['cs_' + periodKey()];
+  }
+
+  function _invalidateCmCache() {
+    delete _cache['cm'];
+    _rawCache['cm'] = campaignMgrs; // keep rawCache in sync, clear diff cache
   }
 
   async function updatePub(id, field, value) {
@@ -3023,6 +3030,7 @@
     let all = [];
     if (_rawCache[cacheKey]) {
       all = _rawCache[cacheKey];
+      if (_isSame(cacheKey, all)) return;
     } else {
       try {
         const data = await fetchPeriodData('getMediaBuying');
@@ -3165,6 +3173,7 @@
     if (_rawCache[pKey + '_raw'] && _rawCache[iKey + '_raw']) {
       pubRows    = _rawCache[pKey + '_raw'];
       invRawRows = _rawCache[iKey + '_raw'];
+      if (_isSame('cs_' + periodKey(), [pubRows, invRawRows])) return;
     } else {
       [pubRows, invRawRows] = await Promise.all([
         fetchPeriodData('getPublishers').catch(() => []),
