@@ -1870,6 +1870,11 @@
         </td>
       </tr>`;
     }).join('') +
+      `<tr style="border-top:2px solid var(--border);background:var(--surface2)">
+        <td colspan="3" style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.08em;padding:12px 18px;text-transform:uppercase">Total</td>
+        <td class="mono text-green" style="font-size:15px;font-weight:700;white-space:nowrap;padding:12px 18px">${fmt(filtered.reduce((s,p)=>s+(parseFloat(p.amount)||0),0))}</td>
+        <td colspan="2"></td>
+      </tr>` +
       (isAdmin()||isEditor() ? `<tr class="add-row"><td colspan="6"><button class="add-btn" onclick="addPubRow()">+ Add Publisher Manually</button></td></tr>` : '');
 
     setTimeout(() => renderPubChart(all), 50);
@@ -2155,6 +2160,11 @@
           </div>
         </td>
       </tr>`).join('') +
+      `<tr style="border-top:2px solid var(--border);background:var(--surface2)">
+        <td colspan="4" style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.08em;padding:12px 18px;text-transform:uppercase">Total</td>
+        <td class="mono text-green" style="font-size:15px;font-weight:700;white-space:nowrap;padding:12px 18px">${fmt(invoices.reduce((s,inv)=>s+(parseFloat(inv.amount)||0),0))}</td>
+        <td colspan="2"></td>
+      </tr>` +
       `<tr class="add-row"><td colspan="7"><button class="add-btn" onclick="document.getElementById('invFileInput').click()">+ Upload More Invoices</button></td></tr>`;
 
     // Render chart after table
