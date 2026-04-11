@@ -521,7 +521,7 @@
           <span id="roleBadge" style="display:none;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700"></span>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.0.5</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.0.6</span>
           </div>
           <div style="display:flex;flex-direction:column;gap:5px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
@@ -1348,6 +1348,18 @@
   // ── CAMPAIGN MANAGERS ──
   let campaignMgrs = [];
 
+  // Convert Google Drive share links to direct image URLs
+  function resolvePhotoUrl(url) {
+    if (!url) return '';
+    // https://drive.google.com/file/d/FILE_ID/view...
+    const driveMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (driveMatch) return `https://lh3.googleusercontent.com/d/${driveMatch[1]}`;
+    // https://drive.google.com/open?id=FILE_ID
+    const openMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (openMatch) return `https://lh3.googleusercontent.com/d/${openMatch[1]}`;
+    return url;
+  }
+
   function countryFlag(code) {
     if (!code || code.length !== 2) return '';
     try {
@@ -1405,8 +1417,9 @@
       const endFmt   = m.endDate   ? new Date(m.endDate).toLocaleDateString()   : '—';
       const addedFmt = m.added     ? new Date(m.added).toLocaleDateString()     : '—';
       const flag     = countryFlag(m.country||'');
-      const avatar   = m.photoUrl
-        ? `<img src="${esc(m.photoUrl)}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--border);margin-right:8px;vertical-align:middle;flex-shrink:0" onerror="this.style.display='none'">`
+      const photoSrc = resolvePhotoUrl(m.photoUrl);
+      const avatar   = photoSrc
+        ? `<img src="${esc(photoSrc)}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--border);margin-right:8px;vertical-align:middle;flex-shrink:0" onerror="this.style.display='none'">`
         : `<span style="width:32px;height:32px;border-radius:50%;background:var(--surface3);border:2px solid var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--muted);margin-right:8px;vertical-align:middle;flex-shrink:0">${esc((m.name||'?')[0].toUpperCase())}</span>`;
       return `
       <tr style="cursor:pointer" onclick="toggleCmRow(${i}, event)">
@@ -1434,8 +1447,8 @@
           <div style="background:var(--surface2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:16px 20px">
             <!-- Avatar header -->
             <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)">
-              ${m.photoUrl
-                ? `<img src="${esc(m.photoUrl)}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:3px solid var(--accent);box-shadow:0 0 20px var(--accent-glow);flex-shrink:0" onerror="this.style.display='none'">`
+              ${photoSrc
+                ? `<img src="${esc(photoSrc)}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:3px solid var(--accent);box-shadow:0 0 20px var(--accent-glow);flex-shrink:0" onerror="this.style.display='none'">`
                 : `<div style="width:64px;height:64px;border-radius:50%;background:var(--surface3);border:3px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:var(--accent-light);flex-shrink:0">${esc((m.name||'?')[0].toUpperCase())}</div>`}
               <div>
                 <div style="font-size:18px;font-weight:700">${esc(m.name||'—')} <span style="font-size:22px">${flag}</span></div>
