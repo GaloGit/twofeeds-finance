@@ -132,6 +132,9 @@
     }
     .month-btn:hover { border-color: var(--accent); color: var(--accent-light); }
     .month-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .all-btn { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: var(--font-mono); font-size: 10px; cursor: pointer; transition: all 0.18s; letter-spacing: 0.05em; font-weight: 700; }
+    .all-btn:hover { border-color: var(--accent); color: var(--accent-light); }
+    .all-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
     .year-btn:hover { border-color: #a855f7; color: #c084fc; }
     .year-btn.active { background: #a855f7; color: #fff; border-color: #a855f7; box-shadow: 0 0 12px rgba(168,85,247,0.35); }
     .period-divider { color: var(--border); font-size: 14px; margin: 0 2px; flex-shrink: 0; }
@@ -354,7 +357,7 @@
       .period-bar { gap: 8px; padding: 12px 0 2px; }
       .period-row { gap: 6px; }
       .period-label { font-size: 9px; min-width: 36px; }
-      .year-btn, .month-btn { padding: 5px 10px; font-size: 9px; }
+      .year-btn, .month-btn, .all-btn { padding: 5px 10px; font-size: 9px; }
 
       /* Nav tabs */
       .nav-bar { gap: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
@@ -412,7 +415,7 @@
       .card-value { font-size: 18px; }
       .logo h1 { font-size: 15px; }
       .nav-tab { padding: 8px 10px; font-size: 8px; }
-      .year-btn, .month-btn { padding: 4px 8px; font-size: 8px; }
+      .year-btn, .month-btn, .all-btn { padding: 4px 8px; font-size: 8px; }
     }
   /* ── LOADING CURTAIN ── */
   #loadingCurtain {
@@ -1382,7 +1385,10 @@
   // ── STATE ──
   let secondsLeft = 60;
   let selectedYear = new Date().getFullYear();
-  let selectedMonth = new Date().getMonth(); // 0-indexed
+  // selectedPeriods: Set of "YYYY-MM" strings. Empty = ALL months for selectedYear.
+  let selectedPeriods = new Set([
+    `${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`
+  ]);
 
   // ── EMAILJS CONFIG ──
   const EMAILJS_SERVICE  = 'service_a0sa856';
@@ -1567,29 +1573,58 @@
   // ── PERIOD PICKER ──
   function buildPeriodPicker() {
     const currentYear = new Date().getFullYear();
+
+    // ── Year buttons ──
     const yearWrap = document.getElementById('yearBtns');
     yearWrap.innerHTML = '';
     for (let y = START_YEAR; y <= currentYear; y++) {
       const btn = document.createElement('button');
       btn.className = 'year-btn' + (y === selectedYear ? ' active' : '');
       btn.textContent = y;
-      btn.onclick = () => { selectedYear = y; buildPeriodPicker(); onPeriodChange(); };
+      btn.onclick = () => {
+        selectedYear = y;
+        selectedPeriods.clear(); // reset to ALL when switching year
+        buildPeriodPicker();
+        onPeriodChange();
+      };
       yearWrap.appendChild(btn);
     }
 
+    // ── Month buttons (multi-select) + ALL ──
     const monthWrap = document.getElementById('monthBtns');
     monthWrap.innerHTML = '';
+
+    // ALL button
+    const allBtn = document.createElement('button');
+    allBtn.className = 'all-btn' + (selectedPeriods.size === 0 ? ' active' : '');
+    allBtn.textContent = 'ALL';
+    allBtn.onclick = () => {
+      selectedPeriods.clear();
+      buildPeriodPicker();
+      onPeriodChange();
+    };
+    monthWrap.appendChild(allBtn);
+
     MONTHS.forEach((m, i) => {
+      const key = `${selectedYear}-${String(i+1).padStart(2,'0')}`;
       const btn = document.createElement('button');
-      btn.className = 'month-btn' + (i === selectedMonth ? ' active' : '');
+      btn.className = 'month-btn' + (selectedPeriods.has(key) ? ' active' : '');
       btn.textContent = m;
-      btn.onclick = () => { selectedMonth = i; buildPeriodPicker(); onPeriodChange(); };
+      btn.onclick = () => {
+        if (selectedPeriods.has(key)) {
+          selectedPeriods.delete(key);
+        } else {
+          selectedPeriods.add(key);
+        }
+        buildPeriodPicker();
+        onPeriodChange();
+      };
       monthWrap.appendChild(btn);
     });
   }
 
   function onPeriodChange() {
-    // Clear cache for the new period so data always re-renders on period switch
+    // Clear cache so data re-renders on period switch
     Object.keys(_cache).forEach(k => delete _cache[k]);
     renderPublishers();
     const activeTab = document.querySelector('.page.active');
@@ -1599,11 +1634,43 @@
   }
 
   function periodKey() {
-    return `${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}`;
+    if (selectedPeriods.size === 0) return `${selectedYear}-ALL`;
+    if (selectedPeriods.size === 1) return [...selectedPeriods][0];
+    return [...selectedPeriods].sort().join(',');
   }
 
   function periodLabel() {
-    return `${MONTHS[selectedMonth]} ${selectedYear}`;
+    if (selectedPeriods.size === 0) return `All ${selectedYear}`;
+    const sorted = [...selectedPeriods].sort();
+    if (sorted.length === 1) {
+      const [y, m] = sorted[0].split('-');
+      return `${MONTHS[parseInt(m)-1]} ${y}`;
+    }
+    const monthNames = sorted.map(p => MONTHS[parseInt(p.split('-')[1])-1]);
+    return `${monthNames.join(', ')} ${sorted[0].split('-')[0]}`;
+  }
+
+  // Returns true only when exactly one period is selected (required for writes)
+  function isSinglePeriod() { return selectedPeriods.size === 1; }
+
+  // Fetch data for currently selected periods, merging if multi-select
+  async function fetchPeriodData(action) {
+    if (selectedPeriods.size === 0) {
+      // ALL — fetch everything, filter to selectedYear client-side
+      const res = await fetch(`${FINANCE_API}?action=${action}`);
+      const json = await res.json();
+      return (json.data || []).filter(r => String(r['Period']||'').startsWith(String(selectedYear)));
+    }
+    if (selectedPeriods.size === 1) {
+      const period = [...selectedPeriods][0];
+      const res = await fetch(`${FINANCE_API}?action=${action}&period=${period}`);
+      return (await res.json()).data || [];
+    }
+    // Multi-period — parallel fetches, merged
+    const results = await Promise.all([...selectedPeriods].map(p =>
+      fetch(`${FINANCE_API}?action=${action}&period=${p}`).then(r => r.json())
+    ));
+    return results.flatMap(r => r.data || []);
   }
 
   // ── COUNTDOWN ──
@@ -1700,6 +1767,7 @@
 
   function handleCSV(file) {
     if (!canEditTab('publishers')) { showToast('⚠ No edit access to Publishers'); return; }
+    if (!isSinglePeriod()) { showToast('⚠ Select a single month to upload'); return; }
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) { showToast('⚠ CSV file too large (max 5MB)'); return; }
     if (!file.name.toLowerCase().endsWith('.csv') && file.type !== 'text/csv') { showToast('⚠ Only CSV files are accepted'); return; }
@@ -1774,10 +1842,8 @@
     let all = [];
     let syncInfo = null;
     try {
-      const res = await fetch(`${FINANCE_API}?action=getPublishers&period=${periodKey()}`);
-      const json = await res.json();
-      if (json.success) {
-        all = (json.data || []).map((r, idx) => ({
+      const data = await fetchPeriodData('getPublishers');
+      all = data.map((r, idx) => ({
           id: idx,
           name: r['Publisher Name'] || '',
           platform: r['Platform'] || '',
@@ -1785,8 +1851,6 @@
           notes: r['Notes'] || '',
           approval: r['Approval'] || '',
         }));
-        syncInfo = json.syncInfo || null;
-      }
     } catch {
       showToast('⚠ Could not load publishers from sheet.');
     }
@@ -1921,6 +1985,7 @@
 
   async function addPubRow() {
     if (!canEditTab('publishers')) { showToast('⚠ No edit access to Publishers'); return; }
+    if (!isSinglePeriod()) { showToast('⚠ Select a single month to add rows'); return; }
     _invalidateCache('pub_');
     try {
       const res = await fetch(`${FINANCE_API}?action=getPublishers&period=${periodKey()}`);
@@ -1938,6 +2003,7 @@
 
   async function clearPublishers() {
     if (!canEditTab('publishers')) { showToast('⚠ No edit access to Publishers'); return; }
+    if (!isSinglePeriod()) { showToast('⚠ Select a single month to clear'); return; }
     _invalidateCache('pub_');
     if (!confirmDelete(`Clear ALL publisher data for ${periodLabel()}?`)) return;
     try {
@@ -1976,6 +2042,7 @@
 
   async function handleInvFiles(files) {
     if (!canEditTab('internal')) { showToast('⚠ No edit access to Internal Sources'); return; }
+    if (!isSinglePeriod()) { showToast('⚠ Select a single month to upload invoices'); return; }
     if (!files || !files.length) return;
     const fileArr = Array.from(files).filter(file => {
       if (file.size > 10 * 1024 * 1024) { showToast(`⚠ "${file.name}" too large (max 10MB)`); return false; }
@@ -2080,10 +2147,8 @@
   async function renderInvoices() {
     let invoices = [];
     try {
-      const res = await fetch(`${FINANCE_API}?action=getInvoices&period=${periodKey()}`);
-      const json = await res.json();
-      if (json.success) {
-        invoices = (json.data || []).map((r, idx) => {
+      const rawData = await fetchPeriodData('getInvoices');
+      invoices = rawData.map((r, idx) => {
           // Normalize date — Sheets may return Date objects, ISO strings, or Excel serial numbers
           let date = r['Date'] || '';
           if (date instanceof Date || (typeof date === 'object' && date !== null)) {
@@ -2114,7 +2179,6 @@
             filename: r['Filename'] || '',
           };
         });
-      }
     } catch {
       showToast('⚠ Could not load invoices from sheet.');
     }
@@ -2256,6 +2320,7 @@
   // ── MEDIA BUYING ──
   function handleMediaCSV(file) {
     if (!canEditTab('mediabuy')) { showToast('⚠ No edit access to Media Buying'); return; }
+    if (!isSinglePeriod()) { showToast('⚠ Select a single month to upload'); return; }
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) { showToast('⚠ CSV file too large (max 5MB)'); return; }
     if (!file.name.toLowerCase().endsWith('.csv') && file.type !== 'text/csv') { showToast('⚠ Only CSV files are accepted'); return; }
@@ -2289,16 +2354,13 @@
   async function renderMediaBuying() {
     let all = [];
     try {
-      const res = await fetch(`${FINANCE_API}?action=getMediaBuying&period=${periodKey()}`);
-      const data = await res.json();
-      if (data.success) {
-        all = (data.data || []).map((r, idx) => ({
-          id: idx,
-          dsp: r['DSP'] || '',
-          geo: r['GEO'] || '',
-          cpc: parseFloat(r['CPC']) || 0,
-        }));
-      }
+      const data = await fetchPeriodData('getMediaBuying');
+      all = data.map((r, idx) => ({
+        id: idx,
+        dsp: r['DSP'] || '',
+        geo: r['GEO'] || '',
+        cpc: parseFloat(r['CPC']) || 0,
+      }));
     } catch { showToast('⚠ Could not load media buying data.'); }
 
     const search = (document.getElementById('mbSearch')||{}).value || '';
@@ -2378,6 +2440,7 @@
 
   async function clearMediaBuying() {
     if (!canEditTab('mediabuy')) { showToast('⚠ No edit access to Media Buying'); return; }
+    if (!isSinglePeriod()) { showToast('⚠ Select a single month to clear'); return; }
     if (!confirmDelete(`Clear ALL Media Buying data for ${periodLabel()}?`)) return;
     try {
       await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'clearMediaBuying', period: periodKey() }) });
@@ -2414,14 +2477,11 @@
   }
 
   async function renderCostSummary() {
-    // Fetch publishers + invoices in parallel
-    const [pubRes, invRes] = await Promise.all([
-      fetch(`${FINANCE_API}?action=getPublishers&period=${periodKey()}`).then(r=>r.json()).catch(()=>({success:false,data:[]})),
-      fetch(`${FINANCE_API}?action=getInvoices&period=${periodKey()}`).then(r=>r.json()).catch(()=>({success:false,data:[]})),
+    // Fetch publishers + invoices in parallel using multi-period aware helper
+    const [pubRows, invRows] = await Promise.all([
+      fetchPeriodData('getPublishers').catch(() => []),
+      fetchPeriodData('getInvoices').catch(() => []),
     ]);
-
-    const pubRows = pubRes.success ? (pubRes.data || []) : [];
-    const invRows = invRes.success ? (invRes.data || []) : [];
 
     const pubTotal = pubRows.reduce((s,r) => s + (parseFloat(r['Amount'])||0), 0);
 
