@@ -314,9 +314,10 @@
 
     .inv-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
 
-    .inv-status-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-family: var(--font-mono); font-size: 10px; font-weight: 700; }
-    .inv-status-badge.ok { background: rgba(34,197,94,0.12); color: var(--green); border: 1px solid rgba(34,197,94,0.25); }
-    .inv-status-badge.review { background: rgba(245,158,11,0.12); color: var(--amber); border: 1px solid rgba(245,158,11,0.25); }
+    .inv-status-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-family: var(--font-mono); font-size: 10px; font-weight: 700; cursor: pointer; user-select: none; transition: opacity 0.15s; }
+    .inv-status-badge:hover { opacity: 0.75; }
+    .inv-status-badge.paid { background: rgba(34,197,94,0.12); color: var(--green); border: 1px solid rgba(34,197,94,0.25); }
+    .inv-status-badge.waiting { background: rgba(245,158,11,0.12); color: var(--amber); border: 1px solid rgba(245,158,11,0.25); }
 
     .inv-filename { font-family: var(--font-mono); font-size: 10px; color: var(--muted); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
@@ -758,14 +759,14 @@
           <div class="card-sub">sum of invoices</div>
         </div>
         <div class="summary-card green" style="animation-delay:0.15s">
-          <div class="card-label">Extracted</div>
+          <div class="card-label">Paid</div>
           <div class="card-value" id="invExtracted" style="font-family:Arial">0</div>
-          <div class="card-sub">fully parsed</div>
+          <div class="card-sub">fully paid</div>
         </div>
         <div class="summary-card red" style="animation-delay:0.2s">
-          <div class="card-label">Need Review</div>
+          <div class="card-label">Waiting</div>
           <div class="card-value" id="invReview" style="font-family:Arial">0</div>
-          <div class="card-sub">manual check needed</div>
+          <div class="card-sub">pending payment</div>
         </div>
       </div>
 
@@ -2118,8 +2119,8 @@
 
     const hasData = invoices.length > 0;
     const total = invoices.reduce((s,inv) => s+(parseFloat(inv.amount)||0), 0);
-    const extracted = invoices.filter(inv => inv.status === 'ok').length;
-    const review = invoices.filter(inv => inv.status === 'review').length;
+    const extracted = invoices.filter(inv => inv.status === 'paid').length;
+    const review = invoices.filter(inv => inv.status !== 'paid').length;
 
     document.getElementById('invSummaryGrid').style.display = hasData ? 'grid' : 'none';
     document.getElementById('invToolbar').style.display = hasData ? 'flex' : 'none';
@@ -2146,7 +2147,7 @@
           onclick="editInvAmount(this, ${i}, ${inv.amount||0})" style="cursor:pointer">
           $${Number(inv.amount||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
         </td>
-        <td><span class="inv-status-badge ${inv.status==='ok'?'ok':'review'}">${inv.status==='ok'?'✓ Extracted':'⚠ Review'}</span></td>
+        <td><span class="inv-status-badge ${inv.status==='paid'?'paid':'waiting'}" onclick="toggleInvStatus(${i}, this)">${inv.status==='paid'?'✓ Paid':'⏳ Waiting'}</span></td>
         <td>
           <div style="display:flex;align-items:center;gap:8px">
             <span class="inv-filename" title="${esc(inv.filename)}">${esc(inv.filename)}</span>
@@ -2176,14 +2177,34 @@
     input.select();
   }
 
-  async function updateInvoice(i, field, value) {
+  function toggleInvStatus(i, badge) {
+    if (!canEditTab('internal')) { showToast('⚠ No edit access to Internal Sources'); return; }
+    const newStatus = (badge.classList.contains('paid')) ? 'waiting' : 'paid';
+
+    // Update badge instantly
+    badge.classList.toggle('paid', newStatus === 'paid');
+    badge.classList.toggle('waiting', newStatus === 'waiting');
+    badge.textContent = newStatus === 'paid' ? '✓ Paid' : '⏳ Waiting';
+
+    // Update summary counters instantly
+    const paid = document.querySelectorAll('#invBody .inv-status-badge.paid').length;
+    const waiting = document.querySelectorAll('#invBody .inv-status-badge.waiting').length;
+    document.getElementById('invExtracted').textContent = paid;
+    document.getElementById('invReview').textContent = waiting;
+
+    // Save in background, skip re-render (badge already updated above)
+    _invalidateCache('inv_');
+    updateInvoice(i, 'status', newStatus, true);
+  }
+
+  async function updateInvoice(i, field, value, silent = false) {
     if (!canEditTab('internal')) { showToast('⚠ No edit access to Internal Sources'); return; }
     _invalidateCache('inv_');
     try {
       await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'updateInvoice', period: periodKey(), index: i, field, value }) });
-      showToast();
+      if (!silent) showToast();
     } catch { showToast('⚠ Update failed'); }
-    renderInvoices();
+    if (!silent) renderInvoices();
   }
 
   async function deleteInvoice(i) {
@@ -2694,7 +2715,7 @@
         <td class="mono" style="white-space:nowrap;color:var(--accent-light)">${shortMonths[e.month]} ${e.year}</td>
         <td class="mono text-muted" style="font-size:11px">${esc(e.invoiceNum||'—')}</td>
         <td class="mono text-green" style="font-weight:700;white-space:nowrap">$${Number(e.amount).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
-        <td><span class="inv-status-badge ${e.status==='ok'?'ok':'review'}">${e.status==='ok'?'✓ Extracted':'⚠ Review'}</span></td>
+        <td><span class="inv-status-badge ${e.status==='paid'?'paid':'waiting'}">${e.status==='paid'?'✓ Paid':'⏳ Waiting'}</span></td>
         <td class="text-muted">—</td>
       </tr>`).join('');
 
