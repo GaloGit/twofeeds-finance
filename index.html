@@ -521,7 +521,7 @@
           <span id="roleBadge" style="display:none;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700"></span>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.0.4</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.0.5</span>
           </div>
           <div style="display:flex;flex-direction:column;gap:5px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
@@ -1348,6 +1348,13 @@
   // ── CAMPAIGN MANAGERS ──
   let campaignMgrs = [];
 
+  function countryFlag(code) {
+    if (!code || code.length !== 2) return '';
+    try {
+      return String.fromCodePoint(...[...code.toUpperCase()].map(c => 0x1F1E6 + c.charCodeAt(0) - 65));
+    } catch { return ''; }
+  }
+
   function calcCmDuration(startDate, endDate) {
     if (!startDate) return '—';
     const start = new Date(startDate);
@@ -1397,10 +1404,16 @@
       const startFmt = m.startDate ? new Date(m.startDate).toLocaleDateString() : '—';
       const endFmt   = m.endDate   ? new Date(m.endDate).toLocaleDateString()   : '—';
       const addedFmt = m.added     ? new Date(m.added).toLocaleDateString()     : '—';
+      const flag     = countryFlag(m.country||'');
+      const avatar   = m.photoUrl
+        ? `<img src="${esc(m.photoUrl)}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--border);margin-right:8px;vertical-align:middle;flex-shrink:0" onerror="this.style.display='none'">`
+        : `<span style="width:32px;height:32px;border-radius:50%;background:var(--surface3);border:2px solid var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--muted);margin-right:8px;vertical-align:middle;flex-shrink:0">${esc((m.name||'?')[0].toUpperCase())}</span>`;
       return `
       <tr style="cursor:pointer" onclick="toggleCmRow(${i}, event)">
         <td class="mono text-muted">${i+1}</td>
-        <td style="white-space:nowrap;font-weight:600;min-width:140px">${esc(m.name||'—')}</td>
+        <td style="white-space:nowrap;font-weight:600;min-width:140px">
+          <div style="display:flex;align-items:center">${avatar}${esc(m.name||'—')} ${flag}</div>
+        </td>
         <td style="font-family:var(--font-mono);font-size:11px">${esc(m.email||'—')}</td>
         <td style="white-space:nowrap">
           <span class="cm-status ${isLive ? 'cm-live' : 'cm-paused'}"
@@ -1419,6 +1432,17 @@
       <tr id="cmDetail_${i}" style="display:none">
         <td colspan="6" style="padding:0">
           <div style="background:var(--surface2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:16px 20px">
+            <!-- Avatar header -->
+            <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+              ${m.photoUrl
+                ? `<img src="${esc(m.photoUrl)}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:3px solid var(--accent);box-shadow:0 0 20px var(--accent-glow);flex-shrink:0" onerror="this.style.display='none'">`
+                : `<div style="width:64px;height:64px;border-radius:50%;background:var(--surface3);border:3px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:var(--accent-light);flex-shrink:0">${esc((m.name||'?')[0].toUpperCase())}</div>`}
+              <div>
+                <div style="font-size:18px;font-weight:700">${esc(m.name||'—')} <span style="font-size:22px">${flag}</span></div>
+                <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">${esc(m.email||'')}</div>
+                <div style="font-family:var(--font-mono);font-size:10px;color:${isLive?'var(--green)':'var(--amber)'};margin-top:2px">${isLive?'🟢 Live':'⏸ Paused'} · ${duration}</div>
+              </div>
+            </div>
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px">
               <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Name</div>
@@ -1437,8 +1461,20 @@
                 <input class="editable" value="${esc(m.campaigns||'')}" onblur="updateCampaignMgr(${i},'campaigns',this.value)" placeholder="DSP, Push…" style="width:100%"/>
               </div>
               <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Country Code</div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <input class="editable mono" value="${esc(m.country||'')}" onblur="updateCampaignMgr(${i},'country',this.value)" placeholder="US / GB / DE…" maxlength="2" style="width:80px;text-transform:uppercase"/>
+                  <span style="font-size:24px" id="cmFlag_${i}">${flag||'🏳️'}</span>
+                </div>
+              </div>
+              <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Commission Paid</div>
                 <input class="editable mono" value="${esc(m.commission||'')}" onblur="updateCampaignMgr(${i},'commission',this.value)" placeholder="e.g. $500 / 10%" style="width:100%"/>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Photo URL</div>
+                <input class="editable mono" value="${esc(m.photoUrl||'')}" onblur="updateCampaignMgr(${i},'photoUrl',this.value)" placeholder="https://… (Drive/Dropbox link)" style="width:100%"/>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:3px">Paste any public image URL</div>
               </div>
               <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Start Date</div>
@@ -1499,7 +1535,7 @@
     const endDate   = document.getElementById('cmEndDate').value;
     const notes     = document.getElementById('cmNotes').value.trim();
     if (!name) { showToast('⚠ Name is required'); return; }
-    campaignMgrs.push({ name, email, phone, campaigns, status, startDate, endDate, notes, commission: '', added: new Date().toISOString() });
+    campaignMgrs.push({ name, email, phone, campaigns, status, startDate, endDate, notes, commission: '', country: '', photoUrl: '', added: new Date().toISOString() });
     _renderCmTable();
     ['cmName','cmEmail','cmPhone','cmCampaigns','cmNotes','cmStartDate','cmEndDate'].forEach(id => { document.getElementById(id).value = ''; });
     document.getElementById('cmStatus').value = 'live';
@@ -1510,7 +1546,19 @@
 
   async function updateCampaignMgr(i, field, value) {
     if (!campaignMgrs[i]) return;
+    if (field === 'country') value = value.toUpperCase().slice(0, 2);
     campaignMgrs[i][field] = value;
+    // Live-update flag emoji
+    if (field === 'country') {
+      const flagEl = document.getElementById('cmFlag_' + i);
+      if (flagEl) flagEl.textContent = countryFlag(value) || '🏳️';
+    }
+    // Re-render table row when photo or name changes so avatar updates
+    if (field === 'photoUrl' || field === 'name') {
+      _invalidateCmCache();
+      _renderCmTable();
+      return;
+    }
     // Recalculate duration live in the detail panel
     const isLive   = (campaignMgrs[i].status || 'live') === 'live';
     const duration = calcCmDuration(campaignMgrs[i].startDate, isLive ? null : campaignMgrs[i].endDate);
