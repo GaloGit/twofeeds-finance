@@ -1918,8 +1918,60 @@
   // ── INIT ──
   function init() {
     buildPeriodPicker();
-    renderPublishers();
+    prefetchAllData();   // fetch all tabs in parallel at login
     startCountdown();
+  }
+
+  // Fetch all tab data in parallel and store in _rawCache so tab switches are instant
+  async function prefetchAllData() {
+    const pk = periodKey();
+    try {
+      const [pubData, invData, mbData] = await Promise.all([
+        fetchPeriodData('getPublishers').catch(() => []),
+        fetchPeriodData('getInvoices').catch(() => []),
+        fetchPeriodData('getMediaBuying').catch(() => []),
+      ]);
+
+      // Publishers
+      _rawCache['pub_' + pk] = pubData.map((r, idx) => ({
+        id: idx,
+        name: r['Publisher Name'] || '',
+        platform: r['Platform'] || '',
+        amount: parseFloat(r['Amount']) || 0,
+        notes: r['Notes'] || '',
+        approval: r['Approval'] || '',
+      }));
+
+      // Invoices (with date normalisation)
+      _rawCache['inv_' + pk] = invData.map((r, idx) => {
+        let date = r['Date'] || '';
+        if (date instanceof Date || (typeof date === 'object' && date !== null)) {
+          date = date.toISOString ? date.toISOString().split('T')[0] : '';
+        } else if (typeof date === 'number') {
+          date = new Date((date - 25569) * 86400 * 1000).toISOString().split('T')[0];
+        } else {
+          date = String(date).trim();
+          if (/^\d{4}-\d{2}-\d{2}T/.test(date)) {
+            const d = new Date(date);
+            date = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+          }
+        }
+        return { id: idx, vendor: r['Vendor']||'', invoiceNum: r['Invoice #']||'', date, amount: parseFloat(r['Amount'])||0, status: r['Status']||'ok', filename: r['Filename']||'' };
+      });
+
+      // Media Buying
+      _rawCache['mb_' + pk] = mbData.map((r, idx) => ({
+        id: idx, dsp: r['DSP']||'', geo: r['GEO']||'', cpc: parseFloat(r['CPC'])||0,
+      }));
+
+      // Raw API rows for Cost Summary (reuses same responses)
+      _rawCache['pub_' + pk + '_raw'] = pubData;
+      _rawCache['inv_' + pk + '_raw'] = invData;
+
+    } catch { /* silent — individual tabs will fall back to their own fetch */ }
+
+    // Now render the active tab (Publishers) from cache
+    renderPublishers();
   }
 
   // ── PERIOD PICKER ──
