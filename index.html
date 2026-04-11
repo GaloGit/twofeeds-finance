@@ -521,7 +521,7 @@
           <span id="roleBadge" style="display:none;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700"></span>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v3.8</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v3.9</span>
           </div>
           <div style="display:flex;flex-direction:column;gap:5px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
@@ -3068,7 +3068,7 @@
           ${isAdmin()||isEditor() ? `<button class="add-btn" style="padding:2px 8px;font-size:9px" onclick="deleteMedia(${r.id})">✕</button>` : ''}
         </td>
       </tr>`).join('') +
-      (isAdmin()||isEditor() ? `<tr class="add-row"><td colspan="4"><button class="add-btn" onclick="addMediaRow()">+ Add Row Manually</button></td></tr>` : '');
+      (isAdmin()||isEditor() ? `<tr class="add-row"><td colspan="5"><button class="add-btn" onclick="addMediaRow()">+ Add Row Manually</button></td></tr>` : '');
 
     setTimeout(() => renderMbChart(all), 50);
   }
