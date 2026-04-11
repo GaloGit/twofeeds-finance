@@ -1265,7 +1265,7 @@
         <td>
           <div style="display:flex;gap:6px;flex-wrap:wrap">
             <button onclick="togglePermsRow(${i})" style="${btnBase} var(--accent);background:rgba(124,58,237,0.15);color:var(--accent-light)">⚡ Access</button>
-            <button onclick="toggleUserRole(${i})" style="${btnBase} var(--border);background:var(--surface2);color:var(--muted)">
+            <button onclick="toggleUserRole(${i}, this)" style="${btnBase} var(--border);background:var(--surface2);color:var(--muted)">
               → ${u.role === 'editor' ? 'Viewer' : 'Editor'}
             </button>
             <button onclick="removeSettingsUser(${i})" style="${btnBase} var(--border);background:transparent;color:var(--red)">✕</button>
@@ -1310,11 +1310,26 @@
     renderSettings();
   }
 
-  async function toggleUserRole(i) {
-    settingsUsers[i].role = settingsUsers[i].role === 'editor' ? 'viewer' : 'editor';
-    await saveSettings();
-    showToast('✓ Role updated');
-    renderSettings();
+  function toggleUserRole(i, btn) {
+    const newRole = settingsUsers[i].role === 'editor' ? 'viewer' : 'editor';
+    settingsUsers[i].role = newRole;
+
+    // Update button text instantly
+    if (btn) btn.textContent = `→ ${newRole === 'editor' ? 'Viewer' : 'Editor'}`;
+
+    // Update role badge in the same row instantly
+    if (btn) {
+      const badge = btn.closest('tr')?.cells[2]?.querySelector('span');
+      if (badge) {
+        badge.textContent = newRole === 'editor' ? '✏️ Editor' : '👁 Viewer';
+        badge.style.cssText = newRole === 'editor'
+          ? 'font-family:var(--font-mono);font-size:10px;font-weight:700;padding:3px 10px;border-radius:4px;background:rgba(124,58,237,0.2);color:var(--accent-light);border:1px solid var(--accent)'
+          : 'font-family:var(--font-mono);font-size:10px;font-weight:700;padding:3px 10px;border-radius:4px;background:rgba(245,158,11,0.15);color:var(--amber);border:1px solid var(--amber)';
+      }
+    }
+
+    // Save in background
+    saveSettings().then(() => showToast('✓ Role updated'));
   }
 
   function togglePermsRow(i) {
