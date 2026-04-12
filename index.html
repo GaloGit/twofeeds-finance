@@ -2874,6 +2874,52 @@
     }, isError ? 4000 : 2000);
   }
 
+  // ── CONFIRM MODAL ──
+  function showConfirmModal(message, confirmLabel = 'Confirm', cancelLabel = 'Cancel') {
+    return new Promise(resolve => {
+      // Remove any existing confirm modal
+      const old = document.getElementById('confirmModal');
+      if (old) old.remove();
+
+      const overlay = document.createElement('div');
+      overlay.id = 'confirmModal';
+      overlay.style.cssText = `
+        position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.6);
+        display:flex;align-items:center;justify-content:center;
+      `;
+
+      overlay.innerHTML = `
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;
+                    padding:28px 32px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+          <p style="margin:0 0 22px;font-size:14px;line-height:1.6;color:var(--text)">${message}</p>
+          <div style="display:flex;justify-content:flex-end;gap:10px">
+            <button id="confirmModalCancel"
+              style="padding:8px 18px;border-radius:7px;border:1px solid var(--border);background:transparent;
+                     color:var(--muted);font-size:13px;cursor:pointer">
+              ${cancelLabel}
+            </button>
+            <button id="confirmModalOk"
+              style="padding:8px 18px;border-radius:7px;border:none;background:var(--red);
+                     color:#fff;font-size:13px;font-weight:600;cursor:pointer">
+              ${confirmLabel}
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(overlay);
+
+      const cleanup = (result) => {
+        overlay.remove();
+        resolve(result);
+      };
+
+      document.getElementById('confirmModalOk').addEventListener('click', () => cleanup(true));
+      document.getElementById('confirmModalCancel').addEventListener('click', () => cleanup(false));
+      overlay.addEventListener('click', e => { if (e.target === overlay) cleanup(false); });
+    });
+  }
+
   // ── NAV ──
   function showTab(name, btn) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -2924,11 +2970,26 @@
       const rows = parseCSV(text);
       const user = localStorage.getItem('tf_current_user') || 'unknown';
       const timestamp = new Date().toISOString();
+
+      // Check for existing data in this period
+      const existing = _rawCache['pub_' + periodKey()] || [];
+      if (existing.length > 0) {
+        const confirmed = await showConfirmModal(
+          `This period already has <strong>${existing.length}</strong> publisher${existing.length !== 1 ? 's' : ''}.<br>Uploading will <strong>replace all of them</strong> with the ${rows.length} row${rows.length !== 1 ? 's' : ''} from this file.`,
+          'Replace All', 'Cancel'
+        );
+        if (!confirmed) {
+          document.getElementById('csvFileInput').value = '';
+          return;
+        }
+      }
+
       try {
         await fetch(FINANCE_API, {
           method: 'POST',
           body: JSON.stringify({ action: 'savePublishers', period: periodKey(), rows, user, timestamp })
         });
+        _invalidateCache('pub_');
         logActivity('import_publishers', `Imported ${rows.length} publishers for ${periodKey()}`);
         showToast('✓ CSV imported — ' + rows.length + ' publishers');
         renderPublishers();
@@ -3234,12 +3295,23 @@
       return true;
     });
     if (!fileArr.length) return;
+    let skippedCount = 0;
+    let savedCount = 0;
     for (let i = 0; i < fileArr.length; i++) {
       const file = fileArr[i];
       const procEl = document.getElementById('invProcessing');
       const procText = document.getElementById('invProcText');
       procEl.style.display = 'flex';
       procText.textContent = `Extracting "${file.name}" (${i+1}/${fileArr.length})...`;
+
+      // Duplicate check — skip if filename already exists for this period
+      const existingInvoices = _rawCache['inv_' + periodKey()] || [];
+      const isDuplicate = existingInvoices.some(inv => (inv.filename || inv.Filename || '') === file.name);
+      if (isDuplicate) {
+        skippedCount++;
+        continue;
+      }
+
       try {
         const extracted = await extractInvoiceWithAI(file);
 
@@ -3250,7 +3322,9 @@
           const invoice = { vendor: '', invoiceNum: '', date: '', amount: 0, status: 'review', filename: file.name };
           const user = localStorage.getItem('tf_current_user') || 'unknown';
           await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'saveInvoice', period: periodKey(), invoice, user }) });
-          renderInvoices();
+          _invalidateCache('inv_');
+          savedCount++;
+          await renderInvoices();
           continue;
         }
 
@@ -3264,9 +3338,10 @@
         };
         const user = localStorage.getItem('tf_current_user') || 'unknown';
         await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'saveInvoice', period: periodKey(), invoice, user }) });
+        _invalidateCache('inv_');
         logActivity('add_invoice', `Extracted invoice "${file.name}" for ${periodKey()}`);
-        showToast(`✓ "${file.name}" extracted successfully`);
-        renderInvoices();
+        savedCount++;
+        await renderInvoices();
       } catch(err) {
         console.error('Invoice extraction error:', err);
         // Show error — do NOT save empty record
@@ -3276,7 +3351,13 @@
     }
     document.getElementById('invProcessing').style.display = 'none';
     document.getElementById('invFileInput').value = '';
-    showToast(`✓ ${fileArr.length} invoice${fileArr.length!==1?'s':''} processed`);
+    if (skippedCount > 0 && savedCount > 0) {
+      showToast(`✓ ${savedCount} invoice${savedCount!==1?'s':''} added — ${skippedCount} duplicate${skippedCount!==1?'s':''} skipped`);
+    } else if (skippedCount > 0 && savedCount === 0) {
+      showToast(`⚠ All ${skippedCount} file${skippedCount!==1?'s':''} already exist for this period — nothing added`);
+    } else {
+      showToast(`✓ ${savedCount} invoice${savedCount!==1?'s':''} processed`);
+    }
   }
 
   async function extractInvoiceWithAI(file) {
