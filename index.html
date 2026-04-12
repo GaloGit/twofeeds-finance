@@ -530,7 +530,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.3.4</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.3.5</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1970,7 +1970,12 @@
         <td onmousedown="siGripDown(event,${i})" onmouseup="siGripUp()" style="cursor:grab;color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center;opacity:0.45">⠿</td>
         <td class="mono text-muted">${i+1}</td>
         <td style="padding:6px 12px">${preview}</td>
-        <td style="font-family:var(--font-mono);font-size:12px;font-weight:600;min-width:140px">${esc(s.name)}</td>
+        <td style="min-width:140px">
+          <input class="editable" value="${esc(s.name)}"
+            onblur="siNameConfirm(${i},this.value)"
+            onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape'){this.value='${esc(s.name)}';this.blur();}"
+            style="font-family:var(--font-mono);font-size:12px;font-weight:600;width:100%"/>
+        </td>
         <td>
           <select id="siTypeSelect_${i}" onchange="siTypeChange(${i},this.value);_applyTypeSelectColor(this,this.value)"
             style="${_siTypeSelectStyle(s.type||'')};border:1px solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none">
@@ -2068,6 +2073,18 @@
     await _saveSourcesInfo();
     showToast('✓ Logo saved');
     logActivity('sources_info', `Updated logo for ${sourcesInfo[i].name}`);
+  }
+
+  async function siNameConfirm(i, newName) {
+    const trimmed = newName.trim();
+    if (!trimmed || !sourcesInfo[i]) return;
+    if (trimmed === sourcesInfo[i].name) return; // no change
+    sourcesInfo[i].name = trimmed;
+    _buildSourcesMap();
+    _renderSiTable();
+    await _saveSourcesInfo();
+    showToast('✓ Name updated');
+    logActivity('sources_info', `Renamed source to "${trimmed}"`);
   }
 
   async function addSourcesInfoEntry() {
