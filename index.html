@@ -530,7 +530,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.2.8</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.2.9</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -626,6 +626,7 @@
           <table>
             <thead>
               <tr>
+                <th style="width:22px"></th>
                 <th>#</th>
                 <th>Publisher Name</th>
                 <th>Platform</th>
@@ -3153,52 +3154,49 @@
     const tbody = document.getElementById('publisherBody');
     const existingRows = tbody.querySelectorAll('tr:not(.add-row):not(.total-row)');
 
-    // ── Try in-place patch (same rows, only values changed) ──
-    if (existingRows.length === filtered.length) {
-      filtered.forEach((p, i) => {
-        const row = existingRows[i];
-        if (!row) return;
-        const fmtAmt = '$' + Number(p.amount).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
-        // patch amount cell (col 3) — most likely to change
-        _patchText(row, 3, fmtAmt);
-        // patch input values without disrupting focus
-        const inputs = row.querySelectorAll('input.editable');
-        if (inputs[0] && document.activeElement !== inputs[0]) inputs[0].value = p.name;
-        if (inputs[1] && document.activeElement !== inputs[1]) inputs[1].value = p.platform;
-        if (inputs[2] && document.activeElement !== inputs[2]) inputs[2].value = p.notes;
-      });
-      setTimeout(() => renderPubChart(all), 50);
-      return;
-    }
+    const canEdit = isAdmin() || isEditor();
+    const canDrag = canEdit && !search;
 
-    // ── Full rebuild only when row count changed ──
+    // ── Full rebuild ──
     tbody.innerHTML = filtered.map((p, i) => {
       const fmtAmt = '$' + Number(p.amount).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
       const shortName = (p.name||'').replace(/\s*\(.*?\)\s*/g,'').trim();
       const approvalText = `${shortName} Numbers Approval mail ${_approvalPeriod}`;
-      const approvalCell = p.approval
-        ? `<a href="${esc(p.approval)}" target="_blank" style="color:var(--accent-light);text-decoration:none;font-family:var(--font-mono);font-size:11px;white-space:nowrap;border-bottom:1px solid var(--border);padding-bottom:1px;" title="${esc(p.approval)}">${esc(approvalText)}</a>`
-        : `<span class="text-muted" style="font-family:var(--font-mono);font-size:10px;">—</span>`;
       return `
-      <tr style="animation-delay:${i*0.03}s">
+      <tr draggable="${canDrag}" ondragstart="if(!_pubDragEnabled){event.preventDefault();return;}_pubDragEnabled=false;pubDragStart(event,${i})" ondragover="pubDragOver(event,${i})" ondrop="pubDrop(event,${i})" ondragleave="pubDragLeave(event)" style="animation-delay:${i*0.03}s">
+        <td onmousedown="_pubDragEnabled=${canDrag}" style="cursor:${canDrag?'grab':'default'};color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center;opacity:${canDrag?'0.45':'0'}">⠿</td>
         <td class="mono text-muted">${i+1}</td>
         <td><div style="display:flex;align-items:center;gap:8px">${getSourceLogo(p.name,26)}<input class="editable" value="${esc(p.name)}" onblur="updatePub('${p.id}','name',this.value)" placeholder="Publisher name" style="min-width:0;flex:1"/></div></td>
         <td><input class="editable" value="${esc(p.platform)}" onblur="updatePub('${p.id}','platform',this.value)" placeholder="Platform" style="width:120px"/></td>
-        <td class="mono text-green" style="white-space:nowrap;font-weight:700">${fmtAmt}</td>
-        <td>${approvalCell}</td>
+        <td><input class="editable" value="${esc(fmtAmt)}" onfocus="this.value='${p.amount||0}';this.select()" onblur="pubAmtBlur('${p.id}',this)" style="width:110px;font-family:var(--font-mono);color:var(--green);font-weight:700;text-align:right"/></td>
+        <td style="min-width:180px">
+          <div id="pubApprView_${p.id}" style="display:flex;align-items:center;gap:5px">
+            ${p.approval
+              ? `<a href="${esc(p.approval)}" target="_blank" style="color:var(--accent-light);text-decoration:none;font-family:var(--font-mono);font-size:11px;white-space:nowrap;border-bottom:1px solid var(--border);padding-bottom:1px" title="${esc(p.approval)}">${esc(approvalText)}</a>`
+              : `<span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">—</span>`}
+            ${canEdit ? `<button onclick="pubEditApproval('${p.id}')" title="Edit URL" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:0 3px;line-height:1;opacity:0.6">✏</button>` : ''}
+          </div>
+          ${canEdit ? `<div id="pubApprEdit_${p.id}" style="display:none;align-items:center;gap:4px">
+            <input id="pubApprUrl_${p.id}" value="${esc(p.approval||'')}" placeholder="Paste approval URL…"
+              onkeydown="if(event.key==='Enter')pubSaveApproval('${p.id}',this.value);if(event.key==='Escape')pubCancelApproval('${p.id}')"
+              style="flex:1;min-width:140px;background:transparent;border:none;border-bottom:1px solid var(--accent);padding:2px 4px;font-family:var(--font-mono);font-size:11px;color:var(--text);outline:none"/>
+            <button onclick="pubSaveApproval('${p.id}',document.getElementById('pubApprUrl_${p.id}').value)" style="width:18px;height:18px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:10px;cursor:pointer;flex-shrink:0">✓</button>
+            <button onclick="pubCancelApproval('${p.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;line-height:1">✕</button>
+          </div>` : ''}
+        </td>
         <td style="display:flex;align-items:center;gap:8px">
-          <input class="editable" value="${esc(p.notes)}" onblur="updatePub('${p.id}','notes',this.value)" placeholder="Notes..." ${isAdmin()||isEditor()?'':'readonly style="cursor:default"'}/>
-          ${isAdmin()||isEditor() ? `<button class="add-btn" style="padding:2px 8px;font-size:9px;white-space:nowrap" onclick="deletePub('${p.id}')">✕</button>` : ''}
+          <input class="editable" value="${esc(p.notes)}" onblur="updatePub('${p.id}','notes',this.value)" placeholder="Notes..." ${canEdit?'':'readonly style="cursor:default"'}/>
+          ${canEdit ? `<button class="add-btn" style="padding:2px 8px;font-size:9px;white-space:nowrap" onclick="deletePub('${p.id}')">✕</button>` : ''}
         </td>
       </tr>`;
     }).join('') +
-      (isAdmin()||isEditor() ? `<tr class="add-row"><td colspan="6"><button class="add-btn" onclick="addPubRow()">+ Add Publisher Manually</button></td></tr>` : '');
+      (canEdit ? `<tr class="add-row"><td colspan="7"><button class="add-btn" onclick="addPubRow()">+ Add Publisher Manually</button></td></tr>` : '');
 
     // ── Pinned total row in tfoot ──
     const pubTfoot = document.getElementById('publisherTfoot');
     if (pubTfoot) pubTfoot.innerHTML = `
       <tr>
-        <td colspan="3" style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.08em;padding:12px 18px;text-transform:uppercase">Total</td>
+        <td colspan="4" style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.08em;padding:12px 18px;text-transform:uppercase">Total</td>
         <td class="mono text-green" style="font-size:15px;font-weight:700;white-space:nowrap;padding:12px 18px">${fmt(filtered.reduce((s,p)=>s+(parseFloat(p.amount)||0),0))}</td>
         <td colspan="2"></td>
       </tr>`;
@@ -3220,21 +3218,33 @@
     _rawCache['cm'] = campaignMgrs; // keep rawCache in sync, clear diff cache
   }
 
+  // ── Publisher save helper (uses in-memory cache, no double-fetch) ──
+  function _pubCacheKey() { return 'pub_' + periodKey(); }
+  function _pubInvalidateDiff() {
+    const k = _pubCacheKey();
+    delete _cache[k];
+    delete _rawCache[k + '_raw'];
+    delete _cache['cs_' + periodKey()];
+  }
+  async function _pubSaveRows(rows) {
+    const user = localStorage.getItem('tf_current_user') || 'unknown';
+    await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({
+      action:'savePublishers', period: periodKey(), rows, user, timestamp: new Date().toISOString()
+    }) });
+  }
+
   async function updatePub(id, field, value) {
     if (!canEditTab('publishers')) { showToast('⚠ No edit access to Publishers'); return; }
-    _invalidateCache('pub_');
-    // Get current data from sheet, update, save back
+    const rows = (_rawCache[_pubCacheKey()] || []).map(r => ({...r}));
+    const r = rows.find(r => String(r.id) === String(id));
+    if (!r) return;
+    const newVal = field === 'amount' ? (parseFloat(value)||0) : value;
+    if (String(r[field]) === String(newVal)) return; // no change
+    r[field] = newVal;
+    _rawCache[_pubCacheKey()] = rows;
+    _pubInvalidateDiff();
     try {
-      const res = await fetch(`${FINANCE_API}?action=getPublishers&period=${periodKey()}`);
-      const json = await res.json();
-      const rows = (json.data || []).map((r, idx) => ({
-        id: idx, name: r['Publisher Name']||'', platform: r['Platform']||'',
-        amount: parseFloat(r['Amount'])||0, notes: r['Notes']||'', approval: r['Approval']||'',
-      }));
-      const r = rows.find(r => String(r.id) === String(id));
-      if (r) r[field] = field === 'amount' ? parseFloat(value)||0 : value;
-      const user = localStorage.getItem('tf_current_user') || 'unknown';
-      await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'savePublishers', period: periodKey(), rows, user, timestamp: new Date().toISOString() }) });
+      await _pubSaveRows(rows);
       logActivity('edit_publisher', `Updated ${field} for publisher #${id} in ${periodKey()}`);
       showToast();
     } catch { showToast('⚠ Save failed'); }
@@ -3243,17 +3253,13 @@
 
   async function deletePub(id) {
     if (!canEditTab('publishers')) { showToast('⚠ No edit access to Publishers'); return; }
-    _invalidateCache('pub_');
     if (!confirmDelete('Delete this publisher from the list?')) return;
+    const rows = (_rawCache[_pubCacheKey()] || []).filter(r => String(r.id) !== String(id));
+    rows.forEach((r, i) => r.id = i);
+    _rawCache[_pubCacheKey()] = rows;
+    _pubInvalidateDiff();
     try {
-      const res = await fetch(`${FINANCE_API}?action=getPublishers&period=${periodKey()}`);
-      const json = await res.json();
-      const rows = (json.data || []).map((r, idx) => ({
-        id: idx, name: r['Publisher Name']||'', platform: r['Platform']||'',
-        amount: parseFloat(r['Amount'])||0, notes: r['Notes']||'', approval: r['Approval']||'',
-      })).filter(r => String(r.id) !== String(id));
-      const user = localStorage.getItem('tf_current_user') || 'unknown';
-      await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'savePublishers', period: periodKey(), rows, user, timestamp: new Date().toISOString() }) });
+      await _pubSaveRows(rows);
       logActivity('delete_publisher', `Deleted publisher #${id} from ${periodKey()}`);
     } catch { showToast('⚠ Delete failed'); }
     renderPublishers();
@@ -3262,20 +3268,76 @@
   async function addPubRow() {
     if (!canEditTab('publishers')) { showToast('⚠ No edit access to Publishers'); return; }
     if (!isSinglePeriod()) { showToast('⚠ Select a single month to add rows'); return; }
-    _invalidateCache('pub_');
+    const rows = (_rawCache[_pubCacheKey()] || []).map(r => ({...r}));
+    rows.push({ id: rows.length, name: '', platform: '', amount: 0, notes: '', approval: '' });
+    _rawCache[_pubCacheKey()] = rows;
+    _pubInvalidateDiff();
     try {
-      const res = await fetch(`${FINANCE_API}?action=getPublishers&period=${periodKey()}`);
-      const json = await res.json();
-      const rows = (json.data || []).map((r, idx) => ({
-        id: idx, name: r['Publisher Name']||'', platform: r['Platform']||'',
-        amount: parseFloat(r['Amount'])||0, notes: r['Notes']||'', approval: r['Approval']||'',
-      }));
-      rows.push({ id: rows.length, name: '', platform: '', amount: 0, notes: '', approval: '' });
-      const user = localStorage.getItem('tf_current_user') || 'unknown';
-      await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'savePublishers', period: periodKey(), rows, user, timestamp: new Date().toISOString() }) });
+      await _pubSaveRows(rows);
       logActivity('add_publisher', `Added new publisher row to ${periodKey()}`);
     } catch { showToast('⚠ Add failed'); }
     renderPublishers();
+  }
+
+  // ── Publisher amount inline editing ──
+  function pubAmtBlur(id, el) {
+    const raw = parseFloat(el.value) || 0;
+    el.value = '$' + Number(raw).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+    updatePub(id, 'amount', raw);
+  }
+
+  // ── Publisher approval inline editing ──
+  function pubEditApproval(id) {
+    const view = document.getElementById('pubApprView_' + id);
+    const edit = document.getElementById('pubApprEdit_' + id);
+    if (view) view.style.display = 'none';
+    if (edit) { edit.style.display = 'flex'; const inp = document.getElementById('pubApprUrl_' + id); if (inp) { inp.focus(); inp.select(); } }
+  }
+  function pubCancelApproval(id) {
+    const view = document.getElementById('pubApprView_' + id);
+    const edit = document.getElementById('pubApprEdit_' + id);
+    if (view) view.style.display = 'flex';
+    if (edit) edit.style.display = 'none';
+  }
+  async function pubSaveApproval(id, url) {
+    pubCancelApproval(id);
+    await updatePub(id, 'approval', url.trim());
+  }
+
+  // ── Publisher drag-and-drop reorder ──
+  let _pubDragFrom = null;
+  let _pubDragEnabled = false;
+
+  function pubDragStart(e, i) {
+    _pubDragFrom = i;
+    e.dataTransfer.effectAllowed = 'move';
+    setTimeout(() => { if (e.currentTarget) e.currentTarget.style.opacity = '0.45'; }, 0);
+  }
+  function pubDragOver(e, i) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    document.querySelectorAll('#publisherBody tr').forEach((r, j) => {
+      r.style.outline = j === i && j !== _pubDragFrom ? '1px dashed var(--accent)' : '';
+    });
+  }
+  function pubDragLeave(e) {
+    if (!e.currentTarget.contains(e.relatedTarget)) {
+      document.querySelectorAll('#publisherBody tr').forEach(r => r.style.outline = '');
+    }
+  }
+  function pubDrop(e, toI) {
+    e.preventDefault();
+    document.querySelectorAll('#publisherBody tr').forEach(r => { r.style.outline = ''; r.style.opacity = ''; });
+    if (_pubDragFrom === null || _pubDragFrom === toI) { _pubDragFrom = null; return; }
+    const data = (_rawCache[_pubCacheKey()] || []);
+    const moved = data.splice(_pubDragFrom, 1)[0];
+    data.splice(toI, 0, moved);
+    data.forEach((r, i) => r.id = i);
+    _rawCache[_pubCacheKey()] = data;
+    _pubInvalidateDiff();
+    _pubDragFrom = null;
+    renderPublishers();
+    _pubSaveRows(data).then(() => showToast('✓ Order saved')).catch(() => showToast('⚠ Failed to save order', true));
   }
 
   async function clearPublishers() {
