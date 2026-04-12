@@ -530,7 +530,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.2.6</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.2.7</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1113,6 +1113,13 @@
                 <option value="Platform">Platform</option>
               </select>
             </div>
+            <div style="flex:0 0 120px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Status</div>
+              <select id="siStatus" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none">
+                <option value="live">Live</option>
+                <option value="paused">Paused</option>
+              </select>
+            </div>
             <div style="flex:2;min-width:240px">
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Logo URL</div>
               <input type="text" id="siLogoUrl" placeholder="https://… (Drive link, direct image URL)"
@@ -1133,12 +1140,13 @@
                 <th style="width:48px">Logo</th>
                 <th>Source Name</th>
                 <th style="width:90px">Type</th>
+                <th style="width:100px">Status</th>
                 <th>Logo URL</th>
                 <th></th>
               </tr>
             </thead>
             <tbody id="siBody">
-              <tr><td colspan="6" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>
+              <tr><td colspan="7" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>
             </tbody>
           </table>
         </div>
@@ -1823,12 +1831,16 @@
   }
 
   // ── SOURCES INFO ──
-  let sourcesInfo = [];      // [{name, logoUrl}]
-  let sourcesMap  = {};      // lowercase name → logoUrl (fast lookup)
+  let sourcesInfo = [];      // [{name, type, logoUrl, status}]
+  let sourcesMap  = {};      // lowercase name → logoUrl (live sources only, fast lookup)
 
   function _buildSourcesMap() {
     sourcesMap = {};
-    sourcesInfo.forEach(s => { if (s.name) sourcesMap[s.name.trim().toLowerCase()] = s.logoUrl || ''; });
+    sourcesInfo.forEach(s => {
+      if (s.name && (s.status || 'live') === 'live') {
+        sourcesMap[s.name.trim().toLowerCase()] = s.logoUrl || '';
+      }
+    });
   }
 
   function getSourceLogo(name, size = 28) {
@@ -1876,21 +1888,29 @@
     return `<span style="font-family:var(--font-mono);font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;border:1px solid;white-space:nowrap;${s}">${esc(type||'—')}</span>`;
   }
 
+  function _siStatusBadge(status) {
+    const live = (status || 'live') === 'live';
+    return live
+      ? `<span style="font-family:var(--font-mono);font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;border:1px solid;background:rgba(34,197,94,0.12);color:var(--green);border-color:var(--green)">LIVE</span>`
+      : `<span style="font-family:var(--font-mono);font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;border:1px solid;background:rgba(100,116,139,0.12);color:var(--muted);border-color:var(--border)">PAUSED</span>`;
+  }
+
   function _renderSiTable() {
     const body = document.getElementById('siBody');
     if (!body) return;
     if (!sourcesInfo.length) {
-      body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No sources yet. Add one above.</td></tr>';
+      body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No sources yet. Add one above.</td></tr>';
       return;
     }
     body.innerHTML = sourcesInfo.map((s, i) => {
+      const isPaused = (s.status || 'live') === 'paused';
       const _resolved = s.logoUrl ? (resolvePhotoUrl(s.logoUrl) || s.logoUrl) : '';
       const _fallback = s.logoUrl && _driveId(s.logoUrl) ? `https://drive.google.com/uc?export=view&id=${_driveId(s.logoUrl)}` : '';
       const preview = s.logoUrl
-        ? `<img src="${esc(_resolved)}" style="width:36px;height:36px;border-radius:6px;object-fit:contain;background:var(--surface3)" onerror="${_fallback ? `this.src='${esc(_fallback)}';this.onerror=function(){this.style.display='none'};` : `this.style.display='none'`}">`
+        ? `<img src="${esc(_resolved)}" style="width:36px;height:36px;border-radius:6px;object-fit:contain;background:var(--surface3);${isPaused?'opacity:0.4':''}" onerror="${_fallback ? `this.src='${esc(_fallback)}';this.onerror=function(){this.style.display='none'};` : `this.style.display='none'`}">`
         : getSourceLogo(s.name, 36);
       return `
-      <tr>
+      <tr style="${isPaused ? 'opacity:0.55' : ''}">
         <td class="mono text-muted">${i+1}</td>
         <td style="padding:6px 12px">${preview}</td>
         <td style="font-family:var(--font-mono);font-size:12px;font-weight:600;min-width:140px">${esc(s.name)}</td>
@@ -1898,6 +1918,13 @@
           <select onchange="siTypeChange(${i},this.value)"
             style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;color:var(--text)">
             ${['DSP','RW','MB','Platform'].map(t => `<option value="${t}" ${(s.type||'')=== t?'selected':''}>${t}</option>`).join('')}
+          </select>
+        </td>
+        <td>
+          <select onchange="siStatusChange(${i},this.value)"
+            style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;color:var(--text)">
+            <option value="live" ${!isPaused?'selected':''}>Live</option>
+            <option value="paused" ${isPaused?'selected':''}>Paused</option>
           </select>
         </td>
         <td style="min-width:260px">
@@ -1925,6 +1952,15 @@
     sourcesInfo[i].type = value;
     await _saveSourcesInfo();
     showToast('✓ Type updated');
+  }
+
+  async function siStatusChange(i, value) {
+    if (!sourcesInfo[i]) return;
+    sourcesInfo[i].status = value;
+    _buildSourcesMap(); // paused sources are excluded from logo lookup
+    _renderSiTable();
+    await _saveSourcesInfo();
+    showToast(value === 'live' ? '✓ Status set to Live' : '✓ Status set to Paused');
   }
 
   async function renderSourcesInfo() {
@@ -1970,16 +2006,18 @@
   async function addSourcesInfoEntry() {
     const name    = document.getElementById('siName').value.trim();
     const type    = document.getElementById('siType').value;
+    const status  = document.getElementById('siStatus').value || 'live';
     const logoUrl = document.getElementById('siLogoUrl').value.trim();
     if (!name) { showToast('⚠ Source name is required', true); return; }
     const existing = sourcesInfo.find(s => s.name.toLowerCase() === name.toLowerCase());
-    if (existing) { existing.logoUrl = logoUrl; existing.type = type; }
-    else { sourcesInfo.push({ name, type, logoUrl }); }
+    if (existing) { existing.logoUrl = logoUrl; existing.type = type; existing.status = status; }
+    else { sourcesInfo.push({ name, type, status, logoUrl }); }
     _buildSourcesMap();
     _renderSiTable();
     document.getElementById('siName').value = '';
     document.getElementById('siLogoUrl').value = '';
     document.getElementById('siType').value = 'DSP';
+    document.getElementById('siStatus').value = 'live';
     // Collapse form
     const fb = document.getElementById('siFormBody');
     const fa = document.getElementById('siFormArrow');
