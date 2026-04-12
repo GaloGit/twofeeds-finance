@@ -530,7 +530,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.1.9</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.2.0</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1830,22 +1830,26 @@
       return `
       <tr>
         <td class="mono text-muted">${i+1}</td>
-        <td style="font-family:var(--font-mono);font-size:12px">${esc(u.email)}</td>
+        <td style="font-family:var(--font-mono);font-size:12px;min-width:180px">
+          <input value="${esc(u.email)}"
+            onblur="updateSettingsUser(${i},'email',this.value)"
+            style="width:100%;background:transparent;border:none;border-bottom:1px solid transparent;border-radius:0;padding:2px 4px;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none;transition:border-color 0.15s"
+            onfocus="this.style.borderBottomColor='var(--accent)'"
+            onblur="this.style.borderBottomColor='transparent';updateSettingsUser(${i},'email',this.value)"
+            title="Click to edit email"/>
+        </td>
         <td style="white-space:nowrap">
-          <span style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:3px 10px;border-radius:4px;white-space:nowrap;display:inline-block;${
-            u.role === 'editor'
-              ? 'background:rgba(124,58,237,0.2);color:var(--accent-light);border:1px solid var(--accent)'
-              : 'background:rgba(245,158,11,0.15);color:var(--amber);border:1px solid var(--amber)'
-          }">${u.role === 'editor' ? '✏️ Editor' : '👁 Viewer'}</span>
+          <select onchange="updateSettingsUser(${i},'role',this.value)"
+            style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;color:${u.role==='editor'?'var(--accent-light)':u.role==='admin'?'var(--blue)':'var(--amber)'}">
+            <option value="viewer" ${u.role==='viewer'?'selected':''}>👁 Viewer</option>
+            <option value="editor" ${u.role==='editor'?'selected':''}>✏️ Editor</option>
+          </select>
         </td>
         <td class="mono text-muted" style="font-size:10px;white-space:nowrap">${u.added ? new Date(u.added).toLocaleDateString() : '—'}</td>
         <td class="mono text-muted" style="font-size:10px;white-space:nowrap">${lastLoginStr}</td>
         <td>
           <div style="display:flex;gap:6px;flex-wrap:wrap">
             <button onclick="togglePermsRow(${i})" style="${btnBase} var(--accent);background:rgba(124,58,237,0.15);color:var(--accent-light)">⚡ Access</button>
-            <button onclick="toggleUserRole(${i}, this)" style="${btnBase} var(--border);background:var(--surface2);color:var(--muted)">
-              → ${u.role === 'editor' ? 'Viewer' : 'Editor'}
-            </button>
             <button onclick="removeSettingsUser(${i})" style="${btnBase} var(--border);background:transparent;color:var(--red)">✕</button>
           </div>
         </td>
@@ -1888,26 +1892,22 @@
     renderSettings();
   }
 
-  function toggleUserRole(i, btn) {
-    const newRole = settingsUsers[i].role === 'editor' ? 'viewer' : 'editor';
-    settingsUsers[i].role = newRole;
-
-    // Update button text instantly
-    if (btn) btn.textContent = `→ ${newRole === 'editor' ? 'Viewer' : 'Editor'}`;
-
-    // Update role badge in the same row instantly
-    if (btn) {
-      const badge = btn.closest('tr')?.cells[2]?.querySelector('span');
-      if (badge) {
-        badge.textContent = newRole === 'editor' ? '✏️ Editor' : '👁 Viewer';
-        badge.style.cssText = newRole === 'editor'
-          ? 'font-family:var(--font-mono);font-size:10px;font-weight:700;padding:3px 10px;border-radius:4px;white-space:nowrap;display:inline-block;background:rgba(124,58,237,0.2);color:var(--accent-light);border:1px solid var(--accent)'
-          : 'font-family:var(--font-mono);font-size:10px;font-weight:700;padding:3px 10px;border-radius:4px;white-space:nowrap;display:inline-block;background:rgba(245,158,11,0.15);color:var(--amber);border:1px solid var(--amber)';
-      }
+  async function updateSettingsUser(i, field, value) {
+    if (!settingsUsers[i]) return;
+    value = value.trim();
+    if (field === 'email') {
+      if (!value || !value.includes('@')) { showToast('⚠ Invalid email', true); return; }
+      value = value.toLowerCase();
     }
-
-    // Save in background
-    saveSettings().then(() => showToast('✓ Role updated'));
+    if (settingsUsers[i][field] === value) return; // no change
+    settingsUsers[i][field] = value;
+    if (field === 'role') {
+      EDITORS = settingsUsers.filter(u => u.role === 'editor').map(u => u.email);
+      applyRoleUI();
+    }
+    await saveSettings();
+    showToast(`✓ ${field === 'email' ? 'Email' : 'Role'} updated`);
+    logActivity('edit_settings_user', `Updated ${field} for user #${i+1}`);
   }
 
   function togglePermsRow(i) {
