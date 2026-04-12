@@ -530,7 +530,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.2.7</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.2.8</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1832,14 +1832,12 @@
 
   // ── SOURCES INFO ──
   let sourcesInfo = [];      // [{name, type, logoUrl, status}]
-  let sourcesMap  = {};      // lowercase name → logoUrl (live sources only, fast lookup)
+  let sourcesMap  = {};      // lowercase name → logoUrl (all sources, fast lookup)
 
   function _buildSourcesMap() {
     sourcesMap = {};
     sourcesInfo.forEach(s => {
-      if (s.name && (s.status || 'live') === 'live') {
-        sourcesMap[s.name.trim().toLowerCase()] = s.logoUrl || '';
-      }
+      if (s.name) sourcesMap[s.name.trim().toLowerCase()] = s.logoUrl || '';
     });
   }
 
