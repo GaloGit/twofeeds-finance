@@ -521,7 +521,7 @@
           <span id="roleBadge" style="display:none;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700"></span>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.1.1</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.1.2</span>
           </div>
           <div style="display:flex;flex-direction:column;gap:5px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
@@ -1023,9 +1023,9 @@
           </div>
           <div style="flex:1;min-width:120px">
             <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Status</div>
-            <select id="cmStatus" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;cursor:pointer">
+            <select id="cmStatus" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;cursor:pointer">
               <option value="live">🟢 Live</option>
-              <option value="paused">⏸ Paused</option>
+              <option value="paused">🔴 Ended</option>
             </select>
           </div>
           <div style="flex:1;min-width:110px;max-width:160px">
@@ -1441,7 +1441,7 @@
         <td style="white-space:nowrap">
           <span class="cm-status ${isLive ? 'cm-live' : 'cm-paused'}"
             onclick="toggleCmStatus(${i}, this); event.stopPropagation()">
-            ${isLive ? '🟢 Live' : '⏸ Paused'}
+            ${isLive ? '🟢 Live' : '🔴 Ended'}
           </span>
         </td>
         <td class="mono" style="font-size:11px;white-space:nowrap;color:var(--muted)">${duration}</td>
@@ -1463,7 +1463,7 @@
               <div>
                 <div style="font-size:18px;font-weight:700;display:flex;align-items:center;gap:8px">${esc(m.name||'—')} ${countryFlagImg(m.country||'','32x24')}</div>
                 <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">${esc(m.email||'')}</div>
-                <div style="font-family:var(--font-mono);font-size:10px;color:${isLive?'var(--green)':'var(--amber)'};margin-top:2px">${isLive?'🟢 Live':'⏸ Paused'} · ${duration}</div>
+                <div style="font-family:var(--font-mono);font-size:10px;color:${isLive?'var(--green)':'var(--red)'};margin-top:2px">${isLive?'🟢 Live':'🔴 Ended'} · ${duration}</div>
               </div>
             </div>
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px">
@@ -1550,7 +1550,7 @@
     campaignMgrs[i].status = newStatus;
     // Update badge instantly
     badge.className = `cm-status ${newStatus === 'live' ? 'cm-live' : 'cm-paused'}`;
-    badge.textContent = newStatus === 'live' ? '🟢 Live' : '⏸ Paused';
+    badge.textContent = newStatus === 'live' ? '🟢 Live' : '🔴 Ended';
     _saveCampaignMgrs().then(() => showToast(`✓ ${campaignMgrs[i].name} → ${newStatus}`));
     logActivity('cm_status', `${campaignMgrs[i].name} set to ${newStatus}`);
   }
