@@ -1164,12 +1164,13 @@
                 <th>Source Name</th>
                 <th style="width:90px">Type</th>
                 <th style="width:100px">Status</th>
-                <th>Logo URL</th>
+                <th>TF Manager</th>
+                <th>TO2 Manager</th>
                 <th></th>
               </tr>
             </thead>
             <tbody id="siBody">
-              <tr><td colspan="7" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>
+              <tr><td colspan="9" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>
             </tbody>
           </table>
         </div>
@@ -1976,7 +1977,7 @@
     const body = document.getElementById('siBody');
     if (!body) return;
     if (!sourcesInfo.length) {
-      body.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No sources yet. Add one above.</td></tr>';
+      body.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No sources yet. Add one above.</td></tr>';
       return;
     }
     body.innerHTML = sourcesInfo.map((s, i) => {
@@ -2011,6 +2012,8 @@
             <option value="paused" ${isPaused?'selected':''}>Paused</option>
           </select>
         </td>
+        <td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(s.tfManager||'—')}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(s.to2Manager||'—')}</td>
         <td style="white-space:nowrap">
           <button onclick="toggleSiRow(${i})" id="siExpandBtn_${i}"
             style="font-family:var(--font-mono);font-size:16px;border-radius:6px;cursor:pointer;padding:4px 14px;border:1px solid var(--accent);background:rgba(124,58,237,0.15);color:var(--accent-light);line-height:1;margin-right:4px" title="Show details">▾</button>
@@ -2019,7 +2022,7 @@
         </td>
       </tr>
       <tr id="siDetail_${i}" style="display:none">
-        <td colspan="7" style="padding:0">
+        <td colspan="9" style="padding:0">
           <div style="background:var(--surface2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:16px 20px">
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:14px">
               <div>
