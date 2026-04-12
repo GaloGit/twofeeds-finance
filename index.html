@@ -526,7 +526,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.1.5</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.1.6</span>
           </div>
           <div style="display:flex;flex-direction:column;gap:5px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
@@ -1304,10 +1304,6 @@
         if (btn) btn.style.display = viewOk ? 'block' : 'none';
         if (viewOk) visibleCount++;
       });
-
-      if (visibleCount === 0) {
-        showToast('⚠ No tab access yet. Contact your admin.');
-      }
     }
 
     // ── Inject CSS for per-tab edit restrictions ──
@@ -1340,18 +1336,58 @@
       permStyle.textContent = css;
     }
 
-    // ── Auto-navigate to first visible tab ──
-    const activeTab = document.querySelector('.nav-tab.active');
-    const activeHidden = activeTab && activeTab.style.display === 'none';
-    if (activeHidden) {
-      const firstVisible = TAB_DEFS.find(d => {
-        const btn = document.getElementById('navTab_' + d.key);
-        return btn && btn.style.display !== 'none';
-      });
-      if (firstVisible) {
-        const btn = document.getElementById('navTab_' + firstVisible.key);
-        if (btn) btn.click();
+    // ── Auto-navigate away from admin-only or hidden pages ──
+    if (!admin) {
+      // Determine which page is currently visible
+      const activePage = document.querySelector('.page.active');
+      const activePageId = activePage ? activePage.id.replace('tab-', '') : '';
+
+      // These pages are admin-only and must never be visible to viewers/editors
+      const adminOnlyPages = ['settings', 'campaignmgr'];
+      const isOnAdminPage = adminOnlyPages.includes(activePageId);
+
+      // Also catch the case where the active nav button was just hidden
+      const activeNavBtn = document.querySelector('.nav-tab.active');
+      const activeNavHidden = activeNavBtn && activeNavBtn.style.display === 'none';
+
+      if (isOnAdminPage || activeNavHidden) {
+        // Find first allowed tab
+        const firstVisible = TAB_DEFS.find(d => {
+          const btn = document.getElementById('navTab_' + d.key);
+          return btn && btn.style.display !== 'none';
+        });
+        if (firstVisible) {
+          // Navigate to first allowed tab
+          const btn = document.getElementById('navTab_' + firstVisible.key);
+          if (btn) btn.click();
+          // Hide no-access message if it was showing
+          const noAccess = document.getElementById('_noAccessMsg');
+          if (noAccess) noAccess.style.display = 'none';
+        } else {
+          // No tabs allowed at all — hide all page content and show a placeholder
+          document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+          document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+          let noAccess = document.getElementById('_noAccessMsg');
+          if (!noAccess) {
+            noAccess = document.createElement('div');
+            noAccess.id = '_noAccessMsg';
+            noAccess.style.cssText = 'text-align:center;padding:80px 24px;font-family:var(--font-mono)';
+            document.querySelector('#app .page, #app > div')?.parentNode?.appendChild(noAccess) || document.getElementById('app').appendChild(noAccess);
+          }
+          noAccess.innerHTML = `<div style="font-size:36px;margin-bottom:16px">🔒</div>
+            <div style="font-size:15px;color:var(--text);font-weight:700;margin-bottom:10px">No pages available yet</div>
+            <div style="font-size:11px;color:var(--muted);line-height:1.8">Your admin hasn't given you access to any pages.<br>Please contact your administrator.</div>`;
+          noAccess.style.display = 'block';
+        }
+      } else {
+        // Not on an admin page — hide no-access message if present
+        const noAccess = document.getElementById('_noAccessMsg');
+        if (noAccess) noAccess.style.display = 'none';
       }
+    } else {
+      // Admin — hide no-access message if it was ever shown
+      const noAccess = document.getElementById('_noAccessMsg');
+      if (noAccess) noAccess.style.display = 'none';
     }
   }
 
