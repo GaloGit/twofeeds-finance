@@ -530,7 +530,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.3.2</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.3.3</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -3229,8 +3229,8 @@
       const shortName = (p.name||'').replace(/\s*\(.*?\)\s*/g,'').trim();
       const approvalText = `${shortName} Numbers Approval mail ${_approvalPeriod}`;
       return `
-      <tr draggable="${canDrag}" ondragstart="if(!_pubDragEnabled){event.preventDefault();return;}_pubDragEnabled=false;pubDragStart(event,${i})" ondragover="pubDragOver(event,${i})" ondrop="pubDrop(event,${i})" ondragleave="pubDragLeave(event)" style="animation-delay:${i*0.03}s">
-        <td onmousedown="_pubDragEnabled=${canDrag}" style="cursor:${canDrag?'grab':'default'};color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center;opacity:${canDrag?'0.45':'0'}">⠿</td>
+      <tr id="pubRow_${i}" ondragstart="pubDragStart(event,${i})" ondragover="pubDragOver(event,${i})" ondrop="pubDrop(event,${i})" ondragleave="pubDragLeave(event)" ondragend="pubDragEnd(event)" style="animation-delay:${i*0.03}s">
+        <td onmousedown="${canDrag?`pubGripDown(event,${i})`:''};" onmouseup="pubGripUp()" style="cursor:${canDrag?'grab':'default'};color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center;opacity:${canDrag?'0.45':'0'}">⠿</td>
         <td class="mono text-muted">${i+1}</td>
         <td><div style="display:flex;align-items:center;gap:8px">${getSourceLogo(p.name,26)}${getSourceTypeBadge(p.name)}<input class="editable" value="${esc(p.name)}" onblur="updatePub('${p.id}','name',this.value)" placeholder="Publisher name" style="min-width:0;flex:1"/></div></td>
         <td><input class="editable" value="${esc(p.platform)}" onblur="updatePub('${p.id}','platform',this.value)" placeholder="Platform" style="width:120px"/></td>
@@ -3372,12 +3372,26 @@
 
   // ── Publisher drag-and-drop reorder ──
   let _pubDragFrom = null;
-  let _pubDragEnabled = false;
 
+  function pubGripDown(e, i) {
+    // Enable draggable only on the row being gripped
+    const row = document.getElementById('pubRow_' + i);
+    if (row) row.draggable = true;
+  }
+  function pubGripUp() {
+    // If drag never started, remove draggable so inputs work normally
+    document.querySelectorAll('#publisherBody tr').forEach(r => r.draggable = false);
+  }
   function pubDragStart(e, i) {
+    if (!e.currentTarget.draggable) { e.preventDefault(); return; }
     _pubDragFrom = i;
     e.dataTransfer.effectAllowed = 'move';
     setTimeout(() => { if (e.currentTarget) e.currentTarget.style.opacity = '0.45'; }, 0);
+  }
+  function pubDragEnd(e) {
+    e.currentTarget.draggable = false;
+    e.currentTarget.style.opacity = '';
+    document.querySelectorAll('#publisherBody tr').forEach(r => r.style.outline = '');
   }
   function pubDragOver(e, i) {
     e.preventDefault();
@@ -3393,7 +3407,7 @@
   }
   function pubDrop(e, toI) {
     e.preventDefault();
-    document.querySelectorAll('#publisherBody tr').forEach(r => { r.style.outline = ''; r.style.opacity = ''; });
+    document.querySelectorAll('#publisherBody tr').forEach(r => { r.draggable = false; r.style.outline = ''; r.style.opacity = ''; });
     if (_pubDragFrom === null || _pubDragFrom === toI) { _pubDragFrom = null; return; }
     const data = (_rawCache[_pubCacheKey()] || []);
     const moved = data.splice(_pubDragFrom, 1)[0];
