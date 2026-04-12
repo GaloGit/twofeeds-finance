@@ -534,7 +534,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.4.4</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.4.5</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1382,16 +1382,16 @@
     const st = document.getElementById('settingsTab');
     if (st) st.style.display = admin ? 'block' : 'none';
     const cmt = document.getElementById('campaignMgrTab');
-    if (cmt) cmt.style.display = admin ? 'block' : 'none';
+    if (cmt) cmt.style.display = admin ? 'inline-flex' : 'none';
     const sit = document.getElementById('sourcesInfoTab');
-    if (sit) sit.style.display = admin ? 'block' : 'none';
+    if (sit) sit.style.display = admin ? 'inline-flex' : 'none';
 
     // ── Tab visibility ──
     if (admin) {
       // Admin sees all tabs
       TAB_DEFS.forEach(d => {
         const btn = document.getElementById('navTab_' + d.key);
-        if (btn) btn.style.display = 'block';
+        if (btn) btn.style.display = 'inline-flex';
       });
     } else {
       const user = (localStorage.getItem('tf_current_user')||'').toLowerCase();
@@ -1402,7 +1402,7 @@
       TAB_DEFS.forEach(d => {
         const btn = document.getElementById('navTab_' + d.key);
         const viewOk = tabs[d.key]?.view === true;
-        if (btn) btn.style.display = viewOk ? 'block' : 'none';
+        if (btn) btn.style.display = viewOk ? 'inline-flex' : 'none';
         if (viewOk) visibleCount++;
       });
     }
