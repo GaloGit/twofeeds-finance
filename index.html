@@ -530,7 +530,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.3.3</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.3.4</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1137,6 +1137,7 @@
           <table>
             <thead>
               <tr>
+                <th style="width:22px"></th>
                 <th>#</th>
                 <th style="width:48px">Logo</th>
                 <th>Source Name</th>
@@ -1954,7 +1955,7 @@
     const body = document.getElementById('siBody');
     if (!body) return;
     if (!sourcesInfo.length) {
-      body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No sources yet. Add one above.</td></tr>';
+      body.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No sources yet. Add one above.</td></tr>';
       return;
     }
     body.innerHTML = sourcesInfo.map((s, i) => {
@@ -1965,7 +1966,8 @@
         ? `<img src="${esc(_resolved)}" style="width:36px;height:36px;border-radius:6px;object-fit:contain;background:var(--surface3);${isPaused?'opacity:0.4':''}" onerror="${_fallback ? `this.src='${esc(_fallback)}';this.onerror=function(){this.style.display='none'};` : `this.style.display='none'`}">`
         : getSourceLogo(s.name, 36);
       return `
-      <tr style="${isPaused ? 'opacity:0.55' : ''}">
+      <tr id="siRow_${i}" ondragstart="siDragStart(event,${i})" ondragover="siDragOver(event,${i})" ondrop="siDrop(event,${i})" ondragleave="siDragLeave(event)" ondragend="siDragEnd(event)" style="${isPaused ? 'opacity:0.55' : ''}">
+        <td onmousedown="siGripDown(event,${i})" onmouseup="siGripUp()" style="cursor:grab;color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center;opacity:0.45">⠿</td>
         <td class="mono text-muted">${i+1}</td>
         <td style="padding:6px 12px">${preview}</td>
         <td style="font-family:var(--font-mono);font-size:12px;font-weight:600;min-width:140px">${esc(s.name)}</td>
@@ -2101,6 +2103,52 @@
     _renderSiTable();
     await _saveSourcesInfo();
     showToast('✓ Removed');
+  }
+
+  // ── Sources Info drag-and-drop reorder ──
+  let _siDragFrom = null;
+
+  function siGripDown(e, i) {
+    const row = document.getElementById('siRow_' + i);
+    if (row) row.draggable = true;
+  }
+  function siGripUp() {
+    document.querySelectorAll('#siBody tr').forEach(r => r.draggable = false);
+  }
+  function siDragStart(e, i) {
+    if (!e.currentTarget.draggable) { e.preventDefault(); return; }
+    _siDragFrom = i;
+    e.dataTransfer.effectAllowed = 'move';
+    setTimeout(() => { if (e.currentTarget) e.currentTarget.style.opacity = '0.45'; }, 0);
+  }
+  function siDragEnd(e) {
+    e.currentTarget.draggable = false;
+    e.currentTarget.style.opacity = '';
+    document.querySelectorAll('#siBody tr').forEach(r => r.style.outline = '');
+  }
+  function siDragOver(e, i) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    document.querySelectorAll('#siBody tr').forEach((r, j) => {
+      r.style.outline = j === i && j !== _siDragFrom ? '1px dashed var(--accent)' : '';
+    });
+  }
+  function siDragLeave(e) {
+    if (!e.currentTarget.contains(e.relatedTarget)) {
+      document.querySelectorAll('#siBody tr').forEach(r => r.style.outline = '');
+    }
+  }
+  async function siDrop(e, toI) {
+    e.preventDefault();
+    document.querySelectorAll('#siBody tr').forEach(r => { r.draggable = false; r.style.outline = ''; r.style.opacity = ''; });
+    if (_siDragFrom === null || _siDragFrom === toI) { _siDragFrom = null; return; }
+    const moved = sourcesInfo.splice(_siDragFrom, 1)[0];
+    sourcesInfo.splice(toI, 0, moved);
+    _siDragFrom = null;
+    _buildSourcesMap();
+    _renderSiTable();
+    await _saveSourcesInfo();
+    showToast('✓ Order saved');
   }
 
   // ── SETTINGS ──
