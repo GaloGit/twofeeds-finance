@@ -530,7 +530,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.2.0</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.2.1</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1831,12 +1831,18 @@
       <tr>
         <td class="mono text-muted">${i+1}</td>
         <td style="font-family:var(--font-mono);font-size:12px;min-width:180px">
-          <input value="${esc(u.email)}"
-            onblur="updateSettingsUser(${i},'email',this.value)"
-            style="width:100%;background:transparent;border:none;border-bottom:1px solid transparent;border-radius:0;padding:2px 4px;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none;transition:border-color 0.15s"
-            onfocus="this.style.borderBottomColor='var(--accent)'"
-            onblur="this.style.borderBottomColor='transparent';updateSettingsUser(${i},'email',this.value)"
-            title="Click to edit email"/>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input id="settingsEmailInput_${i}" value="${esc(u.email)}"
+              oninput="document.getElementById('settingsEmailSave_${i}').style.display='inline-flex'"
+              onfocus="this.style.borderBottomColor='var(--accent)';document.getElementById('settingsEmailSave_${i}').style.display='inline-flex'"
+              onkeydown="if(event.key==='Enter'){document.getElementById('settingsEmailSave_${i}').click();}"
+              onkeydown="if(event.key==='Escape'){this.value='${esc(u.email)}';settingsEmailReset(${i});}"
+              style="flex:1;min-width:0;background:transparent;border:none;border-bottom:1px solid transparent;border-radius:0;padding:2px 4px;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none;transition:border-color 0.15s"
+              title="Click to edit email"/>
+            <button id="settingsEmailSave_${i}"
+              onclick="settingsEmailConfirm(${i})"
+              style="display:none;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;line-height:1">✓</button>
+          </div>
         </td>
         <td style="white-space:nowrap">
           <select onchange="updateSettingsUser(${i},'role',this.value)"
@@ -1890,6 +1896,20 @@
     await saveSettings();
     showToast('✓ User removed');
     renderSettings();
+  }
+
+  function settingsEmailReset(i) {
+    const input = document.getElementById('settingsEmailInput_' + i);
+    const btn   = document.getElementById('settingsEmailSave_' + i);
+    if (input) input.style.borderBottomColor = 'transparent';
+    if (btn)   btn.style.display = 'none';
+  }
+
+  async function settingsEmailConfirm(i) {
+    const input = document.getElementById('settingsEmailInput_' + i);
+    if (!input) return;
+    await updateSettingsUser(i, 'email', input.value);
+    settingsEmailReset(i);
   }
 
   async function updateSettingsUser(i, field, value) {
