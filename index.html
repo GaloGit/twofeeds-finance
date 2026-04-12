@@ -530,7 +530,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.3.6</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.3.7</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1125,6 +1125,23 @@
             <div style="flex:2;min-width:240px">
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Logo URL</div>
               <input type="text" id="siLogoUrl" placeholder="https://… (Drive link, direct image URL)"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-top:12px">
+            <div style="flex:1;min-width:140px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">TF Manager</div>
+              <input type="text" id="siTfManager" placeholder="Name"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+            </div>
+            <div style="flex:1;min-width:140px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">TO2 Manager</div>
+              <input type="text" id="siTo2Manager" placeholder="Name"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+            </div>
+            <div style="flex:1;min-width:160px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Contact</div>
+              <input type="text" id="siContact" placeholder="Email / Phone / Skype"
                 style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
             </div>
             <button onclick="addSourcesInfoEntry()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.05em;white-space:nowrap">+ ADD</button>
@@ -2002,9 +2019,31 @@
               style="display:none;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0">✓</button>
           </div>
         </td>
-        <td>
+        <td style="white-space:nowrap">
+          <button onclick="toggleSiRow(${i})" id="siExpandBtn_${i}"
+            style="font-family:var(--font-mono);font-size:16px;border-radius:6px;cursor:pointer;padding:4px 14px;border:1px solid var(--accent);background:rgba(124,58,237,0.15);color:var(--accent-light);line-height:1;margin-right:4px" title="Show details">▾</button>
           <button onclick="deleteSourcesInfoEntry(${i})"
             style="font-family:var(--font-mono);font-size:9px;border-radius:6px;cursor:pointer;padding:4px 10px;border:1px solid var(--border);background:transparent;color:var(--red)">✕</button>
+        </td>
+      </tr>
+      <tr id="siDetail_${i}" style="display:none">
+        <td colspan="8" style="padding:0">
+          <div style="background:var(--surface2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:16px 20px">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px">
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TF Manager</div>
+                <input class="editable" value="${esc(s.tfManager||'')}" onblur="siFieldUpdate(${i},'tfManager',this.value)" placeholder="Name" style="width:100%"/>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TO2 Manager</div>
+                <input class="editable" value="${esc(s.to2Manager||'')}" onblur="siFieldUpdate(${i},'to2Manager',this.value)" placeholder="Name" style="width:100%"/>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Contact</div>
+                <input class="editable" value="${esc(s.contact||'')}" onblur="siFieldUpdate(${i},'contact',this.value)" placeholder="Email / Phone / Skype" style="width:100%"/>
+              </div>
+            </div>
+          </div>
         </td>
       </tr>`;
     }).join('');
@@ -2106,21 +2145,45 @@
     logActivity('sources_info', `Removed ${removed} duplicate source entries`);
   }
 
+  function toggleSiRow(i) {
+    const detail = document.getElementById('siDetail_' + i);
+    const btn    = document.getElementById('siExpandBtn_' + i);
+    if (!detail) return;
+    const open = detail.style.display !== 'none';
+    detail.style.display = open ? 'none' : 'table-row';
+    if (btn) btn.textContent = open ? '▾' : '▴';
+  }
+
+  async function siFieldUpdate(i, field, value) {
+    if (!sourcesInfo[i]) return;
+    const trimmed = value.trim();
+    if (sourcesInfo[i][field] === trimmed) return;
+    sourcesInfo[i][field] = trimmed;
+    await _saveSourcesInfo();
+    showToast('✓ Saved');
+  }
+
   async function addSourcesInfoEntry() {
-    const name    = document.getElementById('siName').value.trim();
-    const type    = document.getElementById('siType').value;
-    const status  = document.getElementById('siStatus').value || 'live';
-    const logoUrl = document.getElementById('siLogoUrl').value.trim();
+    const name       = document.getElementById('siName').value.trim();
+    const type       = document.getElementById('siType').value;
+    const status     = document.getElementById('siStatus').value || 'live';
+    const logoUrl    = document.getElementById('siLogoUrl').value.trim();
+    const tfManager  = document.getElementById('siTfManager').value.trim();
+    const to2Manager = document.getElementById('siTo2Manager').value.trim();
+    const contact    = document.getElementById('siContact').value.trim();
     if (!name) { showToast('⚠ Source name is required', true); return; }
     const existing = sourcesInfo.find(s => s.name.toLowerCase() === name.toLowerCase());
-    if (existing) { existing.logoUrl = logoUrl; existing.type = type; existing.status = status; }
-    else { sourcesInfo.push({ name, type, status, logoUrl }); }
+    if (existing) { existing.logoUrl = logoUrl; existing.type = type; existing.status = status; existing.tfManager = tfManager; existing.to2Manager = to2Manager; existing.contact = contact; }
+    else { sourcesInfo.push({ name, type, status, logoUrl, tfManager, to2Manager, contact }); }
     _buildSourcesMap();
     _renderSiTable();
     document.getElementById('siName').value = '';
     document.getElementById('siLogoUrl').value = '';
     document.getElementById('siType').value = 'DSP';
     document.getElementById('siStatus').value = 'live';
+    document.getElementById('siTfManager').value = '';
+    document.getElementById('siTo2Manager').value = '';
+    document.getElementById('siContact').value = '';
     // Collapse form
     const fb = document.getElementById('siFormBody');
     const fa = document.getElementById('siFormArrow');
