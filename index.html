@@ -530,7 +530,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.2.4</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.2.5</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1104,6 +1104,15 @@
               <input type="text" id="siName" placeholder="e.g. Google, Meta, Taboola"
                 style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
             </div>
+            <div style="flex:0 0 130px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Type</div>
+              <select id="siType" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none">
+                <option value="DSP">DSP</option>
+                <option value="RW">RW</option>
+                <option value="MB">MB</option>
+                <option value="Platform">Platform</option>
+              </select>
+            </div>
             <div style="flex:2;min-width:240px">
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Logo URL</div>
               <input type="text" id="siLogoUrl" placeholder="https://… (Drive link, direct image URL)"
@@ -1123,12 +1132,13 @@
                 <th>#</th>
                 <th style="width:48px">Logo</th>
                 <th>Source Name</th>
+                <th style="width:90px">Type</th>
                 <th>Logo URL</th>
                 <th></th>
               </tr>
             </thead>
             <tbody id="siBody">
-              <tr><td colspan="5" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>
+              <tr><td colspan="6" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>
             </tbody>
           </table>
         </div>
@@ -1837,7 +1847,9 @@
     }
     const radius = '6px';
     if (url) {
-      return `<img src="${esc(url)}" style="width:${size}px;height:${size}px;border-radius:${radius};object-fit:contain;background:var(--surface3);flex-shrink:0;vertical-align:middle" onerror="this.style.display='none'">`;
+      const resolved = resolvePhotoUrl(url) || url;
+      const fallback = _driveId(url) ? `https://drive.google.com/uc?export=view&id=${_driveId(url)}` : '';
+      return `<img src="${esc(resolved)}" style="width:${size}px;height:${size}px;border-radius:${radius};object-fit:contain;background:var(--surface3);flex-shrink:0;vertical-align:middle" onerror="${fallback ? `this.src='${esc(fallback)}';this.onerror=function(){this.style.display='none'};` : `this.style.display='none'`}">`;
     }
     // Colored initial fallback
     const initial = name.trim()[0]?.toUpperCase() || '?';
@@ -1853,22 +1865,41 @@
     arrow.style.transform = open ? '' : 'rotate(180deg)';
   }
 
+  function _siTypeBadge(type) {
+    const styles = {
+      DSP:      'background:rgba(56,189,248,0.15);color:var(--blue);border-color:var(--blue)',
+      RW:       'background:rgba(34,197,94,0.15);color:var(--green);border-color:var(--green)',
+      MB:       'background:rgba(245,158,11,0.15);color:var(--amber);border-color:var(--amber)',
+      Platform: 'background:rgba(124,58,237,0.2);color:var(--accent-light);border-color:var(--accent)',
+    };
+    const s = styles[type] || 'background:var(--surface3);color:var(--muted);border-color:var(--border)';
+    return `<span style="font-family:var(--font-mono);font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;border:1px solid;white-space:nowrap;${s}">${esc(type||'—')}</span>`;
+  }
+
   function _renderSiTable() {
     const body = document.getElementById('siBody');
     if (!body) return;
     if (!sourcesInfo.length) {
-      body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No sources yet. Add one above.</td></tr>';
+      body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No sources yet. Add one above.</td></tr>';
       return;
     }
     body.innerHTML = sourcesInfo.map((s, i) => {
+      const _resolved = s.logoUrl ? (resolvePhotoUrl(s.logoUrl) || s.logoUrl) : '';
+      const _fallback = s.logoUrl && _driveId(s.logoUrl) ? `https://drive.google.com/uc?export=view&id=${_driveId(s.logoUrl)}` : '';
       const preview = s.logoUrl
-        ? `<img src="${esc(s.logoUrl)}" style="width:36px;height:36px;border-radius:6px;object-fit:contain;background:var(--surface3)" onerror="this.style.display='none'">`
+        ? `<img src="${esc(_resolved)}" style="width:36px;height:36px;border-radius:6px;object-fit:contain;background:var(--surface3)" onerror="${_fallback ? `this.src='${esc(_fallback)}';this.onerror=function(){this.style.display='none'};` : `this.style.display='none'`}">`
         : getSourceLogo(s.name, 36);
       return `
       <tr>
         <td class="mono text-muted">${i+1}</td>
         <td style="padding:6px 12px">${preview}</td>
         <td style="font-family:var(--font-mono);font-size:12px;font-weight:600;min-width:140px">${esc(s.name)}</td>
+        <td>
+          <select onchange="siTypeChange(${i},this.value)"
+            style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;color:var(--text)">
+            ${['DSP','RW','MB','Platform'].map(t => `<option value="${t}" ${(s.type||'')=== t?'selected':''}>${t}</option>`).join('')}
+          </select>
+        </td>
         <td style="min-width:260px">
           <div style="display:flex;align-items:center;gap:6px">
             <input id="siUrl_${i}" value="${esc(s.logoUrl||'')}"
@@ -1889,10 +1920,17 @@
     }).join('');
   }
 
+  async function siTypeChange(i, value) {
+    if (!sourcesInfo[i]) return;
+    sourcesInfo[i].type = value;
+    await _saveSourcesInfo();
+    showToast('✓ Type updated');
+  }
+
   async function renderSourcesInfo() {
     const body = document.getElementById('siBody');
     if (!sourcesInfo.length) {
-      if (body) body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>';
+      if (body) body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>';
       try {
         const res  = await fetch(`${FINANCE_API}?action=getSourcesInfo`);
         const json = await res.json();
@@ -1931,15 +1969,17 @@
 
   async function addSourcesInfoEntry() {
     const name    = document.getElementById('siName').value.trim();
+    const type    = document.getElementById('siType').value;
     const logoUrl = document.getElementById('siLogoUrl').value.trim();
     if (!name) { showToast('⚠ Source name is required', true); return; }
     const existing = sourcesInfo.find(s => s.name.toLowerCase() === name.toLowerCase());
-    if (existing) { existing.logoUrl = logoUrl; }
-    else { sourcesInfo.push({ name, logoUrl }); }
+    if (existing) { existing.logoUrl = logoUrl; existing.type = type; }
+    else { sourcesInfo.push({ name, type, logoUrl }); }
     _buildSourcesMap();
     _renderSiTable();
     document.getElementById('siName').value = '';
     document.getElementById('siLogoUrl').value = '';
+    document.getElementById('siType').value = 'DSP';
     // Collapse form
     const fb = document.getElementById('siFormBody');
     const fa = document.getElementById('siFormArrow');
