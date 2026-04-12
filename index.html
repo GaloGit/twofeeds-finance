@@ -2046,7 +2046,9 @@
                 <input id="siCon_${i}" class="editable" value="${esc(s.contact||'')}" placeholder="Email / Phone / Skype" style="width:100%"/>
               </div>
             </div>
-            <button onclick="siDetailSave(${i})" style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:0.06em;padding:6px 18px;border-radius:6px;border:1px solid var(--accent);background:rgba(124,58,237,0.18);color:var(--accent-light);cursor:pointer;transition:all 0.15s" onmouseover="this.style.background='rgba(124,58,237,0.32)'" onmouseout="this.style.background='rgba(124,58,237,0.18)'">SAVE</button>
+            <div style="display:flex;justify-content:flex-end">
+              <button onclick="siDetailSave(${i})" style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:0.06em;padding:6px 18px;border-radius:6px;border:1px solid var(--accent);background:rgba(124,58,237,0.18);color:var(--accent-light);cursor:pointer;transition:all 0.15s" onmouseover="this.style.background='rgba(124,58,237,0.32)'" onmouseout="this.style.background='rgba(124,58,237,0.18)'">SAVE</button>
+            </div>
           </div>
         </td>
       </tr>`;
