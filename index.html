@@ -143,7 +143,7 @@
     .nav-bar { display: flex; margin-top: 12px; gap: 4px; }
     .nav-tab { padding: 14px 22px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); cursor: pointer; border: none; background: transparent; border-bottom: 2px solid transparent; transition: all 0.2s; position: relative; bottom: -1px; display:inline-flex;align-items:center;gap:7px; }
     .nav-tab:hover { color: var(--accent-light); }
-    .nav-tab.active { color: var(--accent-light); border-bottom-color: var(--accent); font-weight: 700; }
+    .nav-tab.active { color: var(--text); border-bottom-color: var(--accent); font-weight: 700; background: rgba(124,58,237,0.12); border-radius: 6px 6px 0 0; }
     .nav-tab svg { width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;transition:stroke 0.2s; }
 
     /* PAGES */
@@ -521,12 +521,14 @@
           <div style="display:flex;align-items:center;gap:8px">
             <img id="headerAvatar" src="" alt="" style="display:none;width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);box-shadow:0 2px 8px rgba(0,0,0,0.4)"/>
             <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
-              <div style="display:flex;align-items:center;gap:5px">
-                <span id="headerName" style="display:none;font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--text)"></span>
-                <span id="headerFlag" style="display:none;line-height:1"></span>
+              <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px">
+                <div style="display:flex;align-items:center;gap:5px">
+                  <span id="headerName" style="display:none;font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--text)"></span>
+                  <span id="headerFlag" style="display:none;line-height:1"></span>
+                </div>
+                <span id="roleBadge" style="display:none;font-family:var(--font-mono);font-size:8px;padding:2px 6px;border-radius:4px;font-weight:700"></span>
               </div>
               <span id="headerUser" style="font-family:var(--font-mono);font-size:10px;color:var(--accent-light)"></span>
-              <span id="roleBadge" style="display:none;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700"></span>
             </div>
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
@@ -1360,17 +1362,17 @@
     if (admin) {
       if (badge) {
         badge.textContent = 'ADMIN';
-        badge.style.cssText = 'display:inline;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700;background:rgba(56,189,248,0.15);color:var(--blue);border:1px solid var(--blue)';
+        badge.style.cssText = 'display:inline;font-family:var(--font-mono);font-size:8px;padding:2px 6px;border-radius:4px;font-weight:700;background:rgba(56,189,248,0.15);color:var(--blue);border:1px solid var(--blue)';
       }
     } else if (isEditor()) {
       if (badge) {
         badge.textContent = 'EDITOR';
-        badge.style.cssText = 'display:inline;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700;background:rgba(124,58,237,0.2);color:var(--accent-light);border:1px solid var(--accent)';
+        badge.style.cssText = 'display:inline;font-family:var(--font-mono);font-size:8px;padding:2px 6px;border-radius:4px;font-weight:700;background:rgba(124,58,237,0.2);color:var(--accent-light);border:1px solid var(--accent)';
       }
     } else {
       if (badge) {
         badge.textContent = 'VIEWER';
-        badge.style.cssText = 'display:inline;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700;background:rgba(245,158,11,0.15);color:var(--amber);border:1px solid var(--amber)';
+        badge.style.cssText = 'display:inline;font-family:var(--font-mono);font-size:8px;padding:2px 6px;border-radius:4px;font-weight:700;background:rgba(245,158,11,0.15);color:var(--amber);border:1px solid var(--amber)';
       }
     }
 
