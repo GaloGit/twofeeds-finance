@@ -521,7 +521,7 @@
           <span id="roleBadge" style="display:none;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700"></span>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.1.3</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.1.4</span>
           </div>
           <div style="display:flex;flex-direction:column;gap:5px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
@@ -997,53 +997,58 @@
         </div>
       </div>
 
-      <!-- Add manager form -->
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:24px">
-        <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:16px">Add Campaign Manager</div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
-          <div style="flex:1;min-width:160px">
-            <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Full Name</div>
-            <input type="text" id="cmName" placeholder="e.g. John Smith"
-              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+      <!-- Add manager form (collapsible) -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:24px;overflow:hidden">
+        <button onclick="toggleCmForm()" id="cmFormToggle" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:none;border:none;cursor:pointer;text-align:left">
+          <span style="font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase">+ Add Campaign Manager</span>
+          <span id="cmFormArrow" style="font-size:16px;color:var(--muted);transition:transform 0.25s">▼</span>
+        </button>
+        <div id="cmFormBody" style="display:none;padding:0 20px 20px">
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+            <div style="flex:1;min-width:160px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Full Name</div>
+              <input type="text" id="cmName" placeholder="e.g. John Smith"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+            </div>
+            <div style="flex:1;min-width:160px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Email</div>
+              <input type="email" id="cmEmail" placeholder="manager@example.com"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+            </div>
+            <div style="flex:1;min-width:130px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Phone</div>
+              <input type="text" id="cmPhone" placeholder="+1 555 000 0000"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+            </div>
+            <div style="flex:1;min-width:130px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Campaigns</div>
+              <input type="text" id="cmCampaigns" placeholder="DSP, Push, Native"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+            </div>
+            <div style="flex:1;min-width:130px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Status</div>
+              <select id="cmStatus" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none">
+                <option value="live">🟢 Live</option>
+                <option value="paused">🔴 Ended</option>
+              </select>
+            </div>
+            <div style="flex:1;min-width:110px;max-width:160px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Start Date</div>
+              <input type="date" id="cmStartDate"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none"/>
+            </div>
+            <div style="flex:1;min-width:110px;max-width:160px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">End Date <span style="opacity:0.5">(if terminated)</span></div>
+              <input type="date" id="cmEndDate"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none"/>
+            </div>
+            <div style="flex:1;min-width:120px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Notes</div>
+              <input type="text" id="cmNotes" placeholder="Optional"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+            </div>
+            <button onclick="addCampaignMgr()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.05em;white-space:nowrap">+ ADD</button>
           </div>
-          <div style="flex:1;min-width:160px">
-            <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Email</div>
-            <input type="email" id="cmEmail" placeholder="manager@example.com"
-              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
-          </div>
-          <div style="flex:1;min-width:130px">
-            <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Phone</div>
-            <input type="text" id="cmPhone" placeholder="+1 555 000 0000"
-              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
-          </div>
-          <div style="flex:1;min-width:130px">
-            <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Campaigns</div>
-            <input type="text" id="cmCampaigns" placeholder="DSP, Push, Native"
-              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
-          </div>
-          <div style="flex:1;min-width:130px">
-            <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Status</div>
-            <select id="cmStatus" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none">
-              <option value="live">🟢 Live</option>
-              <option value="paused">🔴 Ended</option>
-            </select>
-          </div>
-          <div style="flex:1;min-width:110px;max-width:160px">
-            <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Start Date</div>
-            <input type="date" id="cmStartDate"
-              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none"/>
-          </div>
-          <div style="flex:1;min-width:110px;max-width:160px">
-            <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">End Date <span style="opacity:0.5">(if terminated)</span></div>
-            <input type="date" id="cmEndDate"
-              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none"/>
-          </div>
-          <div style="flex:1;min-width:120px">
-            <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Notes</div>
-            <input type="text" id="cmNotes" placeholder="Optional"
-              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
-          </div>
-          <button onclick="addCampaignMgr()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.05em;white-space:nowrap">+ ADD</button>
         </div>
       </div>
 
@@ -1555,6 +1560,14 @@
     logActivity('cm_status', `${campaignMgrs[i].name} set to ${newStatus}`);
   }
 
+  function toggleCmForm() {
+    const body = document.getElementById('cmFormBody');
+    const arrow = document.getElementById('cmFormArrow');
+    const open = body.style.display === 'block';
+    body.style.display = open ? 'none' : 'block';
+    arrow.style.transform = open ? '' : 'rotate(180deg)';
+  }
+
   async function addCampaignMgr() {
     const name      = document.getElementById('cmName').value.trim();
     const email     = document.getElementById('cmEmail').value.trim().toLowerCase();
@@ -1569,6 +1582,11 @@
     _renderCmTable();
     ['cmName','cmEmail','cmPhone','cmCampaigns','cmNotes','cmStartDate','cmEndDate'].forEach(id => { document.getElementById(id).value = ''; });
     document.getElementById('cmStatus').value = 'live';
+    // Collapse the form after adding
+    const formBody = document.getElementById('cmFormBody');
+    const formArrow = document.getElementById('cmFormArrow');
+    if (formBody) { formBody.style.display = 'none'; }
+    if (formArrow) { formArrow.style.transform = ''; }
     await _saveCampaignMgrs();
     showToast('✓ Campaign manager added');
     logActivity('add_campaign_mgr', `Added ${name} (${status})`);
