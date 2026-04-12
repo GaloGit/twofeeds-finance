@@ -517,11 +517,16 @@
           </div>
         </div>
         <div class="header-right">
-          <span id="headerUser" style="font-family:var(--font-mono);font-size:10px;color:var(--accent-light)"></span>
-          <span id="roleBadge" style="display:none;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700"></span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <img id="headerAvatar" src="" alt="" style="display:none;width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);box-shadow:0 2px 8px rgba(0,0,0,0.4)"/>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
+              <span id="headerUser" style="font-family:var(--font-mono);font-size:10px;color:var(--accent-light)"></span>
+              <span id="roleBadge" style="display:none;font-family:var(--font-mono);font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700"></span>
+            </div>
+          </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.1.4</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.1.5</span>
           </div>
           <div style="display:flex;flex-direction:column;gap:5px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
@@ -2247,6 +2252,35 @@
     renderMediaBuying();
     renderCostSummary();
     _renderCmTable();
+
+    // Show avatar if logged-in user is a campaign manager
+    updateHeaderAvatar();
+  }
+
+  function updateHeaderAvatar() {
+    const loggedEmail = (document.getElementById('headerUser').textContent || '').toLowerCase().trim();
+    if (!loggedEmail || !campaignMgrs.length) return;
+    const mgr = campaignMgrs.find(m => (m.email || '').toLowerCase().trim() === loggedEmail);
+    const avatarEl = document.getElementById('headerAvatar');
+    if (!avatarEl) return;
+    if (mgr && mgr.photoUrl) {
+      const resolved = resolvePhotoUrl(mgr.photoUrl);
+      avatarEl.src = resolved;
+      avatarEl.alt = mgr.name || '';
+      avatarEl.style.display = 'block';
+      avatarEl.onerror = function() {
+        // Fallback: try uc?export=view
+        const id = _driveId(mgr.photoUrl);
+        if (id) {
+          this.onerror = function() { this.style.display = 'none'; };
+          this.src = `https://drive.google.com/uc?export=view&id=${id}`;
+        } else {
+          this.style.display = 'none';
+        }
+      };
+    } else {
+      avatarEl.style.display = 'none';
+    }
   }
 
   // ── PERIOD PICKER ──
