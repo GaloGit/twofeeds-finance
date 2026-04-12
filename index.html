@@ -2032,20 +2032,21 @@
       <tr id="siDetail_${i}" style="display:none">
         <td colspan="8" style="padding:0">
           <div style="background:var(--surface2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:16px 20px">
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:14px">
               <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TF Manager</div>
-                <input class="editable" value="${esc(s.tfManager||'')}" onblur="siFieldUpdate(${i},'tfManager',this.value)" placeholder="Name" style="width:100%"/>
+                <input id="siTfm_${i}" class="editable" value="${esc(s.tfManager||'')}" placeholder="Name" style="width:100%"/>
               </div>
               <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TO2 Manager</div>
-                <input class="editable" value="${esc(s.to2Manager||'')}" onblur="siFieldUpdate(${i},'to2Manager',this.value)" placeholder="Name" style="width:100%"/>
+                <input id="siTo2_${i}" class="editable" value="${esc(s.to2Manager||'')}" placeholder="Name" style="width:100%"/>
               </div>
               <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Contact</div>
-                <input class="editable" value="${esc(s.contact||'')}" onblur="siFieldUpdate(${i},'contact',this.value)" placeholder="Email / Phone / Skype" style="width:100%"/>
+                <input id="siCon_${i}" class="editable" value="${esc(s.contact||'')}" placeholder="Email / Phone / Skype" style="width:100%"/>
               </div>
             </div>
+            <button onclick="siDetailSave(${i})" style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:0.06em;padding:6px 18px;border-radius:6px;border:1px solid var(--accent);background:rgba(124,58,237,0.18);color:var(--accent-light);cursor:pointer;transition:all 0.15s" onmouseover="this.style.background='rgba(124,58,237,0.32)'" onmouseout="this.style.background='rgba(124,58,237,0.18)'">SAVE</button>
           </div>
         </td>
       </tr>`;
@@ -2085,7 +2086,7 @@
       try {
         const res  = await fetch(`${FINANCE_API}?action=getSourcesInfo`);
         const json = await res.json();
-        sourcesInfo = json.data || [];
+        sourcesInfo = _dedupeSourcesInfo(json.data || []);
         _buildSourcesMap();
       } catch { sourcesInfo = []; }
     }
@@ -2157,11 +2158,34 @@
     if (btn) btn.textContent = open ? '▾' : '▴';
   }
 
+  // Deduplicates sourcesInfo in-place by name (case-insensitive), keeps first occurrence
+  function _dedupeSourcesInfo(arr) {
+    const seen = new Set();
+    return arr.filter(s => {
+      const key = (s.name || '').trim().toLowerCase();
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
   async function siFieldUpdate(i, field, value) {
     if (!sourcesInfo[i]) return;
     const trimmed = value.trim();
     if (sourcesInfo[i][field] === trimmed) return;
     sourcesInfo[i][field] = trimmed;
+    await _saveSourcesInfo();
+    showToast('✓ Saved');
+  }
+
+  async function siDetailSave(i) {
+    if (!sourcesInfo[i]) return;
+    const tfManager  = (document.getElementById('siTfm_'  + i)?.value || '').trim();
+    const to2Manager = (document.getElementById('siTo2_'  + i)?.value || '').trim();
+    const contact    = (document.getElementById('siCon_'  + i)?.value || '').trim();
+    sourcesInfo[i].tfManager  = tfManager;
+    sourcesInfo[i].to2Manager = to2Manager;
+    sourcesInfo[i].contact    = contact;
     await _saveSourcesInfo();
     showToast('✓ Saved');
   }
@@ -2864,7 +2888,7 @@
       _rawCache['cm'] = campaignMgrs;
 
       // Sources Info (logo map — used across Publishers + Internal Sources)
-      sourcesInfo = siRes.data || [];
+      sourcesInfo = _dedupeSourcesInfo(siRes.data || []);
       _buildSourcesMap();
 
     } catch { /* silent — individual tabs will fall back to their own fetch */ }
