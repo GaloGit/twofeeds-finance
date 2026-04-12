@@ -533,7 +533,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.3.9</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.4.1</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1980,7 +1980,8 @@
       return;
     }
     body.innerHTML = sourcesInfo.map((s, i) => {
-      const isPaused = (s.status || 'live') === 'paused';
+      const isPaused  = (s.status || 'live') === 'paused';
+      const dispType  = s.type || 'DSP';   // default display type for color; saved only on change
       const _resolved = s.logoUrl ? (resolvePhotoUrl(s.logoUrl) || s.logoUrl) : '';
       const _fallback = s.logoUrl && _driveId(s.logoUrl) ? `https://drive.google.com/uc?export=view&id=${_driveId(s.logoUrl)}` : '';
       const preview = s.logoUrl
@@ -1999,28 +2000,16 @@
         </td>
         <td>
           <select id="siTypeSelect_${i}" onchange="siTypeChange(${i},this.value);_applyTypeSelectColor(this,this.value)"
-            style="${_siTypeSelectStyle(s.type||'')};border:1px solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none">
-            ${['DSP','RW','MB','Platform'].map(t => `<option value="${t}" ${(s.type||'')=== t?'selected':''}>${t}</option>`).join('')}
+            style="${_siTypeSelectStyle(dispType)};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none">
+            ${['DSP','RW','MB','Platform'].map(t => `<option value="${t}" ${dispType === t?'selected':''}>${t}</option>`).join('')}
           </select>
         </td>
         <td>
           <select id="siStatusSelect_${i}" onchange="siStatusChange(${i},this.value);_applyStatusSelectColor(this,this.value)"
-            style="${_siStatusSelectStyle(s.status)};border:1px solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none">
+            style="${_siStatusSelectStyle(s.status)};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none">
             <option value="live" ${!isPaused?'selected':''}>Live</option>
             <option value="paused" ${isPaused?'selected':''}>Paused</option>
           </select>
-        </td>
-        <td style="min-width:260px">
-          <div style="display:flex;align-items:center;gap:6px">
-            <input id="siUrl_${i}" value="${esc(s.logoUrl||'')}"
-              oninput="document.getElementById('siUrlSave_${i}').style.display='inline-flex'"
-              onfocus="this.style.borderBottomColor='var(--accent)';document.getElementById('siUrlSave_${i}').style.display='inline-flex'"
-              onkeydown="if(event.key==='Enter'){document.getElementById('siUrlSave_${i}').click();}if(event.key==='Escape'){this.value='${esc(s.logoUrl||'')}';siUrlReset(${i});}"
-              style="flex:1;min-width:0;background:transparent;border:none;border-bottom:1px solid transparent;border-radius:0;padding:2px 4px;font-family:var(--font-mono);font-size:11px;color:var(--muted);outline:none;transition:border-color 0.15s"
-              placeholder="Paste image or Drive URL"/>
-            <button id="siUrlSave_${i}" onclick="siUrlConfirm(${i})"
-              style="display:none;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0">✓</button>
-          </div>
         </td>
         <td style="white-space:nowrap">
           <button onclick="toggleSiRow(${i})" id="siExpandBtn_${i}"
@@ -2030,9 +2019,25 @@
         </td>
       </tr>
       <tr id="siDetail_${i}" style="display:none">
-        <td colspan="8" style="padding:0">
+        <td colspan="7" style="padding:0">
           <div style="background:var(--surface2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:16px 20px">
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:14px">
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Logo URL</div>
+                <div style="display:flex;align-items:center;gap:6px">
+                  <input id="siUrl_${i}" value="${esc(s.logoUrl||'')}"
+                    oninput="document.getElementById('siUrlSave_${i}').style.display='inline-flex'"
+                    onfocus="this.style.borderBottomColor='var(--accent)';document.getElementById('siUrlSave_${i}').style.display='inline-flex'"
+                    onkeydown="if(event.key==='Enter'){document.getElementById('siUrlSave_${i}').click();}if(event.key==='Escape'){this.value='${esc(s.logoUrl||'')}';siUrlReset(${i});}"
+                    class="editable" style="flex:1;min-width:0" placeholder="Paste image or Drive URL"/>
+                  <button id="siUrlSave_${i}" onclick="siUrlConfirm(${i})"
+                    style="display:none;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0">✓</button>
+                </div>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Finance Email</div>
+                <input id="siFin_${i}" class="editable" value="${esc(s.financeEmail||'')}" placeholder="finance@example.com" style="width:100%"/>
+              </div>
               <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TF Manager</div>
                 <input id="siTfm_${i}" class="editable" value="${esc(s.tfManager||'')}" placeholder="Name" style="width:100%"/>
@@ -2182,12 +2187,13 @@
 
   async function siDetailSave(i) {
     if (!sourcesInfo[i]) return;
-    const tfManager  = (document.getElementById('siTfm_'  + i)?.value || '').trim();
-    const to2Manager = (document.getElementById('siTo2_'  + i)?.value || '').trim();
-    const contact    = (document.getElementById('siCon_'  + i)?.value || '').trim();
-    sourcesInfo[i].tfManager  = tfManager;
-    sourcesInfo[i].to2Manager = to2Manager;
-    sourcesInfo[i].contact    = contact;
+    sourcesInfo[i].logoUrl      = (document.getElementById('siUrl_' + i)?.value || '').trim();
+    sourcesInfo[i].financeEmail = (document.getElementById('siFin_' + i)?.value || '').trim();
+    sourcesInfo[i].tfManager    = (document.getElementById('siTfm_' + i)?.value || '').trim();
+    sourcesInfo[i].to2Manager   = (document.getElementById('siTo2_' + i)?.value || '').trim();
+    sourcesInfo[i].contact      = (document.getElementById('siCon_' + i)?.value || '').trim();
+    _buildSourcesMap();
+    _renderSiTable();
     await _saveSourcesInfo();
     showToast('✓ Saved');
   }
