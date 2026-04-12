@@ -530,7 +530,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.2.2</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.2.3</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1823,7 +1823,18 @@
 
   function getSourceLogo(name, size = 28) {
     if (!name) return '';
-    const url = sourcesMap[name.trim().toLowerCase()];
+    const nameLower = name.trim().toLowerCase();
+    // 1. Exact match
+    let url = sourcesMap[nameLower];
+    // 2. Partial match — source key inside publisher name, or publisher name inside source key
+    if (!url) {
+      for (const [key, val] of Object.entries(sourcesMap)) {
+        if (key.length >= 3 && (nameLower.includes(key) || key.includes(nameLower))) {
+          url = val;
+          break;
+        }
+      }
+    }
     const radius = '6px';
     if (url) {
       return `<img src="${esc(url)}" style="width:${size}px;height:${size}px;border-radius:${radius};object-fit:contain;background:var(--surface3);flex-shrink:0;vertical-align:middle" onerror="this.style.display='none'">`;
