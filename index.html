@@ -534,7 +534,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.6.7</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.6.8</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1625,6 +1625,7 @@
     { key:'duration',  label:'Duration'   },
   ];
   const _SI_COL_DEFS = [
+    { key:'idx',        label:'#'          },
     { key:'logo',       label:'Logo'       },
     { key:'name',       label:'Name'       },
     { key:'type',       label:'Type'       },
@@ -2206,6 +2207,7 @@
         : getSourceLogo(s.name, 36);
       const cells = cols.map(col => {
         switch(col) {
+          case 'idx':       return `<td class="mono text-muted" style="font-size:11px">${i+1}</td>`;
           case 'logo':      return `<td style="padding:6px 12px">${preview}</td>`;
           case 'name':      return `<td style="min-width:140px;white-space:nowrap"><div style="display:flex;align-items:center;gap:6px"><input class="editable" value="${esc(s.name)}" onblur="siNameConfirm(${i},this.value)" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape'){this.value='${esc(s.name)}';this.blur();}" style="font-family:var(--font-mono);font-size:12px;font-weight:600;width:100%"/>${countryFlagImg(s.country||'')?`<span style="flex-shrink:0">${countryFlagImg(s.country||'')}</span>`:''}</div></td>`;
           case 'type':      return `<td><select id="siTypeSelect_${i}" onchange="siTypeChange(${i},this.value);_applyTypeSelectColor(this,this.value)" style="${_siTypeSelectStyle(dispType)};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none">${['DSP','RW','MB','Platform'].map(t=>`<option value="${t}" ${dispType===t?'selected':''}>${t}</option>`).join('')}</select></td>`;
