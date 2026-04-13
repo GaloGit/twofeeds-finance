@@ -534,7 +534,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.5.5</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.5.6</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1566,8 +1566,8 @@
       const res  = await fetch(`${FINANCE_API}?action=getCampaignMgrs`);
       const json = await res.json();
       campaignMgrs = _dedupeCampaignMgrs(json.data || []);
-      _rawCache['cm'] = campaignMgrs;
-    } catch { campaignMgrs = []; }
+      if (campaignMgrs.length > 0) _rawCache['cm'] = campaignMgrs;
+    } catch (e) { showToast('⚠ Failed to load Team Roles', true); campaignMgrs = []; }
     _renderCmTable();
   }
 
@@ -2958,11 +2958,11 @@
 
       // Campaign Managers (no period — global list)
       campaignMgrs = _dedupeCampaignMgrs(cmRes.data || []);
-      _rawCache['cm'] = campaignMgrs;
+      if (campaignMgrs.length > 0) _rawCache['cm'] = campaignMgrs; // only cache if data arrived
 
       // Sources Info (logo map — used across Publishers + Internal Sources)
       sourcesInfo = _dedupeSourcesInfo(siRes.data || []);
-      _buildSourcesMap();
+      if (sourcesInfo.length > 0) _buildSourcesMap(); // only build map if data arrived
 
     } catch { /* silent — individual tabs will fall back to their own fetch */ }
 
