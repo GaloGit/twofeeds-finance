@@ -534,7 +534,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.5.7</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.5.8</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1072,11 +1072,15 @@
         </div>
       </div>
 
+      <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+        <button onclick="openColPanel('cm', this)" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">⊞ Columns</button>
+      </div>
+
       <!-- Managers table -->
       <div class="table-wrap">
         <div class="table-scroll">
           <table>
-            <thead>
+            <thead id="cmHead">
               <tr>
                 <th style="width:24px"></th>
                 <th>#</th>
@@ -1167,11 +1171,15 @@
         </div>
       </div>
 
+      <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+        <button onclick="openColPanel('si', this)" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">⊞ Columns</button>
+      </div>
+
       <!-- Sources table -->
       <div class="table-wrap">
         <div class="table-scroll">
           <table>
-            <thead>
+            <thead id="siHead">
               <tr>
                 <th style="width:22px"></th>
                 <th>#</th>
@@ -1591,6 +1599,115 @@
     } catch { return arr; }
   }
 
+  // ── COLUMN CONFIG ──
+  const _CM_COL_DEFS = [
+    { key:'idx',       label:'#'          },
+    { key:'name',      label:'Name'       },
+    { key:'email',     label:'Email'      },
+    { key:'role',      label:'Role'       },
+    { key:'status',    label:'Status'     },
+    { key:'duration',  label:'Duration'   },
+  ];
+  const _SI_COL_DEFS = [
+    { key:'logo',       label:'Logo'       },
+    { key:'name',       label:'Name'       },
+    { key:'type',       label:'Type'       },
+    { key:'status',     label:'Status'     },
+    { key:'tfManager',  label:'TF Manager' },
+    { key:'to2Manager', label:'TO2 Mgr'    },
+  ];
+
+  function _getColState(lsKey, defs) {
+    try {
+      const s = JSON.parse(localStorage.getItem(lsKey) || 'null');
+      if (s && Array.isArray(s.order)) {
+        const valid = defs.map(d => d.key);
+        const order = [...s.order, ...valid.filter(k => !s.order.includes(k))].filter(k => valid.includes(k));
+        return { order, hidden: new Set((s.hidden || []).filter(k => valid.includes(k))) };
+      }
+    } catch {}
+    return { order: defs.map(d => d.key), hidden: new Set() };
+  }
+  function _saveColState(lsKey, state) {
+    localStorage.setItem(lsKey, JSON.stringify({ order: state.order, hidden: [...state.hidden] }));
+  }
+  function _activeCols(state) { return state.order.filter(k => !state.hidden.has(k)); }
+
+  function _cmColState()      { return _getColState('tf_cm_cols', _CM_COL_DEFS); }
+  function _saveCmColState(s) { _saveColState('tf_cm_cols', s); }
+  function _siColState()      { return _getColState('tf_si_cols', _SI_COL_DEFS); }
+  function _saveSiColState(s) { _saveColState('tf_si_cols', s); }
+
+  // ── COLUMN PICKER PANEL ──
+  let _colPanel = null, _colPanelTable = null, _colDragKey = null;
+
+  function openColPanel(table, btn) {
+    if (_colPanel) { _colPanel.remove(); _colPanel = null; }
+    if (_colPanelTable === table) { _colPanelTable = null; return; }
+    _colPanelTable = table;
+    const panel = document.createElement('div');
+    _colPanel = panel;
+    panel.style.cssText = 'position:fixed;z-index:9999;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:190px;box-shadow:0 8px 32px rgba(0,0,0,0.45)';
+    const r = btn.getBoundingClientRect();
+    panel.style.top = (r.bottom + 6) + 'px';
+    panel.style.left = r.left + 'px';
+    panel.innerHTML = '<div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;padding:2px 4px 8px;margin-bottom:6px;border-bottom:1px solid var(--border)">Columns</div><div id="_colList"></div><div style="border-top:1px solid var(--border);margin-top:6px;padding-top:6px"><button onclick="_resetCols(\'' + table + '\')" style="font-family:var(--font-mono);font-size:9px;color:var(--muted);background:transparent;border:none;cursor:pointer;width:100%;text-align:left;padding:2px 4px">↺ Reset to default</button></div>';
+    document.body.appendChild(panel);
+    _refreshColList(table);
+    setTimeout(() => document.addEventListener('click', _colPanelOutside), 10);
+  }
+  function _colPanelOutside(e) {
+    if (_colPanel && !_colPanel.contains(e.target)) {
+      _colPanel.remove(); _colPanel = null; _colPanelTable = null;
+      document.removeEventListener('click', _colPanelOutside);
+    }
+  }
+  function _refreshColList(table) {
+    const list = document.getElementById('_colList');
+    if (!list) return;
+    const defs = table === 'cm' ? _CM_COL_DEFS : _SI_COL_DEFS;
+    const state = table === 'cm' ? _cmColState() : _siColState();
+    list.innerHTML = state.order.map(key => {
+      const def = defs.find(d => d.key === key);
+      if (!def) return '';
+      const vis = !state.hidden.has(key);
+      return `<div draggable="true"
+        ondragstart="_colDragStart('${key}')" ondragover="event.preventDefault();this.style.background='var(--surface3)'"
+        ondragleave="this.style.background=''" ondrop="_colDrop(event,'${table}','${key}',this)"
+        style="display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:6px;cursor:default;user-select:none">
+        <span style="cursor:grab;color:var(--muted);font-size:12px;flex-shrink:0">⠿</span>
+        <span style="flex:1;font-family:var(--font-mono);font-size:11px;${vis?'color:var(--text)':'color:var(--muted)'}">${def.label}</span>
+        <button onclick="_colToggle('${table}','${key}')" style="flex-shrink:0;width:16px;height:16px;border-radius:3px;border:1px solid ${vis?'var(--accent)':'var(--border)'};background:${vis?'var(--accent)':'transparent'};cursor:pointer;color:#fff;font-size:9px;display:flex;align-items:center;justify-content:center">${vis?'✓':''}</button>
+      </div>`;
+    }).join('');
+  }
+  function _colDragStart(key) { _colDragKey = key; }
+  function _colDrop(e, table, toKey, el) {
+    e.preventDefault(); el.style.background = '';
+    if (!_colDragKey || _colDragKey === toKey) return;
+    const state = table === 'cm' ? _cmColState() : _siColState();
+    const fi = state.order.indexOf(_colDragKey), ti = state.order.indexOf(toKey);
+    if (fi < 0 || ti < 0) return;
+    state.order.splice(fi, 1); state.order.splice(ti, 0, _colDragKey);
+    table === 'cm' ? _saveCmColState(state) : _saveSiColState(state);
+    _colDragKey = null;
+    _refreshColList(table);
+    table === 'cm' ? _renderCmTable() : _renderSiTable();
+  }
+  function _colToggle(table, key) {
+    const state = table === 'cm' ? _cmColState() : _siColState();
+    if (state.hidden.has(key)) { state.hidden.delete(key); }
+    else { if (_activeCols(state).length <= 1) return; state.hidden.add(key); }
+    table === 'cm' ? _saveCmColState(state) : _saveSiColState(state);
+    _refreshColList(table);
+    table === 'cm' ? _renderCmTable() : _renderSiTable();
+  }
+  function _resetCols(table) {
+    localStorage.removeItem(table === 'cm' ? 'tf_cm_cols' : 'tf_si_cols');
+    _refreshColList(table);
+    table === 'cm' ? _renderCmTable() : _renderSiTable();
+  }
+
   function _dedupeCampaignMgrs(arr) {
     const seen = new Set();
     return arr.filter(m => {
@@ -1614,10 +1731,12 @@
 
   function _renderCmTable() {
     // Note: _isSame check omitted so template changes (e.g. dimming) always re-render
+    const state = _cmColState(); const cols = _activeCols(state); const totalCols = cols.length + 2;
+    const head = document.getElementById('cmHead'); if (head) head.innerHTML = '<tr><th style="width:24px"></th>' + cols.map(c => { const d = _CM_COL_DEFS.find(x=>x.key===c); return '<th>' + (d?d.label:c) + '</th>'; }).join('') + '<th></th></tr>';
     const body = document.getElementById('cmBody');
     if (!body) return;
     if (!campaignMgrs.length) {
-      body.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No team members yet. Add one above.</td></tr>';
+      body.innerHTML = `<tr><td colspan="${totalCols}" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No team members yet. Add one above.</td></tr>`;
       return;
     }
     const btnBase = 'font-family:var(--font-mono);font-size:9px;border-radius:6px;cursor:pointer;padding:4px 10px;border:1px solid';
@@ -1633,6 +1752,17 @@
       const avatar   = photoSrc
         ? `<img src="${esc(photoSrc)}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--border);margin-right:8px;vertical-align:middle;flex-shrink:0" onerror="if('${esc(fallbackSrc)}'){this.src='${esc(fallbackSrc)}';this.onerror=null;}else{this.style.display='none'}">`
         : `<span style="width:32px;height:32px;border-radius:50%;background:var(--surface3);border:2px solid var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--muted);margin-right:8px;vertical-align:middle;flex-shrink:0">${esc((m.name||'?')[0].toUpperCase())}</span>`;
+      const cells = cols.map(col => {
+        switch(col) {
+          case 'idx':      return `<td class="mono text-muted">${i+1}</td>`;
+          case 'name':     return `<td style="white-space:nowrap;font-weight:600;min-width:140px"><div style="display:flex;align-items:center;gap:6px">${avatar}<span>${esc(m.name||'—')}</span>${flag?`<span style="margin-left:2px">${flag}</span>`:''}</div></td>`;
+          case 'email':    return `<td style="font-family:var(--font-mono);font-size:11px">${esc(m.email||'—')}</td>`;
+          case 'role':     return `<td style="white-space:nowrap">${_cmRoleBadge(m.role||'')}</td>`;
+          case 'status':   return `<td style="white-space:nowrap"><span class="cm-status ${isLive?'cm-live':'cm-paused'}" onclick="toggleCmStatus(${i},this);event.stopPropagation()">${isLive?'🟢 Live':'🔴 Ended'}</span></td>`;
+          case 'duration': return `<td class="mono" style="font-size:11px;white-space:nowrap;color:var(--muted)">${duration}</td>`;
+          default: return '';
+        }
+      }).join('');
       return `
       <tr data-cm-index="${i}" draggable="true"
           ondragstart="cmDragStart(event,${i})" ondragover="cmDragOver(event,${i})"
@@ -1640,19 +1770,7 @@
           style="cursor:pointer;${!isLive ? 'opacity:0.45;filter:grayscale(0.3)' : ''}" onclick="toggleCmRow(${i}, event)">
         <td style="width:24px;padding:0 4px;cursor:grab;color:var(--muted);font-size:16px;text-align:center;user-select:none"
             ondragstart="cmDragStart(event,${i})" onclick="event.stopPropagation()" title="Drag to reorder">⠿</td>
-        <td class="mono text-muted">${i+1}</td>
-        <td style="white-space:nowrap;font-weight:600;min-width:140px">
-          <div style="display:flex;align-items:center;gap:6px">${avatar}<span>${esc(m.name||'—')}</span>${flag ? `<span style="margin-left:2px">${flag}</span>` : ''}</div>
-        </td>
-        <td style="font-family:var(--font-mono);font-size:11px">${esc(m.email||'—')}</td>
-        <td style="white-space:nowrap">${_cmRoleBadge(m.role||'')}</td>
-        <td style="white-space:nowrap">
-          <span class="cm-status ${isLive ? 'cm-live' : 'cm-paused'}"
-            onclick="toggleCmStatus(${i}, this); event.stopPropagation()">
-            ${isLive ? '🟢 Live' : '🔴 Ended'}
-          </span>
-        </td>
-        <td class="mono" style="font-size:11px;white-space:nowrap;color:var(--muted)">${duration}</td>
+        ${cells}
         <td style="white-space:nowrap">
           <button onclick="event.stopPropagation(); toggleCmRow(${i}, event)"
             style="${btnBase} var(--accent);background:rgba(124,58,237,0.15);color:var(--accent-light);font-size:16px;padding:4px 14px;line-height:1" title="Show details">▾</button>
@@ -1661,7 +1779,7 @@
         </td>
       </tr>
       <tr id="cmDetail_${i}" style="display:none">
-        <td colspan="8" style="padding:0">
+        <td colspan="${totalCols}" style="padding:0">
           <div style="background:var(--surface2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:16px 20px">
             <!-- Avatar header -->
             <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)">
@@ -2047,10 +2165,12 @@
   }
 
   function _renderSiTable() {
+    const state = _siColState(); const cols = _activeCols(state); const totalCols = cols.length + 2;
+    const head = document.getElementById('siHead'); if (head) head.innerHTML = '<tr><th style="width:22px"></th>' + cols.map(c => { const d = _SI_COL_DEFS.find(x=>x.key===c); return '<th>' + (d?d.label:c) + '</th>'; }).join('') + '<th></th></tr>';
     const body = document.getElementById('siBody');
     if (!body) return;
     if (!sourcesInfo.length) {
-      body.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No sources yet. Add one above.</td></tr>';
+      body.innerHTML = `<tr><td colspan="${totalCols}" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No sources yet. Add one above.</td></tr>`;
       return;
     }
     body.innerHTML = sourcesInfo.map((s, i) => {
@@ -2061,35 +2181,21 @@
       const preview = s.logoUrl
         ? `<img src="${esc(_resolved)}" style="width:36px;height:36px;border-radius:6px;object-fit:contain;background:var(--surface3);${isPaused?'opacity:0.4':''}" onerror="${_fallback ? `this.src='${esc(_fallback)}';this.onerror=function(){this.style.display='none'};` : `this.style.display='none'`}">`
         : getSourceLogo(s.name, 36);
+      const cells = cols.map(col => {
+        switch(col) {
+          case 'logo':      return `<td style="padding:6px 12px">${preview}</td>`;
+          case 'name':      return `<td style="min-width:140px;white-space:nowrap"><div style="display:flex;align-items:center;gap:6px"><input class="editable" value="${esc(s.name)}" onblur="siNameConfirm(${i},this.value)" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape'){this.value='${esc(s.name)}';this.blur();}" style="font-family:var(--font-mono);font-size:12px;font-weight:600;width:100%"/>${countryFlagImg(s.country||'')?`<span style="flex-shrink:0">${countryFlagImg(s.country||'')}</span>`:''}</div></td>`;
+          case 'type':      return `<td><select id="siTypeSelect_${i}" onchange="siTypeChange(${i},this.value);_applyTypeSelectColor(this,this.value)" style="${_siTypeSelectStyle(dispType)};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none">${['DSP','RW','MB','Platform'].map(t=>`<option value="${t}" ${dispType===t?'selected':''}>${t}</option>`).join('')}</select></td>`;
+          case 'status':    return `<td><select id="siStatusSelect_${i}" onchange="siStatusChange(${i},this.value);_applyStatusSelectColor(this,this.value)" style="${_siStatusSelectStyle(s.status)};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none"><option value="live" ${!isPaused?'selected':''}>Live</option><option value="paused" ${isPaused?'selected':''}>Paused</option></select></td>`;
+          case 'tfManager': return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(s.tfManager||'—')}</td>`;
+          case 'to2Manager':return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(s.to2Manager||'—')}</td>`;
+          default: return '';
+        }
+      }).join('');
       return `
       <tr id="siRow_${i}" ondragstart="siDragStart(event,${i})" ondragover="siDragOver(event,${i})" ondrop="siDrop(event,${i})" ondragleave="siDragLeave(event)" ondragend="siDragEnd(event)" style="${isPaused ? 'opacity:0.55' : ''}">
         <td onmousedown="siGripDown(event,${i})" onmouseup="siGripUp()" style="cursor:grab;color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center;opacity:0.45">⠿</td>
-        <td class="mono text-muted">${i+1}</td>
-        <td style="padding:6px 12px">${preview}</td>
-        <td style="min-width:140px;white-space:nowrap">
-          <div style="display:flex;align-items:center;gap:6px">
-            <input class="editable" value="${esc(s.name)}"
-              onblur="siNameConfirm(${i},this.value)"
-              onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape'){this.value='${esc(s.name)}';this.blur();}"
-              style="font-family:var(--font-mono);font-size:12px;font-weight:600;width:100%"/>
-            ${countryFlagImg(s.country||'') ? `<span style="flex-shrink:0">${countryFlagImg(s.country||'')}</span>` : ''}
-          </div>
-        </td>
-        <td>
-          <select id="siTypeSelect_${i}" onchange="siTypeChange(${i},this.value);_applyTypeSelectColor(this,this.value)"
-            style="${_siTypeSelectStyle(dispType)};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none">
-            ${['DSP','RW','MB','Platform'].map(t => `<option value="${t}" ${dispType === t?'selected':''}>${t}</option>`).join('')}
-          </select>
-        </td>
-        <td>
-          <select id="siStatusSelect_${i}" onchange="siStatusChange(${i},this.value);_applyStatusSelectColor(this,this.value)"
-            style="${_siStatusSelectStyle(s.status)};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none">
-            <option value="live" ${!isPaused?'selected':''}>Live</option>
-            <option value="paused" ${isPaused?'selected':''}>Paused</option>
-          </select>
-        </td>
-        <td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(s.tfManager||'—')}</td>
-        <td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(s.to2Manager||'—')}</td>
+        ${cells}
         <td style="white-space:nowrap">
           <button onclick="toggleSiRow(${i})" id="siExpandBtn_${i}"
             style="font-family:var(--font-mono);font-size:16px;border-radius:6px;cursor:pointer;padding:4px 14px;border:1px solid var(--accent);background:rgba(124,58,237,0.15);color:var(--accent-light);line-height:1;margin-right:4px" title="Show details">▾</button>
@@ -2098,7 +2204,7 @@
         </td>
       </tr>
       <tr id="siDetail_${i}" style="display:none">
-        <td colspan="9" style="padding:0">
+        <td colspan="${totalCols}" style="padding:0">
           <div style="background:var(--surface2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:16px 20px">
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:14px">
               <div>
