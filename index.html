@@ -534,7 +534,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.6.5</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.6.6</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -2314,6 +2314,7 @@
 
   async function _saveSourcesInfo() {
     sourcesInfo = _dedupeSourcesInfo(sourcesInfo); // always write clean data
+    if (!sourcesInfo.length) return;               // never overwrite sheet with empty list
     _saveSiOrder();
     try {
       await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveSourcesInfo', sources: sourcesInfo }) });
