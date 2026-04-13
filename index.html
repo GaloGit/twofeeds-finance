@@ -534,7 +534,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.6.4</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.6.5</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -2303,14 +2303,17 @@
       try {
         const res  = await fetch(`${FINANCE_API}?action=getSourcesInfo`);
         const json = await res.json();
-        sourcesInfo = _applySiOrder(_dedupeSourcesInfo(json.data || []));
+        const raw = json.data || [];
+        sourcesInfo = _applySiOrder(_dedupeSourcesInfo(raw));
         _buildSourcesMap();
+        if (raw.length > sourcesInfo.length) _saveSourcesInfo(); // clean up sheet duplicates
       } catch { sourcesInfo = []; }
     }
     _renderSiTable();
   }
 
   async function _saveSourcesInfo() {
+    sourcesInfo = _dedupeSourcesInfo(sourcesInfo); // always write clean data
     _saveSiOrder();
     try {
       await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveSourcesInfo', sources: sourcesInfo }) });
@@ -3092,8 +3095,12 @@
       if (campaignMgrs.length > 0) _rawCache['cm'] = campaignMgrs; // only cache if data arrived
 
       // Sources Info (logo map — used across Publishers + Internal Sources)
-      sourcesInfo = _applySiOrder(_dedupeSourcesInfo(siRes.data || []));
-      if (sourcesInfo.length > 0) _buildSourcesMap(); // only build map if data arrived
+      const siRaw = siRes.data || [];
+      sourcesInfo = _applySiOrder(_dedupeSourcesInfo(siRaw));
+      if (sourcesInfo.length > 0) {
+        _buildSourcesMap();
+        if (siRaw.length > sourcesInfo.length) _saveSourcesInfo(); // clean up sheet duplicates
+      }
 
     } catch { /* silent — individual tabs will fall back to their own fetch */ }
 
