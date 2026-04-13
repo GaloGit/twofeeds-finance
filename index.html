@@ -534,7 +534,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.5.6</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.5.7</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1565,10 +1565,30 @@
     try {
       const res  = await fetch(`${FINANCE_API}?action=getCampaignMgrs`);
       const json = await res.json();
-      campaignMgrs = _dedupeCampaignMgrs(json.data || []);
+      campaignMgrs = _applyCmOrder(_dedupeCampaignMgrs(json.data || []));
       if (campaignMgrs.length > 0) _rawCache['cm'] = campaignMgrs;
     } catch (e) { showToast('⚠ Failed to load Team Roles', true); campaignMgrs = []; }
     _renderCmTable();
+  }
+
+  // Persist the user's chosen order to localStorage so it survives refreshes
+  function _saveCmOrder() {
+    const keys = campaignMgrs.map(m => (m.email || m.name || '').trim().toLowerCase());
+    localStorage.setItem('tf_cm_order', JSON.stringify(keys));
+  }
+
+  // Re-apply saved order to a freshly-loaded array (unknown server order)
+  function _applyCmOrder(arr) {
+    const raw = localStorage.getItem('tf_cm_order');
+    if (!raw) return arr;
+    try {
+      const order = JSON.parse(raw);
+      const rankOf = key => { const i = order.indexOf(key); return i === -1 ? 9999 : i; };
+      return [...arr].sort((a, b) =>
+        rankOf((a.email || a.name || '').trim().toLowerCase()) -
+        rankOf((b.email || b.name || '').trim().toLowerCase())
+      );
+    } catch { return arr; }
   }
 
   function _dedupeCampaignMgrs(arr) {
@@ -1898,6 +1918,7 @@
 
   async function _saveCampaignMgrs() {
     _invalidateCmCache(); // force re-render on next write, keep rawCache current
+    _saveCmOrder();       // persist user's chosen order to localStorage
     try {
       await fetch(FINANCE_API, {
         method: 'POST',
@@ -2957,7 +2978,7 @@
       _rawCache['inv_' + pk + '_raw'] = invData;
 
       // Campaign Managers (no period — global list)
-      campaignMgrs = _dedupeCampaignMgrs(cmRes.data || []);
+      campaignMgrs = _applyCmOrder(_dedupeCampaignMgrs(cmRes.data || []));
       if (campaignMgrs.length > 0) _rawCache['cm'] = campaignMgrs; // only cache if data arrived
 
       // Sources Info (logo map — used across Publishers + Internal Sources)
