@@ -534,7 +534,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.5.2</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.5.3</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1560,10 +1560,20 @@
     try {
       const res  = await fetch(`${FINANCE_API}?action=getCampaignMgrs`);
       const json = await res.json();
-      campaignMgrs = json.data || [];
+      campaignMgrs = _dedupeCampaignMgrs(json.data || []);
       _rawCache['cm'] = campaignMgrs;
     } catch { campaignMgrs = []; }
     _renderCmTable();
+  }
+
+  function _dedupeCampaignMgrs(arr) {
+    const seen = new Set();
+    return arr.filter(m => {
+      const key = (m.email || m.name || '').trim().toLowerCase();
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
   }
 
   const _CM_ROLE_COLORS = {
@@ -2926,7 +2936,7 @@
       _rawCache['inv_' + pk + '_raw'] = invData;
 
       // Campaign Managers (no period — global list)
-      campaignMgrs = cmRes.data || [];
+      campaignMgrs = _dedupeCampaignMgrs(cmRes.data || []);
       _rawCache['cm'] = campaignMgrs;
 
       // Sources Info (logo map — used across Publishers + Internal Sources)
