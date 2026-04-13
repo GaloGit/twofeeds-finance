@@ -534,7 +534,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.6.9</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.7.0</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -757,7 +757,7 @@
         ondragover="event.preventDefault();this.classList.add('drag')"
         ondragleave="this.classList.remove('drag')"
         ondrop="handleInvDrop(event)">
-        <div class="inv-upload-icon">🧾</div>
+        <div class="inv-upload-icon" style="font-size:28px;color:var(--muted)">↑</div>
         <div class="inv-upload-title">Upload Invoices</div>
         <div class="inv-upload-sub">Drag & drop or <span onclick="event.stopPropagation();document.getElementById('invFileInput').click()">browse</span> · PDF, JPG, PNG</div>
         <div class="inv-upload-sub" style="margin-top:6px;opacity:0.6">AI will extract: Vendor, Amount, Date, Invoice Number</div>
@@ -1004,7 +1004,7 @@
     <div class="page" id="tab-campaignmgr">
       <div class="section-header" style="margin-bottom:28px">
         <div>
-          <div class="section-title">👥 Team Roles</div>
+          <div class="section-title">Team Roles</div>
           <div class="section-sub">Manage team members and their roles · visible only to admin</div>
         </div>
       </div>
@@ -1048,8 +1048,8 @@
             <div style="flex:1;min-width:130px">
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Status</div>
               <select id="cmStatus" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none">
-                <option value="live">🟢 Live</option>
-                <option value="paused">🔴 Ended</option>
+                <option value="live">● Live</option>
+                <option value="paused">● Ended</option>
               </select>
             </div>
             <div style="flex:1;min-width:110px;max-width:160px">
@@ -1289,7 +1289,7 @@
 
         </div>
         <div style="margin-top:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-          <button onclick="saveConfig()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 24px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.05em">💾 SAVE CONFIG</button>
+          <button onclick="saveConfig()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 24px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.05em">SAVE CONFIG</button>
           <span id="cfgStatus" style="font-family:var(--font-mono);font-size:11px;color:var(--green);opacity:0;transition:opacity 0.3s"></span>
           <span id="cfgLastUpdated" style="font-family:var(--font-mono);font-size:10px;color:var(--muted)"></span>
         </div>
@@ -1775,7 +1775,7 @@
           case 'name':     return `<td style="white-space:nowrap;font-weight:600;min-width:140px"><div style="display:flex;align-items:center;gap:6px">${avatar}<span>${esc(m.name||'—')}</span>${flag?`<span style="margin-left:2px">${flag}</span>`:''}</div></td>`;
           case 'email':    return `<td style="font-family:var(--font-mono);font-size:11px">${esc(m.email||'—')}</td>`;
           case 'role':     return `<td style="white-space:nowrap">${_cmRoleBadge(m.role||'')}</td>`;
-          case 'status':   return `<td style="white-space:nowrap"><span class="cm-status ${isLive?'cm-live':'cm-paused'}" onclick="toggleCmStatus(${i},this);event.stopPropagation()">${isLive?'🟢 Live':'🔴 Ended'}</span></td>`;
+          case 'status':   return `<td style="white-space:nowrap"><span class="cm-status ${isLive?'cm-live':'cm-paused'}" onclick="toggleCmStatus(${i},this);event.stopPropagation()"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${isLive?'var(--green)':'var(--red)'};margin-right:5px;vertical-align:middle"></span>${isLive?'Live':'Ended'}</span></td>`;
           case 'duration': return `<td class="mono" style="font-size:11px;white-space:nowrap;color:var(--muted)">${duration}</td>`;
           default: return '';
         }
@@ -1806,7 +1806,7 @@
               <div>
                 <div style="font-size:18px;font-weight:700;display:flex;align-items:center;gap:8px">${esc(m.name||'—')} ${countryFlagImg(m.country||'','32x24')}</div>
                 <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">${esc(m.email||'')}</div>
-                <div style="font-family:var(--font-mono);font-size:10px;color:${isLive?'var(--green)':'var(--red)'};margin-top:2px">${isLive?'🟢 Live':'🔴 Ended'} · ${duration}</div>
+                <div style="font-family:var(--font-mono);font-size:10px;color:${isLive?'var(--green)':'var(--red)'};margin-top:2px"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${isLive?'var(--green)':'var(--red)'};margin-right:4px;vertical-align:middle"></span>${isLive?'Live':'Ended'} · ${duration}</div>
               </div>
             </div>
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px">
@@ -1875,7 +1875,7 @@
             <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:flex;justify-content:flex-end">
               <button id="cmSaveBtn_${i}" onclick="saveCmDetail(${i})"
                 style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 22px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.05em;transition:all 0.2s">
-                💾 Save Changes
+                Save Changes
               </button>
             </div>
           </div>
@@ -1900,7 +1900,7 @@
     campaignMgrs[i].status = newStatus;
     // Update badge instantly
     badge.className = `cm-status ${newStatus === 'live' ? 'cm-live' : 'cm-paused'}`;
-    badge.textContent = newStatus === 'live' ? '🟢 Live' : '🔴 Ended';
+    badge.innerHTML = `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${newStatus==='live'?'var(--green)':'var(--red)'};margin-right:5px;vertical-align:middle"></span>${newStatus === 'live' ? 'Live' : 'Ended'}`;
     // Update row dimming instantly (without full re-render)
     const tr = badge.closest('tr[data-cm-index]');
     if (tr) {
