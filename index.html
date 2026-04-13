@@ -534,7 +534,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.6.6</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.6.7</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1967,6 +1967,7 @@
     // Reorder the array
     const moved = campaignMgrs.splice(fromIndex, 1)[0];
     campaignMgrs.splice(toIndex, 0, moved);
+    _saveCmOrder(); // persist new order immediately after reorder
     _invalidateCmCache();
     _renderCmTable();
     _saveCampaignMgrs().then(() => showToast(`✓ Order saved`));
@@ -1993,6 +1994,7 @@
     const notes     = document.getElementById('cmNotes').value.trim();
     if (!name) { showToast('⚠ Name is required'); return; }
     campaignMgrs.push({ name, email, phone, campaigns, role, status, startDate, endDate, notes, commission: '', country: '', photoUrl: '', added: new Date().toISOString() });
+    _saveCmOrder(); // include new member at end of saved order
     _renderCmTable();
     ['cmName','cmEmail','cmPhone','cmCampaigns','cmNotes','cmStartDate','cmEndDate'].forEach(id => { document.getElementById(id).value = ''; });
     document.getElementById('cmRole').value = 'Campaign Manager';
@@ -2049,6 +2051,7 @@
     if (!confirmDelete(`Remove ${campaignMgrs[i]?.name || 'this manager'}?`)) return;
     const name = campaignMgrs[i]?.name || '';
     campaignMgrs.splice(i, 1);
+    _saveCmOrder(); // update saved order after deletion
     _renderCmTable();
     await _saveCampaignMgrs();
     showToast('✓ Removed');
@@ -2057,7 +2060,6 @@
 
   async function _saveCampaignMgrs() {
     _invalidateCmCache(); // force re-render on next write, keep rawCache current
-    _saveCmOrder();       // persist user's chosen order to localStorage
     try {
       await fetch(FINANCE_API, {
         method: 'POST',
