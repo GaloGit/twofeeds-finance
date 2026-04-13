@@ -534,7 +534,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.6.1</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.6.2</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1930,9 +1930,12 @@
 
   function cmDragEnd(e) {
     _cmDragFrom = null;
-    // Clear all highlights and opacity
+    // Clear drag highlights; restore correct opacity per status
     document.querySelectorAll('#cmBody tr[data-cm-index]').forEach(r => {
-      r.style.opacity = '';
+      const idx = parseInt(r.getAttribute('data-cm-index'), 10);
+      const isLive = (campaignMgrs[idx]?.status || 'live') === 'live';
+      r.style.opacity = isLive ? '' : '0.45';
+      r.style.filter  = isLive ? '' : 'grayscale(0.3)';
       r.style.borderTop = '';
       r.style.borderBottom = '';
     });
