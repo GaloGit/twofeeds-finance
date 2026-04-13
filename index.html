@@ -534,7 +534,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.5.3</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.5.4</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1156,6 +1156,11 @@
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Contact</div>
               <input type="text" id="siContact" placeholder="Email / Phone / Skype"
                 style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+            </div>
+            <div style="flex:0 0 80px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">GEO</div>
+              <input type="text" id="siGeo" placeholder="US" maxlength="2"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;text-transform:uppercase"/>
             </div>
             <button onclick="addSourcesInfoEntry()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.05em;white-space:nowrap">+ ADD</button>
           </div>
@@ -2034,11 +2039,14 @@
         <td onmousedown="siGripDown(event,${i})" onmouseup="siGripUp()" style="cursor:grab;color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center;opacity:0.45">⠿</td>
         <td class="mono text-muted">${i+1}</td>
         <td style="padding:6px 12px">${preview}</td>
-        <td style="min-width:140px">
-          <input class="editable" value="${esc(s.name)}"
-            onblur="siNameConfirm(${i},this.value)"
-            onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape'){this.value='${esc(s.name)}';this.blur();}"
-            style="font-family:var(--font-mono);font-size:12px;font-weight:600;width:100%"/>
+        <td style="min-width:140px;white-space:nowrap">
+          <div style="display:flex;align-items:center;gap:6px">
+            <input class="editable" value="${esc(s.name)}"
+              onblur="siNameConfirm(${i},this.value)"
+              onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape'){this.value='${esc(s.name)}';this.blur();}"
+              style="font-family:var(--font-mono);font-size:12px;font-weight:600;width:100%"/>
+            ${countryFlagImg(s.country||'') ? `<span style="flex-shrink:0">${countryFlagImg(s.country||'')}</span>` : ''}
+          </div>
         </td>
         <td>
           <select id="siTypeSelect_${i}" onchange="siTypeChange(${i},this.value);_applyTypeSelectColor(this,this.value)"
@@ -2093,6 +2101,10 @@
               <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Contact</div>
                 <input id="siCon_${i}" class="editable" value="${esc(s.contact||'')}" placeholder="Email / Phone / Skype" style="width:100%"/>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">GEO</div>
+                <input id="siGeo_${i}" class="editable" value="${esc(s.country||'')}" placeholder="US" maxlength="2" style="width:100%;text-transform:uppercase"/>
               </div>
             </div>
             <div style="display:flex;justify-content:flex-end">
@@ -2236,6 +2248,7 @@
     sourcesInfo[i].tfManager    = (document.getElementById('siTfm_' + i)?.value || '').trim();
     sourcesInfo[i].to2Manager   = (document.getElementById('siTo2_' + i)?.value || '').trim();
     sourcesInfo[i].contact      = (document.getElementById('siCon_' + i)?.value || '').trim();
+    sourcesInfo[i].country      = (document.getElementById('siGeo_' + i)?.value || '').trim().toUpperCase();
     _buildSourcesMap();
     _renderSiTable();
     await _saveSourcesInfo();
@@ -2250,10 +2263,11 @@
     const tfManager  = document.getElementById('siTfManager').value.trim();
     const to2Manager = document.getElementById('siTo2Manager').value.trim();
     const contact    = document.getElementById('siContact').value.trim();
+    const country    = document.getElementById('siGeo').value.trim().toUpperCase();
     if (!name) { showToast('⚠ Source name is required', true); return; }
     const existing = sourcesInfo.find(s => s.name.toLowerCase() === name.toLowerCase());
-    if (existing) { existing.logoUrl = logoUrl; existing.type = type; existing.status = status; existing.tfManager = tfManager; existing.to2Manager = to2Manager; existing.contact = contact; }
-    else { sourcesInfo.push({ name, type, status, logoUrl, tfManager, to2Manager, contact }); }
+    if (existing) { existing.logoUrl = logoUrl; existing.type = type; existing.status = status; existing.tfManager = tfManager; existing.to2Manager = to2Manager; existing.contact = contact; existing.country = country; }
+    else { sourcesInfo.push({ name, type, status, logoUrl, tfManager, to2Manager, contact, country }); }
     _buildSourcesMap();
     _renderSiTable();
     document.getElementById('siName').value = '';
@@ -2263,6 +2277,7 @@
     document.getElementById('siTfManager').value = '';
     document.getElementById('siTo2Manager').value = '';
     document.getElementById('siContact').value = '';
+    document.getElementById('siGeo').value = '';
     // Collapse form
     const fb = document.getElementById('siFormBody');
     const fa = document.getElementById('siFormArrow');
