@@ -534,7 +534,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.5.0</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.5.1</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1578,7 +1578,7 @@
   }
 
   function _renderCmTable() {
-    if (_isSame('cm', campaignMgrs)) return;
+    // Note: _isSame check omitted so template changes (e.g. dimming) always re-render
     const body = document.getElementById('cmBody');
     if (!body) return;
     if (!campaignMgrs.length) {
