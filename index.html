@@ -534,7 +534,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.6.3</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.6.4</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1598,6 +1598,23 @@
     } catch { return arr; }
   }
 
+  function _saveSiOrder() {
+    const keys = sourcesInfo.map(s => (s.name || '').trim().toLowerCase());
+    localStorage.setItem('tf_si_order', JSON.stringify(keys));
+  }
+  function _applySiOrder(arr) {
+    const raw = localStorage.getItem('tf_si_order');
+    if (!raw) return arr;
+    try {
+      const order = JSON.parse(raw);
+      const rankOf = key => { const i = order.indexOf(key); return i === -1 ? 9999 : i; };
+      return [...arr].sort((a, b) =>
+        rankOf((a.name || '').trim().toLowerCase()) -
+        rankOf((b.name || '').trim().toLowerCase())
+      );
+    } catch { return arr; }
+  }
+
   // ── COLUMN CONFIG ──
   const _CM_COL_DEFS = [
     { key:'idx',       label:'#'          },
@@ -2286,7 +2303,7 @@
       try {
         const res  = await fetch(`${FINANCE_API}?action=getSourcesInfo`);
         const json = await res.json();
-        sourcesInfo = _dedupeSourcesInfo(json.data || []);
+        sourcesInfo = _applySiOrder(_dedupeSourcesInfo(json.data || []));
         _buildSourcesMap();
       } catch { sourcesInfo = []; }
     }
@@ -2294,6 +2311,7 @@
   }
 
   async function _saveSourcesInfo() {
+    _saveSiOrder();
     try {
       await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveSourcesInfo', sources: sourcesInfo }) });
     } catch { showToast('⚠ Failed to save', true); }
@@ -3074,7 +3092,7 @@
       if (campaignMgrs.length > 0) _rawCache['cm'] = campaignMgrs; // only cache if data arrived
 
       // Sources Info (logo map — used across Publishers + Internal Sources)
-      sourcesInfo = _dedupeSourcesInfo(siRes.data || []);
+      sourcesInfo = _applySiOrder(_dedupeSourcesInfo(siRes.data || []));
       if (sourcesInfo.length > 0) _buildSourcesMap(); // only build map if data arrived
 
     } catch { /* silent — individual tabs will fall back to their own fetch */ }
