@@ -534,7 +534,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.7.0</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.7.1</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1072,7 +1072,8 @@
         </div>
       </div>
 
-      <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:8px">
+        <button id="cmOrderBtn" onclick="toggleCmOrderEdit()" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">↕ Edit Order</button>
         <button onclick="openColPanel('cm', this)" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">⊞ Columns</button>
       </div>
 
@@ -1515,6 +1516,7 @@
 
   // ── CAMPAIGN MANAGERS ──
   let campaignMgrs = [];
+  let _cmOrderEditMode = false;
 
   // Render a flag image from flagcdn.com (works on all browsers including Windows)
   function countryFlagImg(code, size = '20x15') {
@@ -1781,11 +1783,11 @@
         }
       }).join('');
       return `
-      <tr data-cm-index="${i}" draggable="true"
+      <tr data-cm-index="${i}" draggable="${_cmOrderEditMode}"
           ondragstart="cmDragStart(event,${i})" ondragover="cmDragOver(event,${i})"
           ondrop="cmDrop(event,${i})" ondragleave="cmDragLeave(event)" ondragend="cmDragEnd(event)"
           style="cursor:pointer;${!isLive ? 'opacity:0.45;filter:grayscale(0.3);animation:none' : ''}" onclick="toggleCmRow(${i}, event)">
-        <td style="width:24px;padding:0 4px;cursor:grab;color:var(--muted);font-size:16px;text-align:center;user-select:none"
+        <td style="width:24px;padding:0 4px;color:var(--muted);font-size:16px;text-align:center;user-select:none;cursor:${_cmOrderEditMode?'grab':'default'};opacity:${_cmOrderEditMode?'1':'0.2'}"
             ondragstart="cmDragStart(event,${i})" onclick="event.stopPropagation()" title="Drag to reorder">⠿</td>
         ${cells}
         <td style="white-space:nowrap">
@@ -1912,10 +1914,30 @@
     logActivity('cm_status', `${campaignMgrs[i].name} set to ${newStatus}`);
   }
 
+  function toggleCmOrderEdit() {
+    _cmOrderEditMode = !_cmOrderEditMode;
+    const btn = document.getElementById('cmOrderBtn');
+    if (_cmOrderEditMode) {
+      btn.textContent = '✓ Save Order';
+      btn.style.background = 'var(--accent)';
+      btn.style.color = '#fff';
+      btn.style.borderColor = 'var(--accent)';
+    } else {
+      _saveCmOrder();
+      btn.textContent = '↕ Edit Order';
+      btn.style.background = '';
+      btn.style.color = '';
+      btn.style.borderColor = '';
+      showToast('✓ Order saved');
+    }
+    _renderCmTable();
+  }
+
   // ── CAMPAIGN MANAGER DRAG-AND-DROP REORDER ──
   let _cmDragFrom = null;
 
   function cmDragStart(e, i) {
+    if (!_cmOrderEditMode) { e.preventDefault(); return; }
     _cmDragFrom = i;
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', i);
