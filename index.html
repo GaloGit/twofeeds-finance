@@ -534,7 +534,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.7.4</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.7.5</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1788,7 +1788,7 @@
           ondragstart="cmDragStart(event,${i})" ondragover="cmDragOver(event,${i})"
           ondrop="cmDrop(event,${i})" ondragleave="cmDragLeave(event)" ondragend="cmDragEnd(event)"
           style="cursor:pointer;${!isLive ? 'opacity:0.45;filter:grayscale(0.3);animation:none' : ''}" onclick="toggleCmRow(${i}, event)">
-        <td style="width:24px;padding:0 4px;color:var(--muted);font-size:16px;text-align:center;user-select:none;cursor:${_cmOrderEditMode?'grab':'default'};opacity:${_cmOrderEditMode?'1':'0.2'}"
+        <td style="width:24px;padding:0 4px;color:var(--muted);font-size:16px;text-align:center;user-select:none;cursor:${_cmOrderEditMode?'grab':'default'};visibility:${_cmOrderEditMode?'visible':'hidden'}"
             ondragstart="cmDragStart(event,${i})" onclick="event.stopPropagation()" title="Drag to reorder">⠿</td>
         ${cells}
         <td style="white-space:nowrap">
@@ -2241,7 +2241,7 @@
       }).join('');
       return `
       <tr id="siRow_${i}" ondragstart="siDragStart(event,${i})" ondragover="siDragOver(event,${i})" ondrop="siDrop(event,${i})" ondragleave="siDragLeave(event)" ondragend="siDragEnd(event)" style="${isPaused ? 'opacity:0.55' : ''}">
-        <td onmousedown="siGripDown(event,${i})" onmouseup="siGripUp()" style="cursor:${_siOrderEditMode?'grab':'default'};color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center;opacity:${_siOrderEditMode?'1':'0.2'}">⠿</td>
+        <td onmousedown="siGripDown(event,${i})" onmouseup="siGripUp()" style="cursor:${_siOrderEditMode?'grab':'default'};color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center;visibility:${_siOrderEditMode?'visible':'hidden'}">⠿</td>
         ${cells}
         <td style="white-space:nowrap">
           <button onclick="toggleSiRow(${i})" id="siExpandBtn_${i}"
