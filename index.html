@@ -534,7 +534,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.8.1</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.8.2</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1634,6 +1634,8 @@
     { key:'tfManager',  label:'TF Manager' },
     { key:'to2Manager', label:'TO2 Mgr'    },
     { key:'to2Id',      label:'TO2 ID'     },
+    { key:'externalId', label:'Ext. ID'    },
+    { key:'tfId',       label:'TF ID'      },
   ];
 
   function _getColState(lsKey, defs) {
@@ -2236,6 +2238,8 @@
           case 'tfManager': return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(s.tfManager||'—')}</td>`;
           case 'to2Manager':return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(s.to2Manager||'—')}</td>`;
           case 'to2Id':     return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);white-space:nowrap">${s.to2Id ? `<span style="background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:1px 7px">${esc(s.to2Id)}</span>` : '—'}</td>`;
+          case 'externalId': return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);white-space:nowrap">${s.externalId ? `<span style="background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:1px 7px">${esc(s.externalId)}</span>` : '—'}</td>`;
+          case 'tfId':      return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);white-space:nowrap">${s.tfId ? `<span style="background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:1px 7px">${esc(s.tfId)}</span>` : '—'}</td>`;
           default: return '';
         }
       }).join('');
@@ -2289,6 +2293,14 @@
               <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TO2 ID</div>
                 <input id="siTo2Id_${i}" class="editable" value="${esc(s.to2Id||'')}" placeholder="ID..." style="width:100%"/>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">External ID</div>
+                <input id="siExtId_${i}" class="editable" value="${esc(s.externalId||'')}" placeholder="ID..." style="width:100%"/>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TF ID</div>
+                <input id="siTfId_${i}" class="editable" value="${esc(s.tfId||'')}" placeholder="ID..." style="width:100%"/>
               </div>
             </div>
             <div style="display:flex;justify-content:flex-end">
@@ -2421,6 +2433,8 @@
     sourcesInfo[i].contact      = (document.getElementById('siCon_' + i)?.value || '').trim();
     sourcesInfo[i].country      = (document.getElementById('siGeo_' + i)?.value || '').trim().toUpperCase();
     sourcesInfo[i].to2Id        = (document.getElementById('siTo2Id_' + i)?.value || '').trim();
+    sourcesInfo[i].externalId   = (document.getElementById('siExtId_' + i)?.value || '').trim();
+    sourcesInfo[i].tfId         = (document.getElementById('siTfId_' + i)?.value || '').trim();
     _buildSourcesMap();
     _renderSiTable();
     await _saveSourcesInfo();
@@ -2438,8 +2452,8 @@
     const country    = document.getElementById('siGeo').value.trim().toUpperCase();
     if (!name) { showToast('⚠ Source name is required', true); return; }
     const existing = sourcesInfo.find(s => s.name.toLowerCase() === name.toLowerCase());
-    if (existing) { existing.logoUrl = logoUrl; existing.type = type; existing.status = status; existing.tfManager = tfManager; existing.to2Manager = to2Manager; existing.contact = contact; existing.country = country; existing.to2Id = ''; }
-    else { sourcesInfo.push({ name, type, status, logoUrl, tfManager, to2Manager, contact, country, to2Id: '' }); }
+    if (existing) { existing.logoUrl = logoUrl; existing.type = type; existing.status = status; existing.tfManager = tfManager; existing.to2Manager = to2Manager; existing.contact = contact; existing.country = country; existing.to2Id = ''; existing.externalId = ''; existing.tfId = ''; }
+    else { sourcesInfo.push({ name, type, status, logoUrl, tfManager, to2Manager, contact, country, to2Id: '', externalId: '', tfId: '' }); }
     _buildSourcesMap();
     _renderSiTable();
     document.getElementById('siName').value = '';
