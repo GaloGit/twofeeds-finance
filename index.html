@@ -534,7 +534,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.7.1</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.7.2</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1171,7 +1171,8 @@
         </div>
       </div>
 
-      <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:8px">
+        <button id="siOrderBtn" onclick="toggleSiOrderEdit()" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">↕ Edit Order</button>
         <button onclick="openColPanel('si', this)" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">⊞ Columns</button>
       </div>
 
@@ -2241,7 +2242,7 @@
       }).join('');
       return `
       <tr id="siRow_${i}" ondragstart="siDragStart(event,${i})" ondragover="siDragOver(event,${i})" ondrop="siDrop(event,${i})" ondragleave="siDragLeave(event)" ondragend="siDragEnd(event)" style="${isPaused ? 'opacity:0.55' : ''}">
-        <td onmousedown="siGripDown(event,${i})" onmouseup="siGripUp()" style="cursor:grab;color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center;opacity:0.45">⠿</td>
+        <td onmousedown="siGripDown(event,${i})" onmouseup="siGripUp()" style="cursor:${_siOrderEditMode?'grab':'default'};color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center;opacity:${_siOrderEditMode?'1':'0.2'}">⠿</td>
         ${cells}
         <td style="white-space:nowrap">
           <button onclick="toggleSiRow(${i})" id="siExpandBtn_${i}"
@@ -2467,8 +2468,29 @@
 
   // ── Sources Info drag-and-drop reorder ──
   let _siDragFrom = null;
+  let _siOrderEditMode = false;
+
+  function toggleSiOrderEdit() {
+    _siOrderEditMode = !_siOrderEditMode;
+    const btn = document.getElementById('siOrderBtn');
+    if (_siOrderEditMode) {
+      btn.textContent = '✓ Save Order';
+      btn.style.background = 'var(--accent)';
+      btn.style.color = '#fff';
+      btn.style.borderColor = 'var(--accent)';
+    } else {
+      _saveSiOrder();
+      btn.textContent = '↕ Edit Order';
+      btn.style.background = '';
+      btn.style.color = '';
+      btn.style.borderColor = '';
+      showToast('✓ Order saved');
+    }
+    _renderSiTable();
+  }
 
   function siGripDown(e, i) {
+    if (!_siOrderEditMode) return;
     const row = document.getElementById('siRow_' + i);
     if (row) row.draggable = true;
   }
