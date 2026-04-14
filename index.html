@@ -534,7 +534,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.8.0</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.8.1</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1633,6 +1633,7 @@
     { key:'status',     label:'Status'     },
     { key:'tfManager',  label:'TF Manager' },
     { key:'to2Manager', label:'TO2 Mgr'    },
+    { key:'to2Id',      label:'TO2 ID'     },
   ];
 
   function _getColState(lsKey, defs) {
@@ -2234,6 +2235,7 @@
           case 'status':    return `<td><select id="siStatusSelect_${i}" onchange="siStatusChange(${i},this.value);_applyStatusSelectColor(this,this.value)" style="${_siStatusSelectStyle(s.status)};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none"><option value="live" ${!isPaused?'selected':''}>Live</option><option value="paused" ${isPaused?'selected':''}>Paused</option></select></td>`;
           case 'tfManager': return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(s.tfManager||'—')}</td>`;
           case 'to2Manager':return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(s.to2Manager||'—')}</td>`;
+          case 'to2Id':     return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);white-space:nowrap">${s.to2Id ? `<span style="background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:1px 7px">${esc(s.to2Id)}</span>` : '—'}</td>`;
           default: return '';
         }
       }).join('');
@@ -2283,6 +2285,10 @@
               <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">GEO</div>
                 <input id="siGeo_${i}" class="editable" value="${esc(s.country||'')}" placeholder="US" maxlength="2" style="width:100%;text-transform:uppercase"/>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TO2 ID</div>
+                <input id="siTo2Id_${i}" class="editable" value="${esc(s.to2Id||'')}" placeholder="ID..." style="width:100%"/>
               </div>
             </div>
             <div style="display:flex;justify-content:flex-end">
@@ -2414,6 +2420,7 @@
     sourcesInfo[i].to2Manager   = (document.getElementById('siTo2_' + i)?.value || '').trim();
     sourcesInfo[i].contact      = (document.getElementById('siCon_' + i)?.value || '').trim();
     sourcesInfo[i].country      = (document.getElementById('siGeo_' + i)?.value || '').trim().toUpperCase();
+    sourcesInfo[i].to2Id        = (document.getElementById('siTo2Id_' + i)?.value || '').trim();
     _buildSourcesMap();
     _renderSiTable();
     await _saveSourcesInfo();
@@ -2431,8 +2438,8 @@
     const country    = document.getElementById('siGeo').value.trim().toUpperCase();
     if (!name) { showToast('⚠ Source name is required', true); return; }
     const existing = sourcesInfo.find(s => s.name.toLowerCase() === name.toLowerCase());
-    if (existing) { existing.logoUrl = logoUrl; existing.type = type; existing.status = status; existing.tfManager = tfManager; existing.to2Manager = to2Manager; existing.contact = contact; existing.country = country; }
-    else { sourcesInfo.push({ name, type, status, logoUrl, tfManager, to2Manager, contact, country }); }
+    if (existing) { existing.logoUrl = logoUrl; existing.type = type; existing.status = status; existing.tfManager = tfManager; existing.to2Manager = to2Manager; existing.contact = contact; existing.country = country; existing.to2Id = ''; }
+    else { sourcesInfo.push({ name, type, status, logoUrl, tfManager, to2Manager, contact, country, to2Id: '' }); }
     _buildSourcesMap();
     _renderSiTable();
     document.getElementById('siName').value = '';
