@@ -534,7 +534,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.7.5</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.7.6</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -612,6 +612,7 @@
         <div class="inv-toolbar">
           <div class="section-title">Publisher List — <span id="pubListPeriodLabel" style="color:var(--accent-light)"></span></div>
           <div style="display:flex;gap:8px">
+            <button id="pubOrderBtn" onclick="togglePubOrderEdit()" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">↕ Edit Order</button>
             <button class="export-btn" onclick="exportCSV()">↓ Export CSV</button>
             <button class="clear-btn" onclick="clearPublishers()">✕ Clear All</button>
           </div>
@@ -798,6 +799,7 @@
       <div class="inv-toolbar" id="invToolbar" style="display:none">
         <div class="section-title">Invoice List — <span id="invPeriodLabel" style="color:var(--accent-light)"></span></div>
         <div style="display:flex;gap:8px">
+          <button id="invOrderBtn" onclick="toggleInvOrderEdit()" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">↕ Edit Order</button>
           <button class="export-btn" onclick="exportInvoices()">↓ Export CSV</button>
           <button class="clear-btn" onclick="clearInvoices()">✕ Clear All</button>
           <button class="add-btn" onclick="document.getElementById('invFileInput').click()">+ Add More</button>
@@ -3652,7 +3654,7 @@
     const existingRows = tbody.querySelectorAll('tr:not(.add-row):not(.total-row)');
 
     const canEdit = isAdmin() || isEditor();
-    const canDrag = canEdit && !search;
+    const canDrag = canEdit && !search && _pubOrderEditMode;
 
     // ── Full rebuild ──
     tbody.innerHTML = filtered.map((p, i) => {
@@ -3801,6 +3803,27 @@
     await updatePub(id, 'approval', url.trim());
   }
 
+  // ── Publisher order edit mode ──
+  let _pubOrderEditMode = false;
+  function togglePubOrderEdit() {
+    _pubOrderEditMode = !_pubOrderEditMode;
+    const btn = document.getElementById('pubOrderBtn');
+    if (_pubOrderEditMode) {
+      btn.textContent = '✓ Save Order';
+      btn.style.background = 'var(--accent)';
+      btn.style.color = '#fff';
+      btn.style.borderColor = 'var(--accent)';
+    } else {
+      const data = _rawCache[_pubCacheKey()] || [];
+      _pubSaveRows(data).then(() => showToast('✓ Order saved to sheet')).catch(() => showToast('⚠ Failed to save order', true));
+      btn.textContent = '↕ Edit Order';
+      btn.style.background = 'var(--surface2)';
+      btn.style.color = 'var(--muted)';
+      btn.style.borderColor = 'var(--border)';
+    }
+    renderPublishers();
+  }
+
   // ── Publisher drag-and-drop reorder ──
   let _pubDragFrom = null;
 
@@ -3848,7 +3871,6 @@
     _pubInvalidateDiff();
     _pubDragFrom = null;
     renderPublishers();
-    _pubSaveRows(data).then(() => showToast('✓ Order saved')).catch(() => showToast('⚠ Failed to save order', true));
   }
 
   async function clearPublishers() {
@@ -4092,7 +4114,8 @@
         if (!isNaN(invDate)) overdue = (now - invDate.getTime()) > reminderDays * 86400 * 1000;
       }
       return `
-      <tr style="animation-delay:${i*0.03}s${overdue ? ';background:rgba(239,68,68,0.05)' : ''}">
+      <tr id="invRow_${i}" ondragstart="invDragStart(event,${i})" ondragover="invDragOver(event,${i})" ondrop="invDrop(event,${i})" ondragleave="invDragLeave(event)" ondragend="invDragEnd(event)" style="animation-delay:${i*0.03}s${overdue ? ';background:rgba(239,68,68,0.05)' : ''}">
+        <td onmousedown="invGripDown(event,${i})" onmouseup="invGripUp()" style="cursor:${_invOrderEditMode?'grab':'default'};color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center;visibility:${_invOrderEditMode?'visible':'hidden'};width:22px">⠿</td>
         <td class="mono text-muted">${i+1}</td>
         <td><div style="display:flex;align-items:center;gap:8px">${getSourceLogo(inv.vendor,26)}${getSourceTypeBadge(inv.vendor)}<input class="editable" value="${esc(inv.vendor)}" onblur="updateInvoice(${i},'vendor',this.value)" placeholder="Vendor name" style="min-width:0;flex:1"/></div></td>
         <td><input class="editable mono" value="${esc(inv.invoiceNum)}" onblur="updateInvoice(${i},'invoiceNum',this.value)" placeholder="INV-001" style="width:110px"/></td>
@@ -4113,19 +4136,98 @@
         </td>
       </tr>`;
     }).join('') +
-      `<tr class="add-row"><td colspan="7"><button class="add-btn" onclick="document.getElementById('invFileInput').click()">+ Upload More Invoices</button></td></tr>`;
+      `<tr class="add-row"><td colspan="8"><button class="add-btn" onclick="document.getElementById('invFileInput').click()">+ Upload More Invoices</button></td></tr>`;
 
     // ── Pinned total row in tfoot ──
     const invTfoot = document.getElementById('invTfoot');
     if (invTfoot) invTfoot.innerHTML = `
       <tr>
-        <td colspan="4" style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.08em;padding:12px 18px;text-transform:uppercase">Total</td>
+        <td colspan="5" style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.08em;padding:12px 18px;text-transform:uppercase">Total</td>
         <td class="mono text-green" style="font-size:15px;font-weight:700;white-space:nowrap;padding:12px 18px">${fmt(invoices.reduce((s,inv)=>s+(parseFloat(inv.amount)||0),0))}</td>
         <td colspan="2"></td>
       </tr>`;
 
     // Render chart after table
     setTimeout(() => renderInvChart(invoices), 50);
+  }
+
+  // ── Invoice order edit mode ──
+  let _invOrderEditMode = false;
+  let _invDragFrom = null;
+
+  function _saveInvOrder() {
+    const keys = invoices.map(inv => (inv.invoiceNum || inv.vendor || inv.filename || '').trim().toLowerCase());
+    localStorage.setItem('tf_inv_order', JSON.stringify(keys));
+  }
+  function _applyInvOrder(arr) {
+    const raw = localStorage.getItem('tf_inv_order');
+    if (!raw) return arr;
+    try {
+      const order = JSON.parse(raw);
+      const rankOf = k => { const i = order.indexOf(k); return i === -1 ? 9999 : i; };
+      return [...arr].sort((a, b) =>
+        rankOf((a.invoiceNum || a.vendor || a.filename || '').trim().toLowerCase()) -
+        rankOf((b.invoiceNum || b.vendor || b.filename || '').trim().toLowerCase())
+      );
+    } catch { return arr; }
+  }
+  function toggleInvOrderEdit() {
+    _invOrderEditMode = !_invOrderEditMode;
+    const btn = document.getElementById('invOrderBtn');
+    if (_invOrderEditMode) {
+      btn.textContent = '✓ Save Order';
+      btn.style.background = 'var(--accent)';
+      btn.style.color = '#fff';
+      btn.style.borderColor = 'var(--accent)';
+    } else {
+      _saveInvOrder();
+      btn.textContent = '↕ Edit Order';
+      btn.style.background = 'var(--surface2)';
+      btn.style.color = 'var(--muted)';
+      btn.style.borderColor = 'var(--border)';
+      showToast('✓ Order saved');
+    }
+    renderInvoices();
+  }
+  function invGripDown(e, i) {
+    if (!_invOrderEditMode) return;
+    const row = document.getElementById('invRow_' + i);
+    if (row) row.draggable = true;
+  }
+  function invGripUp() {
+    document.querySelectorAll('#invBody tr').forEach(r => r.draggable = false);
+  }
+  function invDragStart(e, i) {
+    if (!e.currentTarget.draggable) { e.preventDefault(); return; }
+    _invDragFrom = i;
+    e.dataTransfer.effectAllowed = 'move';
+    setTimeout(() => { if (e.currentTarget) e.currentTarget.style.opacity = '0.45'; }, 0);
+  }
+  function invDragEnd(e) {
+    e.currentTarget.draggable = false;
+    e.currentTarget.style.opacity = '';
+    document.querySelectorAll('#invBody tr').forEach(r => r.style.outline = '');
+  }
+  function invDragOver(e, i) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    document.querySelectorAll('#invBody tr').forEach((r, j) => {
+      r.style.outline = j === i && j !== _invDragFrom ? '1px dashed var(--accent)' : '';
+    });
+  }
+  function invDragLeave(e) {
+    if (!e.currentTarget.contains(e.relatedTarget)) {
+      document.querySelectorAll('#invBody tr').forEach(r => r.style.outline = '');
+    }
+  }
+  function invDrop(e, toI) {
+    e.preventDefault();
+    document.querySelectorAll('#invBody tr').forEach(r => { r.draggable = false; r.style.outline = ''; r.style.opacity = ''; });
+    if (_invDragFrom === null || _invDragFrom === toI) { _invDragFrom = null; return; }
+    const moved = invoices.splice(_invDragFrom, 1)[0];
+    invoices.splice(toI, 0, moved);
+    _invDragFrom = null;
+    renderInvoices();
   }
 
   function editInvAmount(td, i, currentVal) {
