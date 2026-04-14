@@ -534,7 +534,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.8.3</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.8.4</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1862,6 +1862,10 @@
                 <input class="editable mono" type="date" value="${esc(m.endDate||'')}" onchange="updateCampaignMgr(${i},'endDate',this.value)" style="width:100%"/>
               </div>
               <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Birthday</div>
+                <input class="editable mono" type="date" value="${esc(m.birthday||'')}" onchange="updateCampaignMgr(${i},'birthday',this.value)" style="width:100%"/>
+              </div>
+              <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Time Active</div>
                 <div style="font-family:var(--font-mono);font-size:16px;font-weight:700;color:${isLive ? 'var(--green)' : 'var(--amber)'}">${duration}</div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:2px">${startFmt} → ${isLive ? 'Present' : endFmt}</div>
@@ -2017,7 +2021,7 @@
     const endDate   = document.getElementById('cmEndDate').value;
     const notes     = document.getElementById('cmNotes').value.trim();
     if (!name) { showToast('⚠ Name is required'); return; }
-    campaignMgrs.push({ name, email, phone, campaigns, role, status, startDate, endDate, notes, commission: '', country: '', photoUrl: '', added: new Date().toISOString() });
+    campaignMgrs.push({ name, email, phone, campaigns, role, status, startDate, endDate, notes, commission: '', country: '', photoUrl: '', birthday: '', added: new Date().toISOString() });
     _saveCmOrder(); // include new member at end of saved order
     _renderCmTable();
     ['cmName','cmEmail','cmPhone','cmCampaigns','cmNotes','cmStartDate','cmEndDate'].forEach(id => { document.getElementById(id).value = ''; });
