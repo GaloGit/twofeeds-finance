@@ -57,6 +57,17 @@
     }
     .theme-toggle:hover { border-color: var(--accent); color: var(--accent-light); }
 
+    .notif-btn { position:relative; background:var(--surface2); border:1px solid var(--border); color:var(--muted); padding:8px 12px; border-radius:8px; font-size:14px; cursor:pointer; transition:all 0.2s; line-height:1; display:flex; align-items:center; }
+    .notif-btn:hover { border-color:var(--accent); color:var(--accent-light); }
+    .notif-badge { position:absolute; top:-5px; right:-5px; background:var(--red); color:#fff; border-radius:50%; width:17px; height:17px; font-size:9px; font-family:var(--font-mono); font-weight:700; display:flex; align-items:center; justify-content:center; pointer-events:none; }
+    #notifPanel { position:absolute; top:calc(100% + 10px); right:0; width:310px; background:var(--surface); border:1px solid var(--border); border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.5); z-index:2000; overflow:hidden; }
+    .notif-section-title { font-family:var(--font-mono); font-size:9px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); padding:10px 14px 6px; border-bottom:1px solid var(--border); }
+    .notif-item { display:flex; align-items:center; gap:10px; padding:10px 14px; border-bottom:1px solid var(--border); }
+    .notif-item:last-child { border-bottom:none; }
+    .notif-avatar { width:32px; height:32px; border-radius:50%; object-fit:cover; flex-shrink:0; }
+    .notif-avatar-init { width:32px; height:32px; border-radius:50%; background:var(--surface3); display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:12px; font-weight:700; color:var(--accent-light); flex-shrink:0; }
+    .notif-empty { font-family:var(--font-mono); font-size:11px; color:var(--muted); padding:18px 14px; text-align:center; }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body { background: var(--bg); color: var(--text); font-family: var(--font-display); min-height: 100vh; overflow-x: hidden; }
@@ -532,9 +543,16 @@
               <span id="headerUser" style="font-family:var(--font-mono);font-size:10px;color:var(--accent-light)"></span>
             </div>
           </div>
+          <div style="position:relative">
+            <button class="notif-btn" onclick="toggleNotifPanel(event)" id="notifBtn" title="Notifications">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              <span id="notifBadge" style="display:none" class="notif-badge">0</span>
+            </button>
+            <div id="notifPanel" style="display:none"></div>
+          </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.8.4</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.8.5</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1577,6 +1595,7 @@
       if (campaignMgrs.length > 0) _rawCache['cm'] = campaignMgrs;
     } catch (e) { showToast('⚠ Failed to load Team Roles', true); campaignMgrs = []; }
     _renderCmTable();
+    _updateNotifBadge();
   }
 
   // Persist the user's chosen order to localStorage so it survives refreshes
@@ -3182,7 +3201,104 @@
 
     // Show avatar if logged-in user is a campaign manager
     updateHeaderAvatar();
+    _updateNotifBadge();
   }
+
+  // ── NOTIFICATIONS ────────────────────────────────────────────────────────────
+
+  function _daysUntilAnnual(month, day) {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    let next = new Date(now.getFullYear(), month - 1, day);
+    if (next < today) next = new Date(now.getFullYear() + 1, month - 1, day);
+    return { days: Math.round((next - today) / 86400000), nextYear: next.getFullYear() };
+  }
+
+  function _computeNotifications() {
+    const notifs = [];
+    const thisYear = new Date().getFullYear();
+    campaignMgrs.forEach(m => {
+      if (!m.name) return;
+      const isLive = (m.status || 'live') === 'live';
+
+      // Birthday — any member
+      if (m.birthday) {
+        const bd = new Date(m.birthday);
+        if (!isNaN(bd)) {
+          const { days, nextYear } = _daysUntilAnnual(bd.getMonth() + 1, bd.getDate());
+          if (days <= 7) notifs.push({ name: m.name, photoUrl: m.photoUrl, type: 'birthday', days, label: 'Birthday', extra: '' });
+        }
+      }
+
+      // Work anniversary — live members only, must have been ≥1 year
+      if (isLive && m.startDate) {
+        const sd = new Date(m.startDate);
+        if (!isNaN(sd) && sd.getFullYear() < thisYear) {
+          const { days, nextYear } = _daysUntilAnnual(sd.getMonth() + 1, sd.getDate());
+          const years = nextYear - sd.getFullYear();
+          if (days <= 7) notifs.push({ name: m.name, photoUrl: m.photoUrl, type: 'anniversary', days, label: 'Work Anniversary', extra: `${years}y` });
+        }
+      }
+    });
+    return notifs.sort((a, b) => a.days - b.days);
+  }
+
+  function _updateNotifBadge() {
+    const notifs = _computeNotifications();
+    const badge = document.getElementById('notifBadge');
+    if (!badge) return;
+    const count = notifs.length;
+    if (count > 0) {
+      badge.textContent = count > 9 ? '9+' : count;
+      badge.style.display = 'flex';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  function toggleNotifPanel(e) {
+    e.stopPropagation();
+    const panel = document.getElementById('notifPanel');
+    if (!panel) return;
+    const open = panel.style.display !== 'none';
+    if (open) { panel.style.display = 'none'; return; }
+    panel.innerHTML = _buildNotifHtml();
+    panel.style.display = 'block';
+    // close on outside click
+    setTimeout(() => {
+      document.addEventListener('click', function _close(ev) {
+        if (!panel.contains(ev.target)) { panel.style.display = 'none'; document.removeEventListener('click', _close); }
+      });
+    }, 0);
+  }
+
+  function _buildNotifHtml() {
+    const notifs = _computeNotifications();
+    if (!notifs.length) return `<div class="notif-empty">No upcoming birthdays or anniversaries in the next 7 days.</div>`;
+    const today = notifs.filter(n => n.days === 0);
+    const upcoming = notifs.filter(n => n.days > 0);
+    const avatar = n => n.photoUrl
+      ? `<img class="notif-avatar" src="${esc(n.photoUrl)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" /><div class="notif-avatar-init" style="display:none">${esc(n.name[0]||'?')}</div>`
+      : `<div class="notif-avatar-init">${esc(n.name[0]||'?')}</div>`;
+    const typeColor = t => t === 'birthday' ? 'var(--accent)' : 'var(--green)';
+    const typeIcon  = t => t === 'birthday' ? '&#9836;' : '&#9733;';
+    const card = n => `
+      <div class="notif-item">
+        ${avatar(n)}
+        <div style="flex:1;min-width:0">
+          <div style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(n.name)}</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:3px">
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:700;color:${typeColor(n.type)}">${typeIcon(n.type)} ${n.label}${n.extra ? ' · ' + n.extra : ''}</span>
+          </div>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;white-space:nowrap;color:${n.days === 0 ? 'var(--green)' : 'var(--muted)'}">${n.days === 0 ? 'Today!' : 'in ' + n.days + 'd'}</div>
+      </div>`;
+    let html = '';
+    if (today.length) html += `<div class="notif-section-title">Today</div>${today.map(card).join('')}`;
+    if (upcoming.length) html += `<div class="notif-section-title">Coming up</div>${upcoming.map(card).join('')}`;
+    return html;
+  }
+
 
   function updateHeaderAvatar() {
     const loggedEmail = (document.getElementById('headerUser').textContent || '').toLowerCase().trim();
