@@ -534,7 +534,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.7.7</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.7.8</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -611,17 +611,17 @@
       <div id="publisherTableWrap" style="display:none">
         <div class="inv-toolbar">
           <div class="section-title">Publisher List — <span id="pubListPeriodLabel" style="color:var(--accent-light)"></span></div>
-          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <button id="pubOrderBtn" onclick="togglePubOrderEdit()" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">↕ Edit Order</button>
-            <button class="export-btn" onclick="exportCSV()">↓ Export CSV</button>
-            <button class="clear-btn" onclick="clearPublishers()">✕ Clear All</button>
-            <button class="add-btn" onclick="document.getElementById('csvFileInput').click()">↑ Re-upload CSV</button>
-          </div>
         </div>
         <div class="pub-toolbar">
           <div class="pub-search-wrap">
             <span class="pub-search-icon">🔍</span>
             <input type="text" class="pub-search" id="pubSearch" placeholder="Search publishers..." oninput="renderPublishers()"/>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <button id="pubOrderBtn" onclick="togglePubOrderEdit()" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">↕ Edit Order</button>
+            <button class="export-btn" onclick="exportCSV()">↓ Export CSV</button>
+            <button class="clear-btn" onclick="clearPublishers()">✕ Clear All</button>
+            <button class="add-btn" onclick="document.getElementById('csvFileInput').click()">↑ Re-upload CSV</button>
           </div>
         </div>
         <div class="table-wrap">
