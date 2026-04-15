@@ -557,7 +557,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.9.1</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.9.2</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1418,42 +1418,137 @@
     <div id="opsPages" style="display:none">
 
       <!-- MEETINGS -->
+      <!-- MEETINGS -->
       <div class="page active" id="ops-tab-meetings">
-        <div class="section-header" style="margin-bottom:28px">
-          <div>
-            <div class="section-title">Meetings</div>
-            <div class="section-sub">Schedule and track team meetings</div>
+        <div class="section-header" style="margin-bottom:20px">
+          <div><div class="section-title">Meetings</div><div class="section-sub">Schedule and track team meetings</div></div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:18px">
+          <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:14px">Add Meeting</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+            <div style="flex:2;min-width:180px">
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Title</div>
+              <input id="mtgTitle" class="editable" placeholder="Meeting title…" style="width:100%"/>
+            </div>
+            <div>
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Date</div>
+              <input type="date" id="mtgDate" class="editable mono" style="width:160px"/>
+            </div>
+            <div>
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Time</div>
+              <input type="time" id="mtgTime" class="editable mono" style="width:120px"/>
+            </div>
+            <div style="flex:1;min-width:150px">
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Attendees</div>
+              <input id="mtgAttendees" class="editable" placeholder="Names / emails…" style="width:100%"/>
+            </div>
+            <div>
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Status</div>
+              <select id="mtgStatus" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none">
+                <option value="scheduled">Scheduled</option><option value="done">Done</option><option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+            <div style="flex:1;min-width:150px">
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Notes</div>
+              <input id="mtgNotes" class="editable" placeholder="Notes…" style="width:100%"/>
+            </div>
+            <button onclick="addMeeting()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">+ ADD</button>
           </div>
         </div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:48px;text-align:center">
-          <div style="font-family:var(--font-mono);font-size:13px;color:var(--muted);letter-spacing:0.06em">Coming soon</div>
-        </div>
+        <div class="table-wrap"><div class="table-scroll"><table>
+          <thead><tr><th>#</th><th>Title</th><th>Date</th><th>Time</th><th>Attendees</th><th>Status</th><th>Notes</th><th></th></tr></thead>
+          <tbody id="meetingsBody"><tr><td colspan="8" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No meetings yet</td></tr></tbody>
+        </table></div></div>
       </div>
 
       <!-- TASKS -->
       <div class="page" id="ops-tab-tasks">
-        <div class="section-header" style="margin-bottom:28px">
-          <div>
-            <div class="section-title">Tasks</div>
-            <div class="section-sub">Manage and assign team tasks</div>
+        <div class="section-header" style="margin-bottom:20px">
+          <div><div class="section-title">Tasks</div><div class="section-sub">Manage and assign team tasks</div></div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:18px">
+          <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:14px">Add Task</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+            <div style="flex:2;min-width:180px">
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Title</div>
+              <input id="tskTitle" class="editable" placeholder="Task title…" style="width:100%"/>
+            </div>
+            <div style="flex:1;min-width:130px">
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Assignee</div>
+              <input id="tskAssignee" class="editable" placeholder="Name…" style="width:100%"/>
+            </div>
+            <div>
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Due Date</div>
+              <input type="date" id="tskDue" class="editable mono" style="width:160px"/>
+            </div>
+            <div>
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Priority</div>
+              <select id="tskPriority" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none">
+                <option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option><option value="urgent">Urgent</option>
+              </select>
+            </div>
+            <div>
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Status</div>
+              <select id="tskStatus" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none">
+                <option value="todo">To Do</option><option value="inprogress">In Progress</option><option value="done">Done</option>
+              </select>
+            </div>
+            <div style="flex:1;min-width:140px">
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Notes</div>
+              <input id="tskNotes" class="editable" placeholder="Notes…" style="width:100%"/>
+            </div>
+            <button onclick="addTask()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">+ ADD</button>
           </div>
         </div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:48px;text-align:center">
-          <div style="font-family:var(--font-mono);font-size:13px;color:var(--muted);letter-spacing:0.06em">Coming soon</div>
-        </div>
+        <div class="table-wrap"><div class="table-scroll"><table>
+          <thead><tr><th>#</th><th>Title</th><th>Assignee</th><th>Due Date</th><th>Priority</th><th>Status</th><th>Notes</th><th></th></tr></thead>
+          <tbody id="tasksBody"><tr><td colspan="8" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No tasks yet</td></tr></tbody>
+        </table></div></div>
       </div>
 
       <!-- TICKETS -->
       <div class="page" id="ops-tab-tickets">
-        <div class="section-header" style="margin-bottom:28px">
-          <div>
-            <div class="section-title">Tickets</div>
-            <div class="section-sub">Track and resolve open issues</div>
+        <div class="section-header" style="margin-bottom:20px">
+          <div><div class="section-title">Tickets</div><div class="section-sub">Track and resolve open issues</div></div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:18px">
+          <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:14px">Add Ticket</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+            <div style="flex:2;min-width:180px">
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Title</div>
+              <input id="tktTitle" class="editable" placeholder="Issue title…" style="width:100%"/>
+            </div>
+            <div style="flex:1;min-width:120px">
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Reporter</div>
+              <input id="tktReporter" class="editable" placeholder="Name…" style="width:100%"/>
+            </div>
+            <div style="flex:1;min-width:120px">
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Assignee</div>
+              <input id="tktAssignee" class="editable" placeholder="Name…" style="width:100%"/>
+            </div>
+            <div>
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Priority</div>
+              <select id="tktPriority" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none">
+                <option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option><option value="urgent">Urgent</option>
+              </select>
+            </div>
+            <div>
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Status</div>
+              <select id="tktStatus" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none">
+                <option value="open">Open</option><option value="inprogress">In Progress</option><option value="resolved">Resolved</option><option value="closed">Closed</option>
+              </select>
+            </div>
+            <div style="flex:2;min-width:180px">
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Description</div>
+              <input id="tktDesc" class="editable" placeholder="Brief description…" style="width:100%"/>
+            </div>
+            <button onclick="addTicket()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">+ ADD</button>
           </div>
         </div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:48px;text-align:center">
-          <div style="font-family:var(--font-mono);font-size:13px;color:var(--muted);letter-spacing:0.06em">Coming soon</div>
-        </div>
+        <div class="table-wrap"><div class="table-scroll"><table>
+          <thead><tr><th>#</th><th>Title</th><th>Reporter</th><th>Assignee</th><th>Priority</th><th>Status</th><th>Description</th><th>Created</th><th></th></tr></thead>
+          <tbody id="ticketsBody"><tr><td colspan="9" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No tickets yet</td></tr></tbody>
+        </table></div></div>
       </div>
 
     </div><!-- /opsPages -->
@@ -4015,6 +4110,7 @@
     document.getElementById('opsNav').style.display           = isOps ? 'flex' : 'none';
     document.getElementById('financePages').style.display     = isOps ? 'none' : '';
     document.getElementById('opsPages').style.display         = isOps ? '' : 'none';
+    if (isOps) _loadOpsData();
   }
 
   function showOpsTab(name, btn) {
@@ -6002,6 +6098,221 @@
       }
     });
   }
+
+  // ── OPERATIONS ───────────────────────────────────────────────────────────────
+
+  let meetings = [];   // [{id,title,date,time,attendees,status,notes,created}]
+  let tasks    = [];   // [{id,title,assignee,dueDate,priority,status,notes,created}]
+  let tickets  = [];   // [{id,title,reporter,assignee,priority,status,description,created}]
+  let _opsLoaded = false;
+
+  function _uid() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  }
+
+  async function _loadOpsData() {
+    if (_opsLoaded) return;
+    _opsLoaded = true;
+    try {
+      const [mtgRes, tskRes, tktRes] = await Promise.all([
+        fetch(`${FINANCE_API}?action=getMeetings`).then(r => r.json()).catch(() => ({ data: [] })),
+        fetch(`${FINANCE_API}?action=getTasks`).then(r => r.json()).catch(() => ({ data: [] })),
+        fetch(`${FINANCE_API}?action=getTickets`).then(r => r.json()).catch(() => ({ data: [] })),
+      ]);
+      meetings = (mtgRes.data || []).map(r => ({
+        id: r['ID'] || _uid(), title: r['Title'] || '', date: r['Date'] || '',
+        time: r['Time'] || '', attendees: r['Attendees'] || '',
+        status: r['Status'] || 'scheduled', notes: r['Notes'] || '', created: r['Created'] || '',
+      }));
+      tasks = (tskRes.data || []).map(r => ({
+        id: r['ID'] || _uid(), title: r['Title'] || '', assignee: r['Assignee'] || '',
+        dueDate: r['Due Date'] || '', priority: r['Priority'] || 'medium',
+        status: r['Status'] || 'todo', notes: r['Notes'] || '', created: r['Created'] || '',
+      }));
+      tickets = (tktRes.data || []).map(r => ({
+        id: r['ID'] || _uid(), title: r['Title'] || '', reporter: r['Reporter'] || '',
+        assignee: r['Assignee'] || '', priority: r['Priority'] || 'medium',
+        status: r['Status'] || 'open', description: r['Description'] || '', created: r['Created'] || '',
+      }));
+    } catch { /* silent — tables stay empty */ }
+    renderMeetings();
+    renderTasks();
+    renderTickets();
+  }
+
+  // ── Badge helpers ──
+
+  function _statusBadge(val) {
+    const map = {
+      scheduled:  ['var(--blue)',  'Scheduled'],
+      done:       ['var(--green)', 'Done'],
+      cancelled:  ['var(--red)',   'Cancelled'],
+      todo:       ['var(--muted)', 'To Do'],
+      inprogress: ['var(--amber)', 'In Progress'],
+      open:       ['var(--blue)',  'Open'],
+      resolved:   ['var(--green)', 'Resolved'],
+      closed:     ['var(--muted)', 'Closed'],
+    };
+    const [c, l] = map[val] || ['var(--muted)', val];
+    return `<span style="background:${c}22;color:${c};border-radius:4px;padding:2px 7px;font-size:10px;font-family:var(--font-mono);white-space:nowrap">${l}</span>`;
+  }
+
+  function _priorityBadge(val) {
+    const map = {
+      low:    ['var(--muted)', 'Low'],
+      medium: ['var(--blue)',  'Medium'],
+      high:   ['var(--amber)', 'High'],
+      urgent: ['var(--red)',   'Urgent'],
+    };
+    const [c, l] = map[val] || ['var(--muted)', val];
+    return `<span style="background:${c}22;color:${c};border-radius:4px;padding:2px 7px;font-size:10px;font-family:var(--font-mono);white-space:nowrap">${l}</span>`;
+  }
+
+  function _opsDelBtn(fn) {
+    return `<button onclick="${fn}" style="background:var(--red)22;color:var(--red);border:none;border-radius:6px;padding:4px 10px;font-family:var(--font-mono);font-size:10px;cursor:pointer">✕</button>`;
+  }
+
+  // ── MEETINGS ──
+
+  function addMeeting() {
+    const title     = document.getElementById('mtgTitle').value.trim();
+    const date      = document.getElementById('mtgDate').value;
+    const time      = document.getElementById('mtgTime').value;
+    const attendees = document.getElementById('mtgAttendees').value.trim();
+    const status    = document.getElementById('mtgStatus').value;
+    const notes     = document.getElementById('mtgNotes').value.trim();
+    if (!title) { alert('Meeting title is required'); return; }
+    meetings.push({ id: _uid(), title, date, time, attendees, status, notes, created: new Date().toISOString().split('T')[0] });
+    renderMeetings();
+    _saveMeetings();
+    ['mtgTitle','mtgDate','mtgTime','mtgAttendees','mtgNotes'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('mtgStatus').value = 'scheduled';
+  }
+
+  function deleteMeeting(id) {
+    meetings = meetings.filter(m => m.id !== id);
+    renderMeetings();
+    _saveMeetings();
+  }
+
+  function renderMeetings() {
+    const body = document.getElementById('meetingsBody');
+    if (!body) return;
+    if (!meetings.length) {
+      body.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No meetings yet</td></tr>`;
+      return;
+    }
+    body.innerHTML = meetings.map((m, i) => `<tr>
+      <td style="color:var(--muted);font-family:var(--font-mono);font-size:10px">${i+1}</td>
+      <td style="font-family:var(--font-mono);font-size:11px">${m.title}</td>
+      <td style="font-family:var(--font-mono);font-size:11px">${m.date || '—'}</td>
+      <td style="font-family:var(--font-mono);font-size:11px">${m.time || '—'}</td>
+      <td style="font-family:var(--font-mono);font-size:11px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${m.attendees}">${m.attendees || '—'}</td>
+      <td>${_statusBadge(m.status)}</td>
+      <td style="font-family:var(--font-mono);font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${m.notes}">${m.notes || '—'}</td>
+      <td>${_opsDelBtn(`deleteMeeting('${m.id}')`)}</td>
+    </tr>`).join('');
+  }
+
+  async function _saveMeetings() {
+    await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveMeetings', meetings }) });
+  }
+
+  // ── TASKS ──
+
+  function addTask() {
+    const title    = document.getElementById('tskTitle').value.trim();
+    const assignee = document.getElementById('tskAssignee').value.trim();
+    const dueDate  = document.getElementById('tskDue').value;
+    const priority = document.getElementById('tskPriority').value;
+    const status   = document.getElementById('tskStatus').value;
+    const notes    = document.getElementById('tskNotes').value.trim();
+    if (!title) { alert('Task title is required'); return; }
+    tasks.push({ id: _uid(), title, assignee, dueDate, priority, status, notes, created: new Date().toISOString().split('T')[0] });
+    renderTasks();
+    _saveTasks();
+    ['tskTitle','tskAssignee','tskDue','tskNotes'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('tskPriority').value = 'medium';
+    document.getElementById('tskStatus').value = 'todo';
+  }
+
+  function deleteTask(id) {
+    tasks = tasks.filter(t => t.id !== id);
+    renderTasks();
+    _saveTasks();
+  }
+
+  function renderTasks() {
+    const body = document.getElementById('tasksBody');
+    if (!body) return;
+    if (!tasks.length) {
+      body.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No tasks yet</td></tr>`;
+      return;
+    }
+    body.innerHTML = tasks.map((t, i) => `<tr>
+      <td style="color:var(--muted);font-family:var(--font-mono);font-size:10px">${i+1}</td>
+      <td style="font-family:var(--font-mono);font-size:11px">${t.title}</td>
+      <td style="font-family:var(--font-mono);font-size:11px">${t.assignee || '—'}</td>
+      <td style="font-family:var(--font-mono);font-size:11px">${t.dueDate || '—'}</td>
+      <td>${_priorityBadge(t.priority)}</td>
+      <td>${_statusBadge(t.status)}</td>
+      <td style="font-family:var(--font-mono);font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${t.notes}">${t.notes || '—'}</td>
+      <td>${_opsDelBtn(`deleteTask('${t.id}')`)}</td>
+    </tr>`).join('');
+  }
+
+  async function _saveTasks() {
+    await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveTasks', tasks }) });
+  }
+
+  // ── TICKETS ──
+
+  function addTicket() {
+    const title       = document.getElementById('tktTitle').value.trim();
+    const reporter    = document.getElementById('tktReporter').value.trim();
+    const assignee    = document.getElementById('tktAssignee').value.trim();
+    const priority    = document.getElementById('tktPriority').value;
+    const status      = document.getElementById('tktStatus').value;
+    const description = document.getElementById('tktDesc').value.trim();
+    if (!title) { alert('Ticket title is required'); return; }
+    tickets.push({ id: _uid(), title, reporter, assignee, priority, status, description, created: new Date().toISOString().split('T')[0] });
+    renderTickets();
+    _saveTickets();
+    ['tktTitle','tktReporter','tktAssignee','tktDesc'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('tktPriority').value = 'medium';
+    document.getElementById('tktStatus').value = 'open';
+  }
+
+  function deleteTicket(id) {
+    tickets = tickets.filter(t => t.id !== id);
+    renderTickets();
+    _saveTickets();
+  }
+
+  function renderTickets() {
+    const body = document.getElementById('ticketsBody');
+    if (!body) return;
+    if (!tickets.length) {
+      body.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No tickets yet</td></tr>`;
+      return;
+    }
+    body.innerHTML = tickets.map((t, i) => `<tr>
+      <td style="color:var(--muted);font-family:var(--font-mono);font-size:10px">${i+1}</td>
+      <td style="font-family:var(--font-mono);font-size:11px">${t.title}</td>
+      <td style="font-family:var(--font-mono);font-size:11px">${t.reporter || '—'}</td>
+      <td style="font-family:var(--font-mono);font-size:11px">${t.assignee || '—'}</td>
+      <td>${_priorityBadge(t.priority)}</td>
+      <td>${_statusBadge(t.status)}</td>
+      <td style="font-family:var(--font-mono);font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${t.description}">${t.description || '—'}</td>
+      <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">${t.created || '—'}</td>
+      <td>${_opsDelBtn(`deleteTicket('${t.id}')`)}</td>
+    </tr>`).join('');
+  }
+
+  async function _saveTickets() {
+    await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveTickets', tickets }) });
+  }
+
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4.4.1/dist/email.min.js" integrity="sha512-IBPHmNWySlzT5RaPmlKa8qWkIYgIT+sbpDOm2DiYtWI/GKzv5BKrrCSikC9U//cIJBFdvrP60t9Z0GNUFzCkqQ==" crossorigin="anonymous"></script>
 </body>
