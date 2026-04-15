@@ -3571,13 +3571,16 @@
   async function prefetchAllData() {
     const pk = periodKey();
     try {
-      const [pubData, invData, mbData, cmRes, siRes, evRes] = await Promise.all([
+      const [pubData, invData, mbData, cmRes, siRes, evRes, mtgRes, tskRes, tktRes] = await Promise.all([
         fetchPeriodData('getPublishers').catch(() => []),
         fetchPeriodData('getInvoices').catch(() => []),
         fetchPeriodData('getMediaBuying').catch(() => []),
         fetch(`${FINANCE_API}?action=getCampaignMgrs`).then(r => r.json()).catch(() => ({ data: [] })),
         fetch(`${FINANCE_API}?action=getSourcesInfo`).then(r => r.json()).catch(() => ({ data: [] })),
         fetch(`${FINANCE_API}?action=getEvents`).then(r => r.json()).catch(() => ({ data: [] })),
+        fetch(`${FINANCE_API}?action=getMeetings`).then(r => r.json()).catch(() => ({ data: [] })),
+        fetch(`${FINANCE_API}?action=getTasks`).then(r => r.json()).catch(() => ({ data: [] })),
+        fetch(`${FINANCE_API}?action=getTickets`).then(r => r.json()).catch(() => ({ data: [] })),
       ]);
 
       // Publishers
@@ -3631,6 +3634,25 @@
         _buildSourcesMap();
         if (siRaw.length > sourcesInfo.length) _saveSourcesInfo(); // clean up sheet duplicates
       }
+
+      // Operations — load at login so notifications are ready immediately
+      meetings = (mtgRes.data || []).map(r => ({
+        id: r['ID'] || _uid(), title: r['Title'] || '', date: r['Date'] || '',
+        time: r['Time'] || '', attendees: r['Attendees'] || '',
+        status: r['Status'] || 'scheduled', notes: r['Notes'] || '', created: r['Created'] || '',
+      }));
+      tasks = (tskRes.data || []).map(r => ({
+        id: r['ID'] || _uid(), title: r['Title'] || '', assignee: r['Assignee'] || '',
+        dueDate: r['Due Date'] || '', priority: r['Priority'] || 'medium',
+        status: r['Status'] || 'todo', notes: r['Notes'] || '', created: r['Created'] || '',
+      }));
+      tickets = (tktRes.data || []).map(r => ({
+        id: r['ID'] || _uid(), title: r['Title'] || '', reporter: r['Reporter'] || '',
+        assignee: r['Assignee'] || '', dueDate: r['Due Date'] || '',
+        priority: r['Priority'] || 'medium',
+        status: r['Status'] || 'open', description: r['Description'] || '', created: r['Created'] || '',
+      }));
+      _opsLoaded = true;  // prevent _loadOpsData from re-fetching on first section switch
 
     } catch { /* silent — individual tabs will fall back to their own fetch */ }
 
