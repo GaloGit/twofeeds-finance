@@ -552,7 +552,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.8.8</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.8.9</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1330,6 +1330,7 @@
                 <select id="evType" onchange="evTypeChange()" style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none">
                   <option value="once">One-time</option>
                   <option value="repeating">Repeating (annual)</option>
+                  <option value="monthly">Repeating (monthly)</option>
                   <option value="multi">Multiple dates</option>
                 </select>
               </div>
@@ -1341,6 +1342,10 @@
             <div id="evRepeatWrap" style="display:none">
               <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Day &amp; Month (repeats every year)</div>
               <input type="date" id="evRepeatDate" class="editable mono" style="width:220px"/>
+            </div>
+            <div id="evMonthlyWrap" style="display:none">
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Day of Month (1–31)</div>
+              <input type="number" id="evMonthlyDay" class="editable mono" min="1" max="31" placeholder="e.g. 15" style="width:120px"/>
             </div>
             <div id="evMultiWrap" style="display:none">
               <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">Dates</div>
@@ -2991,9 +2996,10 @@
 
   function evTypeChange() {
     const t = document.getElementById('evType').value;
-    document.getElementById('evDateWrap').style.display   = t === 'once'      ? '' : 'none';
-    document.getElementById('evRepeatWrap').style.display = t === 'repeating' ? '' : 'none';
-    document.getElementById('evMultiWrap').style.display  = t === 'multi'     ? '' : 'none';
+    document.getElementById('evDateWrap').style.display    = t === 'once'      ? '' : 'none';
+    document.getElementById('evRepeatWrap').style.display  = t === 'repeating' ? '' : 'none';
+    document.getElementById('evMonthlyWrap').style.display = t === 'monthly'   ? '' : 'none';
+    document.getElementById('evMultiWrap').style.display   = t === 'multi'     ? '' : 'none';
     if (t === 'multi' && !document.getElementById('evMultiDates').children.length) evAddDate();
   }
 
@@ -3013,7 +3019,12 @@
     let date = '', dates = [];
     if (type === 'once')      date = document.getElementById('evDate').value;
     if (type === 'repeating') date = document.getElementById('evRepeatDate').value;
-    if (type === 'multi')     dates = [...document.querySelectorAll('.ev-multi-date')].map(i => i.value).filter(Boolean);
+    if (type === 'monthly') {
+      const d = parseInt(document.getElementById('evMonthlyDay').value);
+      if (!d || d < 1 || d > 31) { showToast('⚠ Enter a day between 1 and 31', true); return; }
+      date = String(d);
+    }
+    if (type === 'multi') dates = [...document.querySelectorAll('.ev-multi-date')].map(i => i.value).filter(Boolean);
 
     if ((type === 'once' || type === 'repeating') && !date) { showToast('⚠ Please pick a date', true); return; }
     if (type === 'multi' && !dates.length) { showToast('⚠ Add at least one date', true); return; }
@@ -3028,6 +3039,7 @@
     document.getElementById('evTitle').value = '';
     document.getElementById('evDate').value  = '';
     document.getElementById('evRepeatDate').value = '';
+    document.getElementById('evMonthlyDay').value = '';
     document.getElementById('evMultiDates').innerHTML = '';
     document.getElementById('evType').value = 'once';
     evTypeChange();
@@ -3056,13 +3068,14 @@
       return;
     }
     const typeBadge = t => {
-      const map = { once: ['#e6a817','One-time'], repeating: ['var(--green)','Repeating'], multi: ['var(--accent)','Multiple'] };
+      const map = { once: ['#e6a817','One-time'], repeating: ['var(--green)','Annual'], monthly: ['#3b9eed','Monthly'], multi: ['var(--accent)','Multiple'] };
       const [col, lbl] = map[t] || ['var(--muted)','—'];
       return `<span style="font-family:var(--font-mono);font-size:9px;font-weight:700;color:${col};background:${col}22;border-radius:4px;padding:2px 7px">${lbl}</span>`;
     };
     const fmtDates = ev => {
-      if (ev.type === 'multi')      return (ev.dates || []).map(d => `<span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${d}</span>`).join(', ');
-      if (ev.type === 'repeating')  return `<span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${(ev.date||'').slice(5)} every year</span>`;
+      if (ev.type === 'multi')     return (ev.dates || []).map(d => `<span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${d}</span>`).join(', ');
+      if (ev.type === 'repeating') return `<span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${(ev.date||'').slice(5)} every year</span>`;
+      if (ev.type === 'monthly')   return `<span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">Day ${ev.date} of every month</span>`;
       return `<span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${ev.date||''}</span>`;
     };
     body.innerHTML = customEvents.map(ev => `
@@ -3399,11 +3412,21 @@
       if (!ev.title) return;
       const checkDate = (dateStr) => {
         if (!dateStr) return;
+        if (ev.type === 'monthly') {
+          const day = parseInt(dateStr);
+          if (!day) return;
+          const now = new Date();
+          let next = new Date(now.getFullYear(), now.getMonth(), day);
+          if (next < todayMidnight) next = new Date(now.getFullYear(), now.getMonth() + 1, day);
+          const days = Math.round((next - todayMidnight) / 86400000);
+          if (days >= 0 && days <= 7) notifs.push({ name: ev.title, photoUrl: '', type: 'event', days, label: 'Monthly Event', extra: '' });
+          return;
+        }
         const d = new Date(dateStr);
         if (isNaN(d)) return;
         if (ev.type === 'repeating') {
           const { days } = _daysUntilAnnual(d.getMonth() + 1, d.getDate());
-          if (days <= 7) notifs.push({ name: ev.title, photoUrl: '', type: 'event', days, label: 'Event', extra: '' });
+          if (days <= 7) notifs.push({ name: ev.title, photoUrl: '', type: 'event', days, label: 'Annual Event', extra: '' });
         } else {
           const eventDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
           const days = Math.round((eventDay - todayMidnight) / 86400000);
