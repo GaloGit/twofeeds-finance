@@ -552,7 +552,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.8.9</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.9.0</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -3049,6 +3049,7 @@
   async function deleteCustomEvent(id) {
     customEvents = customEvents.filter(e => e.id !== id);
     await _saveCustomEvents();
+    _evEditId = null;
     _renderCustomEvents();
     _updateNotifBadge();
     showToast('✓ Event removed');
@@ -3058,6 +3059,52 @@
     try {
       await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveEvents', events: customEvents }) });
     } catch { showToast('⚠ Failed to save events', true); }
+  }
+
+  let _evEditId = null;
+
+  function editCustomEvent(id) { _evEditId = id; _renderCustomEvents(); }
+  function cancelEvEdit()      { _evEditId = null; _renderCustomEvents(); }
+
+  function evEditTypeChange(id) {
+    const t = document.getElementById(`eet_${id}`).value;
+    document.getElementById(`eeDate_${id}`).style.display    = t === 'once'      ? '' : 'none';
+    document.getElementById(`eeRepeat_${id}`).style.display  = t === 'repeating' ? '' : 'none';
+    document.getElementById(`eeMonthly_${id}`).style.display = t === 'monthly'   ? '' : 'none';
+    document.getElementById(`eeMulti_${id}`).style.display   = t === 'multi'     ? '' : 'none';
+  }
+
+  function evEditAddDate(id) {
+    const wrap = document.getElementById(`eeMultiDates_${id}`);
+    const row  = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:4px';
+    row.innerHTML = `<input type="date" class="editable mono ee-multi-date-${id}" style="width:200px"/><button onclick="this.parentElement.remove()" style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:14px">×</button>`;
+    wrap.appendChild(row);
+  }
+
+  async function saveEvEdit(id) {
+    const ev = customEvents.find(e => e.id === id);
+    if (!ev) return;
+    const title = (document.getElementById(`eeTitle_${id}`)?.value || '').trim();
+    const type  = document.getElementById(`eet_${id}`)?.value || ev.type;
+    if (!title) { showToast('⚠ Title required', true); return; }
+
+    let date = '', dates = [];
+    if (type === 'once')      date = document.getElementById(`eeDate_${id}`)?.value || '';
+    if (type === 'repeating') date = document.getElementById(`eeRepeat_${id}`)?.value || '';
+    if (type === 'monthly') {
+      const d = parseInt(document.getElementById(`eeMonthly_${id}`)?.value);
+      if (!d || d < 1 || d > 31) { showToast('⚠ Enter a day 1–31', true); return; }
+      date = String(d);
+    }
+    if (type === 'multi') dates = [...document.querySelectorAll(`.ee-multi-date-${id}`)].map(i => i.value).filter(Boolean);
+
+    ev.title = title; ev.type = type; ev.date = date; ev.dates = dates;
+    await _saveCustomEvents();
+    _evEditId = null;
+    _renderCustomEvents();
+    _updateNotifBadge();
+    showToast('✓ Event updated');
   }
 
   function _renderCustomEvents() {
@@ -3078,14 +3125,71 @@
       if (ev.type === 'monthly')   return `<span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">Day ${ev.date} of every month</span>`;
       return `<span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${ev.date||''}</span>`;
     };
-    body.innerHTML = customEvents.map(ev => `
+
+    const editForm = ev => {
+      const id = ev.id;
+      const t  = ev.type;
+      const multiDatesHtml = (ev.dates || []).map(d =>
+        `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><input type="date" class="editable mono ee-multi-date-${id}" value="${d}" style="width:200px"/><button onclick="this.parentElement.remove()" style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:14px">×</button></div>`
+      ).join('');
+      return `
+      <div style="background:var(--surface2);border:1px solid var(--accent);border-radius:10px;padding:14px;margin:6px 0">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <div style="flex:2;min-width:160px">
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Title</div>
+              <input id="eeTitle_${id}" class="editable" value="${esc(ev.title)}" style="width:100%"/>
+            </div>
+            <div style="flex:1;min-width:140px">
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Type</div>
+              <select id="eet_${id}" onchange="evEditTypeChange('${id}')" style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none">
+                <option value="once"      ${t==='once'      ?'selected':''}>One-time</option>
+                <option value="repeating" ${t==='repeating' ?'selected':''}>Repeating (annual)</option>
+                <option value="monthly"   ${t==='monthly'   ?'selected':''}>Repeating (monthly)</option>
+                <option value="multi"     ${t==='multi'     ?'selected':''}>Multiple dates</option>
+              </select>
+            </div>
+          </div>
+          <div id="eeDate_${id}" style="${t==='once'?'':'display:none'}">
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Date</div>
+            <input type="date" id="eeDate_${id}" class="editable mono" value="${t==='once'?ev.date:''}" style="width:220px"/>
+          </div>
+          <div id="eeRepeat_${id}" style="${t==='repeating'?'':'display:none'}">
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Day &amp; Month (repeats every year)</div>
+            <input type="date" id="eeRepeat_${id}" class="editable mono" value="${t==='repeating'?ev.date:''}" style="width:220px"/>
+          </div>
+          <div id="eeMonthly_${id}" style="${t==='monthly'?'':'display:none'}">
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Day of Month (1–31)</div>
+            <input type="number" id="eeMonthly_${id}" class="editable mono" min="1" max="31" value="${t==='monthly'?ev.date:''}" style="width:120px"/>
+          </div>
+          <div id="eeMulti_${id}" style="${t==='multi'?'':'display:none'}">
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">Dates</div>
+            <div id="eeMultiDates_${id}">${multiDatesHtml}</div>
+            <button onclick="evEditAddDate('${id}')" style="margin-top:6px;background:transparent;border:1px dashed var(--border);color:var(--muted);border-radius:6px;padding:4px 12px;font-family:var(--font-mono);font-size:10px;cursor:pointer">+ Add Date</button>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:2px">
+            <button onclick="saveEvEdit('${id}')" style="background:var(--accent);color:#fff;border:none;border-radius:7px;padding:7px 18px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;letter-spacing:0.05em">SAVE</button>
+            <button onclick="cancelEvEdit()" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:7px 14px;font-family:var(--font-mono);font-size:10px;cursor:pointer">Cancel</button>
+            <button onclick="deleteCustomEvent('${id}')" style="margin-left:auto;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:7px 12px;font-family:var(--font-mono);font-size:10px;cursor:pointer" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">✕ Remove</button>
+          </div>
+        </div>
+      </div>`;
+    };
+
+    body.innerHTML = customEvents.map(ev => {
+      if (ev.id === _evEditId) return editForm(ev);
+      return `
       <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
         <div style="flex:1;min-width:0">
           <div style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px">${esc(ev.title)}</div>
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">${typeBadge(ev.type)} ${fmtDates(ev)}</div>
         </div>
-        <button onclick="deleteCustomEvent('${ev.id}')" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:5px 10px;font-family:var(--font-mono);font-size:10px;cursor:pointer" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">✕ Remove</button>
-      </div>`).join('');
+        <div style="display:flex;gap:6px">
+          <button onclick="editCustomEvent('${ev.id}')" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:5px 10px;font-family:var(--font-mono);font-size:10px;cursor:pointer" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent-light)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">✎ Edit</button>
+          <button onclick="deleteCustomEvent('${ev.id}')" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:5px 10px;font-family:var(--font-mono);font-size:10px;cursor:pointer" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">✕ Remove</button>
+        </div>
+      </div>`;
+    }).join('');
   }
 
   // ── EMAILJS CONFIG ──
