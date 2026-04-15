@@ -1422,6 +1422,7 @@
       <div class="page active" id="ops-tab-meetings">
         <div class="section-header" style="margin-bottom:20px">
           <div><div class="section-title">Meetings</div><div class="section-sub">Schedule and track team meetings</div></div>
+          <button onclick="reloadOpsData()" title="Reload from sheet" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 14px;color:var(--muted);font-family:var(--font-mono);font-size:11px;cursor:pointer">↺ Reload</button>
         </div>
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:18px">
           <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:14px">Add Meeting</div>
@@ -1465,6 +1466,7 @@
       <div class="page" id="ops-tab-tasks">
         <div class="section-header" style="margin-bottom:20px">
           <div><div class="section-title">Tasks</div><div class="section-sub">Manage and assign team tasks</div></div>
+          <button onclick="reloadOpsData()" title="Reload from sheet" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 14px;color:var(--muted);font-family:var(--font-mono);font-size:11px;cursor:pointer">↺ Reload</button>
         </div>
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:18px">
           <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:14px">Add Task</div>
@@ -1510,6 +1512,7 @@
       <div class="page" id="ops-tab-tickets">
         <div class="section-header" style="margin-bottom:20px">
           <div><div class="section-title">Tickets</div><div class="section-sub">Track and resolve open issues</div></div>
+          <button onclick="reloadOpsData()" title="Reload from sheet" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 14px;color:var(--muted);font-family:var(--font-mono);font-size:11px;cursor:pointer">↺ Reload</button>
         </div>
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:18px">
           <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:14px">Add Ticket</div>
@@ -6104,20 +6107,36 @@
   let meetings = [];   // [{id,title,date,time,attendees,status,notes,created}]
   let tasks    = [];   // [{id,title,assignee,dueDate,priority,status,notes,created}]
   let tickets  = [];   // [{id,title,reporter,assignee,priority,status,description,created}]
-  let _opsLoaded = false;
+  let _opsLoaded  = false;
+  let _opsLoading = false;
 
   function _uid() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   }
 
-  async function _loadOpsData() {
-    if (_opsLoaded) return;
-    _opsLoaded = true;
+  // Show a brief "Saved ✓" / "⚠ Error" toast near the ops tab that just saved
+  function _opsSaveToast(ok) {
+    const el = document.createElement('div');
+    el.textContent = ok ? 'Saved ✓' : '⚠ Save failed – check connection';
+    Object.assign(el.style, {
+      position:'fixed', bottom:'24px', right:'24px', zIndex:9999,
+      background: ok ? 'var(--green)' : 'var(--red)',
+      color:'#fff', fontFamily:'var(--font-mono)', fontSize:'11px', fontWeight:'700',
+      padding:'8px 16px', borderRadius:'8px', boxShadow:'0 4px 16px rgba(0,0,0,0.3)',
+      transition:'opacity 0.4s', opacity:'1',
+    });
+    document.body.appendChild(el);
+    setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 400); }, 2000);
+  }
+
+  async function _loadOpsData(force = false) {
+    if ((_opsLoaded && !force) || _opsLoading) return;
+    _opsLoading = true;
     try {
       const [mtgRes, tskRes, tktRes] = await Promise.all([
-        fetch(`${FINANCE_API}?action=getMeetings`).then(r => r.json()).catch(() => ({ data: [] })),
-        fetch(`${FINANCE_API}?action=getTasks`).then(r => r.json()).catch(() => ({ data: [] })),
-        fetch(`${FINANCE_API}?action=getTickets`).then(r => r.json()).catch(() => ({ data: [] })),
+        fetch(`${FINANCE_API}?action=getMeetings`).then(r => r.json()),
+        fetch(`${FINANCE_API}?action=getTasks`).then(r => r.json()),
+        fetch(`${FINANCE_API}?action=getTickets`).then(r => r.json()),
       ]);
       meetings = (mtgRes.data || []).map(r => ({
         id: r['ID'] || _uid(), title: r['Title'] || '', date: r['Date'] || '',
@@ -6134,10 +6153,21 @@
         assignee: r['Assignee'] || '', priority: r['Priority'] || 'medium',
         status: r['Status'] || 'open', description: r['Description'] || '', created: r['Created'] || '',
       }));
-    } catch { /* silent — tables stay empty */ }
+      _opsLoaded = true;  // only mark loaded on success
+    } catch(err) {
+      console.error('[Ops] load error:', err);
+      // _opsLoaded stays false so next section switch retries
+    } finally {
+      _opsLoading = false;
+    }
     renderMeetings();
     renderTasks();
     renderTickets();
+  }
+
+  function reloadOpsData() {
+    _opsLoaded = false;
+    _loadOpsData();
   }
 
   // ── Badge helpers ──
@@ -6174,7 +6204,7 @@
 
   // ── MEETINGS ──
 
-  function addMeeting() {
+  async function addMeeting() {
     const title     = document.getElementById('mtgTitle').value.trim();
     const date      = document.getElementById('mtgDate').value;
     const time      = document.getElementById('mtgTime').value;
@@ -6184,9 +6214,12 @@
     if (!title) { alert('Meeting title is required'); return; }
     meetings.push({ id: _uid(), title, date, time, attendees, status, notes, created: new Date().toISOString().split('T')[0] });
     renderMeetings();
-    _saveMeetings();
-    ['mtgTitle','mtgDate','mtgTime','mtgAttendees','mtgNotes'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('mtgStatus').value = 'scheduled';
+    const ok = await _saveMeetings();
+    _opsSaveToast(ok);
+    if (ok) {
+      ['mtgTitle','mtgDate','mtgTime','mtgAttendees','mtgNotes'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('mtgStatus').value = 'scheduled';
+    }
   }
 
   function deleteMeeting(id) {
@@ -6215,12 +6248,17 @@
   }
 
   async function _saveMeetings() {
-    await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveMeetings', meetings }) });
+    try {
+      const res  = await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveMeetings', meetings }) });
+      const data = await res.json();
+      if (!data.success) throw new Error('API returned success:false');
+      return true;
+    } catch(err) { console.error('[Ops] saveMeetings error:', err); return false; }
   }
 
   // ── TASKS ──
 
-  function addTask() {
+  async function addTask() {
     const title    = document.getElementById('tskTitle').value.trim();
     const assignee = document.getElementById('tskAssignee').value.trim();
     const dueDate  = document.getElementById('tskDue').value;
@@ -6230,10 +6268,13 @@
     if (!title) { alert('Task title is required'); return; }
     tasks.push({ id: _uid(), title, assignee, dueDate, priority, status, notes, created: new Date().toISOString().split('T')[0] });
     renderTasks();
-    _saveTasks();
-    ['tskTitle','tskAssignee','tskDue','tskNotes'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('tskPriority').value = 'medium';
-    document.getElementById('tskStatus').value = 'todo';
+    const ok = await _saveTasks();
+    _opsSaveToast(ok);
+    if (ok) {
+      ['tskTitle','tskAssignee','tskDue','tskNotes'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('tskPriority').value = 'medium';
+      document.getElementById('tskStatus').value = 'todo';
+    }
   }
 
   function deleteTask(id) {
@@ -6262,12 +6303,17 @@
   }
 
   async function _saveTasks() {
-    await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveTasks', tasks }) });
+    try {
+      const res  = await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveTasks', tasks }) });
+      const data = await res.json();
+      if (!data.success) throw new Error('API returned success:false');
+      return true;
+    } catch(err) { console.error('[Ops] saveTasks error:', err); return false; }
   }
 
   // ── TICKETS ──
 
-  function addTicket() {
+  async function addTicket() {
     const title       = document.getElementById('tktTitle').value.trim();
     const reporter    = document.getElementById('tktReporter').value.trim();
     const assignee    = document.getElementById('tktAssignee').value.trim();
@@ -6277,10 +6323,13 @@
     if (!title) { alert('Ticket title is required'); return; }
     tickets.push({ id: _uid(), title, reporter, assignee, priority, status, description, created: new Date().toISOString().split('T')[0] });
     renderTickets();
-    _saveTickets();
-    ['tktTitle','tktReporter','tktAssignee','tktDesc'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('tktPriority').value = 'medium';
-    document.getElementById('tktStatus').value = 'open';
+    const ok = await _saveTickets();
+    _opsSaveToast(ok);
+    if (ok) {
+      ['tktTitle','tktReporter','tktAssignee','tktDesc'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('tktPriority').value = 'medium';
+      document.getElementById('tktStatus').value = 'open';
+    }
   }
 
   function deleteTicket(id) {
@@ -6310,7 +6359,12 @@
   }
 
   async function _saveTickets() {
-    await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveTickets', tickets }) });
+    try {
+      const res  = await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveTickets', tickets }) });
+      const data = await res.json();
+      if (!data.success) throw new Error('API returned success:false');
+      return true;
+    } catch(err) { console.error('[Ops] saveTickets error:', err); return false; }
   }
 
 </script>
