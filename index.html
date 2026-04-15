@@ -557,7 +557,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.9.2</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.9.3</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1530,6 +1530,10 @@
               <input id="tktAssignee" class="editable" placeholder="Name…" style="width:100%"/>
             </div>
             <div>
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Due Date</div>
+              <input type="date" id="tktDue" class="editable mono" style="width:150px"/>
+            </div>
+            <div>
               <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Priority</div>
               <select id="tktPriority" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none">
                 <option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option><option value="urgent">Urgent</option>
@@ -1549,8 +1553,8 @@
           </div>
         </div>
         <div class="table-wrap"><div class="table-scroll"><table>
-          <thead><tr><th>#</th><th>Title</th><th>Reporter</th><th>Assignee</th><th>Priority</th><th>Status</th><th>Description</th><th>Created</th><th></th></tr></thead>
-          <tbody id="ticketsBody"><tr><td colspan="9" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No tickets yet</td></tr></tbody>
+          <thead><tr><th>#</th><th>Title</th><th>Reporter</th><th>Assignee</th><th>Due Date</th><th>Priority</th><th>Status</th><th>Description</th><th>Created</th><th></th></tr></thead>
+          <tbody id="ticketsBody"><tr><td colspan="10" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No tickets yet</td></tr></tbody>
         </table></div></div>
       </div>
 
@@ -3713,6 +3717,47 @@
       }
     });
 
+    // Meetings — upcoming within 2 days (skip done/cancelled)
+    meetings.forEach(m => {
+      if (!m.title || !m.date || m.status === 'done' || m.status === 'cancelled') return;
+      const d = new Date(m.date); if (isNaN(d)) return;
+      const eventDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      const days = Math.round((eventDay - todayMidnight) / 86400000);
+      if (days >= 0 && days <= 2) notifs.push({
+        name: m.title, photoUrl: '', type: 'meeting', days,
+        label: 'Meeting', extra: m.time || '',
+        notifId: `${m.id}__meeting__${m.date}`,
+      });
+    });
+
+    // Tasks — due within 3 days or overdue (skip done)
+    tasks.forEach(t => {
+      if (!t.title || !t.dueDate || t.status === 'done') return;
+      const d = new Date(t.dueDate); if (isNaN(d)) return;
+      const eventDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      const days = Math.round((eventDay - todayMidnight) / 86400000);
+      if (days <= 3) notifs.push({
+        name: t.title, photoUrl: '', type: 'task', days,
+        label: days < 0 ? 'Task Overdue' : 'Task Due',
+        extra: t.assignee || '',
+        notifId: `${t.id}__task__${t.dueDate}`,
+      });
+    });
+
+    // Tickets — due within 3 days or overdue (skip resolved/closed)
+    tickets.forEach(t => {
+      if (!t.title || !t.dueDate || t.status === 'resolved' || t.status === 'closed') return;
+      const d = new Date(t.dueDate); if (isNaN(d)) return;
+      const eventDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      const days = Math.round((eventDay - todayMidnight) / 86400000);
+      if (days <= 3) notifs.push({
+        name: t.title, photoUrl: '', type: 'ticket', days,
+        label: days < 0 ? 'Ticket Overdue' : 'Ticket Due',
+        extra: t.assignee || '',
+        notifId: `${t.id}__ticket__${t.dueDate}`,
+      });
+    });
+
     return notifs.sort((a, b) => a.days - b.days);
   }
 
@@ -3747,7 +3792,8 @@
   }
 
   function _notifKey(n) {
-    return `${n.name}__${n.type}__${new Date().getFullYear()}`;
+    // ops items carry a stable notifId (includes record id + date) so they don't reset annually
+    return n.notifId || `${n.name}__${n.type}__${new Date().getFullYear()}`;
   }
 
   function _notifReadSet() {
@@ -3766,12 +3812,13 @@
 
   function _buildNotifHtml() {
     const notifs = _computeNotifications();
-    if (!notifs.length) return `<div class="notif-empty">No upcoming birthdays or anniversaries in the next 7 days.</div>`;
+    if (!notifs.length) return `<div class="notif-empty">No upcoming notifications in the next 7 days.</div>`;
     const read = _notifReadSet();
+    const overdueItems  = notifs.filter(n => n.days < 0);
     const todayItems    = notifs.filter(n => n.days === 0);
     const upcomingItems = notifs.filter(n => n.days > 0);
-    const typeColor = t => t === 'birthday' ? 'var(--accent)' : t === 'event' ? 'var(--amber)' : 'var(--green)';
-    const typeIcon  = t => t === 'birthday' ? '&#9836;' : t === 'event' ? '&#9670;' : '&#9733;';
+    const typeColor = t => ({ birthday:'var(--accent)', anniversary:'var(--green)', event:'var(--amber)', meeting:'var(--blue)', task:'var(--amber)', ticket:'var(--red)' }[t] || 'var(--muted)');
+    const typeIcon  = t => ({ birthday:'&#9836;', anniversary:'&#9733;', event:'&#9670;', meeting:'&#128197;', task:'&#10003;', ticket:'&#9888;' }[t] || '&#9670;');
     const avatar = n => {
       const resolved = resolvePhotoUrl(n.photoUrl || '');
       const init = esc(n.name[0] || '?');
@@ -3779,8 +3826,11 @@
       return `<div class="notif-avatar-init">${init}</div>`;
     };
     const card = n => {
-      const key   = _notifKey(n);
+      const key    = _notifKey(n);
       const isRead = read.has(key);
+      const isOverdue = n.days < 0;
+      const daysLabel = isOverdue ? `${Math.abs(n.days)}d overdue` : n.days === 0 ? 'Today!' : `in ${n.days}d`;
+      const daysColor = isOverdue ? 'var(--red)' : n.days === 0 ? 'var(--green)' : 'var(--muted)';
       return `
       <div class="notif-item" style="opacity:${isRead ? '0.4' : '1'}">
         ${avatar(n)}
@@ -3791,7 +3841,7 @@
           </div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-          <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;white-space:nowrap;color:${n.days === 0 ? 'var(--green)' : 'var(--muted)'}">${n.days === 0 ? 'Today!' : 'in ' + n.days + 'd'}</div>
+          <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;white-space:nowrap;color:${daysColor}">${daysLabel}</div>
           <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-family:var(--font-mono);font-size:9px;color:var(--muted);white-space:nowrap" title="Mark as read">
             <input type="checkbox" ${isRead ? 'checked' : ''} onchange="markNotifRead('${key}',this)" style="accent-color:var(--accent);cursor:pointer"/> Read
           </label>
@@ -3799,6 +3849,7 @@
       </div>`;
     };
     let html = '';
+    if (overdueItems.length)  html += `<div class="notif-section-title" style="color:var(--red)">Overdue</div>${overdueItems.map(card).join('')}`;
     if (todayItems.length)    html += `<div class="notif-section-title">Today</div>${todayItems.map(card).join('')}`;
     if (upcomingItems.length) html += `<div class="notif-section-title">Coming up</div>${upcomingItems.map(card).join('')}`;
     return html;
@@ -6153,7 +6204,8 @@
       }));
       tickets = (tktRes.data || []).map(r => ({
         id: r['ID'] || _uid(), title: r['Title'] || '', reporter: r['Reporter'] || '',
-        assignee: r['Assignee'] || '', priority: r['Priority'] || 'medium',
+        assignee: r['Assignee'] || '', dueDate: r['Due Date'] || '',
+        priority: r['Priority'] || 'medium',
         status: r['Status'] || 'open', description: r['Description'] || '', created: r['Created'] || '',
       }));
       _opsLoaded = true;  // only mark loaded on success
@@ -6166,6 +6218,7 @@
     renderMeetings();
     renderTasks();
     renderTickets();
+    _updateNotifBadge();   // re-compute badge now that ops data is loaded
   }
 
   function reloadOpsData() {
@@ -6206,6 +6259,16 @@
   }
   function _opsDelBtn(fn) {
     return `<button onclick="${fn}" style="background:var(--red)22;color:var(--red);border:none;border-radius:6px;padding:4px 10px;font-family:var(--font-mono);font-size:10px;cursor:pointer">✕</button>`;
+  }
+  // Returns inline CSS colour for a due-date cell; done=muted, overdue=red, today=amber
+  function _opsDueCss(dateStr, isDone) {
+    if (!dateStr || isDone) return 'color:var(--muted)';
+    const today = new Date(); today.setHours(0,0,0,0);
+    const d = new Date(dateStr); d.setHours(0,0,0,0);
+    const diff = Math.round((d - today) / 86400000);
+    if (diff < 0)  return 'color:var(--red);font-weight:700';
+    if (diff === 0) return 'color:var(--amber);font-weight:700';
+    return 'color:var(--text)';
   }
 
   // ── MEETINGS ──
@@ -6381,11 +6444,12 @@
           <button onclick="cancelTskEdit()" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:5px 10px;font-family:var(--font-mono);font-size:10px;cursor:pointer">✕</button>
         </td>
       </tr>`;
+      const taskDueCss = _opsDueCss(t.dueDate, t.status === 'done');
       return `<tr>
         <td style="color:var(--muted);font-family:var(--font-mono);font-size:10px">${i+1}</td>
         <td style="font-family:var(--font-mono);font-size:11px">${t.title}</td>
         <td style="font-family:var(--font-mono);font-size:11px">${t.assignee || '—'}</td>
-        <td style="font-family:var(--font-mono);font-size:11px">${t.dueDate || '—'}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;${taskDueCss}">${t.dueDate || '—'}</td>
         <td>${_priorityBadge(t.priority)}</td>
         <td>${_statusBadge(t.status)}</td>
         <td style="font-family:var(--font-mono);font-size:11px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${t.notes}">${t.notes || '—'}</td>
@@ -6412,16 +6476,17 @@
     const title       = document.getElementById('tktTitle').value.trim();
     const reporter    = document.getElementById('tktReporter').value.trim();
     const assignee    = document.getElementById('tktAssignee').value.trim();
+    const dueDate     = document.getElementById('tktDue').value;
     const priority    = document.getElementById('tktPriority').value;
     const status      = document.getElementById('tktStatus').value;
     const description = document.getElementById('tktDesc').value.trim();
     if (!title) { alert('Ticket title is required'); return; }
-    tickets.push({ id: _uid(), title, reporter, assignee, priority, status, description, created: new Date().toISOString().split('T')[0] });
+    tickets.push({ id: _uid(), title, reporter, assignee, dueDate, priority, status, description, created: new Date().toISOString().split('T')[0] });
     renderTickets();
     const ok = await _saveTickets();
     _opsSaveToast(ok);
     if (ok) {
-      ['tktTitle','tktReporter','tktAssignee','tktDesc'].forEach(id => document.getElementById(id).value = '');
+      ['tktTitle','tktReporter','tktAssignee','tktDue','tktDesc'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('tktPriority').value = 'medium';
       document.getElementById('tktStatus').value = 'open';
     }
@@ -6442,6 +6507,7 @@
     t.title       = document.getElementById('tktE_title').value.trim()    || t.title;
     t.reporter    = document.getElementById('tktE_reporter').value.trim();
     t.assignee    = document.getElementById('tktE_assignee').value.trim();
+    t.dueDate     = document.getElementById('tktE_due').value;
     t.priority    = document.getElementById('tktE_priority').value;
     t.status      = document.getElementById('tktE_status').value;
     t.description = document.getElementById('tktE_desc').value.trim();
@@ -6455,7 +6521,7 @@
     const body = document.getElementById('ticketsBody');
     if (!body) return;
     if (!tickets.length) {
-      body.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No tickets yet</td></tr>`;
+      body.innerHTML = `<tr><td colspan="10" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No tickets yet</td></tr>`;
       return;
     }
     const iStyle = `background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;width:100%`;
@@ -6466,6 +6532,7 @@
         <td><input id="tktE_title"    style="${iStyle}" value="${t.title}"/></td>
         <td><input id="tktE_reporter" style="${iStyle}" value="${t.reporter}"/></td>
         <td><input id="tktE_assignee" style="${iStyle}" value="${t.assignee}"/></td>
+        <td><input id="tktE_due"      style="${iStyle}" type="date" value="${t.dueDate||''}"/></td>
         <td><select id="tktE_priority" style="${sStyle}">
           <option value="low"    ${t.priority==='low'   ?'selected':''}>Low</option>
           <option value="medium" ${t.priority==='medium'?'selected':''}>Medium</option>
@@ -6485,11 +6552,13 @@
           <button onclick="cancelTktEdit()" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:5px 10px;font-family:var(--font-mono);font-size:10px;cursor:pointer">✕</button>
         </td>
       </tr>`;
+      const dueCss = _opsDueCss(t.dueDate, t.status === 'resolved' || t.status === 'closed');
       return `<tr>
         <td style="color:var(--muted);font-family:var(--font-mono);font-size:10px">${i+1}</td>
         <td style="font-family:var(--font-mono);font-size:11px">${t.title}</td>
         <td style="font-family:var(--font-mono);font-size:11px">${t.reporter || '—'}</td>
         <td style="font-family:var(--font-mono);font-size:11px">${t.assignee || '—'}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;${dueCss}">${t.dueDate || '—'}</td>
         <td>${_priorityBadge(t.priority)}</td>
         <td>${_statusBadge(t.status)}</td>
         <td style="font-family:var(--font-mono);font-size:11px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${t.description}">${t.description || '—'}</td>
