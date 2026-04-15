@@ -552,7 +552,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.8.7</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v4.8.8</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -1313,6 +1313,50 @@
         </div>
       </div>
 
+      <!-- ── CUSTOM EVENTS ── -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;margin-top:28px">
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:18px">&#9783; Custom Notification Events</div>
+
+        <!-- Add form -->
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:18px">
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;gap:12px;flex-wrap:wrap">
+              <div style="flex:2;min-width:180px">
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Event Title</div>
+                <input id="evTitle" class="editable" placeholder="e.g. Company Offsite, Q2 Review…" style="width:100%"/>
+              </div>
+              <div style="flex:1;min-width:160px">
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Type</div>
+                <select id="evType" onchange="evTypeChange()" style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none">
+                  <option value="once">One-time</option>
+                  <option value="repeating">Repeating (annual)</option>
+                  <option value="multi">Multiple dates</option>
+                </select>
+              </div>
+            </div>
+            <div id="evDateWrap">
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Date</div>
+              <input type="date" id="evDate" class="editable mono" style="width:220px"/>
+            </div>
+            <div id="evRepeatWrap" style="display:none">
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Day &amp; Month (repeats every year)</div>
+              <input type="date" id="evRepeatDate" class="editable mono" style="width:220px"/>
+            </div>
+            <div id="evMultiWrap" style="display:none">
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">Dates</div>
+              <div id="evMultiDates" style="display:flex;flex-direction:column;gap:6px"></div>
+              <button onclick="evAddDate()" style="margin-top:8px;background:transparent;border:1px dashed var(--border);color:var(--muted);border-radius:6px;padding:5px 14px;font-family:var(--font-mono);font-size:10px;cursor:pointer">+ Add Date</button>
+            </div>
+            <div>
+              <button onclick="addCustomEvent()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:9px 22px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.05em">+ ADD EVENT</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Events list -->
+        <div id="customEventsBody"></div>
+      </div>
+
       <!-- ── ACTIVITY LOG ── -->
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;margin-top:28px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:12px;flex-wrap:wrap">
@@ -1535,7 +1579,8 @@
   }
 
   // ── CAMPAIGN MANAGERS ──
-  let campaignMgrs = [];
+  let campaignMgrs  = [];
+  let customEvents  = [];   // [{id, title, type, date, dates:[]}]
   let _cmOrderEditMode = false;
 
   // Render a flag image from flagcdn.com (works on all browsers including Windows)
@@ -2942,6 +2987,94 @@
     } catch { showToast('⚠ Failed to clear log', true); }
   }
 
+  // ── CUSTOM EVENTS ──────────────────────────────────────────────────────────
+
+  function evTypeChange() {
+    const t = document.getElementById('evType').value;
+    document.getElementById('evDateWrap').style.display   = t === 'once'      ? '' : 'none';
+    document.getElementById('evRepeatWrap').style.display = t === 'repeating' ? '' : 'none';
+    document.getElementById('evMultiWrap').style.display  = t === 'multi'     ? '' : 'none';
+    if (t === 'multi' && !document.getElementById('evMultiDates').children.length) evAddDate();
+  }
+
+  function evAddDate() {
+    const wrap = document.getElementById('evMultiDates');
+    const row  = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:8px';
+    row.innerHTML = `<input type="date" class="editable mono ev-multi-date" style="width:200px"/><button onclick="this.parentElement.remove()" style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:14px;line-height:1">×</button>`;
+    wrap.appendChild(row);
+  }
+
+  async function addCustomEvent() {
+    const title = (document.getElementById('evTitle').value || '').trim();
+    const type  = document.getElementById('evType').value;
+    if (!title) { showToast('⚠ Event title is required', true); return; }
+
+    let date = '', dates = [];
+    if (type === 'once')      date = document.getElementById('evDate').value;
+    if (type === 'repeating') date = document.getElementById('evRepeatDate').value;
+    if (type === 'multi')     dates = [...document.querySelectorAll('.ev-multi-date')].map(i => i.value).filter(Boolean);
+
+    if ((type === 'once' || type === 'repeating') && !date) { showToast('⚠ Please pick a date', true); return; }
+    if (type === 'multi' && !dates.length) { showToast('⚠ Add at least one date', true); return; }
+
+    const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    customEvents.push({ id, title, type, date, dates });
+    await _saveCustomEvents();
+    _renderCustomEvents();
+    _updateNotifBadge();
+
+    // Reset form
+    document.getElementById('evTitle').value = '';
+    document.getElementById('evDate').value  = '';
+    document.getElementById('evRepeatDate').value = '';
+    document.getElementById('evMultiDates').innerHTML = '';
+    document.getElementById('evType').value = 'once';
+    evTypeChange();
+    showToast('✓ Event added');
+  }
+
+  async function deleteCustomEvent(id) {
+    customEvents = customEvents.filter(e => e.id !== id);
+    await _saveCustomEvents();
+    _renderCustomEvents();
+    _updateNotifBadge();
+    showToast('✓ Event removed');
+  }
+
+  async function _saveCustomEvents() {
+    try {
+      await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveEvents', events: customEvents }) });
+    } catch { showToast('⚠ Failed to save events', true); }
+  }
+
+  function _renderCustomEvents() {
+    const body = document.getElementById('customEventsBody');
+    if (!body) return;
+    if (!customEvents.length) {
+      body.innerHTML = `<div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);padding:12px 0">No custom events yet.</div>`;
+      return;
+    }
+    const typeBadge = t => {
+      const map = { once: ['#e6a817','One-time'], repeating: ['var(--green)','Repeating'], multi: ['var(--accent)','Multiple'] };
+      const [col, lbl] = map[t] || ['var(--muted)','—'];
+      return `<span style="font-family:var(--font-mono);font-size:9px;font-weight:700;color:${col};background:${col}22;border-radius:4px;padding:2px 7px">${lbl}</span>`;
+    };
+    const fmtDates = ev => {
+      if (ev.type === 'multi')      return (ev.dates || []).map(d => `<span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${d}</span>`).join(', ');
+      if (ev.type === 'repeating')  return `<span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${(ev.date||'').slice(5)} every year</span>`;
+      return `<span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${ev.date||''}</span>`;
+    };
+    body.innerHTML = customEvents.map(ev => `
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+        <div style="flex:1;min-width:0">
+          <div style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px">${esc(ev.title)}</div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">${typeBadge(ev.type)} ${fmtDates(ev)}</div>
+        </div>
+        <button onclick="deleteCustomEvent('${ev.id}')" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:5px 10px;font-family:var(--font-mono);font-size:10px;cursor:pointer" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">✕ Remove</button>
+      </div>`).join('');
+  }
+
   // ── EMAILJS CONFIG ──
   const EMAILJS_SERVICE  = 'service_a0sa856';
   const EMAILJS_TEMPLATE = 'template_czp06lg';
@@ -3148,12 +3281,13 @@
   async function prefetchAllData() {
     const pk = periodKey();
     try {
-      const [pubData, invData, mbData, cmRes, siRes] = await Promise.all([
+      const [pubData, invData, mbData, cmRes, siRes, evRes] = await Promise.all([
         fetchPeriodData('getPublishers').catch(() => []),
         fetchPeriodData('getInvoices').catch(() => []),
         fetchPeriodData('getMediaBuying').catch(() => []),
         fetch(`${FINANCE_API}?action=getCampaignMgrs`).then(r => r.json()).catch(() => ({ data: [] })),
         fetch(`${FINANCE_API}?action=getSourcesInfo`).then(r => r.json()).catch(() => ({ data: [] })),
+        fetch(`${FINANCE_API}?action=getEvents`).then(r => r.json()).catch(() => ({ data: [] })),
       ]);
 
       // Publishers
@@ -3195,6 +3329,10 @@
       // Campaign Managers (no period — global list)
       campaignMgrs = _applyCmOrder(_dedupeCampaignMgrs(cmRes.data || []));
       if (campaignMgrs.length > 0) _rawCache['cm'] = campaignMgrs; // only cache if data arrived
+
+      // Custom Events (notifications)
+      customEvents = evRes.data || [];
+      _renderCustomEvents();
 
       // Sources Info (logo map — used across Publishers + Internal Sources)
       const siRaw = siRes.data || [];
@@ -3254,6 +3392,31 @@
         }
       }
     });
+
+    // Custom events
+    const todayMidnight = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+    customEvents.forEach(ev => {
+      if (!ev.title) return;
+      const checkDate = (dateStr) => {
+        if (!dateStr) return;
+        const d = new Date(dateStr);
+        if (isNaN(d)) return;
+        if (ev.type === 'repeating') {
+          const { days } = _daysUntilAnnual(d.getMonth() + 1, d.getDate());
+          if (days <= 7) notifs.push({ name: ev.title, photoUrl: '', type: 'event', days, label: 'Event', extra: '' });
+        } else {
+          const eventDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+          const days = Math.round((eventDay - todayMidnight) / 86400000);
+          if (days >= 0 && days <= 7) notifs.push({ name: ev.title, photoUrl: '', type: 'event', days, label: 'Event', extra: '' });
+        }
+      };
+      if (ev.type === 'multi') {
+        (ev.dates || []).forEach(checkDate);
+      } else {
+        checkDate(ev.date);
+      }
+    });
+
     return notifs.sort((a, b) => a.days - b.days);
   }
 
@@ -3311,8 +3474,8 @@
     const read = _notifReadSet();
     const todayItems    = notifs.filter(n => n.days === 0);
     const upcomingItems = notifs.filter(n => n.days > 0);
-    const typeColor = t => t === 'birthday' ? 'var(--accent)' : 'var(--green)';
-    const typeIcon  = t => t === 'birthday' ? '&#9836;' : '&#9733;';
+    const typeColor = t => t === 'birthday' ? 'var(--accent)' : t === 'event' ? 'var(--amber)' : 'var(--green)';
+    const typeIcon  = t => t === 'birthday' ? '&#9836;' : t === 'event' ? '&#9670;' : '&#9733;';
     const avatar = n => {
       const resolved = resolvePhotoUrl(n.photoUrl || '');
       const init = esc(n.name[0] || '?');
