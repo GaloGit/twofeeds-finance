@@ -3657,6 +3657,9 @@
     } catch { /* silent — individual tabs will fall back to their own fetch */ }
 
     // Pre-render ALL tab DOMs in the background so switching is instant
+    renderMeetings();
+    renderTasks();
+    renderTickets();
     renderPublishers();
     renderInvoices();
     renderMediaBuying();
