@@ -6107,8 +6107,11 @@
   let meetings = [];   // [{id,title,date,time,attendees,status,notes,created}]
   let tasks    = [];   // [{id,title,assignee,dueDate,priority,status,notes,created}]
   let tickets  = [];   // [{id,title,reporter,assignee,priority,status,description,created}]
-  let _opsLoaded  = false;
-  let _opsLoading = false;
+  let _opsLoaded   = false;
+  let _opsLoading  = false;
+  let _mtgEditId   = null;
+  let _tskEditId   = null;
+  let _tktEditId   = null;
 
   function _uid() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -6198,6 +6201,9 @@
     return `<span style="background:${c}22;color:${c};border-radius:4px;padding:2px 7px;font-size:10px;font-family:var(--font-mono);white-space:nowrap">${l}</span>`;
   }
 
+  function _opsEditBtn(fn) {
+    return `<button onclick="${fn}" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 10px;font-family:var(--font-mono);font-size:10px;cursor:pointer;margin-right:4px" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent-light)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">✎</button>`;
+  }
   function _opsDelBtn(fn) {
     return `<button onclick="${fn}" style="background:var(--red)22;color:var(--red);border:none;border-radius:6px;padding:4px 10px;font-family:var(--font-mono);font-size:10px;cursor:pointer">✕</button>`;
   }
@@ -6224,8 +6230,26 @@
 
   function deleteMeeting(id) {
     meetings = meetings.filter(m => m.id !== id);
+    if (_mtgEditId === id) _mtgEditId = null;
     renderMeetings();
     _saveMeetings();
+  }
+
+  function editMeeting(id)    { _mtgEditId = id;   renderMeetings(); }
+  function cancelMtgEdit()    { _mtgEditId = null;  renderMeetings(); }
+  async function saveMtgEdit(id) {
+    const m = meetings.find(x => x.id === id);
+    if (!m) return;
+    m.title     = document.getElementById('mtgE_title').value.trim()     || m.title;
+    m.date      = document.getElementById('mtgE_date').value;
+    m.time      = document.getElementById('mtgE_time').value;
+    m.attendees = document.getElementById('mtgE_attendees').value.trim();
+    m.status    = document.getElementById('mtgE_status').value;
+    m.notes     = document.getElementById('mtgE_notes').value.trim();
+    _mtgEditId  = null;
+    renderMeetings();
+    const ok = await _saveMeetings();
+    _opsSaveToast(ok);
   }
 
   function renderMeetings() {
@@ -6235,16 +6259,40 @@
       body.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No meetings yet</td></tr>`;
       return;
     }
-    body.innerHTML = meetings.map((m, i) => `<tr>
-      <td style="color:var(--muted);font-family:var(--font-mono);font-size:10px">${i+1}</td>
-      <td style="font-family:var(--font-mono);font-size:11px">${m.title}</td>
-      <td style="font-family:var(--font-mono);font-size:11px">${m.date || '—'}</td>
-      <td style="font-family:var(--font-mono);font-size:11px">${m.time || '—'}</td>
-      <td style="font-family:var(--font-mono);font-size:11px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${m.attendees}">${m.attendees || '—'}</td>
-      <td>${_statusBadge(m.status)}</td>
-      <td style="font-family:var(--font-mono);font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${m.notes}">${m.notes || '—'}</td>
-      <td>${_opsDelBtn(`deleteMeeting('${m.id}')`)}</td>
-    </tr>`).join('');
+    const iStyle = `background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;width:100%`;
+    const sStyle = `background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none`;
+    body.innerHTML = meetings.map((m, i) => {
+      if (m.id === _mtgEditId) return `<tr style="background:var(--surface2)">
+        <td style="color:var(--muted);font-family:var(--font-mono);font-size:10px">${i+1}</td>
+        <td><input id="mtgE_title"     style="${iStyle}" value="${m.title}"/></td>
+        <td><input id="mtgE_date"      style="${iStyle}" type="date" value="${m.date}"/></td>
+        <td><input id="mtgE_time"      style="${iStyle}" type="time" value="${m.time}"/></td>
+        <td><input id="mtgE_attendees" style="${iStyle}" value="${m.attendees}"/></td>
+        <td><select id="mtgE_status" style="${sStyle}">
+          <option value="scheduled" ${m.status==='scheduled'?'selected':''}>Scheduled</option>
+          <option value="done"      ${m.status==='done'     ?'selected':''}>Done</option>
+          <option value="cancelled" ${m.status==='cancelled'?'selected':''}>Cancelled</option>
+        </select></td>
+        <td><input id="mtgE_notes" style="${iStyle}" value="${m.notes}"/></td>
+        <td style="white-space:nowrap">
+          <button onclick="saveMtgEdit('${m.id}')" style="background:var(--accent);color:#fff;border:none;border-radius:6px;padding:5px 12px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;margin-right:4px">SAVE</button>
+          <button onclick="cancelMtgEdit()" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:5px 10px;font-family:var(--font-mono);font-size:10px;cursor:pointer">✕</button>
+        </td>
+      </tr>`;
+      return `<tr>
+        <td style="color:var(--muted);font-family:var(--font-mono);font-size:10px">${i+1}</td>
+        <td style="font-family:var(--font-mono);font-size:11px">${m.title}</td>
+        <td style="font-family:var(--font-mono);font-size:11px">${m.date || '—'}</td>
+        <td style="font-family:var(--font-mono);font-size:11px">${m.time || '—'}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${m.attendees}">${m.attendees || '—'}</td>
+        <td>${_statusBadge(m.status)}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${m.notes}">${m.notes || '—'}</td>
+        <td style="white-space:nowrap">
+          ${_opsEditBtn(`editMeeting('${m.id}')`)}
+          ${_opsDelBtn(`deleteMeeting('${m.id}')`)}
+        </td>
+      </tr>`;
+    }).join('');
   }
 
   async function _saveMeetings() {
@@ -6279,8 +6327,26 @@
 
   function deleteTask(id) {
     tasks = tasks.filter(t => t.id !== id);
+    if (_tskEditId === id) _tskEditId = null;
     renderTasks();
     _saveTasks();
+  }
+
+  function editTask(id)    { _tskEditId = id;   renderTasks(); }
+  function cancelTskEdit() { _tskEditId = null;  renderTasks(); }
+  async function saveTskEdit(id) {
+    const t = tasks.find(x => x.id === id);
+    if (!t) return;
+    t.title    = document.getElementById('tskE_title').value.trim()    || t.title;
+    t.assignee = document.getElementById('tskE_assignee').value.trim();
+    t.dueDate  = document.getElementById('tskE_due').value;
+    t.priority = document.getElementById('tskE_priority').value;
+    t.status   = document.getElementById('tskE_status').value;
+    t.notes    = document.getElementById('tskE_notes').value.trim();
+    _tskEditId = null;
+    renderTasks();
+    const ok = await _saveTasks();
+    _opsSaveToast(ok);
   }
 
   function renderTasks() {
@@ -6290,16 +6356,45 @@
       body.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No tasks yet</td></tr>`;
       return;
     }
-    body.innerHTML = tasks.map((t, i) => `<tr>
-      <td style="color:var(--muted);font-family:var(--font-mono);font-size:10px">${i+1}</td>
-      <td style="font-family:var(--font-mono);font-size:11px">${t.title}</td>
-      <td style="font-family:var(--font-mono);font-size:11px">${t.assignee || '—'}</td>
-      <td style="font-family:var(--font-mono);font-size:11px">${t.dueDate || '—'}</td>
-      <td>${_priorityBadge(t.priority)}</td>
-      <td>${_statusBadge(t.status)}</td>
-      <td style="font-family:var(--font-mono);font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${t.notes}">${t.notes || '—'}</td>
-      <td>${_opsDelBtn(`deleteTask('${t.id}')`)}</td>
-    </tr>`).join('');
+    const iStyle = `background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;width:100%`;
+    const sStyle = `background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none`;
+    body.innerHTML = tasks.map((t, i) => {
+      if (t.id === _tskEditId) return `<tr style="background:var(--surface2)">
+        <td style="color:var(--muted);font-family:var(--font-mono);font-size:10px">${i+1}</td>
+        <td><input id="tskE_title"    style="${iStyle}" value="${t.title}"/></td>
+        <td><input id="tskE_assignee" style="${iStyle}" value="${t.assignee}"/></td>
+        <td><input id="tskE_due"      style="${iStyle}" type="date" value="${t.dueDate}"/></td>
+        <td><select id="tskE_priority" style="${sStyle}">
+          <option value="low"    ${t.priority==='low'   ?'selected':''}>Low</option>
+          <option value="medium" ${t.priority==='medium'?'selected':''}>Medium</option>
+          <option value="high"   ${t.priority==='high'  ?'selected':''}>High</option>
+          <option value="urgent" ${t.priority==='urgent'?'selected':''}>Urgent</option>
+        </select></td>
+        <td><select id="tskE_status" style="${sStyle}">
+          <option value="todo"       ${t.status==='todo'      ?'selected':''}>To Do</option>
+          <option value="inprogress" ${t.status==='inprogress'?'selected':''}>In Progress</option>
+          <option value="done"       ${t.status==='done'      ?'selected':''}>Done</option>
+        </select></td>
+        <td><input id="tskE_notes" style="${iStyle}" value="${t.notes}"/></td>
+        <td style="white-space:nowrap">
+          <button onclick="saveTskEdit('${t.id}')" style="background:var(--accent);color:#fff;border:none;border-radius:6px;padding:5px 12px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;margin-right:4px">SAVE</button>
+          <button onclick="cancelTskEdit()" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:5px 10px;font-family:var(--font-mono);font-size:10px;cursor:pointer">✕</button>
+        </td>
+      </tr>`;
+      return `<tr>
+        <td style="color:var(--muted);font-family:var(--font-mono);font-size:10px">${i+1}</td>
+        <td style="font-family:var(--font-mono);font-size:11px">${t.title}</td>
+        <td style="font-family:var(--font-mono);font-size:11px">${t.assignee || '—'}</td>
+        <td style="font-family:var(--font-mono);font-size:11px">${t.dueDate || '—'}</td>
+        <td>${_priorityBadge(t.priority)}</td>
+        <td>${_statusBadge(t.status)}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${t.notes}">${t.notes || '—'}</td>
+        <td style="white-space:nowrap">
+          ${_opsEditBtn(`editTask('${t.id}')`)}
+          ${_opsDelBtn(`deleteTask('${t.id}')`)}
+        </td>
+      </tr>`;
+    }).join('');
   }
 
   async function _saveTasks() {
@@ -6334,8 +6429,26 @@
 
   function deleteTicket(id) {
     tickets = tickets.filter(t => t.id !== id);
+    if (_tktEditId === id) _tktEditId = null;
     renderTickets();
     _saveTickets();
+  }
+
+  function editTicket(id)    { _tktEditId = id;   renderTickets(); }
+  function cancelTktEdit()   { _tktEditId = null;  renderTickets(); }
+  async function saveTktEdit(id) {
+    const t = tickets.find(x => x.id === id);
+    if (!t) return;
+    t.title       = document.getElementById('tktE_title').value.trim()    || t.title;
+    t.reporter    = document.getElementById('tktE_reporter').value.trim();
+    t.assignee    = document.getElementById('tktE_assignee').value.trim();
+    t.priority    = document.getElementById('tktE_priority').value;
+    t.status      = document.getElementById('tktE_status').value;
+    t.description = document.getElementById('tktE_desc').value.trim();
+    _tktEditId    = null;
+    renderTickets();
+    const ok = await _saveTickets();
+    _opsSaveToast(ok);
   }
 
   function renderTickets() {
@@ -6345,17 +6458,48 @@
       body.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No tickets yet</td></tr>`;
       return;
     }
-    body.innerHTML = tickets.map((t, i) => `<tr>
-      <td style="color:var(--muted);font-family:var(--font-mono);font-size:10px">${i+1}</td>
-      <td style="font-family:var(--font-mono);font-size:11px">${t.title}</td>
-      <td style="font-family:var(--font-mono);font-size:11px">${t.reporter || '—'}</td>
-      <td style="font-family:var(--font-mono);font-size:11px">${t.assignee || '—'}</td>
-      <td>${_priorityBadge(t.priority)}</td>
-      <td>${_statusBadge(t.status)}</td>
-      <td style="font-family:var(--font-mono);font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${t.description}">${t.description || '—'}</td>
-      <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">${t.created || '—'}</td>
-      <td>${_opsDelBtn(`deleteTicket('${t.id}')`)}</td>
-    </tr>`).join('');
+    const iStyle = `background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;width:100%`;
+    const sStyle = `background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none`;
+    body.innerHTML = tickets.map((t, i) => {
+      if (t.id === _tktEditId) return `<tr style="background:var(--surface2)">
+        <td style="color:var(--muted);font-family:var(--font-mono);font-size:10px">${i+1}</td>
+        <td><input id="tktE_title"    style="${iStyle}" value="${t.title}"/></td>
+        <td><input id="tktE_reporter" style="${iStyle}" value="${t.reporter}"/></td>
+        <td><input id="tktE_assignee" style="${iStyle}" value="${t.assignee}"/></td>
+        <td><select id="tktE_priority" style="${sStyle}">
+          <option value="low"    ${t.priority==='low'   ?'selected':''}>Low</option>
+          <option value="medium" ${t.priority==='medium'?'selected':''}>Medium</option>
+          <option value="high"   ${t.priority==='high'  ?'selected':''}>High</option>
+          <option value="urgent" ${t.priority==='urgent'?'selected':''}>Urgent</option>
+        </select></td>
+        <td><select id="tktE_status" style="${sStyle}">
+          <option value="open"       ${t.status==='open'      ?'selected':''}>Open</option>
+          <option value="inprogress" ${t.status==='inprogress'?'selected':''}>In Progress</option>
+          <option value="resolved"   ${t.status==='resolved'  ?'selected':''}>Resolved</option>
+          <option value="closed"     ${t.status==='closed'    ?'selected':''}>Closed</option>
+        </select></td>
+        <td><input id="tktE_desc" style="${iStyle}" value="${t.description}"/></td>
+        <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">${t.created || '—'}</td>
+        <td style="white-space:nowrap">
+          <button onclick="saveTktEdit('${t.id}')" style="background:var(--accent);color:#fff;border:none;border-radius:6px;padding:5px 12px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;margin-right:4px">SAVE</button>
+          <button onclick="cancelTktEdit()" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:5px 10px;font-family:var(--font-mono);font-size:10px;cursor:pointer">✕</button>
+        </td>
+      </tr>`;
+      return `<tr>
+        <td style="color:var(--muted);font-family:var(--font-mono);font-size:10px">${i+1}</td>
+        <td style="font-family:var(--font-mono);font-size:11px">${t.title}</td>
+        <td style="font-family:var(--font-mono);font-size:11px">${t.reporter || '—'}</td>
+        <td style="font-family:var(--font-mono);font-size:11px">${t.assignee || '—'}</td>
+        <td>${_priorityBadge(t.priority)}</td>
+        <td>${_statusBadge(t.status)}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${t.description}">${t.description || '—'}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">${t.created || '—'}</td>
+        <td style="white-space:nowrap">
+          ${_opsEditBtn(`editTicket('${t.id}')`)}
+          ${_opsDelBtn(`deleteTicket('${t.id}')`)}
+        </td>
+      </tr>`;
+    }).join('');
   }
 
   async function _saveTickets() {
