@@ -3831,6 +3831,8 @@
       const isOverdue = n.days < 0;
       const daysLabel = isOverdue ? `${Math.abs(n.days)}d overdue` : n.days === 0 ? 'Today!' : `in ${n.days}d`;
       const daysColor = isOverdue ? 'var(--red)' : n.days === 0 ? 'var(--green)' : 'var(--muted)';
+      const _nd = new Date(); _nd.setHours(0,0,0,0); _nd.setDate(_nd.getDate() + n.days);
+      const dateLabel = _nd.toLocaleDateString(undefined, { month:'short', day:'numeric' });
       return `
       <div class="notif-item" style="opacity:${isRead ? '0.4' : '1'}">
         ${avatar(n)}
@@ -3842,6 +3844,7 @@
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
           <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;white-space:nowrap;color:${daysColor}">${daysLabel}</div>
+          <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);white-space:nowrap">${dateLabel}</div>
           <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-family:var(--font-mono);font-size:9px;color:var(--muted);white-space:nowrap" title="Mark as read">
             <input type="checkbox" ${isRead ? 'checked' : ''} onchange="markNotifRead('${key}',this)" style="accent-color:var(--accent);cursor:pointer"/> Read
           </label>
