@@ -96,6 +96,17 @@
     .gate-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; color: var(--text); font-family: var(--font-mono); font-size: 14px; outline: none; transition: border-color 0.2s; letter-spacing: 0.15em; margin-bottom: 12px; text-align: center; }
     .gate-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
     .gate-input::placeholder { letter-spacing: 0.05em; color: var(--muted); }
+    .gate-input:-webkit-autofill,
+    .gate-input:-webkit-autofill:hover,
+    .gate-input:-webkit-autofill:focus,
+    .gate-input:-webkit-autofill:active {
+      -webkit-box-shadow: 0 0 0 999px var(--surface2) inset !important;
+      box-shadow: 0 0 0 999px var(--surface2) inset !important;
+      -webkit-text-fill-color: var(--text) !important;
+      caret-color: var(--text);
+      border-color: var(--border);
+      background-color: var(--surface2) !important;
+    }
     .gate-pw-wrap { position: relative; margin-bottom: 12px; }
     .gate-pw-wrap .gate-input { margin-bottom: 0; padding-right: 48px; width: 100%; }
     .gate-eye { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: transparent; border: none; cursor: pointer; font-size: 16px; opacity: 0.5; transition: opacity 0.2s; padding: 0; line-height: 1; }
