@@ -5116,14 +5116,46 @@
     badge.classList.toggle('waiting', newStatus === 'waiting');
     badge.textContent = newStatus === 'paid' ? '✓ Paid' : '⏳ Waiting';
 
-    // Update summary counters instantly
-    const paid = document.querySelectorAll('#invBody .inv-status-badge.paid').length;
-    const waiting = document.querySelectorAll('#invBody .inv-status-badge.waiting').length;
-    document.getElementById('invExtracted').textContent = paid;
-    document.getElementById('invReview').textContent = waiting;
+    // Update in-memory cache so progress bar reflects the change immediately
+    const cacheKey = 'inv_' + periodKey();
+    const cached = _rawCache[cacheKey];
+    if (cached && cached[i]) cached[i].status = newStatus;
+    delete _cache[cacheKey]; // invalidate diff only, keep rawCache
 
-    // Save in background, skip re-render (badge already updated above)
-    _invalidateCache('inv_');
+    // Update summary counters instantly
+    const allInvs = cached || [];
+    const paidCount   = allInvs.filter(inv => inv.status === 'paid').length;
+    const waitCount   = allInvs.length - paidCount;
+    document.getElementById('invExtracted').textContent = paidCount;
+    document.getElementById('invReview').textContent    = waitCount;
+
+    // Update progress bar instantly
+    const invPW = document.getElementById('invProgressWrap');
+    if (invPW && invPW.style.display !== 'none' && allInvs.length) {
+      const total      = allInvs.reduce((s, inv) => s + (inv.amount || 0), 0);
+      const paidInvs   = allInvs.filter(inv => inv.status === 'paid');
+      const paidAmt    = paidInvs.reduce((s, inv) => s + (inv.amount || 0), 0);
+      const waitAmt    = total - paidAmt;
+      const pct        = total > 0 ? Math.min(100, Math.round((paidAmt / total) * 100)) : 0;
+      const barColor   = pct === 100 ? 'var(--green)' : pct >= 50 ? 'var(--accent)' : 'var(--amber)';
+      invPW.innerHTML  = `
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em">Payment Progress · ${periodLabel()}</span>
+            <span style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:${barColor}">${fmt(paidAmt)} <span style="color:var(--muted);font-size:10px;font-weight:400">/ ${fmt(total)}</span></span>
+          </div>
+          <div style="background:var(--surface2);border-radius:99px;height:8px;overflow:hidden">
+            <div style="width:${pct}%;background:${barColor};height:100%;border-radius:99px;transition:width 0.6s ease"></div>
+          </div>
+          <div style="display:flex;gap:20px;margin-top:10px;flex-wrap:wrap">
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--green)">✓ Paid: ${paidInvs.length} invoice${paidInvs.length!==1?'s':''} (${fmt(paidAmt)})</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--amber)">⏳ Waiting: ${waitCount} invoice${waitCount!==1?'s':''} (${fmt(waitAmt)})</span>
+            <span style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:${barColor};margin-left:auto">${pct}%</span>
+          </div>
+        </div>`;
+    }
+
+    // Save to sheet in background (single-field update, no delete+re-append)
     updateInvoice(i, 'status', newStatus, true);
   }
 
