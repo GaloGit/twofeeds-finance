@@ -216,6 +216,8 @@
 
 
     table thead th { position: sticky; top: 0; z-index: 2; background: var(--surface2); font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text); }
+    th.th-hash { font-size: 18px; font-weight: 900; color: var(--accent-light); opacity: 0.55; letter-spacing: 0; text-transform: none; }
+    .row-num { font-family: var(--font-mono); font-size: 14px; color: var(--muted); font-weight: 700; }
     .add-row td { padding: 12px 18px; background: var(--surface2); }
     .add-btn { background: transparent; border: 1px dashed var(--border); color: var(--muted); padding: 7px 18px; border-radius: 8px; font-family: var(--font-mono); font-size: 10px; cursor: pointer; transition: all 0.2s; letter-spacing: 0.05em; }
     .add-btn:hover { border-color: var(--accent); color: var(--accent-light); }
@@ -674,7 +676,7 @@
             <thead>
               <tr>
                 <th style="width:22px"></th>
-                <th>#</th>
+                <th class="th-hash">#</th>
                 <th>Publisher Name</th>
                 <th>Platform</th>
                 <th>Amount</th>
@@ -854,7 +856,7 @@
         <table>
           <thead>
             <tr>
-              <th>#</th>
+              <th class="th-hash">#</th>
               <th>Vendor / Supplier</th>
               <th>Invoice #</th>
               <th>Date</th>
@@ -942,7 +944,7 @@
           <table>
             <thead>
               <tr>
-                <th>#</th>
+                <th class="th-hash">#</th>
                 <th>DSP</th>
                 <th>GEO</th>
                 <th>CPC</th>
@@ -1126,7 +1128,7 @@
             <thead id="cmHead">
               <tr>
                 <th style="width:24px"></th>
-                <th>#</th>
+                <th class="th-hash">#</th>
                 <th>Name</th>
                 <th>Email</th>
                 <th>Role</th>
@@ -1225,7 +1227,7 @@
             <thead id="siHead">
               <tr>
                 <th style="width:22px"></th>
-                <th>#</th>
+                <th class="th-hash">#</th>
                 <th style="width:48px">Logo</th>
                 <th>Source Name</th>
                 <th style="width:90px">Type</th>
@@ -1278,7 +1280,7 @@
           <table>
             <thead>
               <tr>
-                <th>#</th>
+                <th class="th-hash">#</th>
                 <th>Email</th>
                 <th>Role</th>
                 <th>Added</th>
@@ -1462,7 +1464,7 @@
           </div>
         </div>
         <div class="table-wrap"><div class="table-scroll"><table>
-          <thead><tr><th>#</th><th>Title</th><th>Date</th><th>Time</th><th>Attendees</th><th>Status</th><th>Notes</th><th></th></tr></thead>
+          <thead><tr><th class="th-hash">#</th><th>Title</th><th>Date</th><th>Time</th><th>Attendees</th><th>Status</th><th>Notes</th><th></th></tr></thead>
           <tbody id="meetingsBody"><tr><td colspan="8" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No meetings yet</td></tr></tbody>
         </table></div></div>
       </div>
@@ -1508,7 +1510,7 @@
           </div>
         </div>
         <div class="table-wrap"><div class="table-scroll"><table>
-          <thead><tr><th>#</th><th>Title</th><th>Assignee</th><th>Due Date</th><th>Priority</th><th>Status</th><th>Notes</th><th></th></tr></thead>
+          <thead><tr><th class="th-hash">#</th><th>Title</th><th>Assignee</th><th>Due Date</th><th>Priority</th><th>Status</th><th>Notes</th><th></th></tr></thead>
           <tbody id="tasksBody"><tr><td colspan="8" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No tasks yet</td></tr></tbody>
         </table></div></div>
       </div>
@@ -1558,7 +1560,7 @@
           </div>
         </div>
         <div class="table-wrap"><div class="table-scroll"><table>
-          <thead><tr><th>#</th><th>Title</th><th>Reporter</th><th>Assignee</th><th>Due Date</th><th>Priority</th><th>Status</th><th>Description</th><th>Created</th><th></th></tr></thead>
+          <thead><tr><th class="th-hash">#</th><th>Title</th><th>Reporter</th><th>Assignee</th><th>Due Date</th><th>Priority</th><th>Status</th><th>Description</th><th>Created</th><th></th></tr></thead>
           <tbody id="ticketsBody"><tr><td colspan="10" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No tickets yet</td></tr></tbody>
         </table></div></div>
       </div>
@@ -2025,7 +2027,7 @@
         : `<span style="width:32px;height:32px;border-radius:50%;background:var(--surface3);border:2px solid var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--muted);margin-right:8px;vertical-align:middle;flex-shrink:0${!isLive?';opacity:0.4':''}">${esc((m.name||'?')[0].toUpperCase())}</span>`;
       const cells = cols.map(col => {
         switch(col) {
-          case 'idx':      return `<td class="mono text-muted">${i+1}</td>`;
+          case 'idx':      return `<td class="row-num">${i+1}</td>`;
           case 'name':     return `<td style="white-space:nowrap;font-weight:600;min-width:140px"><div style="display:flex;align-items:center;gap:6px">${avatar}<span>${esc(m.name||'—')}</span>${flag?`<span style="margin-left:2px">${flag}</span>`:''}</div></td>`;
           case 'email':    return `<td style="font-family:var(--font-mono);font-size:11px">${esc(m.email||'—')}</td>`;
           case 'role':     return `<td style="white-space:nowrap">${_cmRoleBadge(m.role||'')}</td>`;
@@ -2484,7 +2486,7 @@
         : getSourceLogo(s.name, 36);
       const cells = cols.map(col => {
         switch(col) {
-          case 'idx':       return `<td class="mono text-muted" style="font-size:11px">${i+1}</td>`;
+          case 'idx':       return `<td class="row-num">${i+1}</td>`;
           case 'logo':      return `<td style="padding:6px 12px">${preview}</td>`;
           case 'name':      return `<td style="min-width:140px;white-space:nowrap"><div style="display:flex;align-items:center;gap:6px"><input class="editable" value="${esc(s.name)}" onblur="siNameConfirm(${i},this.value)" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape'){this.value='${esc(s.name)}';this.blur();}" style="font-family:var(--font-mono);font-size:12px;font-weight:600;width:100%"/>${countryFlagImg(s.country||'')?`<span style="flex-shrink:0">${countryFlagImg(s.country||'')}</span>`:''}</div></td>`;
           case 'type':      return `<td><select id="siTypeSelect_${i}" onchange="siTypeChange(${i},this.value);_applyTypeSelectColor(this,this.value)" style="${_siTypeSelectStyle(dispType)};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none">${['DSP','RW','MB','Platform'].map(t=>`<option value="${t}" ${dispType===t?'selected':''}>${t}</option>`).join('')}</select></td>`;
@@ -2876,7 +2878,7 @@
       })() : '—';
       return `
       <tr>
-        <td class="mono text-muted">${i+1}</td>
+        <td class="row-num">${i+1}</td>
         <td style="font-family:var(--font-mono);font-size:12px;min-width:180px">
           <div style="display:flex;align-items:center;gap:6px">
             <input id="settingsEmailInput_${i}" value="${esc(u.email)}"
@@ -4419,7 +4421,7 @@
       return `
       <tr id="pubRow_${i}" ondragstart="pubDragStart(event,${i})" ondragover="pubDragOver(event,${i})" ondrop="pubDrop(event,${i})" ondragleave="pubDragLeave(event)" ondragend="pubDragEnd(event)" style="animation-delay:${i*0.03}s">
         <td onmousedown="${canDrag?`pubGripDown(event,${i})`:''};" onmouseup="pubGripUp()" style="cursor:${canDrag?'grab':'default'};color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center;opacity:${canDrag?'0.45':'0'}">⠿</td>
-        <td class="mono text-muted">${i+1}</td>
+        <td class="row-num">${i+1}</td>
         <td><div style="display:flex;align-items:center;gap:8px">${getSourceLogo(p.name,26)}${getSourceTypeBadge(p.name)}<input class="editable" value="${esc(p.name)}" onblur="updatePub('${p.id}','name',this.value)" placeholder="Publisher name" style="min-width:0;flex:1"/></div></td>
         <td><input class="editable" value="${esc(p.platform)}" onblur="updatePub('${p.id}','platform',this.value)" placeholder="Platform" style="width:120px"/></td>
         <td><input class="editable" value="${esc(fmtAmt)}" onfocus="this.value='${p.amount||0}';this.select()" onblur="pubAmtBlur('${p.id}',this)" style="width:110px;font-family:var(--font-mono);color:var(--green);font-weight:700;text-align:right"/></td>
@@ -4871,7 +4873,7 @@
       return `
       <tr id="invRow_${i}" ondragstart="invDragStart(event,${i})" ondragover="invDragOver(event,${i})" ondrop="invDrop(event,${i})" ondragleave="invDragLeave(event)" ondragend="invDragEnd(event)" style="animation-delay:${i*0.03}s${overdue ? ';background:rgba(239,68,68,0.05)' : ''}">
         <td onmousedown="invGripDown(event,${i})" onmouseup="invGripUp()" style="cursor:${_invOrderEditMode?'grab':'default'};color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center;visibility:${_invOrderEditMode?'visible':'hidden'};width:22px">⠿</td>
-        <td class="mono text-muted">${i+1}</td>
+        <td class="row-num">${i+1}</td>
         <td><div style="display:flex;align-items:center;gap:8px">${getSourceLogo(inv.vendor,26)}${getSourceTypeBadge(inv.vendor)}<input class="editable" value="${esc(inv.vendor)}" onblur="updateInvoice(${i},'vendor',this.value)" placeholder="Vendor name" style="min-width:0;flex:1"/></div></td>
         <td><input class="editable mono" value="${esc(inv.invoiceNum)}" onblur="updateInvoice(${i},'invoiceNum',this.value)" placeholder="INV-001" style="width:110px"/></td>
         <td><input class="editable mono" type="date" value="${esc(inv.date)}" onblur="updateInvoice(${i},'date',this.value)" style="width:140px"/></td>
@@ -5147,7 +5149,7 @@
 
     document.getElementById('mbBody').innerHTML = filtered.map((r, i) => `
       <tr style="animation-delay:${i*0.03}s">
-        <td class="mono text-muted">${i+1}</td>
+        <td class="row-num">${i+1}</td>
         <td><div style="display:flex;align-items:center;gap:8px">${getSourceLogo(r.dsp,24)}${getSourceTypeBadge(r.dsp)}<input class="editable" value="${esc(r.dsp)}" onblur="updateMedia(${r.id},'dsp',this.value)" placeholder="DSP name" style="min-width:0;flex:1"/></div></td>
         <td><input class="editable" value="${esc(r.geo)}" onblur="updateMedia(${r.id},'geo',this.value)" placeholder="GEO" style="width:120px"/></td>
         <td class="mono text-green" style="white-space:nowrap;font-weight:700">$${Number(r.cpc||0).toLocaleString(undefined,{minimumFractionDigits:10,maximumFractionDigits:10})}</td>
@@ -6364,7 +6366,7 @@
     const sStyle = `background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none`;
     body.innerHTML = meetings.map((m, i) => {
       if (m.id === _mtgEditId) return `<tr style="background:var(--surface2)">
-        <td style="color:var(--muted);font-family:var(--font-mono);font-size:10px">${i+1}</td>
+        <td class="row-num">${i+1}</td>
         <td><input id="mtgE_title"     style="${iStyle}" value="${m.title}"/></td>
         <td><input id="mtgE_date"      style="${iStyle}" type="date" value="${m.date}"/></td>
         <td><input id="mtgE_time"      style="${iStyle}" type="time" value="${m.time}"/></td>
@@ -6381,7 +6383,7 @@
         </td>
       </tr>`;
       return `<tr>
-        <td style="color:var(--muted);font-family:var(--font-mono);font-size:10px">${i+1}</td>
+        <td class="row-num">${i+1}</td>
         <td style="font-family:var(--font-mono);font-size:11px">${m.title}</td>
         <td style="font-family:var(--font-mono);font-size:11px">${m.date || '—'}</td>
         <td style="font-family:var(--font-mono);font-size:11px">${m.time || '—'}</td>
@@ -6461,7 +6463,7 @@
     const sStyle = `background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none`;
     body.innerHTML = tasks.map((t, i) => {
       if (t.id === _tskEditId) return `<tr style="background:var(--surface2)">
-        <td style="color:var(--muted);font-family:var(--font-mono);font-size:10px">${i+1}</td>
+        <td class="row-num">${i+1}</td>
         <td><input id="tskE_title"    style="${iStyle}" value="${t.title}"/></td>
         <td><input id="tskE_assignee" style="${iStyle}" value="${t.assignee}"/></td>
         <td><input id="tskE_due"      style="${iStyle}" type="date" value="${t.dueDate}"/></td>
@@ -6484,7 +6486,7 @@
       </tr>`;
       const taskDueCss = _opsDueCss(t.dueDate, t.status === 'done');
       return `<tr>
-        <td style="color:var(--muted);font-family:var(--font-mono);font-size:10px">${i+1}</td>
+        <td class="row-num">${i+1}</td>
         <td style="font-family:var(--font-mono);font-size:11px">${t.title}</td>
         <td style="font-family:var(--font-mono);font-size:11px">${t.assignee || '—'}</td>
         <td style="font-family:var(--font-mono);font-size:11px;${taskDueCss}">${t.dueDate || '—'}</td>
@@ -6566,7 +6568,7 @@
     const sStyle = `background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none`;
     body.innerHTML = tickets.map((t, i) => {
       if (t.id === _tktEditId) return `<tr style="background:var(--surface2)">
-        <td style="color:var(--muted);font-family:var(--font-mono);font-size:10px">${i+1}</td>
+        <td class="row-num">${i+1}</td>
         <td><input id="tktE_title"    style="${iStyle}" value="${t.title}"/></td>
         <td><input id="tktE_reporter" style="${iStyle}" value="${t.reporter}"/></td>
         <td><input id="tktE_assignee" style="${iStyle}" value="${t.assignee}"/></td>
@@ -6592,7 +6594,7 @@
       </tr>`;
       const dueCss = _opsDueCss(t.dueDate, t.status === 'resolved' || t.status === 'closed');
       return `<tr>
-        <td style="color:var(--muted);font-family:var(--font-mono);font-size:10px">${i+1}</td>
+        <td class="row-num">${i+1}</td>
         <td style="font-family:var(--font-mono);font-size:11px">${t.title}</td>
         <td style="font-family:var(--font-mono);font-size:11px">${t.reporter || '—'}</td>
         <td style="font-family:var(--font-mono);font-size:11px">${t.assignee || '—'}</td>
