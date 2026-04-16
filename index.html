@@ -5161,8 +5161,17 @@
         </div>`;
     }
 
-    // Save to sheet in background (single-field update, no delete+re-append)
-    updateInvoice(i, 'status', newStatus, true);
+    // ── Save directly (bypasses updateInvoice which calls _invalidateCache wiping _rawCache) ──
+    // After save, re-assert cache in case auto-refresh cleared it during the network round-trip.
+    (async () => {
+      try {
+        await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({
+          action: 'updateInvoice', period: periodKey(), index: i, field: 'status', value: newStatus
+        }) });
+        if (cached) { _rawCache[cacheKey] = cached; delete _cache[cacheKey]; }
+        logActivity('edit_invoice', `Toggled status to ${newStatus} for invoice #${i+1} in ${periodKey()}`);
+      } catch { showToast('⚠ Save failed'); }
+    })();
   }
 
   async function updateInvoice(i, field, value, silent = false) {
