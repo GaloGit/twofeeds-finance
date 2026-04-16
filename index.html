@@ -854,6 +854,9 @@
         </div>
       </div>
 
+      <!-- Invoice payment progress bar -->
+      <div id="invProgressWrap" style="display:none;margin-bottom:18px"></div>
+
       <!-- Invoice table -->
       <div class="table-wrap" id="invTableWrap" style="display:none">
         <div class="table-scroll">
@@ -1157,9 +1160,6 @@
           <div class="section-sub">Manage logos for publishers and internal sources · visible only to admin</div>
         </div>
       </div>
-
-      <!-- Invoice payment progress bar for this period -->
-      <div id="siProgressWrap" style="margin-bottom:20px"></div>
 
       <!-- Add source form (collapsible) -->
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:24px;overflow:hidden">
@@ -2475,38 +2475,6 @@
   }
 
   function _renderSiTable() {
-    // ── Invoice payment progress bar ──
-    const siPW = document.getElementById('siProgressWrap');
-    if (siPW) {
-      const rawInv = _rawCache['inv_' + periodKey()] || [];
-      if (rawInv.length) {
-        const invAll = rawInv.map(r => ({ amount: parseFloat(r['Amount']) || 0, status: r['Status'] || 'ok' }));
-        const invTotal  = invAll.reduce((s, r) => s + r.amount, 0);
-        const invPaid   = invAll.filter(r => r.status === 'paid');
-        const invPaidAmt = invPaid.reduce((s, r) => s + r.amount, 0);
-        const invWaitAmt = invTotal - invPaidAmt;
-        const invPct    = invTotal > 0 ? Math.min(100, Math.round((invPaidAmt / invTotal) * 100)) : 0;
-        const invColor  = invPct === 100 ? 'var(--green)' : invPct >= 50 ? 'var(--accent)' : 'var(--amber)';
-        siPW.innerHTML = `
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
-              <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em">Invoice Payment Progress · ${periodLabel()}</span>
-              <span style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:${invColor}">${fmt(invPaidAmt)} <span style="color:var(--muted);font-size:10px;font-weight:400">/ ${fmt(invTotal)}</span></span>
-            </div>
-            <div style="background:var(--surface2);border-radius:99px;height:8px;overflow:hidden">
-              <div style="width:${invPct}%;background:${invColor};height:100%;border-radius:99px;transition:width 0.6s ease"></div>
-            </div>
-            <div style="display:flex;gap:20px;margin-top:10px;flex-wrap:wrap">
-              <span style="font-family:var(--font-mono);font-size:10px;color:var(--green)">✓ Paid: ${invPaid.length} invoice${invPaid.length!==1?'s':''} (${fmt(invPaidAmt)})</span>
-              <span style="font-family:var(--font-mono);font-size:10px;color:var(--amber)">⏳ Waiting: ${invAll.length - invPaid.length} invoice${invAll.length-invPaid.length!==1?'s':''} (${fmt(invWaitAmt)})</span>
-              <span style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:${invColor};margin-left:auto">${invPct}%</span>
-            </div>
-          </div>`;
-      } else {
-        siPW.innerHTML = '';
-      }
-    }
-
     const state = _siColState(); const cols = _activeCols(state); const totalCols = cols.length + 2;
     const head = document.getElementById('siHead'); if (head) head.innerHTML = '<tr><th style="width:22px"></th>' + cols.map(c => { const d = _SI_COL_DEFS.find(x=>x.key===c); return '<th>' + (d?d.label:c) + '</th>'; }).join('') + '<th></th></tr>';
     const body = document.getElementById('siBody');
@@ -4952,6 +4920,36 @@
       document.getElementById('invReview').textContent = review;
       document.getElementById('invPeriodLabel').textContent = periodLabel();
       document.getElementById('invPeriodSub').textContent = periodLabel();
+    }
+
+    // ── Payment progress bar ──
+    const invProgressWrap = document.getElementById('invProgressWrap');
+    if (invProgressWrap) {
+      if (hasData) {
+        const paidInvs   = invoices.filter(inv => inv.status === 'paid');
+        const paidAmt    = paidInvs.reduce((s, inv) => s + (inv.amount || 0), 0);
+        const waitAmt    = total - paidAmt;
+        const pct        = total > 0 ? Math.min(100, Math.round((paidAmt / total) * 100)) : 0;
+        const barColor   = pct === 100 ? 'var(--green)' : pct >= 50 ? 'var(--accent)' : 'var(--amber)';
+        invProgressWrap.style.display = 'block';
+        invProgressWrap.innerHTML = `
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
+              <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em">Payment Progress · ${periodLabel()}</span>
+              <span style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:${barColor}">${fmt(paidAmt)} <span style="color:var(--muted);font-size:10px;font-weight:400">/ ${fmt(total)}</span></span>
+            </div>
+            <div style="background:var(--surface2);border-radius:99px;height:8px;overflow:hidden">
+              <div style="width:${pct}%;background:${barColor};height:100%;border-radius:99px;transition:width 0.6s ease"></div>
+            </div>
+            <div style="display:flex;gap:20px;margin-top:10px;flex-wrap:wrap">
+              <span style="font-family:var(--font-mono);font-size:10px;color:var(--green)">✓ Paid: ${paidInvs.length} invoice${paidInvs.length!==1?'s':''} (${fmt(paidAmt)})</span>
+              <span style="font-family:var(--font-mono);font-size:10px;color:var(--amber)">⏳ Waiting: ${invoices.length - paidInvs.length} invoice${invoices.length-paidInvs.length!==1?'s':''} (${fmt(waitAmt)})</span>
+              <span style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:${barColor};margin-left:auto">${pct}%</span>
+            </div>
+          </div>`;
+      } else {
+        invProgressWrap.style.display = 'none';
+      }
     }
 
     const reminderDays = appConfig.invoiceReminderDays || 7;
