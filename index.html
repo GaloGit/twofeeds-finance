@@ -4554,17 +4554,21 @@
     if (!r) return;
     const newStatus = (r.payStatus === 'paid') ? 'waiting' : 'paid';
     r.payStatus = newStatus;
-    _rawCache[_pubCacheKey()] = rows;
+    const cacheKey = _pubCacheKey();
+    _rawCache[cacheKey] = rows;
     _pubInvalidateDiff();
-    // Optimistic UI update
-    if (badge) {
-      badge.className = 'inv-status-badge ' + newStatus;
-      badge.textContent = newStatus === 'paid' ? '✓ Paid' : '⏳ Waiting';
-    }
+    // Immediate render — updates badge AND progress bar before network round-trip
+    renderPublishers();
     try {
       await _pubSaveRows(rows);
+      // Re-assert cache: auto-refresh may have cleared _rawCache during the save,
+      // causing a stale re-fetch that would reset the bar back to $0.
+      _rawCache[cacheKey] = rows;
+      _pubInvalidateDiff();
       logActivity('edit_publisher', `Toggled pay status to ${newStatus} for publisher #${id} in ${periodKey()}`);
-    } catch { showToast('⚠ Save failed'); }
+    } catch {
+      showToast('⚠ Save failed');
+    }
     renderPublishers();
   }
 
