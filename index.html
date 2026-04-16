@@ -4971,9 +4971,14 @@
     document.getElementById('invBody').innerHTML = invoices.map((inv, i) => {
       const isWaiting = inv.status !== 'paid';
       let overdue = false;
+      let overdueDays = 0;
       if (isWaiting && inv.date) {
         const invDate = new Date(inv.date);
-        if (!isNaN(invDate)) overdue = (now - invDate.getTime()) > reminderDays * 86400 * 1000;
+        if (!isNaN(invDate)) {
+          const elapsed = now - invDate.getTime();
+          overdueDays = Math.floor(elapsed / 86400000);
+          overdue = elapsed > reminderDays * 86400 * 1000;
+        }
       }
       return `
       <tr id="invRow_${i}" ondragstart="invDragStart(event,${i})" ondragover="invDragOver(event,${i})" ondrop="invDrop(event,${i})" ondragleave="invDragLeave(event)" ondragend="invDragEnd(event)" style="animation-delay:${i*0.03}s${overdue ? ';background:rgba(239,68,68,0.05)' : ''}">
@@ -4988,7 +4993,7 @@
         </td>
         <td>
           <span class="inv-status-badge ${inv.status==='paid'?'paid':'waiting'}" onclick="toggleInvStatus(${i}, this)">${inv.status==='paid'?'✓ Paid':'⏳ Waiting'}</span>
-          ${overdue ? `<span title="Unpaid for more than ${reminderDays} days" style="margin-left:4px;font-size:12px;cursor:default">🔴</span>` : ''}
+          ${overdue ? `<span style="display:inline-flex;align-items:center;gap:4px;margin-left:6px;font-family:var(--font-mono);font-size:10px;font-weight:700;color:#ef4444" title="Unpaid for ${overdueDays} days"><span style="font-size:8px">🔴</span>${overdueDays}d</span>` : ''}
         </td>
         <td>
           <div style="display:flex;align-items:center;gap:8px">
