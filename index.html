@@ -3620,8 +3620,18 @@
         fetch(`${FINANCE_API}?action=getTickets`).then(r => r.json()).catch(() => ({ data: [] })),
       ]);
 
-      // Publishers
-      _rawCache['pub_' + pk] = pubData.map((r, idx) => ({
+      // Publishers — deduplicate sheet rows by name+platform (keep last occurrence;
+      // stale duplicates accumulate when old saves ran before the timezone fix)
+      const _pubSeenKeys = {};
+      pubData.forEach((r, i) => {
+        const k = (r['Publisher Name']||'').trim().toLowerCase() + '||' + (r['Platform']||'').trim().toLowerCase();
+        _pubSeenKeys[k] = i; // last index wins
+      });
+      const _dedupedPubData = pubData.filter((r, i) => {
+        const k = (r['Publisher Name']||'').trim().toLowerCase() + '||' + (r['Platform']||'').trim().toLowerCase();
+        return _pubSeenKeys[k] === i;
+      });
+      _rawCache['pub_' + pk] = _dedupedPubData.map((r, idx) => ({
         id: idx,
         name: r['Publisher Name'] || '',
         platform: r['Platform'] || '',
@@ -3653,8 +3663,8 @@
         id: idx, dsp: r['DSP']||'', geo: r['GEO']||'', cpc: parseFloat(r['CPC'])||0,
       }));
 
-      // Raw API rows for Cost Summary (reuses same responses)
-      _rawCache['pub_' + pk + '_raw'] = pubData;
+      // Raw API rows for Cost Summary (reuses same responses — use deduped data)
+      _rawCache['pub_' + pk + '_raw'] = _dedupedPubData;
       _rawCache['inv_' + pk + '_raw'] = invData;
 
       // Campaign Managers (no period — global list)
