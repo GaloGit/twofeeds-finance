@@ -1065,6 +1065,7 @@
         <div class="chart-container" style="height:320px;max-width:420px;margin:0 auto">
           <canvas id="csPieChart"></canvas>
         </div>
+        <div id="csPieLegend" style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:18px"></div>
       </div>
 
     </div>
@@ -5940,25 +5941,7 @@
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: {
-            display: true,
-            position: 'bottom',
-            labels: {
-              color: '#e0d9ff',
-              font: { family: 'Space Mono', size: 11 },
-              boxWidth: 14,
-              padding: 18,
-              generateLabels: chart => chart.data.labels.map((label, i) => ({
-                text: `${label}  $${Number(chart.data.datasets[0].data[i]).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}  (${grandTotal > 0 ? ((chart.data.datasets[0].data[i]/grandTotal)*100).toFixed(1) : 0}%)`,
-                fillStyle: chart.data.datasets[0].backgroundColor[i],
-                strokeStyle: chart.data.datasets[0].borderColor[i],
-                lineWidth: 1,
-                hidden: false,
-                index: i,
-                color: '#e0d9ff',
-              }))
-            }
-          },
+          legend: { display: false },
           tooltip: {
             backgroundColor: '#16112b', borderColor: '#2e2550', borderWidth: 1,
             titleColor: '#f0eeff', bodyColor: '#9d5ff7',
@@ -5971,6 +5954,22 @@
           }
         }
       }
+    });
+    // Custom HTML legend — bypasses Chart.js color inheritance issues
+    const legendEl = document.getElementById('csPieLegend');
+    if (legendEl) {
+      legendEl.innerHTML = labels.map((label, i) => {
+        const val = amounts[i];
+        const pct = grandTotal > 0 ? ((val / grandTotal) * 100).toFixed(1) : '0.0';
+        const fmt = '$' + Number(val).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        return `<div style="display:flex;align-items:center;gap:10px;font-family:'Space Mono',monospace;font-size:11px;color:#e0d9ff">
+          <span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:${bgColors[i]};flex-shrink:0"></span>
+          <span>${label}</span>
+          <span style="color:#b8a9e8">${fmt}</span>
+          <span style="color:#8a7ab8">(${pct}%)</span>
+        </div>`;
+      }).join('');
+    }
     }); });
   }
 
