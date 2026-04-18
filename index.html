@@ -5896,6 +5896,10 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha512-CQBWl4fJHWbryGE+Pc7UAxWMUMNMWzWxF4SQo9CgkJIN1kx6djDQZjh3Y8SZ1d+6I+1zze6Z7kHXO7q3UyZAWw==" crossorigin="anonymous"></script>
 <script>
+  // Override Chart.js 4 defaults so all text is visible on dark backgrounds
+  Chart.defaults.color = '#e0d9ff';
+  Chart.defaults.borderColor = 'rgba(255,255,255,0.08)';
+
   let pubChartInstance = null;
   let pvChartInstance = null;
   let invChartInstance = null;
