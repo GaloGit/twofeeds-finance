@@ -556,7 +556,7 @@
         </a>
         <div class="header-right">
           <div style="display:flex;align-items:center;gap:8px">
-            <img id="headerAvatar" src="" alt="" style="display:none;width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);box-shadow:0 2px 8px rgba(0,0,0,0.4)"/>
+            <img id="headerAvatar" src="" alt="" onclick="previewHeaderAvatar()" style="display:none;width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);box-shadow:0 2px 8px rgba(0,0,0,0.4);cursor:zoom-in"/>
             <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
               <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px">
                 <div style="display:flex;align-items:center;gap:5px">
@@ -608,7 +608,7 @@
         <button class="nav-tab" id="navTab_mediabuy" style="display:none" onclick="showTab('mediabuy', this); renderMediaBuying()"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg><span>Media Buying</span></button>
         <button class="nav-tab" id="navTab_costsummary" style="display:none" onclick="showTab('costsummary', this); renderCostSummary()"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>Cost Summary</span></button>
         <button class="nav-tab" id="campaignMgrTab" style="display:none;margin-left:auto;color:var(--muted)" onclick="showTab('campaignmgr', this); renderCampaignMgr()"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Team Roles</span></button>
-        <button class="nav-tab" id="advertisersTab" style="display:none;color:var(--muted)" onclick="showTab('advertisers', this); renderAdvertisers()"><svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg><span>Advertisers</span></button>
+        <button class="nav-tab" id="advertisersTab" style="display:none;color:var(--muted)" onclick="showTab('advertisers', this); renderAdvertisers()"><svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg><span>Advertisers Info</span></button>
         <button class="nav-tab" id="sourcesInfoTab" style="display:none;color:var(--muted)" onclick="showTab('sourcesinfo', this); renderSourcesInfo()"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg><span>Sources Info</span></button>
         <button class="nav-tab" id="settingsTab" style="display:none;color:var(--muted)" onclick="showTab('settings', this); renderSettings(); populateConfigFields()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Settings</span></button>
       </nav>
@@ -1276,7 +1276,7 @@
     <div class="page" id="tab-advertisers">
       <div class="section-header" style="margin-bottom:28px">
         <div>
-          <div class="section-title">🏢 Advertisers</div>
+          <div class="section-title">🏢 Advertisers Info</div>
           <div class="section-sub">Manage advertiser details — logo, IDs, managers and platform info</div>
         </div>
       </div>
@@ -1728,7 +1728,7 @@
     { key: 'internal',     label: '🧾 Internal Sources', hasEdit: true  },
     { key: 'mediabuy',     label: '📺 Media Buying',     hasEdit: true  },
     { key: 'costsummary',  label: '💰 Cost Summary',     hasEdit: false },
-    { key: 'advertisers',  label: '🏢 Advertisers',       hasEdit: true  },
+    { key: 'advertisers',  label: '🏢 Advertisers Info',   hasEdit: true  },
   ];
 
   function defaultTabs() {
@@ -4339,6 +4339,16 @@
     return html;
   }
 
+
+  function previewHeaderAvatar() {
+    const avatarEl = document.getElementById('headerAvatar');
+    if (!avatarEl || avatarEl.style.display === 'none') return;
+    const loggedEmail = (document.getElementById('headerUser')?.textContent || '').toLowerCase().trim();
+    const mgr = campaignMgrs.find(m => (m.email || '').toLowerCase().trim() === loggedEmail);
+    const name = mgr?.name || loggedEmail || 'Me';
+    const role = mgr?.role || '';
+    previewSourceLogo(avatarEl.src, name, role);
+  }
 
   function updateHeaderAvatar() {
     const loggedEmail = (document.getElementById('headerUser').textContent || '').toLowerCase().trim();
