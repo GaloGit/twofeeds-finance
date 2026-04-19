@@ -2508,7 +2508,7 @@
       const _resolved = s.logoUrl ? (resolvePhotoUrl(s.logoUrl) || s.logoUrl) : '';
       const _fallback = s.logoUrl && _driveId(s.logoUrl) ? `https://drive.google.com/uc?export=view&id=${_driveId(s.logoUrl)}` : '';
       const preview = s.logoUrl
-        ? `<img src="${esc(_resolved)}" onclick="previewSourceLogo('${esc(_resolved)}','${esc(s.name)}')" style="width:36px;height:36px;border-radius:6px;object-fit:contain;background:var(--surface3);cursor:zoom-in;${isPaused?'opacity:0.4':''}" onerror="${_fallback ? `this.src='${esc(_fallback)}';this.onerror=function(){this.style.display='none'};` : `this.style.display='none'`}">`
+        ? `<img src="${esc(_resolved)}" onclick="previewSourceLogo('${esc(_resolved)}','${esc(s.name)}','${esc((s.type||'DSP')+' Source')}')" style="width:36px;height:36px;border-radius:6px;object-fit:contain;background:var(--surface3);cursor:zoom-in;${isPaused?'opacity:0.4':''}" onerror="${_fallback ? `this.src='${esc(_fallback)}';this.onerror=function(){this.style.display='none'};` : `this.style.display='none'`}">`
         : getSourceLogo(s.name, 36);
       const cells = cols.map(col => {
         switch(col) {
