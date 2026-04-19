@@ -608,6 +608,7 @@
         <button class="nav-tab" id="navTab_mediabuy" style="display:none" onclick="showTab('mediabuy', this); renderMediaBuying()"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg><span>Media Buying</span></button>
         <button class="nav-tab" id="navTab_costsummary" style="display:none" onclick="showTab('costsummary', this); renderCostSummary()"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>Cost Summary</span></button>
         <button class="nav-tab" id="campaignMgrTab" style="display:none;margin-left:auto;color:var(--muted)" onclick="showTab('campaignmgr', this); renderCampaignMgr()"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Team Roles</span></button>
+        <button class="nav-tab" id="advertisersTab" style="display:none;color:var(--muted)" onclick="showTab('advertisers', this); renderAdvertisers()"><svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg><span>Advertisers</span></button>
         <button class="nav-tab" id="sourcesInfoTab" style="display:none;color:var(--muted)" onclick="showTab('sourcesinfo', this); renderSourcesInfo()"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg><span>Sources Info</span></button>
         <button class="nav-tab" id="settingsTab" style="display:none;color:var(--muted)" onclick="showTab('settings', this); renderSettings(); populateConfigFields()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Settings</span></button>
       </nav>
@@ -1271,6 +1272,103 @@
       </div>
     </div>
 
+    <!-- ADVERTISERS PAGE -->
+    <div class="page" id="tab-advertisers">
+      <div class="section-header" style="margin-bottom:28px">
+        <div>
+          <div class="section-title">🏢 Advertisers</div>
+          <div class="section-sub">Manage advertiser details — logo, IDs, managers and platform info</div>
+        </div>
+      </div>
+
+      <!-- Add advertiser form (collapsible) -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:24px;overflow:hidden">
+        <button onclick="toggleAdvForm()" id="advFormToggle" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:none;border:none;cursor:pointer;text-align:left">
+          <span style="font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase">+ Add Advertiser</span>
+          <span id="advFormArrow" style="font-size:16px;color:var(--muted);transition:transform 0.25s">▼</span>
+        </button>
+        <div id="advFormBody" style="display:none;padding:0 20px 20px">
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+            <div style="flex:1;min-width:160px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Advertiser Name *</div>
+              <input type="text" id="advName" placeholder="e.g. Booking.com, Nike"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+            </div>
+            <div style="flex:0 0 130px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Platform</div>
+              <select id="advPlatform" style="width:100%;background:rgba(56,189,248,0.13);color:#38bdf8;border:1px solid rgba(56,189,248,0.45);border-radius:8px;padding:10px 14px;font-family:var(--font-mono);font-size:13px;font-weight:700;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none">
+                <option value="DSP">DSP</option>
+                <option value="RW">RW</option>
+                <option value="MB">MB</option>
+                <option value="Platform">Platform</option>
+              </select>
+            </div>
+            <div style="flex:0 0 80px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">GEO</div>
+              <input type="text" id="advGeo" placeholder="US" maxlength="10"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;text-transform:uppercase"/>
+            </div>
+            <div style="flex:2;min-width:240px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Logo URL</div>
+              <input type="text" id="advLogoUrl" placeholder="https://… (Drive link, direct image URL)"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-top:12px">
+            <div style="flex:1;min-width:140px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">TF Manager</div>
+              <input type="text" id="advTfManager" placeholder="Name"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+            </div>
+            <div style="flex:1;min-width:140px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">TO2 Manager</div>
+              <input type="text" id="advTo2Manager" placeholder="Name"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+            </div>
+            <div style="flex:1;min-width:120px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">TF ID</div>
+              <input type="text" id="advTfId" placeholder="TF-001"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+            </div>
+            <div style="flex:1;min-width:120px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">TO2 ID</div>
+              <input type="text" id="advTo2Id" placeholder="TO2-001"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+            </div>
+            <button onclick="addAdvertiserEntry()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.05em;white-space:nowrap">+ ADD</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:8px">
+        <button id="advOrderBtn" onclick="toggleAdvOrderEdit()" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">↕ Edit Order</button>
+      </div>
+
+      <!-- Advertisers table -->
+      <div class="table-wrap">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:22px"></th>
+                <th class="th-hash">#</th>
+                <th style="width:48px">Logo</th>
+                <th>Advertiser Name</th>
+                <th style="width:90px">Platform</th>
+                <th>TF Manager</th>
+                <th>TO2 Manager</th>
+                <th style="width:90px">GEO</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="advBody">
+              <tr><td colspan="9" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <!-- SETTINGS PAGE (admin only) -->
     <div class="page" id="tab-settings">
       <div class="section-header" style="margin-bottom:28px">
@@ -1630,6 +1728,7 @@
     { key: 'internal',     label: '🧾 Internal Sources', hasEdit: true  },
     { key: 'mediabuy',     label: '📺 Media Buying',     hasEdit: true  },
     { key: 'costsummary',  label: '💰 Cost Summary',     hasEdit: false },
+    { key: 'advertisers',  label: '🏢 Advertisers',       hasEdit: true  },
   ];
 
   function defaultTabs() {
@@ -1675,13 +1774,15 @@
     const sw = document.getElementById('sectionSwitcher');
     if (sw) sw.style.display = admin ? 'flex' : 'none';
 
-    // ── Admin-only tabs (Settings + Campaign Managers + Sources Info) ──
+    // ── Admin-only tabs (Settings + Campaign Managers + Sources Info + Advertisers) ──
     const st = document.getElementById('settingsTab');
     if (st) st.style.display = admin ? 'block' : 'none';
     const cmt = document.getElementById('campaignMgrTab');
     if (cmt) cmt.style.display = admin ? 'inline-flex' : 'none';
     const sit = document.getElementById('sourcesInfoTab');
     if (sit) sit.style.display = admin ? 'inline-flex' : 'none';
+    const advt = document.getElementById('advertisersTab');
+    if (advt) advt.style.display = admin ? 'inline-flex' : 'none';
 
     // ── Tab visibility ──
     if (admin) {
@@ -2857,6 +2958,270 @@
     _renderSiTable();
   }
 
+  // ── ADVERTISERS ──
+  let advertisers = [];
+  let _advDragFrom = null;
+  let _advOrderEditMode = false;
+
+  function _advOrderKey() { return 'tf_adv_order'; }
+  function _saveAdvOrder() {
+    localStorage.setItem(_advOrderKey(), JSON.stringify(advertisers.map(a => a.name)));
+  }
+  function _applyAdvOrder(arr) {
+    const order = JSON.parse(localStorage.getItem(_advOrderKey()) || '[]');
+    if (!order.length) return arr;
+    const ranked = arr.slice().sort((a, b) => {
+      const ai = order.indexOf(a.name), bi = order.indexOf(b.name);
+      return (ai === -1 ? 9999 : ai) - (bi === -1 ? 9999 : bi);
+    });
+    return ranked;
+  }
+  function _dedupeAdvertisers(arr) {
+    const seen = {};
+    return arr.filter(a => {
+      const k = (a.name || '').toLowerCase().trim();
+      if (seen[k]) return false;
+      seen[k] = true; return true;
+    });
+  }
+
+  function toggleAdvForm() {
+    const body = document.getElementById('advFormBody');
+    const arrow = document.getElementById('advFormArrow');
+    if (!body) return;
+    const open = body.style.display === 'block';
+    body.style.display = open ? 'none' : 'block';
+    arrow.style.transform = open ? '' : 'rotate(180deg)';
+  }
+
+  function _advPlatformStyle(p) {
+    const map = { DSP:'rgba(56,189,248,0.13)|#38bdf8|rgba(56,189,248,0.45)', RW:'rgba(251,146,60,0.13)|#fb923c|rgba(251,146,60,0.45)', MB:'rgba(168,85,247,0.13)|#a855f7|rgba(168,85,247,0.45)', Platform:'rgba(34,197,94,0.13)|#22c55e|rgba(34,197,94,0.45)' };
+    const [bg, col, border] = (map[p] || map.DSP).split('|');
+    return `background:${bg};color:${col};border-color:${border}`;
+  }
+
+  function _renderAdvTable() {
+    const body = document.getElementById('advBody');
+    if (!body) return;
+    const canEdit = canEditTab('advertisers');
+    if (!advertisers.length) {
+      body.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:40px">No advertisers yet — use the form above to add one</td></tr>`;
+      return;
+    }
+    body.innerHTML = advertisers.map((a, i) => {
+      const resolved = a.logoUrl ? (resolvePhotoUrl(a.logoUrl) || a.logoUrl) : '';
+      const fallback = a.logoUrl && _driveId(a.logoUrl) ? `https://drive.google.com/uc?export=view&id=${_driveId(a.logoUrl)}` : '';
+      const logoHtml = resolved
+        ? `<img src="${esc(resolved)}" onclick="previewSourceLogo('${esc(resolved)}','${esc(a.name)}','${esc((a.platform||'DSP')+' Advertiser')}')" style="width:36px;height:36px;border-radius:6px;object-fit:contain;background:var(--surface3);cursor:zoom-in" onerror="${fallback ? `this.src='${esc(fallback)}';this.onerror=function(){this.style.display='none'};` : `this.style.display='none'`}">`
+        : `<span onclick="previewSourceLogo('','${esc(a.name)}','${esc((a.platform||'DSP')+' Advertiser')}')" style="width:36px;height:36px;border-radius:6px;background:var(--surface3);color:var(--muted);display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:16px;font-weight:700;cursor:zoom-in">${esc((a.name||'?')[0].toUpperCase())}</span>`;
+      const platStyle = _advPlatformStyle(a.platform || 'DSP');
+      return `
+      <tr id="advRow_${i}" ondragstart="advDragStart(event,${i})" ondragover="advDragOver(event,${i})" ondrop="advDrop(event,${i})" ondragleave="advDragLeave(event)" ondragend="advDragEnd(event)">
+        <td onmousedown="advGripDown(event,${i})" onmouseup="advGripUp()" style="cursor:${_advOrderEditMode?'grab':'default'};color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center;visibility:${_advOrderEditMode?'visible':'hidden'}">⠿</td>
+        <td class="row-num">${i+1}</td>
+        <td style="padding:6px 12px">${logoHtml}</td>
+        <td style="min-width:140px;white-space:nowrap">
+          <input class="editable" value="${esc(a.name)}" onblur="advNameConfirm(${i},this.value)" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape'){this.value='${esc(a.name)}';this.blur();}" style="font-family:var(--font-mono);font-size:12px;font-weight:600;width:100%"/>
+        </td>
+        <td>
+          <select onchange="advFieldChange(${i},'platform',this.value);this.style.cssText+=';${_advPlatformStyle(a.platform||'DSP')}'" style="${platStyle};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none">
+            ${['DSP','RW','MB','Platform'].map(t=>`<option value="${t}" ${(a.platform||'DSP')===t?'selected':''}>${t}</option>`).join('')}
+          </select>
+        </td>
+        <td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(a.tfManager||'—')}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(a.to2Manager||'—')}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);white-space:nowrap">${esc(a.geo||'—')}</td>
+        <td style="white-space:nowrap">
+          <button onclick="toggleAdvRow(${i})" id="advExpandBtn_${i}"
+            style="font-family:var(--font-mono);font-size:16px;border-radius:6px;cursor:pointer;padding:4px 14px;border:1px solid var(--accent);background:rgba(124,58,237,0.15);color:var(--accent-light);line-height:1;margin-right:4px" title="Show details">▾</button>
+          <button onclick="deleteAdvertiserEntry(${i})"
+            style="font-family:var(--font-mono);font-size:9px;border-radius:6px;cursor:pointer;padding:4px 10px;border:1px solid var(--border);background:transparent;color:var(--red)">✕</button>
+        </td>
+      </tr>
+      <tr id="advDetail_${i}" style="display:none">
+        <td colspan="9" style="padding:0">
+          <div style="background:var(--surface2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:16px 20px">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:14px">
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Logo URL</div>
+                <div style="display:flex;align-items:center;gap:6px">
+                  <input id="advUrl_${i}" value="${esc(a.logoUrl||'')}"
+                    oninput="document.getElementById('advUrlSave_${i}').style.display='inline-flex'"
+                    onfocus="this.style.borderBottomColor='var(--accent)';document.getElementById('advUrlSave_${i}').style.display='inline-flex'"
+                    onkeydown="if(event.key==='Enter'){document.getElementById('advUrlSave_${i}').click();}if(event.key==='Escape'){this.value='${esc(a.logoUrl||'')}';this.style.borderBottomColor='';document.getElementById('advUrlSave_${i}').style.display='none';}"
+                    class="editable" style="flex:1;min-width:0" placeholder="Paste image or Drive URL"/>
+                  <button id="advUrlSave_${i}" onclick="advUrlConfirm(${i})"
+                    style="display:none;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0">✓</button>
+                </div>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TF Manager</div>
+                <input class="editable" value="${esc(a.tfManager||'')}" placeholder="Name"
+                  onblur="advFieldChange(${i},'tfManager',this.value)" onkeydown="if(event.key==='Enter')this.blur()" style="width:100%"/>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TO2 Manager</div>
+                <input class="editable" value="${esc(a.to2Manager||'')}" placeholder="Name"
+                  onblur="advFieldChange(${i},'to2Manager',this.value)" onkeydown="if(event.key==='Enter')this.blur()" style="width:100%"/>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TF ID</div>
+                <input class="editable mono" value="${esc(a.tfId||'')}" placeholder="TF-001"
+                  onblur="advFieldChange(${i},'tfId',this.value)" onkeydown="if(event.key==='Enter')this.blur()" style="width:100%"/>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TO2 ID</div>
+                <input class="editable mono" value="${esc(a.to2Id||'')}" placeholder="TO2-001"
+                  onblur="advFieldChange(${i},'to2Id',this.value)" onkeydown="if(event.key==='Enter')this.blur()" style="width:100%"/>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">GEO</div>
+                <input class="editable mono" value="${esc(a.geo||'')}" placeholder="US"
+                  onblur="advFieldChange(${i},'geo',this.value.toUpperCase())" onkeydown="if(event.key==='Enter')this.blur()" style="width:100%;text-transform:uppercase"/>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function toggleAdvRow(i) {
+    const detail = document.getElementById('advDetail_' + i);
+    const btn    = document.getElementById('advExpandBtn_' + i);
+    if (!detail) return;
+    const open = detail.style.display !== 'none';
+    detail.style.display = open ? 'none' : 'table-row';
+    if (btn) btn.textContent = open ? '▾' : '▴';
+  }
+
+  async function _saveAdvertisers() {
+    if (!advertisers.length) return;
+    _saveAdvOrder();
+    try {
+      await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveAdvertisers', rows: advertisers }) });
+    } catch { showToast('⚠ Failed to save', true); }
+  }
+
+  async function renderAdvertisers() {
+    const body = document.getElementById('advBody');
+    if (!body) return;
+    if (!advertisers.length) {
+      body.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>`;
+      try {
+        const res  = await fetch(`${FINANCE_API}?action=getAdvertisers`);
+        const json = await res.json();
+        const raw  = json.data || [];
+        advertisers = _applyAdvOrder(_dedupeAdvertisers(raw.map(r => ({
+          name:       r['Name']         || '',
+          logoUrl:    r['LogoUrl']      || '',
+          tfId:       r['TF ID']        || '',
+          to2Id:      r['TO2 ID']       || '',
+          to2Manager: r['TO2 Manager']  || '',
+          tfManager:  r['TF Manager']   || '',
+          geo:        r['GEO']          || '',
+          platform:   r['Platform']     || 'DSP',
+        }))));
+        if (raw.length > advertisers.length) _saveAdvertisers();
+      } catch { advertisers = []; }
+    }
+    _renderAdvTable();
+  }
+
+  async function advNameConfirm(i, newName) {
+    if (!advertisers[i] || !newName.trim()) return;
+    advertisers[i].name = newName.trim();
+    await _saveAdvertisers();
+    _renderAdvTable();
+  }
+
+  async function advUrlConfirm(i) {
+    const inp = document.getElementById('advUrl_' + i);
+    if (!inp || !advertisers[i]) return;
+    advertisers[i].logoUrl = inp.value.trim();
+    inp.style.borderBottomColor = '';
+    document.getElementById('advUrlSave_' + i).style.display = 'none';
+    await _saveAdvertisers();
+    _renderAdvTable();
+    showToast('✓ Logo updated');
+  }
+
+  async function advFieldChange(i, field, value) {
+    if (!advertisers[i]) return;
+    advertisers[i][field] = value;
+    await _saveAdvertisers();
+    _renderAdvTable();
+  }
+
+  async function addAdvertiserEntry() {
+    const name       = document.getElementById('advName').value.trim();
+    const platform   = document.getElementById('advPlatform').value;
+    const geo        = document.getElementById('advGeo').value.trim().toUpperCase();
+    const logoUrl    = document.getElementById('advLogoUrl').value.trim();
+    const tfManager  = document.getElementById('advTfManager').value.trim();
+    const to2Manager = document.getElementById('advTo2Manager').value.trim();
+    const tfId       = document.getElementById('advTfId').value.trim();
+    const to2Id      = document.getElementById('advTo2Id').value.trim();
+    if (!name) { showToast('⚠ Advertiser name is required', true); return; }
+    const existing = advertisers.find(a => a.name.toLowerCase() === name.toLowerCase());
+    if (existing) {
+      Object.assign(existing, { logoUrl, platform, geo, tfManager, to2Manager, tfId, to2Id });
+    } else {
+      advertisers.push({ name, logoUrl, platform, geo, tfManager, to2Manager, tfId, to2Id });
+    }
+    _renderAdvTable();
+    ['advName','advLogoUrl','advTfManager','advTo2Manager','advTfId','advTo2Id','advGeo'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    document.getElementById('advPlatform').value = 'DSP';
+    const fb = document.getElementById('advFormBody'), fa = document.getElementById('advFormArrow');
+    if (fb) fb.style.display = 'none';
+    if (fa) fa.style.transform = '';
+    await _saveAdvertisers();
+    showToast('✓ Advertiser added');
+    logActivity('edit_advertisers', `Added advertiser: ${name}`);
+  }
+
+  async function deleteAdvertiserEntry(i) {
+    const name = advertisers[i]?.name || '';
+    if (!confirmDelete(`Remove advertiser "${name}"?`)) return;
+    advertisers.splice(i, 1);
+    _renderAdvTable();
+    await _saveAdvertisers();
+    showToast('✓ Removed');
+  }
+
+  function toggleAdvOrderEdit() {
+    _advOrderEditMode = !_advOrderEditMode;
+    const btn = document.getElementById('advOrderBtn');
+    if (_advOrderEditMode) {
+      btn.textContent = '✓ Save Order';
+      btn.style.cssText += ';background:var(--accent);color:#fff;border-color:var(--accent)';
+    } else {
+      _saveAdvOrder();
+      _saveAdvertisers().then(() => showToast('✓ Order saved'));
+      btn.textContent = '↕ Edit Order';
+      btn.style.background = 'var(--surface2)';
+      btn.style.color = 'var(--muted)';
+      btn.style.borderColor = 'var(--border)';
+    }
+    _renderAdvTable();
+  }
+
+  function advGripDown(e, i) { if (!_advOrderEditMode) return; const r = document.getElementById('advRow_'+i); if (r) r.draggable = true; }
+  function advGripUp()       { document.querySelectorAll('#advBody tr').forEach(r => r.draggable = false); }
+  function advDragStart(e, i) { if (!e.currentTarget.draggable) { e.preventDefault(); return; } _advDragFrom = i; e.dataTransfer.effectAllowed = 'move'; setTimeout(() => { if (e.currentTarget) e.currentTarget.style.opacity = '0.45'; }, 0); }
+  function advDragEnd(e)     { e.currentTarget.draggable = false; e.currentTarget.style.opacity = ''; document.querySelectorAll('#advBody tr').forEach(r => r.style.outline = ''); }
+  function advDragOver(e, i) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; document.querySelectorAll('#advBody tr').forEach((r, j) => { r.style.outline = j === i && j !== _advDragFrom ? '1px dashed var(--accent)' : ''; }); }
+  function advDragLeave(e)   { if (!e.currentTarget.contains(e.relatedTarget)) document.querySelectorAll('#advBody tr').forEach(r => r.style.outline = ''); }
+  async function advDrop(e, toI) {
+    e.preventDefault();
+    document.querySelectorAll('#advBody tr').forEach(r => { r.draggable = false; r.style.outline = ''; r.style.opacity = ''; });
+    if (_advDragFrom === null || _advDragFrom === toI) { _advDragFrom = null; return; }
+    const moved = advertisers.splice(_advDragFrom, 1)[0];
+    advertisers.splice(toI, 0, moved);
+    _advDragFrom = null;
+    _renderAdvTable();
+  }
+
   // ── SETTINGS ──
   let settingsUsers = [];
 
@@ -3635,7 +4000,7 @@
   async function prefetchAllData() {
     const pk = periodKey();
     try {
-      const [pubData, invData, mbData, cmRes, siRes, evRes, mtgRes, tskRes, tktRes] = await Promise.all([
+      const [pubData, invData, mbData, cmRes, siRes, evRes, mtgRes, tskRes, tktRes, advRes] = await Promise.all([
         fetchPeriodData('getPublishers').catch(() => []),
         fetchPeriodData('getInvoices').catch(() => []),
         fetchPeriodData('getMediaBuying').catch(() => []),
@@ -3645,6 +4010,7 @@
         fetch(`${FINANCE_API}?action=getMeetings`).then(r => r.json()).catch(() => ({ data: [] })),
         fetch(`${FINANCE_API}?action=getTasks`).then(r => r.json()).catch(() => ({ data: [] })),
         fetch(`${FINANCE_API}?action=getTickets`).then(r => r.json()).catch(() => ({ data: [] })),
+        fetch(`${FINANCE_API}?action=getAdvertisers`).then(r => r.json()).catch(() => ({ data: [] })),
       ]);
 
       // Publishers — deduplicate sheet rows by name+platform (keep last occurrence;
@@ -3709,6 +4075,21 @@
         _buildSourcesMap();
         if (siRaw.length > sourcesInfo.length) _saveSourcesInfo(); // clean up sheet duplicates
       }
+
+      // Advertisers
+      const advRaw = advRes.data || [];
+      const advMapped = advRaw.map(r => ({
+        name:       r['Name']        || '',
+        logoUrl:    r['LogoUrl']     || '',
+        tfId:       r['TF ID']       || '',
+        to2Id:      r['TO2 ID']      || '',
+        to2Manager: r['TO2 Manager'] || '',
+        tfManager:  r['TF Manager']  || '',
+        geo:        r['GEO']         || '',
+        platform:   r['Platform']    || 'DSP',
+      }));
+      advertisers = _applyAdvOrder(_dedupeAdvertisers(advMapped));
+      if (advRaw.length > advertisers.length) _saveAdvertisers();
 
       // Operations — load at login so notifications are ready immediately
       meetings = (mtgRes.data || []).map(r => ({
