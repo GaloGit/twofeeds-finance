@@ -2049,7 +2049,7 @@
       const photoSrc = resolvePhotoUrl(m.photoUrl);
       const fallbackSrc = (m.photoUrl && _driveId(m.photoUrl)) ? `https://drive.google.com/uc?export=view&id=${_driveId(m.photoUrl)}` : '';
       const avatar   = photoSrc
-        ? `<img src="${esc(photoSrc)}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--border);margin-right:8px;vertical-align:middle;flex-shrink:0${!isLive?';opacity:0.4':''}" onerror="if('${esc(fallbackSrc)}'){this.src='${esc(fallbackSrc)}';this.onerror=null;}else{this.style.display='none'}">`
+        ? `<img src="${esc(photoSrc)}" onclick="previewSourceLogo('${esc(photoSrc)}','${esc(m.name)}')" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--border);margin-right:8px;vertical-align:middle;flex-shrink:0;cursor:zoom-in;${!isLive?'opacity:0.4':''}" onerror="if('${esc(fallbackSrc)}'){this.src='${esc(fallbackSrc)}';this.onerror=null;}else{this.style.display='none'}">`
         : `<span style="width:32px;height:32px;border-radius:50%;background:var(--surface3);border:2px solid var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--muted);margin-right:8px;vertical-align:middle;flex-shrink:0${!isLive?';opacity:0.4':''}">${esc((m.name||'?')[0].toUpperCase())}</span>`;
       const cells = cols.map(col => {
         switch(col) {
