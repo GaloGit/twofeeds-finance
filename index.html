@@ -1320,8 +1320,13 @@
           <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-top:12px">
             <div style="flex:1;min-width:140px">
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">TF Manager</div>
-              <input type="text" id="advTfManager" placeholder="Name"
-                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+              <select id="advTfManager"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;cursor:pointer">
+                <option value="">— Select —</option>
+                <option value="Talya Blumner">Talya Blumner</option>
+                <option value="Matan Levin">Matan Levin</option>
+                <option value="Max Park">Max Park</option>
+              </select>
             </div>
             <div style="flex:1;min-width:140px">
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">TO2 Manager</div>
@@ -3068,8 +3073,10 @@
               </div>
               <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TF Manager</div>
-                <input class="editable" value="${esc(a.tfManager||'')}" placeholder="Name"
-                  onblur="advFieldChange(${i},'tfManager',this.value)" onkeydown="if(event.key==='Enter')this.blur()" style="width:100%"/>
+                <select class="editable" onchange="advFieldChange(${i},'tfManager',this.value)" style="width:100%;cursor:pointer">
+                  <option value="" ${!a.tfManager?'selected':''}>— Select —</option>
+                  ${['Talya Blumner','Matan Levin','Max Park'].map(n=>`<option value="${n}" ${a.tfManager===n?'selected':''}>${n}</option>`).join('')}
+                </select>
               </div>
               <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TO2 Manager</div>
@@ -3182,7 +3189,8 @@
       advertisers.push({ name, logoUrl, platform, geo, tfManager, to2Manager, tfId, to2Id });
     }
     _renderAdvTable();
-    ['advName','advLogoUrl','advTfManager','advTo2Manager','advTfId','advTo2Id','advGeo'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    ['advName','advLogoUrl','advTo2Manager','advTfId','advTo2Id','advGeo'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    document.getElementById('advTfManager').value = '';
     document.getElementById('advPlatform').value = 'Appsflyer';
     const fb = document.getElementById('advFormBody'), fa = document.getElementById('advFormArrow');
     if (fb) fb.style.display = 'none';
