@@ -2508,7 +2508,7 @@
       const _resolved = s.logoUrl ? (resolvePhotoUrl(s.logoUrl) || s.logoUrl) : '';
       const _fallback = s.logoUrl && _driveId(s.logoUrl) ? `https://drive.google.com/uc?export=view&id=${_driveId(s.logoUrl)}` : '';
       const preview = s.logoUrl
-        ? `<img src="${esc(_resolved)}" style="width:36px;height:36px;border-radius:6px;object-fit:contain;background:var(--surface3);${isPaused?'opacity:0.4':''}" onerror="${_fallback ? `this.src='${esc(_fallback)}';this.onerror=function(){this.style.display='none'};` : `this.style.display='none'`}">`
+        ? `<img src="${esc(_resolved)}" onclick="previewSourceLogo('${esc(_resolved)}','${esc(s.name)}')" style="width:36px;height:36px;border-radius:6px;object-fit:contain;background:var(--surface3);cursor:zoom-in;${isPaused?'opacity:0.4':''}" onerror="${_fallback ? `this.src='${esc(_fallback)}';this.onerror=function(){this.style.display='none'};` : `this.style.display='none'`}">`
         : getSourceLogo(s.name, 36);
       const cells = cols.map(col => {
         switch(col) {
@@ -2650,6 +2650,23 @@
     const btn = document.getElementById('siUrlSave_' + i);
     if (inp) inp.style.borderBottomColor = 'transparent';
     if (btn) btn.style.display = 'none';
+  }
+
+  function previewSourceLogo(url, name) {
+    if (!url) return;
+    // Remove existing overlay if any
+    const existing = document.getElementById('siLogoPreviewOverlay');
+    if (existing) existing.remove();
+    const overlay = document.createElement('div');
+    overlay.id = 'siLogoPreviewOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);cursor:zoom-out;animation:fadeIn 0.15s ease';
+    overlay.onclick = () => overlay.remove();
+    overlay.innerHTML = `
+      <div style="font-family:var(--font-display);font-size:15px;font-weight:700;color:#e0d9ff;letter-spacing:0.04em;text-shadow:0 1px 8px rgba(0,0,0,0.6)">${name}</div>
+      <img src="${url}" style="max-width:min(480px,85vw);max-height:min(480px,70vh);border-radius:14px;object-fit:contain;background:var(--surface2);padding:12px;box-shadow:0 8px 40px rgba(0,0,0,0.6)" onerror="this.style.display='none'">
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">click anywhere to close</div>
+    `;
+    document.body.appendChild(overlay);
   }
 
   async function siUrlConfirm(i) {
