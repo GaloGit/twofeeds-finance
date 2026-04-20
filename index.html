@@ -2051,6 +2051,7 @@
     { key:'idx',        label:'#'          },
     { key:'logo',       label:'Logo'       },
     { key:'name',       label:'Name'       },
+    { key:'country',    label:'GEO'        },
     { key:'type',       label:'Type'       },
     { key:'status',     label:'Status'     },
     { key:'tfManager',  label:'TF Manager' },
@@ -2658,7 +2659,8 @@
         switch(col) {
           case 'idx':       return `<td class="row-num">${i+1}</td>`;
           case 'logo':      return `<td style="padding:6px 12px">${preview}</td>`;
-          case 'name':      return `<td style="min-width:140px;white-space:nowrap"><div style="display:flex;align-items:center;gap:6px"><input class="editable" value="${esc(s.name)}" onblur="siNameConfirm(${i},this.value)" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape'){this.value='${esc(s.name)}';this.blur();}" style="font-family:var(--font-mono);font-size:12px;font-weight:600;width:100%"/>${countryFlagImg(s.country||'')?`<span style="flex-shrink:0">${countryFlagImg(s.country||'')}</span>`:''}</div></td>`;
+          case 'name':      return `<td style="min-width:140px;white-space:nowrap"><div style="display:flex;align-items:center;gap:6px"><input class="editable" value="${esc(s.name)}" onblur="siNameConfirm(${i},this.value)" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape'){this.value='${esc(s.name)}';this.blur();}" style="font-family:var(--font-mono);font-size:12px;font-weight:600;width:100%"/></div></td>`;
+          case 'country':   return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:5px">${s.country?esc(s.country):'—'}${s.country&&s.country.length===2?countryFlagImg(s.country,'20x15'):''}</span></td>`;
           case 'type':      return `<td><select id="siTypeSelect_${i}" onchange="siTypeChange(${i},this.value);_applyTypeSelectColor(this,this.value)" style="${_siTypeSelectStyle(dispType)};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none">${['DSP','RW','MB','Platform'].map(t=>`<option value="${t}" ${dispType===t?'selected':''}>${t}</option>`).join('')}</select></td>`;
           case 'status':    return `<td><select id="siStatusSelect_${i}" onchange="siStatusChange(${i},this.value);_applyStatusSelectColor(this,this.value)" style="${_siStatusSelectStyle(s.status)};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none"><option value="live" ${!isPaused?'selected':''}>Live</option><option value="paused" ${isPaused?'selected':''}>Paused</option></select></td>`;
           case 'tfManager': return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(s.tfManager||'—')}</td>`;
