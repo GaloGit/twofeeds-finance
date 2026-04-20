@@ -2714,7 +2714,10 @@
               </div>
               <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">GEO</div>
-                <input id="siGeo_${i}" class="editable" value="${esc(s.country||'')}" placeholder="US" maxlength="2" style="width:100%;text-transform:uppercase"/>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <input id="siGeo_${i}" class="editable" value="${esc(s.country||'')}" placeholder="US" maxlength="2" oninput="const f=document.getElementById('siGeoFlag_${i}');if(f)f.innerHTML=this.value.length===2?countryFlagImg(this.value.toUpperCase(),'20x15'):''" style="width:80px;text-transform:uppercase"/>
+                  <span id="siGeoFlag_${i}">${s.country&&s.country.length===2?countryFlagImg(s.country,'20x15'):''}</span>
+                </div>
               </div>
               <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TO2 ID</div>
