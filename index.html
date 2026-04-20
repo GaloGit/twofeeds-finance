@@ -2650,7 +2650,7 @@
 
   function _renderSiTable() {
     const state = _siColState(); const cols = _activeCols(state); const totalCols = cols.length + 2;
-    const head = document.getElementById('siHead'); if (head) head.innerHTML = '<tr><th style="width:22px"></th>' + cols.map(c => { const d = _SI_COL_DEFS.find(x=>x.key===c); return '<th>' + (d?d.label:c) + '</th>'; }).join('') + '<th></th></tr>';
+    const head = document.getElementById('siHead'); if (head) head.innerHTML = '<tr><th style="' + (_siOrderEditMode?'width:22px':'width:0;padding:0;overflow:hidden') + '"></th>' + cols.map(c => { const d = _SI_COL_DEFS.find(x=>x.key===c); return '<th>' + (d?d.label:c) + '</th>'; }).join('') + '<th></th></tr>';
     const body = document.getElementById('siBody');
     if (!body) return;
     if (!sourcesInfo.length) {
@@ -2683,7 +2683,7 @@
       }).join('');
       return `
       <tr id="siRow_${i}" ondragstart="siDragStart(event,${i})" ondragover="siDragOver(event,${i})" ondrop="siDrop(event,${i})" ondragleave="siDragLeave(event)" ondragend="siDragEnd(event)" onclick="if(!event.target.closest('button,input,select,a'))toggleSiRow(${i})" style="cursor:pointer;${isPaused ? 'opacity:0.55;animation:none' : ''}">
-        <td onmousedown="siGripDown(event,${i})" onmouseup="siGripUp()" style="cursor:${_siOrderEditMode?'grab':'default'};color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center;visibility:${_siOrderEditMode?'visible':'hidden'}">⠿</td>
+        <td onmousedown="siGripDown(event,${i})" onmouseup="siGripUp()" style="${_siOrderEditMode?'cursor:grab;color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center':'width:0;padding:0;overflow:hidden'}">⠿</td>
         ${cells}
         <td style="white-space:nowrap">
           <button onclick="toggleSiRow(${i})" id="siExpandBtn_${i}"
@@ -3070,7 +3070,7 @@
   function _renderAdvTable() {
     const state = _advColState(); const cols = _activeCols(state); const totalCols = cols.length + 2;
     const head = document.getElementById('advHead');
-    if (head) head.innerHTML = '<tr><th style="width:22px"></th>' + cols.map(c => {
+    if (head) head.innerHTML = '<tr><th style="' + (_advOrderEditMode?'width:22px':'width:0;padding:0;overflow:hidden') + '"></th>' + cols.map(c => {
       const d = _ADV_COL_DEFS.find(x => x.key === c);
       return '<th>' + (d ? d.label : c) + '</th>';
     }).join('') + '<th></th></tr>';
@@ -3106,7 +3106,7 @@
       }).join('');
       return `
       <tr id="advRow_${i}" ondragstart="advDragStart(event,${i})" ondragover="advDragOver(event,${i})" ondrop="advDrop(event,${i})" ondragleave="advDragLeave(event)" ondragend="advDragEnd(event)" onclick="if(!event.target.closest('button,input,select,a'))toggleAdvRow(${i})" style="cursor:pointer;${isPaused ? 'opacity:0.55;animation:none' : ''}">
-        <td onmousedown="advGripDown(event,${i})" onmouseup="advGripUp()" style="cursor:${_advOrderEditMode?'grab':'default'};color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center;visibility:${_advOrderEditMode?'visible':'hidden'}">⠿</td>
+        <td onmousedown="advGripDown(event,${i})" onmouseup="advGripUp()" style="${_advOrderEditMode?'cursor:grab;color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center':'width:0;padding:0;overflow:hidden'}">⠿</td>
         ${dataCells}
         <td style="white-space:nowrap">
           <button onclick="toggleAdvRow(${i})" id="advExpandBtn_${i}"
