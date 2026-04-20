@@ -3280,7 +3280,7 @@
 
   function _advCampaignsHtml(campaigns, i) {
     if (!campaigns.length) return '<div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);padding:4px 0">No campaigns yet</div>';
-    const hdr = `<div style="display:grid;grid-template-columns:1.5fr 0.7fr 0.7fr 2fr 20px;gap:8px;padding:3px 10px;margin-bottom:4px">
+    const hdr = `<div style="display:grid;grid-template-columns:1.5fr 90px 90px 2fr 20px;gap:8px;padding:3px 10px;margin-bottom:4px">
       <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em">Campaign</span>
       <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em">TO2 Status</span>
       <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em">TF Status</span>
@@ -3293,7 +3293,7 @@
       const iconHtml = c.iconUrl
         ? `<img src="${esc(c.iconUrl)}" style="width:28px;height:28px;border-radius:6px;object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">`
         : `<div style="width:28px;height:28px;border-radius:6px;background:var(--surface2);flex-shrink:0"></div>`;
-      return `<div style="display:grid;grid-template-columns:1.5fr 0.7fr 0.7fr 2fr 20px;gap:8px;align-items:center;padding:6px 10px;border-radius:6px;background:var(--surface3);margin-bottom:4px">
+      return `<div style="display:grid;grid-template-columns:1.5fr 90px 90px 2fr 20px;gap:8px;align-items:center;padding:6px 10px;border-radius:6px;background:var(--surface3);margin-bottom:4px">
         <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
           <div style="display:flex;align-items:center;gap:8px">${iconHtml}<span style="font-family:var(--font-mono);font-size:11px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.name||'')}</span></div>
           <input value="${esc(c.url||'')}" onblur="advCampSetUrl(${i},${j},this.value)" placeholder="App Store URL…" style="font-family:var(--font-mono);font-size:9px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--muted);width:100%;box-sizing:border-box"/>
