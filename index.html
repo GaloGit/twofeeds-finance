@@ -4377,6 +4377,11 @@
       if (sourcesInfo.length > 0) {
         _buildSourcesMap();
         if (siRaw.length > sourcesInfo.length) _saveSourcesInfo();
+        // Re-render publishers + invoices so logos appear without needing a tab switch
+        _pubInvalidateDiff();
+        renderPublishers();
+        delete _cache['inv_' + pk];
+        renderInvoices();
       }
 
       // Advertisers
