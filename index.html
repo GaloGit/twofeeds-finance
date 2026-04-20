@@ -2683,7 +2683,7 @@
       }).join('');
       return `
       <tr id="siRow_${i}" ondragstart="siDragStart(event,${i})" ondragover="siDragOver(event,${i})" ondrop="siDrop(event,${i})" ondragleave="siDragLeave(event)" ondragend="siDragEnd(event)" onclick="if(!event.target.closest('button,input,select,a'))toggleSiRow(${i})" style="cursor:pointer;${isPaused ? 'opacity:0.55;animation:none' : ''}">
-        <td onmousedown="siGripDown(event,${i})" onmouseup="siGripUp()" style="${_siOrderEditMode?'cursor:grab;color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center':'width:0;padding:0;overflow:hidden'}">⠿</td>
+        <td onmousedown="siGripDown(event,${i})" onmouseup="siGripUp()" style="${_siOrderEditMode?'cursor:grab;color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center':'width:0;padding:0;font-size:0;overflow:hidden'}">${_siOrderEditMode?'⠿':''}</td>
         ${cells}
         <td style="white-space:nowrap">
           <button onclick="toggleSiRow(${i})" id="siExpandBtn_${i}"
@@ -3106,7 +3106,7 @@
       }).join('');
       return `
       <tr id="advRow_${i}" ondragstart="advDragStart(event,${i})" ondragover="advDragOver(event,${i})" ondrop="advDrop(event,${i})" ondragleave="advDragLeave(event)" ondragend="advDragEnd(event)" onclick="if(!event.target.closest('button,input,select,a'))toggleAdvRow(${i})" style="cursor:pointer;${isPaused ? 'opacity:0.55;animation:none' : ''}">
-        <td onmousedown="advGripDown(event,${i})" onmouseup="advGripUp()" style="${_advOrderEditMode?'cursor:grab;color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center':'width:0;padding:0;overflow:hidden'}">⠿</td>
+        <td onmousedown="advGripDown(event,${i})" onmouseup="advGripUp()" style="${_advOrderEditMode?'cursor:grab;color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center':'width:0;padding:0;font-size:0;overflow:hidden'}">${_advOrderEditMode?'⠿':''}</td>
         ${dataCells}
         <td style="white-space:nowrap">
           <button onclick="toggleAdvRow(${i})" id="advExpandBtn_${i}"
