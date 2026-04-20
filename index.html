@@ -1359,6 +1359,13 @@
                 <option value="Carlos Oscariz">Carlos Oscariz</option>
               </select>
             </div>
+            <div style="flex:0 0 110px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Status</div>
+              <select id="advStatus" onchange="_applyStatusSelectColor(this,this.value)" style="width:100%;background:rgba(34,197,94,0.13);color:#22c55e;border:1px solid rgba(34,197,94,0.45);border-radius:8px;padding:10px 14px;font-family:var(--font-mono);font-size:13px;font-weight:700;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none">
+                <option value="live">Live</option>
+                <option value="paused">Paused</option>
+              </select>
+            </div>
             <div style="flex:1;min-width:120px">
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">TF ID</div>
               <input type="text" id="advTfId" placeholder="TF-001"
@@ -1393,11 +1400,12 @@
                 <th>TO2 Manager</th>
                 <th>TL TO2</th>
                 <th style="width:90px">GEO</th>
+                <th style="width:80px">Status</th>
                 <th></th>
               </tr>
             </thead>
             <tbody id="advBody">
-              <tr><td colspan="10" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>
+              <tr><td colspan="11" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>
             </tbody>
           </table>
         </div>
@@ -3053,14 +3061,15 @@
       return;
     }
     body.innerHTML = advertisers.map((a, i) => {
+      const isPaused = (a.status || 'live') === 'paused';
       const resolved = a.logoUrl ? (resolvePhotoUrl(a.logoUrl) || a.logoUrl) : '';
       const fallback = a.logoUrl && _driveId(a.logoUrl) ? `https://drive.google.com/uc?export=view&id=${_driveId(a.logoUrl)}` : '';
       const logoHtml = resolved
-        ? `<img src="${esc(resolved)}" onclick="previewSourceLogo('${esc(resolved)}','${esc(a.name)}','${esc((a.platform||'DSP')+' Advertiser')}')" style="width:36px;height:36px;border-radius:6px;object-fit:contain;background:var(--surface3);cursor:zoom-in" onerror="${fallback ? `this.src='${esc(fallback)}';this.onerror=function(){this.style.display='none'};` : `this.style.display='none'`}">`
-        : `<span onclick="previewSourceLogo('','${esc(a.name)}','${esc((a.platform||'DSP')+' Advertiser')}')" style="width:36px;height:36px;border-radius:6px;background:var(--surface3);color:var(--muted);display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:16px;font-weight:700;cursor:zoom-in">${esc((a.name||'?')[0].toUpperCase())}</span>`;
-      const platStyle = _advPlatformStyle(a.platform || 'DSP');
+        ? `<img src="${esc(resolved)}" onclick="previewSourceLogo('${esc(resolved)}','${esc(a.name)}','${esc((a.platform||'Appsflyer')+' Advertiser')}')" style="width:36px;height:36px;border-radius:6px;object-fit:contain;background:var(--surface3);cursor:zoom-in${isPaused?';opacity:0.4':''}" onerror="${fallback ? `this.src='${esc(fallback)}';this.onerror=function(){this.style.display='none'};` : `this.style.display='none'`}">`
+        : `<span onclick="previewSourceLogo('','${esc(a.name)}','${esc((a.platform||'Appsflyer')+' Advertiser')}')" style="width:36px;height:36px;border-radius:6px;background:var(--surface3);color:var(--muted);display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:16px;font-weight:700;cursor:zoom-in">${esc((a.name||'?')[0].toUpperCase())}</span>`;
+      const platStyle = _advPlatformStyle(a.platform || 'Appsflyer');
       return `
-      <tr id="advRow_${i}" ondragstart="advDragStart(event,${i})" ondragover="advDragOver(event,${i})" ondrop="advDrop(event,${i})" ondragleave="advDragLeave(event)" ondragend="advDragEnd(event)">
+      <tr id="advRow_${i}" ondragstart="advDragStart(event,${i})" ondragover="advDragOver(event,${i})" ondrop="advDrop(event,${i})" ondragleave="advDragLeave(event)" ondragend="advDragEnd(event)" style="${isPaused ? 'opacity:0.55;animation:none' : ''}">
         <td onmousedown="advGripDown(event,${i})" onmouseup="advGripUp()" style="cursor:${_advOrderEditMode?'grab':'default'};color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center;visibility:${_advOrderEditMode?'visible':'hidden'}">⠿</td>
         <td class="row-num">${i+1}</td>
         <td style="padding:6px 12px">${logoHtml}</td>
@@ -3076,6 +3085,7 @@
         <td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(a.to2Manager||'—')}</td>
         <td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(a.tlTo2||'—')}</td>
         <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);white-space:nowrap">${esc(a.geo||'—')}</td>
+        <td><select id="advStatusSelect_${i}" onchange="advStatusChange(${i},this.value);_applyStatusSelectColor(this,this.value)" style="${_siStatusSelectStyle(a.status)};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none"><option value="live" ${(a.status||'live')==='live'?'selected':''}>Live</option><option value="paused" ${a.status==='paused'?'selected':''}>Paused</option></select></td>
         <td style="white-space:nowrap">
           <button onclick="toggleAdvRow(${i})" id="advExpandBtn_${i}"
             style="font-family:var(--font-mono);font-size:16px;border-radius:6px;cursor:pointer;padding:4px 14px;border:1px solid var(--accent);background:rgba(124,58,237,0.15);color:var(--accent-light);line-height:1;margin-right:4px" title="Show details">▾</button>
@@ -3084,7 +3094,7 @@
         </td>
       </tr>
       <tr id="advDetail_${i}" style="display:none">
-        <td colspan="10" style="padding:0">
+        <td colspan="11" style="padding:0">
           <div style="background:var(--surface2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:16px 20px">
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:14px">
               <div>
@@ -3178,6 +3188,7 @@
           tfManager:  r['TF Manager']   || '',
           geo:        r['GEO']          || '',
           platform:   r['Platform']     || 'Appsflyer',
+          status:     r['Status']       || 'live',
         }))));
         if (raw.length > advertisers.length) _saveAdvertisers();
       } catch { advertisers = []; }
@@ -3210,6 +3221,14 @@
     _renderAdvTable();
   }
 
+  async function advStatusChange(i, value) {
+    if (!advertisers[i]) return;
+    advertisers[i].status = value;
+    _renderAdvTable();
+    await _saveAdvertisers();
+    showToast(value === 'live' ? '✓ Status set to Live' : '✓ Status set to Paused');
+  }
+
   async function addAdvertiserEntry() {
     const name       = document.getElementById('advName').value.trim();
     const platform   = document.getElementById('advPlatform').value;
@@ -3218,20 +3237,24 @@
     const tfManager  = document.getElementById('advTfManager').value.trim();
     const to2Manager = document.getElementById('advTo2Manager').value.trim();
     const tlTo2      = document.getElementById('advTlTo2').value.trim();
+    const status     = document.getElementById('advStatus').value || 'live';
     const tfId       = document.getElementById('advTfId').value.trim();
     const to2Id      = document.getElementById('advTo2Id').value.trim();
     if (!name) { showToast('⚠ Advertiser name is required', true); return; }
     const existing = advertisers.find(a => a.name.toLowerCase() === name.toLowerCase());
     if (existing) {
-      Object.assign(existing, { logoUrl, platform, geo, tfManager, to2Manager, tlTo2, tfId, to2Id });
+      Object.assign(existing, { logoUrl, platform, geo, tfManager, to2Manager, tlTo2, status, tfId, to2Id });
     } else {
-      advertisers.push({ name, logoUrl, platform, geo, tfManager, to2Manager, tlTo2, tfId, to2Id });
+      advertisers.push({ name, logoUrl, platform, geo, tfManager, to2Manager, tlTo2, status, tfId, to2Id });
     }
     _renderAdvTable();
     ['advName','advLogoUrl','advTfId','advTo2Id','advGeo'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
     document.getElementById('advTo2Manager').value = '';
     document.getElementById('advTfManager').value = '';
     document.getElementById('advTlTo2').value = '';
+    const advStatusEl = document.getElementById('advStatus');
+    advStatusEl.value = 'live';
+    _applyStatusSelectColor(advStatusEl, 'live');
     document.getElementById('advPlatform').value = 'Appsflyer';
     const fb = document.getElementById('advFormBody'), fa = document.getElementById('advFormArrow');
     if (fb) fb.style.display = 'none';
@@ -4163,6 +4186,7 @@
         tfManager:  r['TF Manager']  || '',
         geo:        r['GEO']         || '',
         platform:   r['Platform']    || 'Appsflyer',
+        status:     r['Status']      || 'live',
       }));
       advertisers = _applyAdvOrder(_dedupeAdvertisers(advMapped));
       if (advRaw.length > advertisers.length) _saveAdvertisers();
