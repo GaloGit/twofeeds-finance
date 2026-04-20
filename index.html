@@ -2088,7 +2088,7 @@
 
   function openColPanel(table, btn) {
     if (_colPanel) { _colPanel.remove(); _colPanel = null; }
-    if (_colPanelTable === table) { _colPanelTable = null; return; }
+    if (_colPanelTable === table) { _colPanelTable = null; document.removeEventListener('click', _colPanelOutside); return; }
     _colPanelTable = table;
     const panel = document.createElement('div');
     _colPanel = panel;
@@ -2122,7 +2122,7 @@
         style="display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:6px;cursor:default;user-select:none">
         <span style="cursor:grab;color:var(--muted);font-size:12px;flex-shrink:0">⠿</span>
         <span style="flex:1;font-family:var(--font-mono);font-size:11px;${vis?'color:var(--text)':'color:var(--muted)'}">${def.label}</span>
-        <button onclick="_colToggle('${table}','${key}')" style="flex-shrink:0;width:16px;height:16px;border-radius:3px;border:1px solid ${vis?'var(--accent)':'var(--border)'};background:${vis?'var(--accent)':'transparent'};cursor:pointer;color:#fff;font-size:9px;display:flex;align-items:center;justify-content:center">${vis?'✓':''}</button>
+        <button onclick="event.stopPropagation();_colToggle('${table}','${key}')" style="flex-shrink:0;width:16px;height:16px;border-radius:3px;border:1px solid ${vis?'var(--accent)':'var(--border)'};background:${vis?'var(--accent)':'transparent'};cursor:pointer;color:#fff;font-size:9px;display:flex;align-items:center;justify-content:center">${vis?'✓':''}</button>
       </div>`;
     }).join('');
   }
