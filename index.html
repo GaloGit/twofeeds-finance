@@ -2094,11 +2094,19 @@
     _colPanel = panel;
     panel.style.cssText = 'position:fixed;z-index:9999;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:190px;box-shadow:0 8px 32px rgba(0,0,0,0.45)';
     const r = btn.getBoundingClientRect();
-    panel.style.top = (r.bottom + 6) + 'px';
-    panel.style.left = r.left + 'px';
-    panel.innerHTML = '<div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;padding:2px 4px 8px;margin-bottom:6px;border-bottom:1px solid var(--border)">Columns</div><div id="_colList" style="max-height:260px;overflow-y:auto"></div><div style="border-top:1px solid var(--border);margin-top:6px;padding-top:6px"><button onclick="_resetCols(\'' + table + '\')" style="font-family:var(--font-mono);font-size:9px;color:var(--muted);background:transparent;border:none;cursor:pointer;width:100%;text-align:left;padding:2px 4px">↺ Reset to default</button></div>';
+    const spaceBelow = window.innerHeight - r.bottom - 12;
+    const spaceAbove = r.top - 12;
+    const listMaxH = Math.min(260, Math.max(spaceBelow, spaceAbove) - 80);
+    panel.innerHTML = '<div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;padding:2px 4px 8px;margin-bottom:6px;border-bottom:1px solid var(--border)">Columns</div><div id="_colList" style="max-height:' + listMaxH + 'px;overflow-y:auto"></div><div style="border-top:1px solid var(--border);margin-top:6px;padding-top:6px"><button onclick="_resetCols(\'' + table + '\')" style="font-family:var(--font-mono);font-size:9px;color:var(--muted);background:transparent;border:none;cursor:pointer;width:100%;text-align:left;padding:2px 4px">↺ Reset to default</button></div>';
     document.body.appendChild(panel);
     _refreshColList(table);
+    const ph = panel.getBoundingClientRect().height;
+    if (r.bottom + 6 + ph > window.innerHeight && spaceAbove > spaceBelow) {
+      panel.style.top = (r.top - ph - 6) + 'px';
+    } else {
+      panel.style.top = (r.bottom + 6) + 'px';
+    }
+    panel.style.left = Math.min(r.left, window.innerWidth - panel.offsetWidth - 8) + 'px';
     setTimeout(() => document.addEventListener('click', _colPanelOutside), 10);
   }
   function _colPanelOutside(e) {
