@@ -1330,8 +1330,23 @@
             </div>
             <div style="flex:1;min-width:140px">
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">TO2 Manager</div>
-              <input type="text" id="advTo2Manager" placeholder="Name"
-                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+              <select id="advTo2Manager"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;cursor:pointer">
+                <option value="">— Select —</option>
+                <option value="Bar Riklin">Bar Riklin</option>
+                <option value="Moriah Hacmun">Moriah Hacmun</option>
+                <option value="Or Rubin">Or Rubin</option>
+                <option value="Daniel Ahituv">Daniel Ahituv</option>
+                <option value="Shely Bar-Ad">Shely Bar-Ad</option>
+                <option value="Elad Vidal">Elad Vidal</option>
+                <option value="Roie Mann">Roie Mann</option>
+                <option value="Keila Amadini">Keila Amadini</option>
+                <option value="Maria Fe Carnero">Maria Fe Carnero</option>
+                <option value="Carla Pons">Carla Pons</option>
+                <option value="Sia">Sia</option>
+                <option value="Lyndsey Zhao">Lyndsey Zhao</option>
+                <option value="Jackson Kim">Jackson Kim</option>
+              </select>
             </div>
             <div style="flex:1;min-width:120px">
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">TF ID</div>
@@ -3080,8 +3095,10 @@
               </div>
               <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TO2 Manager</div>
-                <input class="editable" value="${esc(a.to2Manager||'')}" placeholder="Name"
-                  onblur="advFieldChange(${i},'to2Manager',this.value)" onkeydown="if(event.key==='Enter')this.blur()" style="width:100%"/>
+                <select class="editable" onchange="advFieldChange(${i},'to2Manager',this.value)" style="width:100%;cursor:pointer">
+                  <option value="" ${!a.to2Manager?'selected':''}>— Select —</option>
+                  ${['Bar Riklin','Moriah Hacmun','Or Rubin','Daniel Ahituv','Shely Bar-Ad','Elad Vidal','Roie Mann','Keila Amadini','Maria Fe Carnero','Carla Pons','Sia','Lyndsey Zhao','Jackson Kim'].map(n=>`<option value="${n}" ${a.to2Manager===n?'selected':''}>${n}</option>`).join('')}
+                </select>
               </div>
               <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TF ID</div>
@@ -3189,7 +3206,8 @@
       advertisers.push({ name, logoUrl, platform, geo, tfManager, to2Manager, tfId, to2Id });
     }
     _renderAdvTable();
-    ['advName','advLogoUrl','advTo2Manager','advTfId','advTo2Id','advGeo'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    ['advName','advLogoUrl','advTfId','advTo2Id','advGeo'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    document.getElementById('advTo2Manager').value = '';
     document.getElementById('advTfManager').value = '';
     document.getElementById('advPlatform').value = 'Appsflyer';
     const fb = document.getElementById('advFormBody'), fa = document.getElementById('advFormArrow');
