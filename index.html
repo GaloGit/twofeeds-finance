@@ -880,9 +880,9 @@
       <div class="table-wrap" id="invTableWrap" style="display:none">
         <div class="table-scroll">
         <table>
-          <thead>
+          <thead id="invThead">
             <tr>
-              <th style="width:22px"></th>
+              <th style="width:0;padding:0;overflow:hidden"></th>
               <th class="th-hash">#</th>
               <th>Vendor / Supplier</th>
               <th>Invoice #</th>
@@ -5749,7 +5749,7 @@
       }
       return `
       <tr id="invRow_${i}" draggable="${_invOrderEditMode}" ondragstart="invDragStart(event,${i})" ondragover="invDragOver(event,${i})" ondrop="invDrop(event,${i})" ondragleave="invDragLeave(event)" ondragend="invDragEnd(event)" style="animation-delay:${i*0.03}s${overdue ? ';background:rgba(239,68,68,0.05)' : ''}">
-        <td style="cursor:${_invOrderEditMode?'grab':'default'};color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center;visibility:${_invOrderEditMode?'visible':'hidden'};width:22px">⠿</td>
+        <td style="${_invOrderEditMode?'cursor:grab;color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center':'width:0;padding:0;font-size:0;overflow:hidden'}">${_invOrderEditMode?'⠿':''}</td>
         <td class="row-num">${i+1}</td>
         <td><div style="display:flex;align-items:center;gap:8px">${getSourceLogo(inv.vendor,26)}${getSourceTypeBadge(inv.vendor)}<input class="editable" value="${esc(inv.vendor)}" onblur="updateInvoice(${i},'vendor',this.value)" placeholder="Vendor name" style="min-width:0;flex:1"/></div></td>
         <td><input class="editable mono" value="${esc(inv.invoiceNum)}" onblur="updateInvoice(${i},'invoiceNum',this.value)" placeholder="INV-001" style="width:110px"/></td>
@@ -5821,6 +5821,8 @@
       btn.style.borderColor = 'var(--border)';
       showToast('✓ Order saved');
     }
+    const invTh = document.querySelector('#invThead tr th:first-child');
+    if (invTh) { invTh.style.cssText = _invOrderEditMode ? 'width:22px' : 'width:0;padding:0;overflow:hidden'; }
     delete _cache['inv_' + periodKey()];
     renderInvoices();
   }
