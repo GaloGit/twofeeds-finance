@@ -2806,24 +2806,31 @@
             <!-- Contacts -->
             <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px">
               <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Contacts</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;padding:0 0 4px 0;border-bottom:1px solid var(--border)">
+                <div style="flex:1;min-width:80px;font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Name</div>
+                <div style="width:148px;flex-shrink:0;font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Role</div>
+                <div style="flex:2;min-width:120px;font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Email</div>
+                <div style="width:36px;flex-shrink:0"></div>
+              </div>
               ${(s.contacts||[]).map((c,j) => `
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
                 <input class="editable" value="${esc(c.name||'')}" placeholder="Name" style="flex:1;min-width:80px" onblur="siContactUpdate(${i},${j},'name',this.value)"/>
-                <select onchange="siContactUpdate(${i},${j},'role',this.value)" style="background:var(--surface3);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;flex-shrink:0">
-                  ${['Account Manager','Team Leader','Finance'].map(r=>`<option value="${r}" ${(c.role||'Account Manager')===r?'selected':''}>${r}</option>`).join('')}
+                <select onchange="siContactUpdate(${i},${j},'role',this.value)" style="width:148px;flex-shrink:0;background:var(--surface3);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none">
+                  ${['Account Manager','Team Leader','Finance','Support'].map(r=>`<option value="${r}" ${(c.role||'Account Manager')===r?'selected':''}>${r}</option>`).join('')}
                 </select>
                 <input class="editable" value="${esc(c.email||'')}" placeholder="email@example.com" style="flex:2;min-width:120px" onblur="siContactUpdate(${i},${j},'email',this.value)"/>
-                <button onclick="siRemoveContact(${i},${j})" style="font-family:var(--font-mono);font-size:9px;border-radius:6px;cursor:pointer;padding:4px 8px;border:1px solid var(--border);background:transparent;color:var(--red);flex-shrink:0">✕</button>
+                <button onclick="siRemoveContact(${i},${j})" style="width:36px;flex-shrink:0;font-family:var(--font-mono);font-size:9px;border-radius:6px;cursor:pointer;padding:4px 8px;border:1px solid var(--border);background:transparent;color:var(--red)">✕</button>
               </div>`).join('')}
-              <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+              <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
                 <input id="siNewConName_${i}" class="editable" placeholder="Name" style="flex:1;min-width:80px"/>
-                <select id="siNewConRole_${i}" style="background:var(--surface3);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;flex-shrink:0">
+                <select id="siNewConRole_${i}" style="width:148px;flex-shrink:0;background:var(--surface3);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none">
                   <option value="Account Manager">Account Manager</option>
                   <option value="Team Leader">Team Leader</option>
                   <option value="Finance">Finance</option>
+                  <option value="Support">Support</option>
                 </select>
                 <input id="siNewConEmail_${i}" class="editable" placeholder="email@example.com" style="flex:2;min-width:120px"/>
-                <button onclick="siAddContact(${i})" style="font-family:var(--font-mono);font-size:9px;font-weight:700;border-radius:6px;cursor:pointer;padding:4px 10px;border:1px solid var(--accent);background:rgba(124,58,237,0.18);color:var(--accent-light);flex-shrink:0">+ ADD</button>
+                <button onclick="siAddContact(${i})" style="width:36px;flex-shrink:0;font-family:var(--font-mono);font-size:9px;font-weight:700;border-radius:6px;cursor:pointer;padding:4px 0;border:1px solid var(--accent);background:rgba(124,58,237,0.18);color:var(--accent-light);text-align:center">+</button>
               </div>
             </div>
             <div style="display:flex;justify-content:flex-end;margin-top:14px">
