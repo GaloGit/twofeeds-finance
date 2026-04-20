@@ -5421,6 +5421,7 @@
         showToast('✓ Order saved to sheet');
       } catch { showToast('⚠ Failed to save order', true); }
     }
+    _pubInvalidateDiff();
     renderPublishers();
   }
 
@@ -5820,6 +5821,7 @@
       btn.style.borderColor = 'var(--border)';
       showToast('✓ Order saved');
     }
+    delete _cache['inv_' + periodKey()];
     renderInvoices();
   }
   function invGripDown(e, i) {
