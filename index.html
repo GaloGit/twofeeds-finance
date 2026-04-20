@@ -5204,7 +5204,7 @@
       const shortName = (p.name||'').replace(/\s*\(.*?\)\s*/g,'').trim();
       const approvalText = `${shortName} Numbers Approval mail ${_approvalPeriod}`;
       return `
-      <tr id="pubRow_${i}" ${canDrag?'draggable="true"':''} ondragstart="pubDragStart(event,${i})" ondragover="pubDragOver(event,${i})" ondrop="pubDrop(event,${i})" ondragleave="pubDragLeave(event)" ondragend="pubDragEnd(event)" style="animation-delay:${i*0.03}s">
+      <tr id="pubRow_${i}" draggable="${canDrag}" ondragstart="pubDragStart(event,${i})" ondragover="pubDragOver(event,${i})" ondrop="pubDrop(event,${i})" ondragleave="pubDragLeave(event)" ondragend="pubDragEnd(event)" style="animation-delay:${i*0.03}s">
         <td style="cursor:${canDrag?'grab':'default'};color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center;opacity:${canDrag?'0.45':'0'}">⠿</td>
         <td class="row-num">${i+1}</td>
         <td><div style="display:flex;align-items:center;gap:8px">${getSourceLogo(p.name,26)}${getSourceTypeBadge(p.name)}<input class="editable" value="${esc(p.name)}" onblur="updatePub('${p.id}','name',this.value)" placeholder="Publisher name" style="min-width:0;flex:1"/></div></td>
@@ -5437,13 +5437,11 @@
     document.querySelectorAll('#publisherBody tr').forEach(r => r.draggable = false);
   }
   function pubDragStart(e, i) {
-    if (!e.currentTarget.draggable) { e.preventDefault(); return; }
     _pubDragFrom = i;
     e.dataTransfer.effectAllowed = 'move';
     setTimeout(() => { if (e.currentTarget) e.currentTarget.style.opacity = '0.45'; }, 0);
   }
   function pubDragEnd(e) {
-    e.currentTarget.draggable = false;
     e.currentTarget.style.opacity = '';
     document.querySelectorAll('#publisherBody tr').forEach(r => r.style.outline = '');
   }
@@ -5749,8 +5747,8 @@
         }
       }
       return `
-      <tr id="invRow_${i}" ondragstart="invDragStart(event,${i})" ondragover="invDragOver(event,${i})" ondrop="invDrop(event,${i})" ondragleave="invDragLeave(event)" ondragend="invDragEnd(event)" style="animation-delay:${i*0.03}s${overdue ? ';background:rgba(239,68,68,0.05)' : ''}">
-        <td onmousedown="invGripDown(event,${i})" onmouseup="invGripUp()" style="cursor:${_invOrderEditMode?'grab':'default'};color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center;visibility:${_invOrderEditMode?'visible':'hidden'};width:22px">⠿</td>
+      <tr id="invRow_${i}" draggable="${_invOrderEditMode}" ondragstart="invDragStart(event,${i})" ondragover="invDragOver(event,${i})" ondrop="invDrop(event,${i})" ondragleave="invDragLeave(event)" ondragend="invDragEnd(event)" style="animation-delay:${i*0.03}s${overdue ? ';background:rgba(239,68,68,0.05)' : ''}">
+        <td style="cursor:${_invOrderEditMode?'grab':'default'};color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center;visibility:${_invOrderEditMode?'visible':'hidden'};width:22px">⠿</td>
         <td class="row-num">${i+1}</td>
         <td><div style="display:flex;align-items:center;gap:8px">${getSourceLogo(inv.vendor,26)}${getSourceTypeBadge(inv.vendor)}<input class="editable" value="${esc(inv.vendor)}" onblur="updateInvoice(${i},'vendor',this.value)" placeholder="Vendor name" style="min-width:0;flex:1"/></div></td>
         <td><input class="editable mono" value="${esc(inv.invoiceNum)}" onblur="updateInvoice(${i},'invoiceNum',this.value)" placeholder="INV-001" style="width:110px"/></td>
@@ -5833,13 +5831,11 @@
     document.querySelectorAll('#invBody tr').forEach(r => r.draggable = false);
   }
   function invDragStart(e, i) {
-    if (!e.currentTarget.draggable) { e.preventDefault(); return; }
     _invDragFrom = i;
     e.dataTransfer.effectAllowed = 'move';
     setTimeout(() => { if (e.currentTarget) e.currentTarget.style.opacity = '0.45'; }, 0);
   }
   function invDragEnd(e) {
-    e.currentTarget.draggable = false;
     e.currentTarget.style.opacity = '';
     document.querySelectorAll('#invBody tr').forEach(r => r.style.outline = '');
   }
