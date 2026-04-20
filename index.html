@@ -3099,52 +3099,44 @@
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:14px">
               <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Logo URL</div>
-                <div style="display:flex;align-items:center;gap:6px">
-                  <input id="advUrl_${i}" value="${esc(a.logoUrl||'')}"
-                    oninput="document.getElementById('advUrlSave_${i}').style.display='inline-flex'"
-                    onfocus="this.style.borderBottomColor='var(--accent)';document.getElementById('advUrlSave_${i}').style.display='inline-flex'"
-                    onkeydown="if(event.key==='Enter'){document.getElementById('advUrlSave_${i}').click();}if(event.key==='Escape'){this.value='${esc(a.logoUrl||'')}';this.style.borderBottomColor='';document.getElementById('advUrlSave_${i}').style.display='none';}"
-                    class="editable" style="flex:1;min-width:0" placeholder="Paste image or Drive URL"/>
-                  <button id="advUrlSave_${i}" onclick="advUrlConfirm(${i})"
-                    style="display:none;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0">✓</button>
-                </div>
+                <input id="advUrl_${i}" class="editable" value="${esc(a.logoUrl||'')}" placeholder="Paste image or Drive URL" style="width:100%"/>
               </div>
               <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TF Manager</div>
-                <select class="editable" onchange="advFieldChange(${i},'tfManager',this.value)" style="width:100%;cursor:pointer">
+                <select id="advTfm_${i}" class="editable" style="width:100%;cursor:pointer">
                   <option value="" ${!a.tfManager?'selected':''}>— Select —</option>
                   ${['Talya Blumner','Matan Levin','Max Park'].map(n=>`<option value="${n}" ${a.tfManager===n?'selected':''}>${n}</option>`).join('')}
                 </select>
               </div>
               <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TO2 Manager</div>
-                <select class="editable" onchange="advFieldChange(${i},'to2Manager',this.value)" style="width:100%;cursor:pointer">
+                <select id="advTo2m_${i}" class="editable" style="width:100%;cursor:pointer">
                   <option value="" ${!a.to2Manager?'selected':''}>— Select —</option>
                   ${['Bar Riklin','Moriah Hacmun','Or Rubin','Daniel Ahituv','Shely Bar-Ad','Elad Vidal','Roie Mann','Keila Amadini','Maria Fe Carnero','Carla Pons','Sia','Lyndsey Zhao','Jackson Kim'].map(n=>`<option value="${n}" ${a.to2Manager===n?'selected':''}>${n}</option>`).join('')}
                 </select>
               </div>
               <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TL TO2</div>
-                <select class="editable" onchange="advFieldChange(${i},'tlTo2',this.value)" style="width:100%;cursor:pointer">
+                <select id="advTlTo2_${i}" class="editable" style="width:100%;cursor:pointer">
                   <option value="" ${!a.tlTo2?'selected':''}>— Select —</option>
                   ${['Daniel Ozel','Yoav Wertheym','Pablo Castro','Carlos Oscariz'].map(n=>`<option value="${n}" ${a.tlTo2===n?'selected':''}>${n}</option>`).join('')}
                 </select>
               </div>
               <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TF ID</div>
-                <input class="editable mono" value="${esc(a.tfId||'')}" placeholder="TF-001"
-                  onblur="advFieldChange(${i},'tfId',this.value)" onkeydown="if(event.key==='Enter')this.blur()" style="width:100%"/>
+                <input id="advTfId_${i}" class="editable mono" value="${esc(a.tfId||'')}" placeholder="TF-001" style="width:100%"/>
               </div>
               <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TO2 ID</div>
-                <input class="editable mono" value="${esc(a.to2Id||'')}" placeholder="TO2-001"
-                  onblur="advFieldChange(${i},'to2Id',this.value)" onkeydown="if(event.key==='Enter')this.blur()" style="width:100%"/>
+                <input id="advTo2Id_${i}" class="editable mono" value="${esc(a.to2Id||'')}" placeholder="TO2-001" style="width:100%"/>
               </div>
               <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">GEO</div>
-                <input class="editable mono" value="${esc(a.geo||'')}" placeholder="US"
-                  onblur="advFieldChange(${i},'geo',this.value.toUpperCase())" onkeydown="if(event.key==='Enter')this.blur()" style="width:100%;text-transform:uppercase"/>
+                <input id="advGeo_${i}" class="editable mono" value="${esc(a.geo||'')}" placeholder="US" style="width:100%;text-transform:uppercase"/>
               </div>
+            </div>
+            <div style="display:flex;justify-content:flex-end">
+              <button onclick="advDetailSave(${i})" style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:0.06em;padding:6px 18px;border-radius:6px;border:1px solid var(--accent);background:rgba(124,58,237,0.18);color:var(--accent-light);cursor:pointer;transition:all 0.15s" onmouseover="this.style.background='rgba(124,58,237,0.32)'" onmouseout="this.style.background='rgba(124,58,237,0.18)'">SAVE</button>
             </div>
           </div>
         </td>
@@ -3219,6 +3211,20 @@
     advertisers[i][field] = value;
     await _saveAdvertisers();
     _renderAdvTable();
+  }
+
+  async function advDetailSave(i) {
+    if (!advertisers[i]) return;
+    advertisers[i].logoUrl    = (document.getElementById('advUrl_'    + i)?.value || '').trim();
+    advertisers[i].tfManager  = (document.getElementById('advTfm_'   + i)?.value || '').trim();
+    advertisers[i].to2Manager = (document.getElementById('advTo2m_'  + i)?.value || '').trim();
+    advertisers[i].tlTo2      = (document.getElementById('advTlTo2_' + i)?.value || '').trim();
+    advertisers[i].tfId       = (document.getElementById('advTfId_'  + i)?.value || '').trim();
+    advertisers[i].to2Id      = (document.getElementById('advTo2Id_' + i)?.value || '').trim();
+    advertisers[i].geo        = (document.getElementById('advGeo_'   + i)?.value || '').trim().toUpperCase();
+    _renderAdvTable();
+    await _saveAdvertisers();
+    showToast('✓ Saved');
   }
 
   async function advStatusChange(i, value) {
