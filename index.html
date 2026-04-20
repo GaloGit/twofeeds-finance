@@ -4365,6 +4365,7 @@
       // Campaign Managers
       campaignMgrs = _applyCmOrder(_dedupeCampaignMgrs(cmRes.data || []));
       if (campaignMgrs.length > 0) _rawCache['cm'] = campaignMgrs;
+      updateHeaderAvatar();
 
       // Custom Events (notifications)
       customEvents = evRes.data || [];
