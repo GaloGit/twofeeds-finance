@@ -3167,7 +3167,15 @@
                 </div>
               </div>
             </div>
-            <div style="display:flex;justify-content:flex-end">
+            <div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px">
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Campaigns</div>
+              <div id="advCampList_${i}">${_advCampaignsHtml(a.campaigns||[],i)}</div>
+              <div style="display:flex;gap:8px;margin-top:10px">
+                <input id="advCampInput_${i}" class="editable" placeholder="Campaign name…" onkeydown="if(event.key==='Enter')advAddCampaign(${i})" style="flex:1;font-family:var(--font-mono);font-size:11px"/>
+                <button onclick="advAddCampaign(${i})" style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:5px 14px;border-radius:6px;border:1px solid var(--border);background:var(--surface3);color:var(--text);cursor:pointer">+ Add</button>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;margin-top:14px">
               <button onclick="advDetailSave(${i})" style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:0.06em;padding:6px 18px;border-radius:6px;border:1px solid var(--accent);background:rgba(124,58,237,0.18);color:var(--accent-light);cursor:pointer;transition:all 0.15s" onmouseover="this.style.background='rgba(124,58,237,0.32)'" onmouseout="this.style.background='rgba(124,58,237,0.18)'">SAVE</button>
             </div>
           </div>
@@ -3214,6 +3222,7 @@
           platform:   r['Platform']     || 'Appsflyer',
           type:       r['Type']         || 'Direct',
           status:     r['Status']       || 'live',
+          campaigns:  (() => { try { return JSON.parse(r['Campaigns'] || '[]'); } catch { return []; } })(),
         }))));
         if (raw.length > advertisers.length) _saveAdvertisers();
       } catch { advertisers = []; }
@@ -3267,6 +3276,39 @@
     _renderAdvTable();
     await _saveAdvertisers();
     showToast(value === 'live' ? '✓ Status set to Live' : '✓ Status set to Paused');
+  }
+
+  function _advCampaignsHtml(campaigns, i) {
+    if (!campaigns.length) return '<div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);padding:4px 0">No campaigns yet</div>';
+    return campaigns.map((c, j) =>
+      `<div style="display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:6px;background:var(--surface3);margin-bottom:4px">
+        <span style="flex:1;font-family:var(--font-mono);font-size:11px;color:var(--text)">${esc(c)}</span>
+        <button onclick="advRemoveCampaign(${i},${j})" style="border:none;background:transparent;color:var(--red);cursor:pointer;font-size:11px;padding:0 2px;line-height:1">✕</button>
+      </div>`
+    ).join('');
+  }
+
+  async function advAddCampaign(i) {
+    const inp = document.getElementById('advCampInput_' + i);
+    if (!inp || !advertisers[i]) return;
+    const name = inp.value.trim();
+    if (!name) return;
+    if (!Array.isArray(advertisers[i].campaigns)) advertisers[i].campaigns = [];
+    advertisers[i].campaigns.push(name);
+    inp.value = '';
+    const list = document.getElementById('advCampList_' + i);
+    if (list) list.innerHTML = _advCampaignsHtml(advertisers[i].campaigns, i);
+    await _saveAdvertisers();
+    showToast('✓ Campaign added');
+  }
+
+  async function advRemoveCampaign(i, j) {
+    if (!advertisers[i] || !Array.isArray(advertisers[i].campaigns)) return;
+    advertisers[i].campaigns.splice(j, 1);
+    const list = document.getElementById('advCampList_' + i);
+    if (list) list.innerHTML = _advCampaignsHtml(advertisers[i].campaigns, i);
+    await _saveAdvertisers();
+    showToast('✓ Campaign removed');
   }
 
   async function addAdvertiserEntry() {
@@ -4228,6 +4270,7 @@
         platform:   r['Platform']    || 'Appsflyer',
         type:       r['Type']        || 'Direct',
         status:     r['Status']      || 'live',
+        campaigns:  (() => { try { return JSON.parse(r['Campaigns'] || '[]'); } catch { return []; } })(),
       }));
       advertisers = _applyAdvOrder(_dedupeAdvertisers(advMapped));
       if (advRaw.length > advertisers.length) _saveAdvertisers();
