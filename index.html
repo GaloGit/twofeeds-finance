@@ -3084,7 +3084,7 @@
         <td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(a.tfManager||'—')}</td>
         <td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(a.to2Manager||'—')}</td>
         <td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(a.tlTo2||'—')}</td>
-        <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);white-space:nowrap">${esc(a.geo||'—')}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:5px">${esc(a.geo||'—')}${a.geo&&a.geo.length===2?countryFlagImg(a.geo,'20x15'):''}</span></td>
         <td><select id="advStatusSelect_${i}" onchange="advStatusChange(${i},this.value);_applyStatusSelectColor(this,this.value)" style="${_siStatusSelectStyle(a.status)};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none"><option value="live" ${(a.status||'live')==='live'?'selected':''}>Live</option><option value="paused" ${a.status==='paused'?'selected':''}>Paused</option></select></td>
         <td style="white-space:nowrap">
           <button onclick="toggleAdvRow(${i})" id="advExpandBtn_${i}"
@@ -3132,7 +3132,10 @@
               </div>
               <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">GEO</div>
-                <input id="advGeo_${i}" class="editable mono" value="${esc(a.geo||'')}" placeholder="US" style="width:100%;text-transform:uppercase"/>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <input id="advGeo_${i}" class="editable mono" value="${esc(a.geo||'')}" placeholder="US" maxlength="2" oninput="const f=document.getElementById('advGeoFlag_${i}');if(f)f.innerHTML=this.value.length===2?countryFlagImg(this.value.toUpperCase(),'20x15'):''" style="width:80px;text-transform:uppercase"/>
+                  <span id="advGeoFlag_${i}">${a.geo&&a.geo.length===2?countryFlagImg(a.geo,'20x15'):''}</span>
+                </div>
               </div>
             </div>
             <div style="display:flex;justify-content:flex-end">
