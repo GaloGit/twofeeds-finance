@@ -1348,6 +1348,17 @@
                 <option value="Jackson Kim">Jackson Kim</option>
               </select>
             </div>
+            <div style="flex:1;min-width:140px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">TL TO2</div>
+              <select id="advTlTo2"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;cursor:pointer">
+                <option value="">— Select —</option>
+                <option value="Daniel Ozel">Daniel Ozel</option>
+                <option value="Yoav Wertheym">Yoav Wertheym</option>
+                <option value="Pablo Castro">Pablo Castro</option>
+                <option value="Carlos Oscariz">Carlos Oscariz</option>
+              </select>
+            </div>
             <div style="flex:1;min-width:120px">
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">TF ID</div>
               <input type="text" id="advTfId" placeholder="TF-001"
@@ -1380,12 +1391,13 @@
                 <th style="width:90px">Platform</th>
                 <th>TF Manager</th>
                 <th>TO2 Manager</th>
+                <th>TL TO2</th>
                 <th style="width:90px">GEO</th>
                 <th></th>
               </tr>
             </thead>
             <tbody id="advBody">
-              <tr><td colspan="9" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>
+              <tr><td colspan="10" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>
             </tbody>
           </table>
         </div>
@@ -3062,6 +3074,7 @@
         </td>
         <td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(a.tfManager||'—')}</td>
         <td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(a.to2Manager||'—')}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(a.tlTo2||'—')}</td>
         <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);white-space:nowrap">${esc(a.geo||'—')}</td>
         <td style="white-space:nowrap">
           <button onclick="toggleAdvRow(${i})" id="advExpandBtn_${i}"
@@ -3071,7 +3084,7 @@
         </td>
       </tr>
       <tr id="advDetail_${i}" style="display:none">
-        <td colspan="9" style="padding:0">
+        <td colspan="10" style="padding:0">
           <div style="background:var(--surface2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:16px 20px">
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:14px">
               <div>
@@ -3098,6 +3111,13 @@
                 <select class="editable" onchange="advFieldChange(${i},'to2Manager',this.value)" style="width:100%;cursor:pointer">
                   <option value="" ${!a.to2Manager?'selected':''}>— Select —</option>
                   ${['Bar Riklin','Moriah Hacmun','Or Rubin','Daniel Ahituv','Shely Bar-Ad','Elad Vidal','Roie Mann','Keila Amadini','Maria Fe Carnero','Carla Pons','Sia','Lyndsey Zhao','Jackson Kim'].map(n=>`<option value="${n}" ${a.to2Manager===n?'selected':''}>${n}</option>`).join('')}
+                </select>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TL TO2</div>
+                <select class="editable" onchange="advFieldChange(${i},'tlTo2',this.value)" style="width:100%;cursor:pointer">
+                  <option value="" ${!a.tlTo2?'selected':''}>— Select —</option>
+                  ${['Daniel Ozel','Yoav Wertheym','Pablo Castro','Carlos Oscariz'].map(n=>`<option value="${n}" ${a.tlTo2===n?'selected':''}>${n}</option>`).join('')}
                 </select>
               </div>
               <div>
@@ -3154,9 +3174,10 @@
           tfId:       r['TF ID']        || '',
           to2Id:      r['TO2 ID']       || '',
           to2Manager: r['TO2 Manager']  || '',
+          tlTo2:      r['TL TO2']       || '',
           tfManager:  r['TF Manager']   || '',
           geo:        r['GEO']          || '',
-          platform:   r['Platform']     || 'DSP',
+          platform:   r['Platform']     || 'Appsflyer',
         }))));
         if (raw.length > advertisers.length) _saveAdvertisers();
       } catch { advertisers = []; }
@@ -3196,19 +3217,21 @@
     const logoUrl    = document.getElementById('advLogoUrl').value.trim();
     const tfManager  = document.getElementById('advTfManager').value.trim();
     const to2Manager = document.getElementById('advTo2Manager').value.trim();
+    const tlTo2      = document.getElementById('advTlTo2').value.trim();
     const tfId       = document.getElementById('advTfId').value.trim();
     const to2Id      = document.getElementById('advTo2Id').value.trim();
     if (!name) { showToast('⚠ Advertiser name is required', true); return; }
     const existing = advertisers.find(a => a.name.toLowerCase() === name.toLowerCase());
     if (existing) {
-      Object.assign(existing, { logoUrl, platform, geo, tfManager, to2Manager, tfId, to2Id });
+      Object.assign(existing, { logoUrl, platform, geo, tfManager, to2Manager, tlTo2, tfId, to2Id });
     } else {
-      advertisers.push({ name, logoUrl, platform, geo, tfManager, to2Manager, tfId, to2Id });
+      advertisers.push({ name, logoUrl, platform, geo, tfManager, to2Manager, tlTo2, tfId, to2Id });
     }
     _renderAdvTable();
     ['advName','advLogoUrl','advTfId','advTo2Id','advGeo'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
     document.getElementById('advTo2Manager').value = '';
     document.getElementById('advTfManager').value = '';
+    document.getElementById('advTlTo2').value = '';
     document.getElementById('advPlatform').value = 'Appsflyer';
     const fb = document.getElementById('advFormBody'), fa = document.getElementById('advFormArrow');
     if (fb) fb.style.display = 'none';
@@ -4136,6 +4159,7 @@
         tfId:       r['TF ID']       || '',
         to2Id:      r['TO2 ID']      || '',
         to2Manager: r['TO2 Manager'] || '',
+        tlTo2:      r['TL TO2']      || '',
         tfManager:  r['TF Manager']  || '',
         geo:        r['GEO']         || '',
         platform:   r['Platform']    || 'Appsflyer',
