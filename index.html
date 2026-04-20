@@ -5412,7 +5412,14 @@
       btn.style.background = 'var(--surface2)';
       btn.style.color = 'var(--muted)';
       btn.style.borderColor = 'var(--border)';
-      // Wait for any in-flight save to finish before saving order
+    }
+    // Re-render immediately so grip dots disappear on button press, not after sheet save
+    const pubTh = document.querySelector('#pubThead tr th:first-child');
+    if (pubTh) { pubTh.style.cssText = _pubOrderEditMode ? 'width:22px' : 'width:0;padding:0;overflow:hidden'; }
+    _pubInvalidateDiff();
+    renderPublishers();
+    // Save to sheet in background after UI has already updated
+    if (!_pubOrderEditMode) {
       let waited = 0;
       while (_pubSaving && waited < 30) { await new Promise(r => setTimeout(r, 100)); waited++; }
       const data = _rawCache[_pubCacheKey()] || [];
@@ -5421,10 +5428,6 @@
         showToast('✓ Order saved to sheet');
       } catch { showToast('⚠ Failed to save order', true); }
     }
-    const pubTh = document.querySelector('#pubThead tr th:first-child');
-    if (pubTh) { pubTh.style.cssText = _pubOrderEditMode ? 'width:22px' : 'width:0;padding:0;overflow:hidden'; }
-    _pubInvalidateDiff();
-    renderPublishers();
   }
 
   // ── Publisher drag-and-drop reorder ──
