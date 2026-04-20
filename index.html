@@ -487,7 +487,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.0.1</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.0.2</div>
   </div>
 </div>
 
@@ -536,7 +536,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.0.1</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.0.2</div>
   </div>
 </div>
 
@@ -577,7 +577,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
-            <span style="font-family:var(--font-mono);font-size:12px;color:var(--muted)">v5.0.1</span>
+            <span style="font-family:var(--font-mono);font-size:12px;color:var(--muted)">v5.0.2</span>
           </div>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
@@ -2803,7 +2803,30 @@
                 <input id="siTfId_${i}" class="editable" value="${esc(s.tfId||'')}" placeholder="ID..." style="width:100%"/>
               </div>
             </div>
-            <div style="display:flex;justify-content:flex-end">
+            <!-- Contacts -->
+            <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px">
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Contacts</div>
+              ${(s.contacts||[]).map((c,j) => `
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                <input class="editable" value="${esc(c.name||'')}" placeholder="Name" style="flex:1;min-width:80px" onblur="siContactUpdate(${i},${j},'name',this.value)"/>
+                <select onchange="siContactUpdate(${i},${j},'role',this.value)" style="background:var(--surface3);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;flex-shrink:0">
+                  ${['Account Manager','Team Leader','Finance'].map(r=>`<option value="${r}" ${(c.role||'Account Manager')===r?'selected':''}>${r}</option>`).join('')}
+                </select>
+                <input class="editable" value="${esc(c.email||'')}" placeholder="email@example.com" style="flex:2;min-width:120px" onblur="siContactUpdate(${i},${j},'email',this.value)"/>
+                <button onclick="siRemoveContact(${i},${j})" style="font-family:var(--font-mono);font-size:9px;border-radius:6px;cursor:pointer;padding:4px 8px;border:1px solid var(--border);background:transparent;color:var(--red);flex-shrink:0">✕</button>
+              </div>`).join('')}
+              <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+                <input id="siNewConName_${i}" class="editable" placeholder="Name" style="flex:1;min-width:80px"/>
+                <select id="siNewConRole_${i}" style="background:var(--surface3);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;flex-shrink:0">
+                  <option value="Account Manager">Account Manager</option>
+                  <option value="Team Leader">Team Leader</option>
+                  <option value="Finance">Finance</option>
+                </select>
+                <input id="siNewConEmail_${i}" class="editable" placeholder="email@example.com" style="flex:2;min-width:120px"/>
+                <button onclick="siAddContact(${i})" style="font-family:var(--font-mono);font-size:9px;font-weight:700;border-radius:6px;cursor:pointer;padding:4px 10px;border:1px solid var(--accent);background:rgba(124,58,237,0.18);color:var(--accent-light);flex-shrink:0">+ ADD</button>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;margin-top:14px">
               <button onclick="siDetailSave(${i})" style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:0.06em;padding:6px 18px;border-radius:6px;border:1px solid var(--accent);background:rgba(124,58,237,0.18);color:var(--accent-light);cursor:pointer;transition:all 0.15s" onmouseover="this.style.background='rgba(124,58,237,0.32)'" onmouseout="this.style.background='rgba(124,58,237,0.18)'">SAVE</button>
             </div>
           </div>
@@ -2967,6 +2990,41 @@
     showToast('✓ Saved');
   }
 
+  async function siAddContact(i) {
+    if (!sourcesInfo[i]) return;
+    const name  = (document.getElementById('siNewConName_' + i)?.value || '').trim();
+    const role  = document.getElementById('siNewConRole_' + i)?.value || 'Account Manager';
+    const email = (document.getElementById('siNewConEmail_' + i)?.value || '').trim();
+    if (!name && !email) { showToast('⚠ Enter a name or email', true); return; }
+    if (!sourcesInfo[i].contacts) sourcesInfo[i].contacts = [];
+    sourcesInfo[i].contacts.push({ name, role, email });
+    _renderSiTable();
+    const det = document.getElementById('siDetail_' + i);
+    const btn = document.getElementById('siExpandBtn_' + i);
+    if (det) { det.style.display = 'table-row'; if (btn) btn.textContent = '▴'; }
+    await _saveSourcesInfo();
+    showToast('✓ Contact added');
+  }
+
+  async function siRemoveContact(i, j) {
+    if (!sourcesInfo[i]?.contacts) return;
+    sourcesInfo[i].contacts.splice(j, 1);
+    _renderSiTable();
+    const det = document.getElementById('siDetail_' + i);
+    const btn = document.getElementById('siExpandBtn_' + i);
+    if (det) { det.style.display = 'table-row'; if (btn) btn.textContent = '▴'; }
+    await _saveSourcesInfo();
+    showToast('✓ Contact removed');
+  }
+
+  async function siContactUpdate(i, j, field, value) {
+    if (!sourcesInfo[i]?.contacts?.[j]) return;
+    const trimmed = value.trim();
+    if (sourcesInfo[i].contacts[j][field] === trimmed) return;
+    sourcesInfo[i].contacts[j][field] = trimmed;
+    await _saveSourcesInfo();
+  }
+
   async function addSourcesInfoEntry() {
     const name       = document.getElementById('siName').value.trim();
     const type       = document.getElementById('siType').value;
@@ -2979,7 +3037,7 @@
     if (!name) { showToast('⚠ Source name is required', true); return; }
     const existing = sourcesInfo.find(s => s.name.toLowerCase() === name.toLowerCase());
     if (existing) { existing.logoUrl = logoUrl; existing.type = type; existing.status = status; existing.tfManager = tfManager; existing.to2Manager = to2Manager; existing.contact = contact; existing.country = country; existing.to2Id = ''; existing.externalId = ''; existing.tfId = ''; }
-    else { sourcesInfo.push({ name, type, status, logoUrl, tfManager, to2Manager, contact, country, to2Id: '', externalId: '', tfId: '' }); }
+    else { sourcesInfo.push({ name, type, status, logoUrl, tfManager, to2Manager, contact, country, to2Id: '', externalId: '', tfId: '', contacts: [] }); }
     _buildSourcesMap();
     _renderSiTable();
     document.getElementById('siName').value = '';
