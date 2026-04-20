@@ -2069,6 +2069,7 @@
     { key:'logo',       label:'Logo'       },
     { key:'name',       label:'Name'       },
     { key:'platform',   label:'Platform'   },
+    { key:'type',       label:'Type'       },
     { key:'tfManager',  label:'TF Manager' },
     { key:'to2Manager', label:'TO2 Mgr'    },
     { key:'tlTo2',      label:'TL TO2'     },
@@ -3094,6 +3095,7 @@
           case 'logo':       return `<td style="padding:6px 12px">${logoHtml}</td>`;
           case 'name':       return `<td style="min-width:140px;white-space:nowrap"><input class="editable" value="${esc(a.name)}" onblur="advNameConfirm(${i},this.value)" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape'){this.value='${esc(a.name)}';this.blur();}" style="font-family:var(--font-mono);font-size:12px;font-weight:600;width:100%"/></td>`;
           case 'platform':   return `<td><select onchange="advFieldChange(${i},'platform',this.value);this.style.cssText+=';${_advPlatformStyle(a.platform||'Appsflyer')}'" style="${platStyle};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none">${_ADV_PLATFORMS.map(t=>`<option value="${t}" ${(a.platform||'Appsflyer')===t?'selected':''}>${t}</option>`).join('')}</select></td>`;
+          case 'type':       return `<td><select onchange="advFieldChange(${i},'type',this.value)" style="${(a.type||'Direct')==='Agency'?'background:rgba(245,158,11,0.15);color:#f59e0b;border-color:rgba(245,158,11,0.45)':'background:rgba(56,189,248,0.13);color:#38bdf8;border-color:rgba(56,189,248,0.45)'};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none"><option value="Direct" ${(a.type||'Direct')==='Direct'?'selected':''}>Direct</option><option value="Agency" ${a.type==='Agency'?'selected':''}>Agency</option></select></td>`;
           case 'tfManager':  return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(a.tfManager||'—')}</td>`;
           case 'to2Manager': return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(a.to2Manager||'—')}</td>`;
           case 'tlTo2':      return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(a.tlTo2||'—')}</td>`;
@@ -3120,6 +3122,13 @@
               <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Logo URL</div>
                 <input id="advUrl_${i}" class="editable" value="${esc(a.logoUrl||'')}" placeholder="Paste image or Drive URL" style="width:100%"/>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Type</div>
+                <select id="advType_${i}" class="editable" style="width:100%;cursor:pointer">
+                  <option value="Direct" ${(a.type||'Direct')==='Direct'?'selected':''}>Direct</option>
+                  <option value="Agency" ${a.type==='Agency'?'selected':''}>Agency</option>
+                </select>
               </div>
               <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TF Manager</div>
@@ -3203,6 +3212,7 @@
           tfManager:  r['TF Manager']   || '',
           geo:        r['GEO']          || '',
           platform:   r['Platform']     || 'Appsflyer',
+          type:       r['Type']         || 'Direct',
           status:     r['Status']       || 'live',
         }))));
         if (raw.length > advertisers.length) _saveAdvertisers();
@@ -3239,6 +3249,7 @@
   async function advDetailSave(i) {
     if (!advertisers[i]) return;
     advertisers[i].logoUrl    = (document.getElementById('advUrl_'    + i)?.value || '').trim();
+    advertisers[i].type       = (document.getElementById('advType_'  + i)?.value || 'Direct').trim();
     advertisers[i].tfManager  = (document.getElementById('advTfm_'   + i)?.value || '').trim();
     advertisers[i].to2Manager = (document.getElementById('advTo2m_'  + i)?.value || '').trim();
     advertisers[i].tlTo2      = (document.getElementById('advTlTo2_' + i)?.value || '').trim();
@@ -4215,6 +4226,7 @@
         tfManager:  r['TF Manager']  || '',
         geo:        r['GEO']         || '',
         platform:   r['Platform']    || 'Appsflyer',
+        type:       r['Type']        || 'Direct',
         status:     r['Status']      || 'live',
       }));
       advertisers = _applyAdvOrder(_dedupeAdvertisers(advMapped));
