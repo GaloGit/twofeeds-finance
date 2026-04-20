@@ -4016,42 +4016,42 @@
     startCountdown();
   }
 
-  // Fetch all tab data in parallel and store in _rawCache so tab switches are instant
+  // Fetch all tab data in parallel and store in _rawCache so tab switches are instant.
+  // Two-phase await: fire all 10 requests simultaneously, but render publishers the moment
+  // the 3 critical ones finish — don't block on background data (meetings, tasks, etc.)
   async function prefetchAllData() {
     const pk = periodKey();
-    try {
-      const [pubData, invData, mbData, cmRes, siRes, evRes, mtgRes, tskRes, tktRes, advRes] = await Promise.all([
-        fetchPeriodData('getPublishers').catch(() => []),
-        fetchPeriodData('getInvoices').catch(() => []),
-        fetchPeriodData('getMediaBuying').catch(() => []),
-        fetch(`${FINANCE_API}?action=getCampaignMgrs`).then(r => r.json()).catch(() => ({ data: [] })),
-        fetch(`${FINANCE_API}?action=getSourcesInfo`).then(r => r.json()).catch(() => ({ data: [] })),
-        fetch(`${FINANCE_API}?action=getEvents`).then(r => r.json()).catch(() => ({ data: [] })),
-        fetch(`${FINANCE_API}?action=getMeetings`).then(r => r.json()).catch(() => ({ data: [] })),
-        fetch(`${FINANCE_API}?action=getTasks`).then(r => r.json()).catch(() => ({ data: [] })),
-        fetch(`${FINANCE_API}?action=getTickets`).then(r => r.json()).catch(() => ({ data: [] })),
-        fetch(`${FINANCE_API}?action=getAdvertisers`).then(r => r.json()).catch(() => ({ data: [] })),
-      ]);
 
-      // Publishers — deduplicate sheet rows by name+platform (keep last occurrence;
-      // stale duplicates accumulate when old saves ran before the timezone fix)
+    // Fire ALL requests at once so nothing waits in the queue
+    const pubPromise = fetchPeriodData('getPublishers').catch(() => []);
+    const invPromise = fetchPeriodData('getInvoices').catch(() => []);
+    const mbPromise  = fetchPeriodData('getMediaBuying').catch(() => []);
+    const cmPromise  = fetch(`${FINANCE_API}?action=getCampaignMgrs`).then(r => r.json()).catch(() => ({ data: [] }));
+    const siPromise  = fetch(`${FINANCE_API}?action=getSourcesInfo`).then(r => r.json()).catch(() => ({ data: [] }));
+    const evPromise  = fetch(`${FINANCE_API}?action=getEvents`).then(r => r.json()).catch(() => ({ data: [] }));
+    const mtgPromise = fetch(`${FINANCE_API}?action=getMeetings`).then(r => r.json()).catch(() => ({ data: [] }));
+    const tskPromise = fetch(`${FINANCE_API}?action=getTasks`).then(r => r.json()).catch(() => ({ data: [] }));
+    const tktPromise = fetch(`${FINANCE_API}?action=getTickets`).then(r => r.json()).catch(() => ({ data: [] }));
+    const advPromise = fetch(`${FINANCE_API}?action=getAdvertisers`).then(r => r.json()).catch(() => ({ data: [] }));
+
+    // ── Phase 1: render the visible Publishers tab as soon as its data arrives ──
+    try {
+      const [pubData, invData, mbData] = await Promise.all([pubPromise, invPromise, mbPromise]);
+
+      // Publishers — deduplicate sheet rows by name+platform
       const _pubSeenKeys = {};
       pubData.forEach((r, i) => {
         const k = (r['Publisher Name']||'').trim().toLowerCase() + '||' + (r['Platform']||'').trim().toLowerCase();
-        _pubSeenKeys[k] = i; // last index wins
+        _pubSeenKeys[k] = i;
       });
       const _dedupedPubData = pubData.filter((r, i) => {
         const k = (r['Publisher Name']||'').trim().toLowerCase() + '||' + (r['Platform']||'').trim().toLowerCase();
         return _pubSeenKeys[k] === i;
       });
       _rawCache['pub_' + pk] = _dedupedPubData.map((r, idx) => ({
-        id: idx,
-        name: r['Publisher Name'] || '',
-        platform: r['Platform'] || '',
-        amount: parseFloat(r['Amount']) || 0,
-        notes: r['Notes'] || '',
-        approval: r['Approval'] || '',
-        payStatus: r['Pay Status'] || 'waiting',
+        id: idx, name: r['Publisher Name']||'', platform: r['Platform']||'',
+        amount: parseFloat(r['Amount'])||0, notes: r['Notes']||'',
+        approval: r['Approval']||'', payStatus: r['Pay Status']||'waiting',
       }));
 
       // Invoices (with date normalisation)
@@ -4076,13 +4076,27 @@
         id: idx, dsp: r['DSP']||'', geo: r['GEO']||'', cpc: parseFloat(r['CPC'])||0,
       }));
 
-      // Raw API rows for Cost Summary (reuses same responses — use deduped data)
+      // Raw rows for Cost Summary
       _rawCache['pub_' + pk + '_raw'] = _dedupedPubData;
       _rawCache['inv_' + pk + '_raw'] = invData;
 
-      // Campaign Managers (no period — global list)
+      // Render critical tabs immediately
+      renderPublishers();
+      renderInvoices();
+      renderMediaBuying();
+      renderCostSummary();
+      updateHeaderAvatar();
+    } catch { /* publishers tab will fall back to its own fetch */ }
+
+    // ── Phase 2: background data (already in-flight — no extra wait cost) ──
+    try {
+      const [cmRes, siRes, evRes, mtgRes, tskRes, tktRes, advRes] = await Promise.all([
+        cmPromise, siPromise, evPromise, mtgPromise, tskPromise, tktPromise, advPromise
+      ]);
+
+      // Campaign Managers
       campaignMgrs = _applyCmOrder(_dedupeCampaignMgrs(cmRes.data || []));
-      if (campaignMgrs.length > 0) _rawCache['cm'] = campaignMgrs; // only cache if data arrived
+      if (campaignMgrs.length > 0) _rawCache['cm'] = campaignMgrs;
 
       // Custom Events (notifications)
       customEvents = evRes.data || [];
@@ -4093,7 +4107,7 @@
       sourcesInfo = _applySiOrder(_dedupeSourcesInfo(siRaw));
       if (sourcesInfo.length > 0) {
         _buildSourcesMap();
-        if (siRaw.length > sourcesInfo.length) _saveSourcesInfo(); // clean up sheet duplicates
+        if (siRaw.length > sourcesInfo.length) _saveSourcesInfo();
       }
 
       // Advertisers
@@ -4106,45 +4120,38 @@
         to2Manager: r['TO2 Manager'] || '',
         tfManager:  r['TF Manager']  || '',
         geo:        r['GEO']         || '',
-        platform:   r['Platform']    || 'DSP',
+        platform:   r['Platform']    || 'Appsflyer',
       }));
       advertisers = _applyAdvOrder(_dedupeAdvertisers(advMapped));
       if (advRaw.length > advertisers.length) _saveAdvertisers();
 
-      // Operations — load at login so notifications are ready immediately
+      // Operations
       meetings = (mtgRes.data || []).map(r => ({
-        id: r['ID'] || _uid(), title: r['Title'] || '', date: r['Date'] || '',
-        time: r['Time'] || '', attendees: r['Attendees'] || '',
-        status: r['Status'] || 'scheduled', notes: r['Notes'] || '', created: r['Created'] || '',
+        id: r['ID']||_uid(), title: r['Title']||'', date: r['Date']||'',
+        time: r['Time']||'', attendees: r['Attendees']||'',
+        status: r['Status']||'scheduled', notes: r['Notes']||'', created: r['Created']||'',
       }));
       tasks = (tskRes.data || []).map(r => ({
-        id: r['ID'] || _uid(), title: r['Title'] || '', assignee: r['Assignee'] || '',
-        dueDate: r['Due Date'] || '', priority: r['Priority'] || 'medium',
-        status: r['Status'] || 'todo', notes: r['Notes'] || '', created: r['Created'] || '',
+        id: r['ID']||_uid(), title: r['Title']||'', assignee: r['Assignee']||'',
+        dueDate: r['Due Date']||'', priority: r['Priority']||'medium',
+        status: r['Status']||'todo', notes: r['Notes']||'', created: r['Created']||'',
       }));
       tickets = (tktRes.data || []).map(r => ({
-        id: r['ID'] || _uid(), title: r['Title'] || '', reporter: r['Reporter'] || '',
-        assignee: r['Assignee'] || '', dueDate: r['Due Date'] || '',
-        priority: r['Priority'] || 'medium',
-        status: r['Status'] || 'open', description: r['Description'] || '', created: r['Created'] || '',
+        id: r['ID']||_uid(), title: r['Title']||'', reporter: r['Reporter']||'',
+        assignee: r['Assignee']||'', dueDate: r['Due Date']||'',
+        priority: r['Priority']||'medium',
+        status: r['Status']||'open', description: r['Description']||'', created: r['Created']||'',
       }));
-      _opsLoaded = true;  // prevent _loadOpsData from re-fetching on first section switch
+      _opsLoaded = true;
 
-    } catch { /* silent — individual tabs will fall back to their own fetch */ }
-
-    // Pre-render ALL tab DOMs in the background so switching is instant
-    renderMeetings();
-    renderTasks();
-    renderTickets();
-    renderPublishers();
-    renderInvoices();
-    renderMediaBuying();
-    renderCostSummary();
-    _renderCmTable();
-
-    // Show avatar if logged-in user is a campaign manager
-    updateHeaderAvatar();
-    _updateNotifBadge();
+      // Re-render publishers now that sourcesMap + campaignMgrs are ready (adds logos)
+      renderPublishers();
+      renderMeetings();
+      renderTasks();
+      renderTickets();
+      _renderCmTable();
+      _updateNotifBadge();
+    } catch { /* background data — tabs will fetch on demand if needed */ }
   }
 
   // ── NOTIFICATIONS ────────────────────────────────────────────────────────────
