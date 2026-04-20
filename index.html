@@ -2096,7 +2096,7 @@
     const r = btn.getBoundingClientRect();
     panel.style.top = (r.bottom + 6) + 'px';
     panel.style.left = r.left + 'px';
-    panel.innerHTML = '<div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;padding:2px 4px 8px;margin-bottom:6px;border-bottom:1px solid var(--border)">Columns</div><div id="_colList"></div><div style="border-top:1px solid var(--border);margin-top:6px;padding-top:6px"><button onclick="_resetCols(\'' + table + '\')" style="font-family:var(--font-mono);font-size:9px;color:var(--muted);background:transparent;border:none;cursor:pointer;width:100%;text-align:left;padding:2px 4px">↺ Reset to default</button></div>';
+    panel.innerHTML = '<div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;padding:2px 4px 8px;margin-bottom:6px;border-bottom:1px solid var(--border)">Columns</div><div id="_colList" style="max-height:260px;overflow-y:auto"></div><div style="border-top:1px solid var(--border);margin-top:6px;padding-top:6px"><button onclick="_resetCols(\'' + table + '\')" style="font-family:var(--font-mono);font-size:9px;color:var(--muted);background:transparent;border:none;cursor:pointer;width:100%;text-align:left;padding:2px 4px">↺ Reset to default</button></div>';
     document.body.appendChild(panel);
     _refreshColList(table);
     setTimeout(() => document.addEventListener('click', _colPanelOutside), 10);
