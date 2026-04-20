@@ -5790,7 +5790,8 @@
   let _invDragFrom = null;
 
   function _saveInvOrder() {
-    const keys = invoices.map(inv => (inv.invoiceNum || inv.vendor || inv.filename || '').trim().toLowerCase());
+    const data = _rawCache['inv_' + periodKey()] || [];
+    const keys = data.map(inv => (inv.invoiceNum || inv.vendor || inv.filename || '').trim().toLowerCase());
     localStorage.setItem('tf_inv_order', JSON.stringify(keys));
   }
   function _applyInvOrder(arr) {
@@ -5859,9 +5860,11 @@
     e.preventDefault();
     document.querySelectorAll('#invBody tr').forEach(r => { r.draggable = false; r.style.outline = ''; r.style.opacity = ''; });
     if (_invDragFrom === null || _invDragFrom === toI) { _invDragFrom = null; return; }
-    const moved = invoices.splice(_invDragFrom, 1)[0];
-    invoices.splice(toI, 0, moved);
+    const data = _rawCache['inv_' + periodKey()] || [];
+    const moved = data.splice(_invDragFrom, 1)[0];
+    data.splice(toI, 0, moved);
     _invDragFrom = null;
+    delete _cache['inv_' + periodKey()];
     renderInvoices();
   }
 
