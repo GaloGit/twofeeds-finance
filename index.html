@@ -3328,10 +3328,9 @@
     return hdr + rows;
   }
 
-  async function advCampField(i, j, field, value) {
+  function advCampField(i, j, field, value) {
     if (!advertisers[i] || !advertisers[i].campaigns[j]) return;
     advertisers[i].campaigns[j][field] = value;
-    await _saveAdvertisers();
   }
 
   async function advCampSetUrl(i, j, url) {
@@ -3354,11 +3353,9 @@
     }
     const list = document.getElementById('advCampList_' + i);
     if (list) list.innerHTML = _advCampaignsHtml(advertisers[i].campaigns, i);
-    await _saveAdvertisers();
-    showToast('✓ URL saved');
   }
 
-  async function advAddCampaign(i) {
+  function advAddCampaign(i) {
     const inp = document.getElementById('advCampInput_' + i);
     if (!inp || !advertisers[i]) return;
     const name = inp.value.trim();
@@ -3368,17 +3365,13 @@
     inp.value = '';
     const list = document.getElementById('advCampList_' + i);
     if (list) list.innerHTML = _advCampaignsHtml(advertisers[i].campaigns, i);
-    await _saveAdvertisers();
-    showToast('✓ Campaign added');
   }
 
-  async function advRemoveCampaign(i, j) {
+  function advRemoveCampaign(i, j) {
     if (!advertisers[i] || !Array.isArray(advertisers[i].campaigns)) return;
     advertisers[i].campaigns.splice(j, 1);
     const list = document.getElementById('advCampList_' + i);
     if (list) list.innerHTML = _advCampaignsHtml(advertisers[i].campaigns, i);
-    await _saveAdvertisers();
-    showToast('✓ Campaign removed');
   }
 
   async function addAdvertiserEntry() {
