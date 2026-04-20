@@ -2682,7 +2682,7 @@
         }
       }).join('');
       return `
-      <tr id="siRow_${i}" ondragstart="siDragStart(event,${i})" ondragover="siDragOver(event,${i})" ondrop="siDrop(event,${i})" ondragleave="siDragLeave(event)" ondragend="siDragEnd(event)" style="${isPaused ? 'opacity:0.55;animation:none' : ''}">
+      <tr id="siRow_${i}" ondragstart="siDragStart(event,${i})" ondragover="siDragOver(event,${i})" ondrop="siDrop(event,${i})" ondragleave="siDragLeave(event)" ondragend="siDragEnd(event)" onclick="if(!event.target.closest('button,input,select,a'))toggleSiRow(${i})" style="cursor:pointer;${isPaused ? 'opacity:0.55;animation:none' : ''}">
         <td onmousedown="siGripDown(event,${i})" onmouseup="siGripUp()" style="cursor:${_siOrderEditMode?'grab':'default'};color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center;visibility:${_siOrderEditMode?'visible':'hidden'}">⠿</td>
         ${cells}
         <td style="white-space:nowrap">
@@ -3105,7 +3105,7 @@
         }
       }).join('');
       return `
-      <tr id="advRow_${i}" ondragstart="advDragStart(event,${i})" ondragover="advDragOver(event,${i})" ondrop="advDrop(event,${i})" ondragleave="advDragLeave(event)" ondragend="advDragEnd(event)" style="${isPaused ? 'opacity:0.55;animation:none' : ''}">
+      <tr id="advRow_${i}" ondragstart="advDragStart(event,${i})" ondragover="advDragOver(event,${i})" ondrop="advDrop(event,${i})" ondragleave="advDragLeave(event)" ondragend="advDragEnd(event)" onclick="if(!event.target.closest('button,input,select,a'))toggleAdvRow(${i})" style="cursor:pointer;${isPaused ? 'opacity:0.55;animation:none' : ''}">
         <td onmousedown="advGripDown(event,${i})" onmouseup="advGripUp()" style="cursor:${_advOrderEditMode?'grab':'default'};color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center;visibility:${_advOrderEditMode?'visible':'hidden'}">⠿</td>
         ${dataCells}
         <td style="white-space:nowrap">
