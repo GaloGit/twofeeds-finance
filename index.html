@@ -693,9 +693,9 @@
         <div class="table-wrap">
           <div class="table-scroll">
           <table>
-            <thead>
+            <thead id="pubThead">
               <tr>
-                <th style="width:22px"></th>
+                <th style="width:0;padding:0;overflow:hidden"></th>
                 <th class="th-hash">#</th>
                 <th>Publisher Name</th>
                 <th>Platform</th>
@@ -5205,7 +5205,7 @@
       const approvalText = `${shortName} Numbers Approval mail ${_approvalPeriod}`;
       return `
       <tr id="pubRow_${i}" draggable="${canDrag}" ondragstart="pubDragStart(event,${i})" ondragover="pubDragOver(event,${i})" ondrop="pubDrop(event,${i})" ondragleave="pubDragLeave(event)" ondragend="pubDragEnd(event)" style="animation-delay:${i*0.03}s">
-        <td style="cursor:${canDrag?'grab':'default'};color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center;opacity:${canDrag?'0.45':'0'}">⠿</td>
+        <td style="${canDrag?'cursor:grab;color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center':'width:0;padding:0;font-size:0;overflow:hidden'}">${canDrag?'⠿':''}</td>
         <td class="row-num">${i+1}</td>
         <td><div style="display:flex;align-items:center;gap:8px">${getSourceLogo(p.name,26)}${getSourceTypeBadge(p.name)}<input class="editable" value="${esc(p.name)}" onblur="updatePub('${p.id}','name',this.value)" placeholder="Publisher name" style="min-width:0;flex:1"/></div></td>
         <td><input class="editable" value="${esc(p.platform)}" onblur="updatePub('${p.id}','platform',this.value)" placeholder="Platform" style="width:120px"/></td>
@@ -5421,6 +5421,8 @@
         showToast('✓ Order saved to sheet');
       } catch { showToast('⚠ Failed to save order', true); }
     }
+    const pubTh = document.querySelector('#pubThead tr th:first-child');
+    if (pubTh) { pubTh.style.cssText = _pubOrderEditMode ? 'width:22px' : 'width:0;padding:0;overflow:hidden'; }
     _pubInvalidateDiff();
     renderPublishers();
   }
