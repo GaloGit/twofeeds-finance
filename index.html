@@ -3222,7 +3222,7 @@
           platform:   r['Platform']     || 'Appsflyer',
           type:       r['Type']         || 'Direct',
           status:     r['Status']       || 'live',
-          campaigns:  (() => { try { return (JSON.parse(r['Campaigns'] || '[]')).map(c => typeof c === 'string' ? { name: c, to2Status: 'live', tfStatus: 'live', notes: '' } : c); } catch { return []; } })(),
+          campaigns:  (() => { try { return (JSON.parse(r['Campaigns'] || '[]')).map(c => typeof c === 'string' ? { name: c, to2Status: 'live', tfStatus: 'live', notes: '', url: '', iconUrl: '', big: false, ctv: false } : { url: '', iconUrl: '', big: false, ctv: false, ...c }); } catch { return []; } })(),
         }))));
         if (raw.length > advertisers.length) _saveAdvertisers();
       } catch { advertisers = []; }
@@ -3280,11 +3280,12 @@
 
   function _advCampaignsHtml(campaigns, i) {
     if (!campaigns.length) return '<div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);padding:4px 0">No campaigns yet</div>';
-    const hdr = `<div style="display:grid;grid-template-columns:1.5fr 90px 90px 2fr 20px;gap:8px;padding:3px 10px;margin-bottom:4px">
+    const hdr = `<div style="display:grid;grid-template-columns:1.5fr 90px 90px 2fr 80px 20px;gap:8px;padding:3px 10px;margin-bottom:4px">
       <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em">Campaign</span>
       <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em">TO2 Status</span>
       <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em">TF Status</span>
       <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em">Notes</span>
+      <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em">Flags</span>
       <span></span>
     </div>`;
     const rows = campaigns.map((c, j) => {
@@ -3293,7 +3294,7 @@
       const iconHtml = c.iconUrl
         ? `<img src="${esc(c.iconUrl)}" style="width:28px;height:28px;border-radius:6px;object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">`
         : `<div style="width:28px;height:28px;border-radius:6px;background:var(--surface2);flex-shrink:0"></div>`;
-      return `<div style="display:grid;grid-template-columns:1.5fr 90px 90px 2fr 20px;gap:8px;align-items:center;padding:6px 10px;border-radius:6px;background:var(--surface3);margin-bottom:4px">
+      return `<div style="display:grid;grid-template-columns:1.5fr 90px 90px 2fr 80px 20px;gap:8px;align-items:center;padding:6px 10px;border-radius:6px;background:var(--surface3);margin-bottom:4px">
         <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
           <div style="display:flex;align-items:center;gap:8px">${iconHtml}<span style="font-family:var(--font-mono);font-size:11px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.name||'')}</span></div>
           <input value="${esc(c.url||'')}" onblur="advCampSetUrl(${i},${j},this.value)" placeholder="App Store URL…" style="font-family:var(--font-mono);font-size:9px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--muted);width:100%;box-sizing:border-box"/>
@@ -3307,6 +3308,16 @@
           <option value="paused" ${tfSt==='paused'?'selected':''}>Paused</option>
         </select>
         <input value="${esc(c.notes||'')}" onblur="advCampField(${i},${j},'notes',this.value)" placeholder="Notes…" style="font-family:var(--font-mono);font-size:11px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 8px;color:var(--text);width:100%;box-sizing:border-box"/>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <label style="display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none">
+            <input type="checkbox" ${c.big?'checked':''} onchange="advCampField(${i},${j},'big',this.checked)" style="cursor:pointer;width:14px;height:14px;accent-color:var(--accent)">
+            <span style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:${c.big?'var(--accent-light)':'var(--muted)'}">BIG</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none">
+            <input type="checkbox" ${c.ctv?'checked':''} onchange="advCampField(${i},${j},'ctv',this.checked)" style="cursor:pointer;width:14px;height:14px;accent-color:var(--accent)">
+            <span style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:${c.ctv?'var(--accent-light)':'var(--muted)'}">CTV</span>
+          </label>
+        </div>
         <button onclick="advRemoveCampaign(${i},${j})" style="border:none;background:transparent;color:var(--red);cursor:pointer;font-size:11px;padding:0;line-height:1;text-align:center">✕</button>
       </div>`;
     }).join('');
@@ -3349,7 +3360,7 @@
     const name = inp.value.trim();
     if (!name) return;
     if (!Array.isArray(advertisers[i].campaigns)) advertisers[i].campaigns = [];
-    advertisers[i].campaigns.push({ name, to2Status: 'live', tfStatus: 'live', notes: '', url: '', iconUrl: '' });
+    advertisers[i].campaigns.push({ name, to2Status: 'live', tfStatus: 'live', notes: '', url: '', iconUrl: '', big: false, ctv: false });
     inp.value = '';
     const list = document.getElementById('advCampList_' + i);
     if (list) list.innerHTML = _advCampaignsHtml(advertisers[i].campaigns, i);
@@ -4325,7 +4336,7 @@
         platform:   r['Platform']    || 'Appsflyer',
         type:       r['Type']        || 'Direct',
         status:     r['Status']      || 'live',
-        campaigns:  (() => { try { return JSON.parse(r['Campaigns'] || '[]'); } catch { return []; } })(),
+        campaigns:  (() => { try { return (JSON.parse(r['Campaigns'] || '[]')).map(c => typeof c === 'string' ? { name: c, to2Status: 'live', tfStatus: 'live', notes: '', url: '', iconUrl: '', big: false, ctv: false } : { url: '', iconUrl: '', big: false, ctv: false, ...c }); } catch { return []; } })(),
       }));
       advertisers = _applyAdvOrder(_dedupeAdvertisers(advMapped));
       if (advRaw.length > advertisers.length) _saveAdvertisers();
