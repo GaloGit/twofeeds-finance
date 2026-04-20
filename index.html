@@ -3125,7 +3125,7 @@
               </div>
               <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Type</div>
-                <select id="advType_${i}" class="editable" style="width:100%;cursor:pointer">
+                <select id="advType_${i}" class="editable" onchange="if(advertisers[${i}])advertisers[${i}].type=this.value" style="width:100%;cursor:pointer">
                   <option value="Direct" ${(a.type||'Direct')==='Direct'?'selected':''}>Direct</option>
                   <option value="Agency" ${a.type==='Agency'?'selected':''}>Agency</option>
                 </select>
