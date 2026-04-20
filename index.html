@@ -3222,7 +3222,7 @@
           platform:   r['Platform']     || 'Appsflyer',
           type:       r['Type']         || 'Direct',
           status:     r['Status']       || 'live',
-          campaigns:  (() => { try { return (JSON.parse(r['Campaigns'] || '[]')).map(c => typeof c === 'string' ? { name: c, to2Status: 'live', tfStatus: 'live', notes: '', url: '', iconUrl: '', big: false, ctv: false } : { url: '', iconUrl: '', big: false, ctv: false, ...c }); } catch { return []; } })(),
+          campaigns:  (() => { try { return (JSON.parse(r['Campaigns'] || '[]')).map(c => typeof c === 'string' ? { name: c, to2Status: 'live', tfStatus: 'live', notes: '', url: '', iconUrl: '', big: false, ctv: false, inct: false } : { url: '', iconUrl: '', big: false, ctv: false, inct: false, ...c }); } catch { return []; } })(),
         }))));
         if (raw.length > advertisers.length) _saveAdvertisers();
       } catch { advertisers = []; }
@@ -3317,6 +3317,10 @@
             <input type="checkbox" ${c.ctv?'checked':''} onchange="advCampField(${i},${j},'ctv',this.checked)" style="cursor:pointer;width:14px;height:14px;accent-color:var(--accent)">
             <span style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:${c.ctv?'var(--accent-light)':'var(--muted)'}">CTV</span>
           </label>
+          <label style="display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none">
+            <input type="checkbox" ${c.inct?'checked':''} onchange="advCampField(${i},${j},'inct',this.checked)" style="cursor:pointer;width:14px;height:14px;accent-color:var(--accent)">
+            <span style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:${c.inct?'var(--accent-light)':'var(--muted)'}">INCT</span>
+          </label>
         </div>
         <button onclick="advRemoveCampaign(${i},${j})" style="border:none;background:transparent;color:var(--red);cursor:pointer;font-size:11px;padding:0;line-height:1;text-align:center">✕</button>
       </div>`;
@@ -3360,7 +3364,7 @@
     const name = inp.value.trim();
     if (!name) return;
     if (!Array.isArray(advertisers[i].campaigns)) advertisers[i].campaigns = [];
-    advertisers[i].campaigns.push({ name, to2Status: 'live', tfStatus: 'live', notes: '', url: '', iconUrl: '', big: false, ctv: false });
+    advertisers[i].campaigns.push({ name, to2Status: 'live', tfStatus: 'live', notes: '', url: '', iconUrl: '', big: false, ctv: false, inct: false });
     inp.value = '';
     const list = document.getElementById('advCampList_' + i);
     if (list) list.innerHTML = _advCampaignsHtml(advertisers[i].campaigns, i);
@@ -4336,7 +4340,7 @@
         platform:   r['Platform']    || 'Appsflyer',
         type:       r['Type']        || 'Direct',
         status:     r['Status']      || 'live',
-        campaigns:  (() => { try { return (JSON.parse(r['Campaigns'] || '[]')).map(c => typeof c === 'string' ? { name: c, to2Status: 'live', tfStatus: 'live', notes: '', url: '', iconUrl: '', big: false, ctv: false } : { url: '', iconUrl: '', big: false, ctv: false, ...c }); } catch { return []; } })(),
+        campaigns:  (() => { try { return (JSON.parse(r['Campaigns'] || '[]')).map(c => typeof c === 'string' ? { name: c, to2Status: 'live', tfStatus: 'live', notes: '', url: '', iconUrl: '', big: false, ctv: false, inct: false } : { url: '', iconUrl: '', big: false, ctv: false, inct: false, ...c }); } catch { return []; } })(),
       }));
       advertisers = _applyAdvOrder(_dedupeAdvertisers(advMapped));
       if (advRaw.length > advertisers.length) _saveAdvertisers();
