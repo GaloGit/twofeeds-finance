@@ -2448,7 +2448,7 @@
       tr.style.filter    = newStatus === 'live' ? '' : 'grayscale(0.3)';
       tr.style.animation = newStatus === 'live' ? '' : 'none';
     }
-    _saveCampaignMgrs().then(() => showToast(`✓ ${campaignMgrs[i].name} → ${newStatus}`));
+    _saveCampaignMgrs().then(ok => { if (ok) showToast(`✓ ${campaignMgrs[i].name} → ${newStatus}`); });
     logActivity('cm_status', `${campaignMgrs[i].name} set to ${newStatus}`);
   }
 
@@ -2462,7 +2462,7 @@
       btn.style.borderColor = 'var(--accent)';
     } else {
       _saveCmOrder();
-      _saveCampaignMgrs().then(() => showToast('✓ Order saved to sheet'));
+      _saveCampaignMgrs().then(ok => { if (ok) showToast('✓ Order saved to sheet'); });
       btn.textContent = '↕ Edit Order';
       btn.style.background = 'var(--surface2)';
       btn.style.color = 'var(--muted)';
@@ -2564,8 +2564,7 @@
     const formArrow = document.getElementById('cmFormArrow');
     if (formBody) { formBody.style.display = 'none'; }
     if (formArrow) { formArrow.style.transform = ''; }
-    await _saveCampaignMgrs();
-    showToast('✓ Team member added');
+    if (await _saveCampaignMgrs()) showToast('✓ Team member added');
     logActivity('add_campaign_mgr', `Added ${name} · ${role} (${status})`);
   }
 
@@ -2613,19 +2612,22 @@
     campaignMgrs.splice(i, 1);
     _saveCmOrder(); // update saved order after deletion
     _renderCmTable();
-    await _saveCampaignMgrs();
-    showToast('✓ Removed');
+    if (await _saveCampaignMgrs()) showToast('✓ Removed');
     logActivity('delete_campaign_mgr', `Deleted ${name}`);
   }
 
   async function _saveCampaignMgrs() {
     _invalidateCmCache(); // force re-render on next write, keep rawCache current
     try {
-      await fetch(FINANCE_API, {
+      const res = await fetch(FINANCE_API, {
         method: 'POST',
         body: JSON.stringify({ action: 'saveCampaignMgrs', rows: campaignMgrs })
       });
-    } catch { showToast('⚠ Failed to save'); }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const j = await res.json();
+      if (!j.success) throw new Error(j.error || 'Save failed');
+      return true;
+    } catch (e) { showToast(`⚠ Save failed — ${e.message}`, true); return false; }
   }
 
   // ── SOURCES INFO ──
@@ -2905,8 +2907,7 @@
   async function siTypeChange(i, value) {
     if (!sourcesInfo[i]) return;
     sourcesInfo[i].type = value;
-    await _saveSourcesInfo();
-    showToast('✓ Type updated');
+    if (await _saveSourcesInfo()) showToast('✓ Type updated');
   }
 
   async function siStatusChange(i, value) {
@@ -2914,8 +2915,7 @@
     sourcesInfo[i].status = value;
     _buildSourcesMap(); // paused sources are excluded from logo lookup
     _renderSiTable();
-    await _saveSourcesInfo();
-    showToast(value === 'live' ? '✓ Status set to Live' : '✓ Status set to Paused');
+    if (await _saveSourcesInfo()) showToast(value === 'live' ? '✓ Status set to Live' : '✓ Status set to Paused');
   }
 
   async function renderSourcesInfo() {
@@ -2936,11 +2936,15 @@
 
   async function _saveSourcesInfo() {
     sourcesInfo = _dedupeSourcesInfo(sourcesInfo); // always write clean data
-    if (!sourcesInfo.length) return;               // never overwrite sheet with empty list
+    if (!sourcesInfo.length) return true;          // never overwrite sheet with empty list
     _saveSiOrder();
     try {
-      await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveSourcesInfo', sources: sourcesInfo }) });
-    } catch { showToast('⚠ Failed to save', true); }
+      const res = await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveSourcesInfo', sources: sourcesInfo }) });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const j = await res.json();
+      if (!j.success) throw new Error(j.error || 'Save failed');
+      return true;
+    } catch (e) { showToast(`⚠ Save failed — ${e.message}`, true); return false; }
   }
 
   function siUrlReset(i) {
@@ -2984,8 +2988,7 @@
     siUrlReset(i);
     // Refresh the logo preview in this row immediately
     _renderSiTable();
-    await _saveSourcesInfo();
-    showToast('✓ Logo saved');
+    if (await _saveSourcesInfo()) showToast('✓ Logo saved');
     logActivity('sources_info', `Updated logo for ${sourcesInfo[i].name}`);
   }
 
@@ -2996,8 +2999,7 @@
     sourcesInfo[i].name = trimmed;
     _buildSourcesMap();
     _renderSiTable();
-    await _saveSourcesInfo();
-    showToast('✓ Name updated');
+    if (await _saveSourcesInfo()) showToast('✓ Name updated');
     logActivity('sources_info', `Renamed source to "${trimmed}"`);
   }
 
@@ -3026,8 +3028,7 @@
     const trimmed = value.trim();
     if (sourcesInfo[i][field] === trimmed) return;
     sourcesInfo[i][field] = trimmed;
-    await _saveSourcesInfo();
-    showToast('✓ Saved');
+    if (await _saveSourcesInfo()) showToast('✓ Saved');
   }
 
   async function siDetailSave(i) {
@@ -3056,8 +3057,7 @@
     }
     _buildSourcesMap();
     _renderSiTable();
-    await _saveSourcesInfo();
-    showToast('✓ Saved');
+    if (await _saveSourcesInfo()) showToast('✓ Saved');
   }
 
   function siShowNewConRow(i) {
@@ -3080,8 +3080,7 @@
     const det = document.getElementById('siDetail_' + i);
     const expBtn = document.getElementById('siExpandBtn_' + i);
     if (det) { det.style.display = 'table-row'; if (expBtn) expBtn.textContent = '▴'; }
-    await _saveSourcesInfo();
-    showToast('✓ Contact added');
+    if (await _saveSourcesInfo()) showToast('✓ Contact added');
   }
 
   async function siRemoveContact(i, j) {
@@ -3091,8 +3090,7 @@
     const det = document.getElementById('siDetail_' + i);
     const btn = document.getElementById('siExpandBtn_' + i);
     if (det) { det.style.display = 'table-row'; if (btn) btn.textContent = '▴'; }
-    await _saveSourcesInfo();
-    showToast('✓ Contact removed');
+    if (await _saveSourcesInfo()) showToast('✓ Contact removed');
   }
 
   async function siContactUpdate(i, j, field, value) {
@@ -3131,8 +3129,7 @@
     const fa = document.getElementById('siFormArrow');
     if (fb) fb.style.display = 'none';
     if (fa) fa.style.transform = '';
-    await _saveSourcesInfo();
-    showToast('✓ Source added');
+    if (await _saveSourcesInfo()) showToast('✓ Source added');
     logActivity('sources_info', `Added source: ${name}`);
   }
 
@@ -3142,8 +3139,7 @@
     sourcesInfo.splice(i, 1);
     _buildSourcesMap();
     _renderSiTable();
-    await _saveSourcesInfo();
-    showToast('✓ Removed');
+    if (await _saveSourcesInfo()) showToast('✓ Removed');
   }
 
   // ── Sources Info drag-and-drop reorder ──
@@ -3160,7 +3156,7 @@
       btn.style.borderColor = 'var(--accent)';
     } else {
       _saveSiOrder();
-      _saveSourcesInfo().then(() => showToast('✓ Order saved to sheet'));
+      _saveSourcesInfo().then(ok => { if (ok) showToast('✓ Order saved to sheet'); });
       btn.textContent = '↕ Edit Order';
       btn.style.background = 'var(--surface2)';
       btn.style.color = 'var(--muted)';
@@ -3389,11 +3385,15 @@
   }
 
   async function _saveAdvertisers() {
-    if (!advertisers.length) return;
+    if (!advertisers.length) return true;
     _saveAdvOrder();
     try {
-      await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveAdvertisers', rows: advertisers }) });
-    } catch { showToast('⚠ Failed to save', true); }
+      const res = await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveAdvertisers', rows: advertisers }) });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const j = await res.json();
+      if (!j.success) throw new Error(j.error || 'Save failed');
+      return true;
+    } catch (e) { showToast(`⚠ Save failed — ${e.message}`, true); return false; }
   }
 
   async function renderAdvertisers() {
@@ -3461,16 +3461,14 @@
     advertisers[i].to2Id      = (document.getElementById('advTo2Id_' + i)?.value || '').trim();
     advertisers[i].geo        = (document.getElementById('advGeo_'   + i)?.value || '').trim().toUpperCase();
     _renderAdvTable();
-    await _saveAdvertisers();
-    showToast('✓ Saved');
+    if (await _saveAdvertisers()) showToast('✓ Saved');
   }
 
   async function advStatusChange(i, value) {
     if (!advertisers[i]) return;
     advertisers[i].status = value;
     _renderAdvTable();
-    await _saveAdvertisers();
-    showToast(value === 'live' ? '✓ Status set to Live' : '✓ Status set to Paused');
+    if (await _saveAdvertisers()) showToast(value === 'live' ? '✓ Status set to Live' : '✓ Status set to Paused');
   }
 
   function _advCampaignsHtml(campaigns, i) {
@@ -3599,8 +3597,7 @@
     const fb = document.getElementById('advFormBody'), fa = document.getElementById('advFormArrow');
     if (fb) fb.style.display = 'none';
     if (fa) fa.style.transform = '';
-    await _saveAdvertisers();
-    showToast('✓ Advertiser added');
+    if (await _saveAdvertisers()) showToast('✓ Advertiser added');
     logActivity('edit_advertisers', `Added advertiser: ${name}`);
   }
 
@@ -3609,8 +3606,7 @@
     if (!confirmDelete(`Remove advertiser "${name}"?`)) return;
     advertisers.splice(i, 1);
     _renderAdvTable();
-    await _saveAdvertisers();
-    showToast('✓ Removed');
+    if (await _saveAdvertisers()) showToast('✓ Removed');
   }
 
   function toggleAdvOrderEdit() {
@@ -3621,7 +3617,7 @@
       btn.style.cssText += ';background:var(--accent);color:#fff;border-color:var(--accent)';
     } else {
       _saveAdvOrder();
-      _saveAdvertisers().then(() => showToast('✓ Order saved'));
+      _saveAdvertisers().then(ok => { if (ok) showToast('✓ Order saved'); });
       btn.textContent = '↕ Edit Order';
       btn.style.background = 'var(--surface2)';
       btn.style.color = 'var(--muted)';
@@ -3792,17 +3788,16 @@
     if (existing) { existing.role = role; }
     else { settingsUsers.push({ email, role, added: new Date().toISOString(), tabs: defaultTabs() }); }
 
-    await saveSettings();
+    const ok = await saveSettings();
     document.getElementById('settingsEmail').value = '';
-    showToast('✓ User saved');
+    if (ok) showToast('✓ User saved');
     renderSettings();
   }
 
   async function removeSettingsUser(i) {
     if (!confirmDelete(`Remove ${settingsUsers[i].email} from the system?`)) return;
     settingsUsers.splice(i, 1);
-    await saveSettings();
-    showToast('✓ User removed');
+    if (await saveSettings()) showToast('✓ User removed');
     renderSettings();
   }
 
@@ -3823,8 +3818,7 @@
     settingsUsers[i].passwordHash = await sha256(pw);
     // Also refresh login cache so the new password works immediately
     _loginSettingsCache = null;
-    await saveSettings();
-    showToast('✓ Password set');
+    if (await saveSettings()) showToast('✓ Password set');
     renderSettings();
   }
 
@@ -3855,8 +3849,7 @@
       EDITORS = settingsUsers.filter(u => u.role === 'editor').map(u => u.email);
       applyRoleUI();
     }
-    await saveSettings();
-    showToast(`✓ ${field === 'email' ? 'Email' : 'Role'} updated`);
+    if (await saveSettings()) showToast(`✓ ${field === 'email' ? 'Email' : 'Role'} updated`);
     logActivity('edit_settings_user', `Updated ${field} for user #${i+1}`);
   }
 
@@ -3887,18 +3880,22 @@
     }
 
     // Save to sheet in background
-    saveSettings().then(() => showToast('✓ Saved'));
+    saveSettings().then(ok => { if (ok) showToast('✓ Saved'); });
   }
 
   async function saveSettings() {
     try {
-      await fetch(FINANCE_API, {
+      const res = await fetch(FINANCE_API, {
         method: 'POST',
         body: JSON.stringify({ action: 'saveSettings', users: settingsUsers })
       });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const j = await res.json();
+      if (!j.success) throw new Error(j.error || 'Save failed');
       // Update local EDITORS list
       EDITORS = settingsUsers.filter(u => u.role === 'editor').map(u => u.email);
-    } catch { showToast('⚠ Failed to save settings'); }
+      return true;
+    } catch (e) { showToast(`⚠ Failed to save settings — ${e.message}`, true); return false; }
   }
 
   // ── CONFIRM DELETE HELPER ──
