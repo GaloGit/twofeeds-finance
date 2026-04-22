@@ -1102,6 +1102,7 @@
           <div class="section-title">Team Roles</div>
           <div class="section-sub">Manage team members and their roles · visible only to admin</div>
         </div>
+        <div id="cmLastUpdated" style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-align:right;white-space:nowrap;line-height:1.6"></div>
       </div>
 
       <!-- Add manager form (collapsible) -->
@@ -1203,6 +1204,7 @@
           <div class="section-title" style="display:flex;align-items:center;gap:10px"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--accent-light)"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>Sources Info</div>
           <div class="section-sub">Manage logos for publishers and internal sources · visible only to admin</div>
         </div>
+        <div id="siLastUpdated" style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-align:right;white-space:nowrap;line-height:1.6"></div>
       </div>
 
       <!-- Add source form (collapsible) -->
@@ -1303,6 +1305,7 @@
           <div class="section-title">🏢 Advertisers Info</div>
           <div class="section-sub">Manage advertiser details — logo, IDs, managers and platform info</div>
         </div>
+        <div id="advLastUpdated" style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-align:right;white-space:nowrap;line-height:1.6"></div>
       </div>
 
       <!-- Add advertiser form (collapsible) -->
@@ -2625,11 +2628,13 @@
     try {
       const res = await fetch(FINANCE_API, {
         method: 'POST',
-        body: JSON.stringify({ action: 'saveCampaignMgrs', rows: campaignMgrs })
+        body: JSON.stringify({ action: 'saveCampaignMgrs', rows: campaignMgrs, user: localStorage.getItem('tf_current_user') || '' })
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const j = await res.json();
       if (!j.success) throw new Error(j.error || 'Save failed');
+      _tabMeta.cm = { ts: new Date().toISOString(), by: localStorage.getItem('tf_current_user') || '' };
+      _renderLastUpdated('cm');
       return true;
     } catch (e) { showToast(`⚠ Save failed — ${e.message}`, true); return false; }
   }
@@ -2943,10 +2948,12 @@
     if (!sourcesInfo.length) return true;          // never overwrite sheet with empty list
     _saveSiOrder();
     try {
-      const res = await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveSourcesInfo', sources: sourcesInfo }) });
+      const res = await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveSourcesInfo', sources: sourcesInfo, user: localStorage.getItem('tf_current_user') || '' }) });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const j = await res.json();
       if (!j.success) throw new Error(j.error || 'Save failed');
+      _tabMeta.si = { ts: new Date().toISOString(), by: localStorage.getItem('tf_current_user') || '' };
+      _renderLastUpdated('si');
       return true;
     } catch (e) { showToast(`⚠ Save failed — ${e.message}`, true); return false; }
   }
@@ -3390,10 +3397,12 @@
     if (!advertisers.length) return true;
     _saveAdvOrder();
     try {
-      const res = await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveAdvertisers', rows: advertisers }) });
+      const res = await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveAdvertisers', rows: advertisers, user: localStorage.getItem('tf_current_user') || '' }) });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const j = await res.json();
       if (!j.success) throw new Error(j.error || 'Save failed');
+      _tabMeta.adv = { ts: new Date().toISOString(), by: localStorage.getItem('tf_current_user') || '' };
+      _renderLastUpdated('adv');
       return true;
     } catch (e) { showToast(`⚠ Save failed — ${e.message}`, true); return false; }
   }
@@ -3936,6 +3945,30 @@
       method: 'POST',
       body: JSON.stringify({ action: 'logActivity', user, actAction: action, details })
     }).catch(() => {});
+  }
+
+  // ── LAST-MODIFIED TRACKING ──
+  const _tabMeta = { si: { ts: '', by: '' }, adv: { ts: '', by: '' }, cm: { ts: '', by: '' } };
+
+  function timeAgo(iso) {
+    if (!iso) return '';
+    const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+    if (diff < 60) return 'just now';
+    if (diff < 3600) return Math.floor(diff / 60) + ' min ago';
+    if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+    return Math.floor(diff / 86400) + 'd ago';
+  }
+
+  function _renderLastUpdated(tab) {
+    const m = _tabMeta[tab];
+    const el = document.getElementById(tab + 'LastUpdated');
+    if (!el || !m.ts) return;
+    const who = m.by ? m.by.split('@')[0] : '';
+    el.innerHTML = `<span style="color:var(--muted)">Last updated</span> <span style="color:var(--text)">${timeAgo(m.ts)}</span>${who ? ` <span style="color:var(--muted)">by</span> <span style="color:var(--accent-light)">${who}</span>` : ''}`;
+  }
+
+  function _refreshAllLastUpdated() {
+    ['si', 'adv', 'cm'].forEach(_renderLastUpdated);
   }
 
   // ── SESSION TIMEOUT ──
@@ -4653,6 +4686,7 @@
       // Campaign Managers
       campaignMgrs = _applyCmOrder(_dedupeCampaignMgrs(cmRes.data || []));
       if (campaignMgrs.length > 0) _rawCache['cm'] = campaignMgrs;
+      if (cmRes.lastModified) { _tabMeta.cm = { ts: cmRes.lastModified, by: cmRes.lastModifiedBy || '' }; _renderLastUpdated('cm'); }
       updateHeaderAvatar();
 
       // Custom Events (notifications)
@@ -4660,6 +4694,7 @@
       _renderCustomEvents();
 
       // Sources Info (logo map — used across Publishers + Internal Sources)
+      if (siRes.lastModified) { _tabMeta.si = { ts: siRes.lastModified, by: siRes.lastModifiedBy || '' }; _renderLastUpdated('si'); }
       const siRaw = siRes.data || [];
       sourcesInfo = _applySiOrder(_dedupeSourcesInfo(siRaw));
       if (sourcesInfo.length > 0) {
@@ -4674,6 +4709,7 @@
       }
 
       // Advertisers
+      if (advRes.lastModified) { _tabMeta.adv = { ts: advRes.lastModified, by: advRes.lastModifiedBy || '' }; _renderLastUpdated('adv'); }
       const advRaw = advRes.data || [];
       const advMapped = advRaw.map(r => ({
         name:       r['Name']        || '',
@@ -5134,6 +5170,7 @@
   function startCountdown() {
     setInterval(() => {
       secondsLeft--;
+      _refreshAllLastUpdated();
       if (secondsLeft <= 0) {
         secondsLeft = appConfig.refreshInterval || 60;
         // Clear raw cache so auto-refresh actually fetches fresh data
