@@ -3925,7 +3925,7 @@
   }
 
   // Load config immediately so password is ready before login
-  loadConfig();
+  const _configReady = loadConfig();
 
   // ── ACTIVITY LOG ──
   function logActivity(action, details = '') {
@@ -3971,7 +3971,10 @@
     if (newPw) config.password = newPw;
 
     try {
-      await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveConfig', config }) });
+      const res = await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveConfig', config }) });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const j = await res.json();
+      if (!j.success) throw new Error(j.error || 'Save failed');
       // Apply immediately
       appConfig.refreshInterval     = refresh;
       appConfig.sessionTimeout      = session;
@@ -3990,7 +3993,7 @@
       status.style.opacity = '1';
       setTimeout(() => { status.style.opacity = '0'; }, 2500);
       _renderCfgLastUpdated(now);
-    } catch { showToast('⚠ Failed to save config'); }
+    } catch (e) { showToast(`⚠ Failed to save config — ${e.message}`, true); }
   }
 
   function _renderCfgLastUpdated(iso) {
@@ -4554,7 +4557,9 @@
       document.getElementById('app').style.display = 'block';
       document.getElementById('headerUser').textContent = user;
       init();
-      loadSettingsFromSheet().then(() => { applyRoleUI(); startSessionTimeout(); dismissCurtain(); });
+      _configReady.then(() => {
+        loadSettingsFromSheet().then(() => { applyRoleUI(); startSessionTimeout(); dismissCurtain(); });
+      });
     }
   })();
 
