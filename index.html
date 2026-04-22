@@ -3969,7 +3969,7 @@
     const m = _tabMeta[tab];
     const el = document.getElementById(tab + 'LastUpdated');
     if (!el || !m.ts) return;
-    const who = m.by ? m.by.split('@')[0] : '';
+    const who = (m.by && m.by !== 'unknown') ? m.by.split('@')[0] : '';
     el.innerHTML = `<span style="color:var(--muted)">Last updated</span> <span style="color:var(--text)">${timeAgo(m.ts)}</span>${who ? ` <span style="color:var(--muted)">by</span> <span style="color:var(--accent-light)">${who}</span>` : ''}`;
   }
 
@@ -6319,11 +6319,12 @@
     delete _cache[cacheKey];
     // Re-render bar and counters immediately
     renderInvoices();
+    const user = localStorage.getItem('tf_current_user') || '';
     // Save each invoice status to sheet
     try {
       await Promise.all(cached.map((_, i) =>
         fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({
-          action: 'updateInvoice', period: periodKey(), index: i, field: 'status', value: status
+          action: 'updateInvoice', period: periodKey(), index: i, field: 'status', value: status, user
         }) })
       ));
       _rawCache[cacheKey] = cached;
