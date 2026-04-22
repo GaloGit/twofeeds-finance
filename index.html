@@ -517,6 +517,7 @@
         <label for="rememberMe" style="font-family:var(--font-mono);font-size:11px;color:var(--muted);cursor:pointer">Remember me for 7 days</label>
       </div>
       <button class="gate-btn" id="gateBtn1" onclick="submitCredentials()">CONTINUE →</button>
+      <button onclick="showChangePasswordPanel()" style="background:transparent;border:none;color:var(--muted);font-family:var(--font-mono);font-size:11px;cursor:pointer;margin-top:14px;width:100%;transition:color 0.15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">🔒 Change my password</button>
     </div>
 
     <!-- Step 2: Verification Code -->
@@ -533,6 +534,28 @@
       </div>
       <button class="gate-btn" onclick="submitCode()">VERIFY →</button>
       <button onclick="backToStep1()" style="background:transparent;border:none;color:var(--muted);font-family:var(--font-mono);font-size:11px;cursor:pointer;margin-top:12px;width:100%">← Use a different email</button>
+    </div>
+
+    <!-- Step 3: Change Password -->
+    <div id="gateStep3" style="display:none">
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--accent-light);margin-bottom:20px;text-transform:uppercase;letter-spacing:0.08em">🔒 Change Password</div>
+      <input type="email" class="gate-input" id="cpEmail" placeholder="Your email address" style="margin-bottom:10px"/>
+      <div class="gate-pw-wrap" style="margin-bottom:10px">
+        <input type="password" class="gate-input" id="cpCurrent" placeholder="Current password" style="margin-bottom:0;padding-right:48px"/>
+        <button class="gate-eye" onclick="toggleCpEye('cpCurrent',this)" title="Show/hide">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <div class="gate-pw-wrap" style="margin-bottom:10px">
+        <input type="password" class="gate-input" id="cpNew" placeholder="New password" style="margin-bottom:0;padding-right:48px"/>
+        <button class="gate-eye" onclick="toggleCpEye('cpNew',this)" title="Show/hide">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <input type="password" class="gate-input" id="cpConfirm" placeholder="Confirm new password" style="margin-bottom:16px"
+        onkeydown="if(event.key==='Enter')submitChangePassword()"/>
+      <button class="gate-btn" id="cpBtn" onclick="submitChangePassword()">UPDATE PASSWORD →</button>
+      <button onclick="backToStep1()" style="background:transparent;border:none;color:var(--muted);font-family:var(--font-mono);font-size:11px;cursor:pointer;margin-top:12px;width:100%">← Back to login</button>
     </div>
 
     <div class="gate-error" id="gateError"></div>
@@ -579,7 +602,6 @@
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
             <span style="font-family:var(--font-mono);font-size:12px;color:var(--muted)">v5.0.3</span>
           </div>
-          <button class="logout-btn" onclick="changeMyPassword()" title="Change your password" style="margin-right:6px;border-color:var(--border);color:var(--muted)">🔒 Password</button>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
       </div>
@@ -3800,29 +3822,6 @@
     renderSettings();
   }
 
-  // "Change my password" — available to the logged-in user for their own account
-  async function changeMyPassword() {
-    const currentPw = prompt('Enter your current password:');
-    if (currentPw === null) return;
-    const me = (document.getElementById('headerUser')?.textContent || '').toLowerCase().trim();
-    const record = settingsUsers.find(u => u.email.toLowerCase() === me);
-    if (!record) { showToast('⚠ User record not found', true); return; }
-    // Verify current
-    if (record.passwordHash) {
-      if (await sha256(currentPw) !== record.passwordHash) { showToast('⚠ Current password incorrect', true); return; }
-    } else {
-      if (currentPw !== appPassword) { showToast('⚠ Current password incorrect', true); return; }
-    }
-    const newPw  = prompt('Enter new password (min 6 characters):');
-    if (!newPw || newPw.length < 6) { showToast('⚠ Password must be at least 6 characters', true); return; }
-    const confirm = prompt('Confirm new password:');
-    if (newPw !== confirm) { showToast('⚠ Passwords do not match', true); return; }
-    record.passwordHash = await sha256(newPw);
-    _loginSettingsCache = null;
-    await saveSettings();
-    showToast('✓ Password updated');
-  }
-
   function settingsEmailReset(i) {
     const input = document.getElementById('settingsEmailInput_' + i);
     const btn   = document.getElementById('settingsEmailSave_' + i);
@@ -4392,9 +4391,83 @@
     clearInterval(codeTimerInterval);
     verificationCode = '';
     document.getElementById('gateStep2').style.display = 'none';
+    document.getElementById('gateStep3').style.display = 'none';
     document.getElementById('gateStep1').style.display = 'block';
     document.getElementById('gateCode').value = '';
     setGateError('');
+  }
+
+  function showChangePasswordPanel() {
+    // Pre-fill email if already typed
+    const email = document.getElementById('gateEmail')?.value || '';
+    if (email) document.getElementById('cpEmail').value = email;
+    document.getElementById('gateStep1').style.display = 'none';
+    document.getElementById('gateStep3').style.display = 'block';
+    document.getElementById('cpEmail').focus();
+    setGateError('');
+  }
+
+  function toggleCpEye(inputId, btn) {
+    const inp = document.getElementById(inputId);
+    if (!inp) return;
+    inp.type = inp.type === 'text' ? 'password' : 'text';
+    btn.style.opacity = inp.type === 'text' ? '1' : '0.5';
+  }
+
+  async function submitChangePassword() {
+    const email   = (document.getElementById('cpEmail')?.value || '').trim().toLowerCase();
+    const current = document.getElementById('cpCurrent')?.value || '';
+    const newPw   = document.getElementById('cpNew')?.value || '';
+    const confirm = document.getElementById('cpConfirm')?.value || '';
+    if (!email)              { setGateError('Please enter your email.'); return; }
+    if (!current)            { setGateError('Please enter your current password.'); return; }
+    if (newPw.length < 6)   { setGateError('New password must be at least 6 characters.'); return; }
+    if (newPw !== confirm)   { setGateError('Passwords do not match.'); return; }
+
+    const btn = document.getElementById('cpBtn');
+    btn.textContent = 'Verifying...'; btn.disabled = true;
+
+    // Fetch settings if needed
+    if (!_loginSettingsCache) {
+      try {
+        const r = await fetch(`${FINANCE_API}?action=getSettings`);
+        const j = await r.json();
+        _loginSettingsCache = j.data || [];
+      } catch {
+        setGateError('Connection error. Please try again.');
+        btn.textContent = 'UPDATE PASSWORD →'; btn.disabled = false; return;
+      }
+    }
+
+    const record = _loginSettingsCache.find(u => (u.email||'').toLowerCase() === email);
+    if (!record) { setGateError('Email not found.'); btn.textContent = 'UPDATE PASSWORD →'; btn.disabled = false; return; }
+
+    // Verify current password
+    const validCurrent = record.passwordHash
+      ? (await sha256(current)) === record.passwordHash
+      : current === appPassword;
+    if (!validCurrent) { setGateError('Current password is incorrect.'); document.getElementById('cpCurrent').value = ''; btn.textContent = 'UPDATE PASSWORD →'; btn.disabled = false; return; }
+
+    // Save new password hash via settings save
+    btn.textContent = 'Saving...';
+    try {
+      const newHash = await sha256(newPw);
+      await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveSettings', users: _loginSettingsCache.map(u => u.email.toLowerCase() === email ? { ...u, passwordHash: newHash } : u) }) });
+      // Update cache
+      _loginSettingsCache = _loginSettingsCache.map(u => u.email.toLowerCase() === email ? { ...u, passwordHash: newHash } : u);
+      setGateError('');
+      document.getElementById('gateStep3').style.display = 'none';
+      document.getElementById('gateStep1').style.display = 'block';
+      document.getElementById('cpCurrent').value = '';
+      document.getElementById('cpNew').value = '';
+      document.getElementById('cpConfirm').value = '';
+      // Show success briefly in error slot (green)
+      const errEl = document.getElementById('gateError');
+      if (errEl) { errEl.style.color = 'var(--green)'; errEl.textContent = '✓ Password updated. You can now log in.'; setTimeout(() => { errEl.textContent = ''; errEl.style.color = ''; }, 4000); }
+    } catch {
+      setGateError('Failed to save. Please try again.');
+    }
+    btn.textContent = 'UPDATE PASSWORD →'; btn.disabled = false;
   }
 
   function logout() {
