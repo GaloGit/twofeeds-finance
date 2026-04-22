@@ -5157,26 +5157,35 @@
   function isSinglePeriod() { return selectedYears.size === 1 && selectedMonths.size === 1 && selectedMonths.size !== 12; }
 
   // Fetch data for all selected periods, smart-merging results
+  function _withMeta(arr, lastModified, lastModifiedBy) {
+    arr.lastModified = lastModified || '';
+    arr.lastModifiedBy = lastModifiedBy || '';
+    return arr;
+  }
+
   async function fetchPeriodData(action) {
     const periods = getSelectedPeriods();
-    if (periods.size === 0) return [];
+    if (periods.size === 0) return _withMeta([], null, null);
 
     // If many periods, fetch all data once and filter client-side (more efficient)
     if (periods.size > 4 || selectedMonths.size === 0) {
       const res = await fetch(`${FINANCE_API}?action=${action}`);
       const json = await res.json();
-      return (json.data || []).filter(r => periods.has(r['Period']));
+      return _withMeta((json.data || []).filter(r => periods.has(r['Period'])), json.lastModified, json.lastModifiedBy);
     }
 
     // Few specific periods — parallel fetch
     if (periods.size === 1) {
       const res = await fetch(`${FINANCE_API}?action=${action}&period=${[...periods][0]}`);
-      return (await res.json()).data || [];
+      const json = await res.json();
+      return _withMeta(json.data || [], json.lastModified, json.lastModifiedBy);
     }
     const results = await Promise.all([...periods].map(p =>
       fetch(`${FINANCE_API}?action=${action}&period=${p}`).then(r => r.json())
     ));
-    return results.flatMap(r => r.data || []);
+    // Use the most recent lastModified across all periods
+    const latest = results.reduce((a, b) => ((b.lastModified||'') > (a.lastModified||'') ? b : a), results[0] || {});
+    return _withMeta(results.flatMap(r => r.data || []), latest.lastModified, latest.lastModifiedBy);
   }
 
   // ── COUNTDOWN ──
