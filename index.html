@@ -3097,12 +3097,10 @@
     if (await _saveSourcesInfo()) showToast('✓ Contact removed');
   }
 
-  async function siContactUpdate(i, j, field, value) {
+  function siContactUpdate(i, j, field, value) {
     if (!sourcesInfo[i]?.contacts?.[j]) return;
     const trimmed = value.trim();
-    if (sourcesInfo[i].contacts[j][field] === trimmed) return;
     sourcesInfo[i].contacts[j][field] = trimmed;
-    await _saveSourcesInfo();
   }
 
   async function addSourcesInfoEntry() {
