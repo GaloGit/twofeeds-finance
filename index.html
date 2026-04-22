@@ -2806,12 +2806,13 @@
             <!-- Contacts -->
             <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px">
               <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Contacts</div>
+              ${(s.contacts||[]).length > 0 ? `
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;padding:0 0 4px 0;border-bottom:1px solid var(--border)">
                 <div style="flex:1;min-width:80px;font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Name</div>
                 <div style="width:148px;flex-shrink:0;font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Role</div>
                 <div style="flex:2;min-width:120px;font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Email</div>
                 <div style="width:36px;flex-shrink:0"></div>
-              </div>
+              </div>` : ''}
               ${(s.contacts||[]).map((c,j) => `
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
                 <input class="editable" value="${esc(c.name||'')}" placeholder="Name" style="flex:1;min-width:80px" onblur="siContactUpdate(${i},${j},'name',this.value)"/>
@@ -2821,7 +2822,8 @@
                 <input class="editable" value="${esc(c.email||'')}" placeholder="email@example.com" style="flex:2;min-width:120px" onblur="siContactUpdate(${i},${j},'email',this.value)"/>
                 <button onclick="siRemoveContact(${i},${j})" style="width:36px;flex-shrink:0;font-family:var(--font-mono);font-size:9px;border-radius:6px;cursor:pointer;padding:4px 8px;border:1px solid var(--border);background:transparent;color:var(--red)">✕</button>
               </div>`).join('')}
-              <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+              <!-- New contact row — hidden until + is clicked -->
+              <div id="siNewConRow_${i}" style="display:none;align-items:center;gap:8px;margin-top:6px;margin-bottom:6px">
                 <input id="siNewConName_${i}" class="editable" placeholder="Name" style="flex:1;min-width:80px"/>
                 <select id="siNewConRole_${i}" style="width:148px;flex-shrink:0;background:var(--surface3);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none">
                   <option value="Account Manager">Account Manager</option>
@@ -2830,7 +2832,11 @@
                   <option value="Support">Support</option>
                 </select>
                 <input id="siNewConEmail_${i}" class="editable" placeholder="email@example.com" style="flex:2;min-width:120px"/>
-                <button onclick="siAddContact(${i})" style="width:36px;flex-shrink:0;font-family:var(--font-mono);font-size:9px;font-weight:700;border-radius:6px;cursor:pointer;padding:4px 0;border:1px solid var(--accent);background:rgba(124,58,237,0.18);color:var(--accent-light);text-align:center">+</button>
+                <button onclick="siAddContact(${i})" style="width:36px;flex-shrink:0;font-family:var(--font-mono);font-size:9px;font-weight:700;border-radius:6px;cursor:pointer;padding:4px 0;border:1px solid var(--accent);background:rgba(124,58,237,0.18);color:var(--accent-light);text-align:center">✓</button>
+              </div>
+              <!-- Add contact button -->
+              <div style="margin-top:4px">
+                <button onclick="siShowNewConRow(${i})" id="siAddConBtn_${i}" style="font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:0.06em;padding:3px 10px;border-radius:6px;cursor:pointer;border:1px dashed var(--border);background:transparent;color:var(--muted);transition:all 0.15s" onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--text)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">+ Add Contact</button>
               </div>
             </div>
             <div style="display:flex;justify-content:flex-end;margin-top:14px">
@@ -2991,18 +2997,29 @@
     sourcesInfo[i].to2Id        = (document.getElementById('siTo2Id_' + i)?.value || '').trim();
     sourcesInfo[i].externalId   = (document.getElementById('siExtId_' + i)?.value || '').trim();
     sourcesInfo[i].tfId         = (document.getElementById('siTfId_' + i)?.value || '').trim();
-    // Flush any pending new-contact row (so Save works even if user didn't click +)
-    const pendingName  = (document.getElementById('siNewConName_' + i)?.value || '').trim();
-    const pendingEmail = (document.getElementById('siNewConEmail_' + i)?.value || '').trim();
-    if (pendingName || pendingEmail) {
-      const pendingRole = document.getElementById('siNewConRole_' + i)?.value || 'Account Manager';
-      if (!sourcesInfo[i].contacts) sourcesInfo[i].contacts = [];
-      sourcesInfo[i].contacts.push({ name: pendingName, role: pendingRole, email: pendingEmail });
+    // Flush any pending new-contact row if it's visible (user opened it but didn't click ✓)
+    const newConRow = document.getElementById('siNewConRow_' + i);
+    if (newConRow && newConRow.style.display !== 'none') {
+      const pendingName  = (document.getElementById('siNewConName_' + i)?.value || '').trim();
+      const pendingEmail = (document.getElementById('siNewConEmail_' + i)?.value || '').trim();
+      if (pendingName || pendingEmail) {
+        const pendingRole = document.getElementById('siNewConRole_' + i)?.value || 'Account Manager';
+        if (!sourcesInfo[i].contacts) sourcesInfo[i].contacts = [];
+        sourcesInfo[i].contacts.push({ name: pendingName, role: pendingRole, email: pendingEmail });
+      }
     }
     _buildSourcesMap();
     _renderSiTable();
     await _saveSourcesInfo();
     showToast('✓ Saved');
+  }
+
+  function siShowNewConRow(i) {
+    const row = document.getElementById('siNewConRow_' + i);
+    const btn = document.getElementById('siAddConBtn_' + i);
+    if (row) { row.style.display = 'flex'; }
+    if (btn) { btn.style.display = 'none'; }
+    document.getElementById('siNewConName_' + i)?.focus();
   }
 
   async function siAddContact(i) {
@@ -3015,8 +3032,8 @@
     sourcesInfo[i].contacts.push({ name, role, email });
     _renderSiTable();
     const det = document.getElementById('siDetail_' + i);
-    const btn = document.getElementById('siExpandBtn_' + i);
-    if (det) { det.style.display = 'table-row'; if (btn) btn.textContent = '▴'; }
+    const expBtn = document.getElementById('siExpandBtn_' + i);
+    if (det) { det.style.display = 'table-row'; if (expBtn) expBtn.textContent = '▴'; }
     await _saveSourcesInfo();
     showToast('✓ Contact added');
   }
