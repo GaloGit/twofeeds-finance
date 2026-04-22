@@ -1479,6 +1479,7 @@
             <select id="settingsRole" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;cursor:pointer">
               <option value="editor">✏️ Editor</option>
               <option value="viewer">👁 Viewer</option>
+              <option value="admin">⚡ Admin</option>
             </select>
           </div>
           <button onclick="addSettingsUser()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.05em;white-space:nowrap">+ ADD USER</button>
@@ -1805,14 +1806,18 @@
   const START_YEAR = 2024;
 
   // ── ROLES ──
-  const ADMIN = 'gal@thing02.com'; // only this user sees Settings tab
+  const ADMIN = 'gal@thing02.com'; // hardcoded fallback admin
   let EDITORS = [
     'gal@thing02.com',
     'galredwork@gmail.com',
   ]; // will be overridden by Google Sheets settings on load
 
   function isAdmin() {
-    return (localStorage.getItem('tf_current_user')||'').toLowerCase() === ADMIN.toLowerCase();
+    const user = (localStorage.getItem('tf_current_user')||'').toLowerCase();
+    if (user === ADMIN.toLowerCase()) return true;
+    // Also check if this user has the admin role in settingsUsers
+    const su = settingsUsers.find(u => u.email.toLowerCase() === user);
+    return su?.role === 'admin';
   }
 
   function isEditor() {
@@ -3704,9 +3709,10 @@
         </td>
         <td style="white-space:nowrap">
           <select onchange="updateSettingsUser(${i},'role',this.value)"
-            style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;color:${u.role==='editor'?'var(--accent-light)':u.role==='admin'?'var(--blue)':'var(--amber)'}">
+            style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;color:${u.role==='admin'?'var(--blue)':u.role==='editor'?'var(--accent-light)':'var(--amber)'}">
             <option value="viewer" ${u.role==='viewer'?'selected':''}>👁 Viewer</option>
             <option value="editor" ${u.role==='editor'?'selected':''}>✏️ Editor</option>
+            <option value="admin"  ${u.role==='admin' ?'selected':''}>⚡ Admin</option>
           </select>
         </td>
         <td class="mono text-muted" style="font-size:10px;white-space:nowrap">${u.added ? new Date(u.added).toLocaleDateString() : '—'}</td>
