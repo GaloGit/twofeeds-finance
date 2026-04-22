@@ -4295,16 +4295,12 @@
       }
     }
 
-    // Find this user's record
-    const userRecord = _loginSettingsCache.find(u => (u.email||'').toLowerCase() === email);
-    if (!userRecord) {
-      setGateError('Email not recognized. Contact your admin.');
-      document.getElementById('gateInput').value = '';
-      btn.textContent = 'CONTINUE →'; btn.disabled = false; return;
-    }
+    // Find this user's record (may be null for admin or users not yet in sheet)
+    const userRecord = (_loginSettingsCache || []).find(u => (u.email||'').toLowerCase() === email);
 
-    // Verify password: per-user hash if set, else fall back to shared password
-    if (userRecord.passwordHash) {
+    // Verify password
+    if (userRecord?.passwordHash) {
+      // Per-user password set — verify hash
       const hash = await sha256(pass);
       if (hash !== userRecord.passwordHash) {
         setGateError('Incorrect password. Try again.');
@@ -4312,6 +4308,7 @@
         btn.textContent = 'CONTINUE →'; btn.disabled = false; return;
       }
     } else {
+      // No personal password set (or user not in sheet) — fall back to shared password
       if (pass !== appPassword) {
         setGateError('Incorrect password. Try again.');
         document.getElementById('gateInput').value = '';
