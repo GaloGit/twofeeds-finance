@@ -2991,6 +2991,14 @@
     sourcesInfo[i].to2Id        = (document.getElementById('siTo2Id_' + i)?.value || '').trim();
     sourcesInfo[i].externalId   = (document.getElementById('siExtId_' + i)?.value || '').trim();
     sourcesInfo[i].tfId         = (document.getElementById('siTfId_' + i)?.value || '').trim();
+    // Flush any pending new-contact row (so Save works even if user didn't click +)
+    const pendingName  = (document.getElementById('siNewConName_' + i)?.value || '').trim();
+    const pendingEmail = (document.getElementById('siNewConEmail_' + i)?.value || '').trim();
+    if (pendingName || pendingEmail) {
+      const pendingRole = document.getElementById('siNewConRole_' + i)?.value || 'Account Manager';
+      if (!sourcesInfo[i].contacts) sourcesInfo[i].contacts = [];
+      sourcesInfo[i].contacts.push({ name: pendingName, role: pendingRole, email: pendingEmail });
+    }
     _buildSourcesMap();
     _renderSiTable();
     await _saveSourcesInfo();
