@@ -579,6 +579,7 @@
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
             <span style="font-family:var(--font-mono);font-size:12px;color:var(--muted)">v5.0.2</span>
           </div>
+          <button class="logout-btn" onclick="changeMyPassword()" title="Change your password" style="margin-right:6px;border-color:var(--border);color:var(--muted)">🔒 Password</button>
           <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
         </div>
       </div>
@@ -1495,6 +1496,7 @@
                 <th>Role</th>
                 <th>Added</th>
                 <th style="white-space:nowrap">Last Login</th>
+                <th style="white-space:nowrap">Password</th>
                 <th></th>
               </tr>
             </thead>
@@ -1784,10 +1786,21 @@
 
 <script>
   // ── CONFIG ──
-  let appPassword = 'finance2026'; // overridden by Config sheet on load
+  let appPassword = 'finance2026'; // overridden by Config sheet on load; fallback for users with no personal password
   let appConfig = { refreshInterval: 60, sessionTimeout: 0, invoiceReminderDays: 7 };
+
+  // ── SHA-256 (for password hashing — never store plain text) ──
+  async function sha256(str) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+
+  // ── Pre-load settings cache (populated after FINANCE_API is declared below) ──
+  let _loginSettingsCache = null;
   const FINANCE_API = "https://script.google.com/macros/s/AKfycbx--MHoVp6mPuOwokFAJVaxTHbTO31nSMy8ACZL7h78yZYgC9pJKnPQqm3nxSDnAz5h/exec";
   const WORKER_URL = 'https://twofeeds-ai.galredwork.workers.dev';
+  // Preload settings in background so login password check is instant
+  (async () => { try { const r = await fetch(`${FINANCE_API}?action=getSettings`); const j = await r.json(); if (j.success) _loginSettingsCache = j.data || []; } catch {} })();
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const START_YEAR = 2024;
 
@@ -3610,7 +3623,8 @@
       if (json.success && json.data.length > 0) {
         settingsUsers = json.data.map(u => ({
           ...u,
-          tabs: u.tabs && typeof u.tabs === 'object' ? u.tabs : defaultTabs()
+          tabs: u.tabs && typeof u.tabs === 'object' ? u.tabs : defaultTabs(),
+          passwordHash: u.passwordHash || null
         }));
         EDITORS = settingsUsers.filter(u => u.role === 'editor').map(u => u.email);
       }
@@ -3697,6 +3711,22 @@
         </td>
         <td class="mono text-muted" style="font-size:10px;white-space:nowrap">${u.added ? new Date(u.added).toLocaleDateString() : '—'}</td>
         <td class="mono text-muted" style="font-size:10px;white-space:nowrap">${lastLoginStr}</td>
+        <td style="white-space:nowrap">
+          <div id="pwCell_${i}">
+            ${u.passwordHash
+              ? `<span style="font-family:var(--font-mono);font-size:10px;color:var(--green)">🔒 Set</span>`
+              : `<span style="font-family:var(--font-mono);font-size:10px;color:var(--amber)">⚠ Not set</span>`}
+            <button onclick="showSetPasswordRow(${i})" style="margin-left:6px;${btnBase} var(--border);background:transparent;color:var(--muted);font-size:9px;padding:3px 8px">
+              ${u.passwordHash ? 'Reset' : 'Set'}
+            </button>
+          </div>
+          <div id="pwRow_${i}" style="display:none;margin-top:6px">
+            <input id="pwInput_${i}" type="password" placeholder="New password" class="editable" style="width:140px;font-size:11px;margin-right:6px"
+              onkeydown="if(event.key==='Enter')confirmSetPassword(${i});if(event.key==='Escape')cancelSetPassword(${i})"/>
+            <button onclick="confirmSetPassword(${i})" style="${btnBase} var(--accent);background:rgba(124,58,237,0.15);color:var(--accent-light);font-size:9px;padding:3px 8px">✓</button>
+            <button onclick="cancelSetPassword(${i})" style="margin-left:4px;${btnBase} var(--border);background:transparent;color:var(--muted);font-size:9px;padding:3px 8px">✕</button>
+          </div>
+        </td>
         <td>
           <div style="display:flex;gap:6px;flex-wrap:wrap">
             <button onclick="togglePermsRow(${i})" style="${btnBase} var(--accent);background:rgba(124,58,237,0.15);color:var(--accent-light)">⚡ Access</button>
@@ -3705,7 +3735,7 @@
         </td>
       </tr>
       <tr id="permsRow_${i}" style="display:none">
-        <td colspan="6" style="padding:0">
+        <td colspan="7" style="padding:0">
           <div style="background:var(--surface2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:12px 20px">
             <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px">
               Tab Permissions — ${esc(u.email)}
@@ -3740,6 +3770,51 @@
     await saveSettings();
     showToast('✓ User removed');
     renderSettings();
+  }
+
+  function showSetPasswordRow(i) {
+    document.getElementById('pwRow_' + i).style.display = 'block';
+    document.getElementById('pwInput_' + i)?.focus();
+  }
+  function cancelSetPassword(i) {
+    const row = document.getElementById('pwRow_' + i);
+    if (row) row.style.display = 'none';
+    const inp = document.getElementById('pwInput_' + i);
+    if (inp) inp.value = '';
+  }
+  async function confirmSetPassword(i) {
+    const inp = document.getElementById('pwInput_' + i);
+    const pw  = inp?.value || '';
+    if (pw.length < 6) { showToast('⚠ Password must be at least 6 characters', true); return; }
+    settingsUsers[i].passwordHash = await sha256(pw);
+    // Also refresh login cache so the new password works immediately
+    _loginSettingsCache = null;
+    await saveSettings();
+    showToast('✓ Password set');
+    renderSettings();
+  }
+
+  // "Change my password" — available to the logged-in user for their own account
+  async function changeMyPassword() {
+    const currentPw = prompt('Enter your current password:');
+    if (currentPw === null) return;
+    const me = (document.getElementById('headerUser')?.textContent || '').toLowerCase().trim();
+    const record = settingsUsers.find(u => u.email.toLowerCase() === me);
+    if (!record) { showToast('⚠ User record not found', true); return; }
+    // Verify current
+    if (record.passwordHash) {
+      if (await sha256(currentPw) !== record.passwordHash) { showToast('⚠ Current password incorrect', true); return; }
+    } else {
+      if (currentPw !== appPassword) { showToast('⚠ Current password incorrect', true); return; }
+    }
+    const newPw  = prompt('Enter new password (min 6 characters):');
+    if (!newPw || newPw.length < 6) { showToast('⚠ Password must be at least 6 characters', true); return; }
+    const confirm = prompt('Confirm new password:');
+    if (newPw !== confirm) { showToast('⚠ Passwords do not match', true); return; }
+    record.passwordHash = await sha256(newPw);
+    _loginSettingsCache = null;
+    await saveSettings();
+    showToast('✓ Password updated');
   }
 
   function settingsEmailReset(i) {
@@ -4199,15 +4274,52 @@
   }
 
   async function submitCredentials() {
-    const email = document.getElementById('gateEmail').value.trim();
+    const email = document.getElementById('gateEmail').value.trim().toLowerCase();
     const pass  = document.getElementById('gateInput').value;
     if (!email) { setGateError('Please enter your email.'); return; }
     if (!pass)  { setGateError('Please enter your password.'); return; }
-    if (pass !== appPassword) { setGateError('Incorrect password. Try again.'); document.getElementById('gateInput').value=''; return; }
 
     const btn = document.getElementById('gateBtn1');
-    btn.textContent = 'Sending code...';
+    btn.textContent = 'Verifying...';
     btn.disabled = true;
+
+    // Fetch settings if not yet cached
+    if (!_loginSettingsCache) {
+      try {
+        const r = await fetch(`${FINANCE_API}?action=getSettings`);
+        const j = await r.json();
+        _loginSettingsCache = j.data || [];
+      } catch {
+        setGateError('Connection error. Please try again.');
+        btn.textContent = 'CONTINUE →'; btn.disabled = false; return;
+      }
+    }
+
+    // Find this user's record
+    const userRecord = _loginSettingsCache.find(u => (u.email||'').toLowerCase() === email);
+    if (!userRecord) {
+      setGateError('Email not recognized. Contact your admin.');
+      document.getElementById('gateInput').value = '';
+      btn.textContent = 'CONTINUE →'; btn.disabled = false; return;
+    }
+
+    // Verify password: per-user hash if set, else fall back to shared password
+    if (userRecord.passwordHash) {
+      const hash = await sha256(pass);
+      if (hash !== userRecord.passwordHash) {
+        setGateError('Incorrect password. Try again.');
+        document.getElementById('gateInput').value = '';
+        btn.textContent = 'CONTINUE →'; btn.disabled = false; return;
+      }
+    } else {
+      if (pass !== appPassword) {
+        setGateError('Incorrect password. Try again.');
+        document.getElementById('gateInput').value = '';
+        btn.textContent = 'CONTINUE →'; btn.disabled = false; return;
+      }
+    }
+
+    btn.textContent = 'Sending code...';
 
     verificationCode = String(Math.floor(100000 + Math.random() * 900000));
     codeExpiry = Date.now() + 10 * 60 * 1000;
