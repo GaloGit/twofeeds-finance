@@ -1184,7 +1184,7 @@
         <div class="table-wrap">
           <div class="table-scroll">
             <table>
-              <thead><tr><th>Name</th><th style="text-align:center">%</th><th>Based On</th><th style="text-align:right">Commission</th><th style="text-align:right">Base Salary</th><th style="text-align:center">Actions</th></tr></thead>
+              <thead><tr><th>Name</th><th style="text-align:center">%</th><th>Based On</th><th style="text-align:right">Commission</th><th style="text-align:right">Base Salary</th><th style="text-align:right">Base %</th><th style="text-align:center">Actions</th></tr></thead>
               <tbody id="commissionsBody"></tbody>
             </table>
           </div>
@@ -6992,22 +6992,26 @@
   function _updateCommissionAmounts() {
     const { profit, revenue } = _lastCommissionBase;
     const fmtAmt = v => '$' + Number(v).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+    const fmtPct = v => profit ? (v/profit*100).toFixed(1)+'% of profit' : '';
     const tbody = document.getElementById('commissionsBody');
     if (!tbody) return;
-    let total = 0;
+    let totalComm = 0, totalBase = 0;
     tbody.querySelectorAll('tr').forEach((tr, i) => {
       if (!_commissions[i]) return;
       const c = _commissions[i];
       const base = c.base === 'revenue' ? revenue : profit;
       const amount = base * (c.percentage / 100);
-      total += amount;
-      const amountCell = tr.cells[3];
-      if (amountCell) amountCell.textContent = fmtAmt(amount);
+      totalComm += amount;
+      totalBase += (c.baseSalary || 0);
+      if (tr.cells[3]) tr.cells[3].textContent = fmtAmt(amount);
+      if (tr.cells[5]) tr.cells[5].textContent = fmtPct(c.baseSalary || 0);
     });
-    const totalCell = document.getElementById('commissionsTotalCell');
-    if (totalCell) totalCell.textContent = fmtAmt(total);
-    const pctCell = document.getElementById('commissionsTotalPct');
-    if (pctCell) pctCell.textContent = profit ? (total/profit*100).toFixed(1)+'% of profit' : '';
+    const totalSalary = totalComm + totalBase;
+    const el = id => document.getElementById(id);
+    if (el('commissionsTotalCell')) el('commissionsTotalCell').textContent = fmtAmt(totalComm);
+    if (el('commissionsTotalPct'))  el('commissionsTotalPct').textContent  = fmtPct(totalComm);
+    if (el('totalSalaryCell'))      el('totalSalaryCell').textContent      = fmtAmt(totalSalary);
+    if (el('totalSalaryPct'))       el('totalSalaryPct').textContent       = fmtPct(totalSalary);
   }
 
   function _renderCommissions(profit, revenue) {
@@ -7021,19 +7025,22 @@
     if (!tbody) return;
     // If row count matches, just update amounts in-place
     const existingRows = tbody.querySelectorAll('tr');
-    if (_commissions.length && existingRows.length === _commissions.length + 1) {
+    if (_commissions.length && existingRows.length === _commissions.length + 2) {
       _updateCommissionAmounts();
       return;
     }
     if (!_commissions.length) {
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:16px">No commission rules yet — click "+ Add Rule"</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:16px">No commission rules yet — click "+ Add Rule"</td></tr>`;
       return;
     }
+    const fmtPct = v => profit ? (v/profit*100).toFixed(1)+'% of profit' : '';
     const amounts = _commissions.map(c => {
       const base = c.base === 'revenue' ? revenue : profit;
       return base * (c.percentage / 100);
     });
-    const total = amounts.reduce((s, a) => s + a, 0);
+    const totalComm   = amounts.reduce((s, a) => s + a, 0);
+    const totalBase   = _commissions.reduce((s, c) => s + (c.baseSalary || 0), 0);
+    const totalSalary = totalComm + totalBase;
     tbody.innerHTML = _commissions.map((c, i) => `<tr>
         <td><input value="${esc(c.name)}" oninput="_commissions[${i}].name=this.value"
           style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;width:100%;min-width:140px"/></td>
@@ -7045,15 +7052,22 @@
           <option value="revenue" ${c.base==='revenue' ?'selected':''}>Revenue</option>
         </select></td>
         <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);text-align:right;white-space:nowrap">${fmtAmt(amounts[i])}</td>
-        <td><input type="number" value="${c.baseSalary||0}" min="0" step="1" oninput="_commissions[${i}].baseSalary=parseFloat(this.value)||0"
+        <td><input type="number" value="${c.baseSalary||0}" min="0" step="1" oninput="_commissions[${i}].baseSalary=parseFloat(this.value)||0;_updateCommissionAmounts()"
           style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;width:90px;text-align:right"/></td>
+        <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:right;white-space:nowrap">${fmtPct(c.baseSalary||0)}</td>
         <td style="text-align:center"><button onclick="_commissions.splice(${i},1);renderProfitSummary(true)"
           style="background:none;border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:4px 10px;color:var(--red);font-family:var(--font-mono);font-size:10px;cursor:pointer">✕</button></td>
       </tr>`).join('') + `
       <tr style="border-top:2px solid var(--border)">
         <td colspan="3" style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text);padding-top:8px">Total Commissions</td>
-        <td id="commissionsTotalCell" style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);text-align:right;white-space:nowrap;padding-top:8px">${fmtAmt(total)}</td>
-        <td id="commissionsTotalPct" style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:right;white-space:nowrap;padding-top:8px">${profit ? (total/profit*100).toFixed(1)+'% of profit' : ''}</td>
+        <td id="commissionsTotalCell" style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);text-align:right;white-space:nowrap;padding-top:8px">${fmtAmt(totalComm)}</td>
+        <td id="commissionsTotalPct" style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:right;white-space:nowrap;padding-top:8px" colspan="2">${fmtPct(totalComm)}</td>
+        <td></td>
+      </tr>
+      <tr style="border-top:1px solid var(--border)">
+        <td colspan="3" style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text);padding-top:6px">Total Salary</td>
+        <td id="totalSalaryCell" style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--green);text-align:right;white-space:nowrap;padding-top:6px">${fmtAmt(totalSalary)}</td>
+        <td id="totalSalaryPct" style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:right;white-space:nowrap;padding-top:6px" colspan="2">${fmtPct(totalSalary)}</td>
         <td></td>
       </tr>`;
   }
