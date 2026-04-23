@@ -4803,6 +4803,7 @@
       renderMediaBuying();
       renderCostSummary();
       updateHeaderAvatar();
+      if (document.querySelector('.page.active')?.id === 'tab-profit') renderProfitSummary();
     } catch { /* publishers tab will fall back to its own fetch */ }
 
     // ── Phase 2: background data (already in-flight — no extra wait cost) ──
@@ -4891,6 +4892,7 @@
       renderTickets();
       _renderCmTable();
       _updateNotifBadge();
+      if (document.querySelector('.page.active')?.id === 'tab-profit') renderProfitSummary();
     } catch { /* background data — tabs will fetch on demand if needed */ }
   }
 
@@ -7088,10 +7090,11 @@
           style="background:none;border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:4px 10px;color:var(--red);font-family:var(--font-mono);font-size:10px;cursor:pointer">✕</button></td>
       </tr>`).join('') + `
       <tr style="border-top:2px solid var(--border)">
-        <td colspan="3" style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text);padding-top:8px">Total Commissions</td>
+        <td style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text);padding-top:8px">Total Commissions</td>
+        <td id="commissionsTotalPct" style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:center;white-space:nowrap;padding-top:8px">${fmtPct(totalComm)}</td>
+        <td></td>
         <td id="commissionsTotalCell" style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);text-align:right;white-space:nowrap;padding-top:8px">${fmtAmt(totalComm)}</td>
-        <td id="commissionsTotalPct" style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:right;white-space:nowrap;padding-top:8px" colspan="2">${fmtPct(totalComm)}</td>
-        <td colspan="3"></td>
+        <td colspan="5"></td>
       </tr>
       <tr style="border-top:1px solid var(--border)">
         <td colspan="3" style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text);padding-top:6px">Total Salary (USD)</td>
