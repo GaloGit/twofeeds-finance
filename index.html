@@ -1184,7 +1184,7 @@
         <div class="table-wrap">
           <div class="table-scroll">
             <table>
-              <thead><tr><th>Name</th><th style="text-align:center">%</th><th>Based On</th><th style="text-align:right">Commission</th><th style="text-align:right">Base Salary</th><th style="text-align:right">Base %</th><th style="text-align:center">Actions</th></tr></thead>
+              <thead><tr><th>Name</th><th style="text-align:center">%</th><th>Based On</th><th style="text-align:right">Commission</th><th style="text-align:right">Base Salary</th><th style="text-align:right">Base %</th><th style="text-align:right">Total Salary</th><th style="text-align:right">Total %</th><th style="text-align:center">Actions</th></tr></thead>
               <tbody id="commissionsBody"></tbody>
             </table>
           </div>
@@ -7003,8 +7003,11 @@
       const amount = base * (c.percentage / 100);
       totalComm += amount;
       totalBase += (c.baseSalary || 0);
+      const personTotal = amount + (c.baseSalary || 0);
       if (tr.cells[3]) tr.cells[3].textContent = fmtAmt(amount);
       if (tr.cells[5]) tr.cells[5].textContent = fmtPct(c.baseSalary || 0);
+      if (tr.cells[6]) tr.cells[6].textContent = fmtAmt(personTotal);
+      if (tr.cells[7]) tr.cells[7].textContent = fmtPct(personTotal);
     });
     const totalSalary = totalComm + totalBase;
     const el = id => document.getElementById(id);
@@ -7055,6 +7058,8 @@
         <td><input type="number" value="${c.baseSalary||0}" min="0" step="1" oninput="_commissions[${i}].baseSalary=parseFloat(this.value)||0;_updateCommissionAmounts()"
           style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;width:90px;text-align:right"/></td>
         <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:right;white-space:nowrap">${fmtPct(c.baseSalary||0)}</td>
+        <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--green);text-align:right;white-space:nowrap">${fmtAmt(amounts[i]+(c.baseSalary||0))}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:right;white-space:nowrap">${fmtPct(amounts[i]+(c.baseSalary||0))}</td>
         <td style="text-align:center"><button onclick="_commissions.splice(${i},1);renderProfitSummary(true)"
           style="background:none;border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:4px 10px;color:var(--red);font-family:var(--font-mono);font-size:10px;cursor:pointer">✕</button></td>
       </tr>`).join('') + `
