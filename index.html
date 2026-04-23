@@ -7051,7 +7051,7 @@
     if (!tbody) return;
     // If row count matches, just update amounts in-place
     const existingRows = tbody.querySelectorAll('tr');
-    if (_commissions.length && existingRows.length === _commissions.length + 2) {
+    if (_commissions.length && existingRows.length === _commissions.length + 1) {
       _updateCommissionAmounts();
       return;
     }
@@ -7092,18 +7092,14 @@
           style="background:none;border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:4px 10px;color:var(--red);font-family:var(--font-mono);font-size:10px;cursor:pointer">✕</button></td>
       </tr>`).join('') + `
       <tr style="border-top:2px solid var(--border)">
-        <td style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text);padding-top:8px">Total Commissions</td>
+        <td style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text);padding-top:8px">Total Amounts</td>
         <td id="commissionsTotalPct" style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:center;white-space:nowrap;padding-top:8px">${fmtPct(totalComm)}</td>
         <td></td>
         <td id="commissionsTotalCell" style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);text-align:right;white-space:nowrap;padding-top:8px">${fmtAmt(totalComm)}</td>
         <td id="baseSalaryTotalCell" style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--text);text-align:right;white-space:nowrap;padding-top:8px">₪${_commissions.reduce((s,c)=>s+(c.baseSalary||0),0).toLocaleString()}<div style="font-size:10px;color:var(--muted);font-weight:400">${fmtAmt(_commissions.reduce((s,c)=>s+(c.baseSalary||0),0)/_ilsRate)}</div></td>
-        <td colspan="4"></td>
-      </tr>
-      <tr style="border-top:1px solid var(--border)">
-        <td colspan="3" style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text);padding-top:6px">Total Salary (USD)</td>
-        <td colspan="2"></td>
-        <td colspan="2" id="totalSalaryCell" style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--green);text-align:right;white-space:nowrap;padding-top:6px">${fmtAmt(totalSalary)}</td>
-        <td id="totalSalaryPct" style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:right;white-space:nowrap;padding-top:6px">${fmtPct(totalSalary)}</td>
+        <td></td>
+        <td id="totalSalaryCell" style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--green);text-align:right;white-space:nowrap;padding-top:8px">${fmtAmt(totalSalary)}</td>
+        <td id="totalSalaryPct" style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:right;white-space:nowrap;padding-top:8px">${fmtPct(totalSalary)}</td>
         <td></td>
       </tr>
       `;
