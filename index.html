@@ -5253,6 +5253,16 @@
     if (activeTab && activeTab.id === 'tab-mediabuy') renderMediaBuying();
     if (activeTab && activeTab.id === 'tab-costsummary') renderCostSummary();
     if (activeTab && activeTab.id === 'tab-profit') renderProfitSummary();
+    // Prefetch profit data in background so Profit tab loads instantly
+    setTimeout(_prefetchProfitData, 200);
+  }
+
+  function _prefetchProfitData() {
+    const pk = periodKey();
+    const pKey = 'pub_' + pk, iKey = 'inv_' + pk, mKey = 'mb_' + pk;
+    if (!_rawCache[pKey]) fetchPeriodData('getPublishers').then(d => { _rawCache[pKey] = _rawCache[pKey] || d; }).catch(() => {});
+    if (!_rawCache[iKey]) fetchPeriodData('getInvoices').then(d => { _rawCache[iKey] = _rawCache[iKey] || d; }).catch(() => {});
+    if (!_rawCache[mKey]) fetchPeriodData('getMediaBuying').then(d => { _rawCache[mKey] = _rawCache[mKey] || d; }).catch(() => {});
   }
 
   function periodKey() {
