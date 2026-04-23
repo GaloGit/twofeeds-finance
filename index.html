@@ -6821,7 +6821,12 @@
   }
 
   // ── PROFIT SUMMARY ──
-  async function renderProfitSummary(inputOnly = false) {
+  function renderProfitSummary(inputOnly = false) {
+    clearTimeout(_profRenderTimer);
+    _profRenderTimer = setTimeout(() => _renderProfitSummaryCore(inputOnly), inputOnly ? 80 : 0);
+  }
+
+  async function _renderProfitSummaryCore(inputOnly = false) {
     const pk = periodKey();
     const pl = periodLabel();
     const el = document.getElementById('profPeriodLabel');
@@ -6882,7 +6887,7 @@
     const profSub = document.getElementById('profProfitSub');
     if (profSub) profSub.textContent = margin !== null ? `${margin.toFixed(1)}% margin` : 'no revenue set';
 
-    // Breakdown table
+    // Breakdown table — update in-place to avoid layout jumps
     const rows = [
       { label: 'Revenue',        amount: revenue,   highlight: true, color: 'var(--green)' },
       { label: 'Publisher Costs',amount: pubCost,   highlight: false, color: 'var(--red)'  },
@@ -6891,12 +6896,23 @@
       { label: 'Profit',         amount: profit,    highlight: true,  color: profit>=0?'var(--green)':'var(--red)' },
     ];
     const tbody = document.getElementById('profBreakBody');
-    if (tbody) tbody.innerHTML = rows.map(r => `
-      <tr style="${r.highlight?'border-top:1px solid var(--border)':''}">
-        <td style="font-family:var(--font-mono);font-size:12px${r.highlight?';font-weight:700;color:var(--text)':';color:var(--muted)'}">${r.label}</td>
-        <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:${r.color};text-align:right;white-space:nowrap">${fmtAmt(r.amount)}</td>
-        <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:right">${r.label==='Revenue'?'100%':pctOf(r.amount)}</td>
-      </tr>`).join('');
+    if (tbody) {
+      const existing = tbody.querySelectorAll('tr');
+      if (existing.length === rows.length) {
+        rows.forEach((r, i) => {
+          existing[i].cells[1].textContent = fmtAmt(r.amount);
+          existing[i].cells[1].style.color = r.color;
+          existing[i].cells[2].textContent = r.label === 'Revenue' ? '100%' : pctOf(r.amount);
+        });
+      } else {
+        tbody.innerHTML = rows.map(r => `
+          <tr style="${r.highlight?'border-top:1px solid var(--border)':''}">
+            <td style="font-family:var(--font-mono);font-size:12px${r.highlight?';font-weight:700;color:var(--text)':';color:var(--muted)'}">${r.label}</td>
+            <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:${r.color};text-align:right;white-space:nowrap">${fmtAmt(r.amount)}</td>
+            <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:right">${r.label==='Revenue'?'100%':pctOf(r.amount)}</td>
+          </tr>`).join('');
+      }
+    }
 
     // Commissions (admin only)
     _renderCommissions(profit, revenue);
@@ -6990,6 +7006,8 @@
     });
     const totalCell = document.getElementById('commissionsTotalCell');
     if (totalCell) totalCell.textContent = fmtAmt(total);
+    const pctCell = document.getElementById('commissionsTotalPct');
+    if (pctCell) pctCell.textContent = profit ? (total/profit*100).toFixed(1)+'% of profit' : '';
   }
 
   function _renderCommissions(profit, revenue) {
@@ -7001,6 +7019,12 @@
     const fmtAmt = v => '$' + Number(v).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
     const tbody = document.getElementById('commissionsBody');
     if (!tbody) return;
+    // If row count matches, just update amounts in-place
+    const existingRows = tbody.querySelectorAll('tr');
+    if (_commissions.length && existingRows.length === _commissions.length + 1) {
+      _updateCommissionAmounts();
+      return;
+    }
     if (!_commissions.length) {
       tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:16px">No commission rules yet — click "+ Add Rule"</td></tr>`;
       return;
@@ -7027,7 +7051,7 @@
       <tr style="border-top:2px solid var(--border)">
         <td colspan="3" style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text);padding-top:8px">Total Commissions</td>
         <td id="commissionsTotalCell" style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);text-align:right;white-space:nowrap;padding-top:8px">${fmtAmt(total)}</td>
-        <td></td>
+        <td id="commissionsTotalPct" style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:right;white-space:nowrap;padding-top:8px">${profit ? (total/profit*100).toFixed(1)+'% of profit' : ''}</td>
       </tr>`;
   }
 
@@ -7050,6 +7074,7 @@
   let _revData = [];
   let _revenueByPeriod = {}; // { '2026-01': 50000, ... } — loaded from Revenue sheet
   let _commissions = [];    // [{ name, percentage, base }] — admin-only, global rules
+  let _profRenderTimer = null;
 
   (function _revLoad() {
     try { _revData = JSON.parse(localStorage.getItem('tf_rev_summary') || '[]'); } catch { _revData = []; }
