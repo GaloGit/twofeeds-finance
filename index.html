@@ -487,7 +487,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.0.6</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.0.7</div>
   </div>
 </div>
 
@@ -559,7 +559,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.0.6</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.0.7</div>
   </div>
 </div>
 
@@ -601,7 +601,19 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.0.6</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.0.7</span>
+            <div id="adminPanelBtns" style="display:none;gap:4px;margin-top:3px">
+              <button id="adminBtn_settings" onclick="showAdminPanel('settings')" title="Settings"
+                style="display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;cursor:pointer;font-family:var(--font-mono);font-size:9px;color:var(--muted);transition:all 0.2s;white-space:nowrap">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                Settings
+              </button>
+              <button id="adminBtn_team" onclick="showAdminPanel('campaignmgr', renderCampaignMgr)" title="Team Roles"
+                style="display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;cursor:pointer;font-family:var(--font-mono);font-size:9px;color:var(--muted);transition:all 0.2s;white-space:nowrap">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Team Roles
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -634,8 +646,6 @@
         <button class="nav-tab" id="navTab_profit" style="display:none" onclick="showTab('profit', this); renderProfitSummary()"><svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg><span>Profit Summary</span></button>
         <button class="nav-tab" id="advertisersTab" style="display:none;color:var(--muted)" onclick="showTab('advertisers', this); renderAdvertisers()"><svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg><span>Advertisers Info</span></button>
         <button class="nav-tab" id="revSummaryTab" style="display:none;color:var(--muted)" onclick="showTab('revsummary', this); renderRevSummary()"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8h10M7 12h6"/></svg><span>Rev Summary</span></button>
-        <button class="nav-tab" id="campaignMgrTab" style="display:none;color:var(--muted)" onclick="showTab('campaignmgr', this); renderCampaignMgr()"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Team Roles</span></button>
-        <button class="nav-tab" id="settingsTab" style="display:none;color:var(--muted)" onclick="showTab('settings', this); renderSettings(); populateConfigFields()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Settings</span></button>
       </nav>
 
       <!-- OPERATIONS NAV (hidden until switchSection('ops')) -->
@@ -1990,11 +2000,9 @@
     const sw = document.getElementById('sectionSwitcher');
     if (sw) sw.style.display = admin ? 'flex' : 'none';
 
-    // ── Admin-only tabs (Settings + Campaign Managers + Sources Info + Advertisers) ──
-    const st = document.getElementById('settingsTab');
-    if (st) st.style.display = admin ? 'block' : 'none';
-    const cmt = document.getElementById('campaignMgrTab');
-    if (cmt) cmt.style.display = admin ? 'inline-flex' : 'none';
+    // ── Admin-only panel buttons (Settings + Team Roles moved out of nav) ──
+    const adminBtns = document.getElementById('adminPanelBtns');
+    if (adminBtns) adminBtns.style.display = admin ? 'flex' : 'none';
     const sit = document.getElementById('sourcesInfoTab');
     if (sit) sit.style.display = admin ? 'inline-flex' : 'none';
     const advt = document.getElementById('advertisersTab');
@@ -5410,8 +5418,28 @@
   function showTab(name, btn) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    _clearAdminBtnActive();
     document.getElementById('tab-' + name).classList.add('active');
     btn.classList.add('active');
+  }
+
+  function showAdminPanel(name, renderFn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    _clearAdminBtnActive();
+    document.getElementById('tab-' + name).classList.add('active');
+    const btnId = name === 'settings' ? 'adminBtn_settings' : 'adminBtn_team';
+    const btn = document.getElementById(btnId);
+    if (btn) { btn.style.color = 'var(--accent-light)'; btn.style.borderColor = 'var(--accent)'; }
+    if (name === 'settings') { renderSettings(); populateConfigFields(); }
+    if (renderFn) renderFn();
+  }
+
+  function _clearAdminBtnActive() {
+    ['adminBtn_settings','adminBtn_team'].forEach(id => {
+      const b = document.getElementById(id);
+      if (b) { b.style.color = ''; b.style.borderColor = ''; }
+    });
   }
 
   // ── SMART DIFF HELPERS ──
