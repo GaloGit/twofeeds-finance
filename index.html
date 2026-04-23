@@ -6890,8 +6890,8 @@
       { label: 'Profit',         amount: profit,    highlight: true,  color: profit>=0?'var(--green)':'var(--red)' },
     ];
     const tbody = document.getElementById('profBreakBody');
-    if (tbody) tbody.innerHTML = rows.map((r,i) => `
-      <tr style="animation-delay:${i*0.04}s${r.highlight?';border-top:1px solid var(--border)':''}">
+    if (tbody) tbody.innerHTML = rows.map(r => `
+      <tr style="${r.highlight?'border-top:1px solid var(--border)':''}">
         <td style="font-family:var(--font-mono);font-size:12px${r.highlight?';font-weight:700;color:var(--text)':';color:var(--muted)'}">${r.label}</td>
         <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:${r.color};text-align:right;white-space:nowrap">${fmtAmt(r.amount)}</td>
         <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:right">${r.label==='Revenue'?'100%':pctOf(r.amount)}</td>
@@ -6970,11 +6970,33 @@
     } catch { showToast('⚠ Failed to save revenue'); }
   }
 
+  let _lastCommissionBase = { profit: 0, revenue: 0 };
+
+  function _updateCommissionAmounts() {
+    const { profit, revenue } = _lastCommissionBase;
+    const fmtAmt = v => '$' + Number(v).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+    const tbody = document.getElementById('commissionsBody');
+    if (!tbody) return;
+    let total = 0;
+    tbody.querySelectorAll('tr').forEach((tr, i) => {
+      if (!_commissions[i]) return;
+      const c = _commissions[i];
+      const base = c.base === 'revenue' ? revenue : profit;
+      const amount = base * (c.percentage / 100);
+      total += amount;
+      const amountCell = tr.cells[3];
+      if (amountCell) amountCell.textContent = fmtAmt(amount);
+    });
+    const totalCell = document.getElementById('commissionsTotalCell');
+    if (totalCell) totalCell.textContent = fmtAmt(total);
+  }
+
   function _renderCommissions(profit, revenue) {
     const sec = document.getElementById('commissionsSection');
     if (!sec) return;
     sec.style.display = isAdmin() ? 'block' : 'none';
     if (!isAdmin()) return;
+    _lastCommissionBase = { profit, revenue };
     const fmtAmt = v => '$' + Number(v).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
     const tbody = document.getElementById('commissionsBody');
     if (!tbody) return;
@@ -6982,24 +7004,30 @@
       tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:16px">No commission rules yet — click "+ Add Rule"</td></tr>`;
       return;
     }
-    tbody.innerHTML = _commissions.map((c, i) => {
+    const amounts = _commissions.map(c => {
       const base = c.base === 'revenue' ? revenue : profit;
-      const amount = base * (c.percentage / 100);
-      return `<tr>
+      return base * (c.percentage / 100);
+    });
+    const total = amounts.reduce((s, a) => s + a, 0);
+    tbody.innerHTML = _commissions.map((c, i) => `<tr>
         <td><input value="${esc(c.name)}" oninput="_commissions[${i}].name=this.value"
           style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;width:100%;min-width:140px"/></td>
-        <td style="text-align:center"><input type="number" value="${c.percentage}" min="0" max="100" step="0.1" oninput="_commissions[${i}].percentage=parseFloat(this.value)||0;renderProfitSummary(true)"
+        <td style="text-align:center"><input type="number" value="${c.percentage}" min="0" max="100" step="0.1" oninput="_commissions[${i}].percentage=parseFloat(this.value)||0;_updateCommissionAmounts()"
           style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;width:64px;text-align:center"/>%</td>
-        <td><select oninput="_commissions[${i}].base=this.value;renderProfitSummary(true)"
+        <td><select oninput="_commissions[${i}].base=this.value;_updateCommissionAmounts()"
           style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;cursor:pointer">
           <option value="profit"  ${c.base==='profit'  ?'selected':''}>Profit</option>
           <option value="revenue" ${c.base==='revenue' ?'selected':''}>Revenue</option>
         </select></td>
-        <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);text-align:right;white-space:nowrap">${fmtAmt(amount)}</td>
+        <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);text-align:right;white-space:nowrap">${fmtAmt(amounts[i])}</td>
         <td style="text-align:center"><button onclick="_commissions.splice(${i},1);renderProfitSummary(true)"
           style="background:none;border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:4px 10px;color:var(--red);font-family:var(--font-mono);font-size:10px;cursor:pointer">✕</button></td>
+      </tr>`).join('') + `
+      <tr style="border-top:2px solid var(--border)">
+        <td colspan="3" style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text);padding-top:8px">Total Commissions</td>
+        <td id="commissionsTotalCell" style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);text-align:right;white-space:nowrap;padding-top:8px">${fmtAmt(total)}</td>
+        <td></td>
       </tr>`;
-    }).join('');
   }
 
   function _addCommissionRow() {
