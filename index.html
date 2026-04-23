@@ -1144,7 +1144,7 @@
         <div class="summary-card red" style="animation-delay:0.1s">
           <div class="card-label">Total Costs</div>
           <div class="card-value" id="profCostCard">$0</div>
-          <div class="card-sub">pub + invoices + media</div>
+          <div class="card-sub">publishers + invoices</div>
         </div>
         <div class="summary-card blue" style="animation-delay:0.15s">
           <div class="card-label">Profit</div>
@@ -6833,7 +6833,7 @@
     const pubCost = (pubRows || []).reduce((s,r) => s + (r.amount !== undefined ? (r.amount||0) : (parseFloat(r['Amount'])||0)), 0);
     const invCost = (invRows || []).reduce((s,r) => s + (r.amount !== undefined ? (r.amount||0) : (parseFloat(r['Amount'])||0)), 0);
     const mbCost  = (mbRows  || []).reduce((s,r) => s + (r.cpc    !== undefined ? (r.cpc   ||0) : (parseFloat(r['CPC'])   ||0)), 0);
-    const totalCost = pubCost + invCost + mbCost;
+    const totalCost = pubCost + invCost;
     const profit    = revenue - totalCost;
     const margin    = revenue > 0 ? (profit / revenue * 100) : null;
 
@@ -6861,7 +6861,6 @@
       { label: 'Revenue',        amount: revenue,   highlight: true, color: 'var(--green)' },
       { label: 'Publisher Costs',amount: pubCost,   highlight: false, color: 'var(--red)'  },
       { label: 'Invoice Costs',  amount: invCost,   highlight: false, color: 'var(--red)'  },
-      { label: 'Media Buying',   amount: mbCost,    highlight: false, color: 'var(--red)'  },
       { label: 'Total Costs',    amount: totalCost, highlight: true,  color: 'var(--amber)'},
       { label: 'Profit',         amount: profit,    highlight: true,  color: profit>=0?'var(--green)':'var(--red)' },
     ];
