@@ -7033,6 +7033,8 @@
     });
     const el = id => document.getElementById(id);
     if (el('commissionsTotalCell')) el('commissionsTotalCell').textContent = fmtAmt(totalComm);
+    const bsTotal = _commissions.reduce((s,c) => s+(c.baseSalary||0), 0);
+    if (el('baseSalaryTotalCell')) el('baseSalaryTotalCell').innerHTML = `₪${bsTotal.toLocaleString()}<div style="font-size:10px;color:var(--muted);font-weight:400">${fmtAmt(bsTotal/_ilsRate)}</div>`;
     if (el('commissionsTotalPct'))  el('commissionsTotalPct').textContent  = fmtPct(totalComm);
     if (el('totalSalaryCell'))      el('totalSalaryCell').textContent      = fmtAmt(totalSalary);
     if (el('totalSalaryPct'))       el('totalSalaryPct').textContent       = fmtPct(totalSalary);
@@ -7094,7 +7096,8 @@
         <td id="commissionsTotalPct" style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:center;white-space:nowrap;padding-top:8px">${fmtPct(totalComm)}</td>
         <td></td>
         <td id="commissionsTotalCell" style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);text-align:right;white-space:nowrap;padding-top:8px">${fmtAmt(totalComm)}</td>
-        <td colspan="5"></td>
+        <td id="baseSalaryTotalCell" style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--text);text-align:right;white-space:nowrap;padding-top:8px">₪${_commissions.reduce((s,c)=>s+(c.baseSalary||0),0).toLocaleString()}<div style="font-size:10px;color:var(--muted);font-weight:400">${fmtAmt(_commissions.reduce((s,c)=>s+(c.baseSalary||0),0)/_ilsRate)}</div></td>
+        <td colspan="4"></td>
       </tr>
       <tr style="border-top:1px solid var(--border)">
         <td colspan="3" style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text);padding-top:6px">Total Salary (USD)</td>
