@@ -134,8 +134,8 @@
     .refresh-btn:hover { border-color: var(--accent); color: var(--accent-light); }
     .logout-btn {
       background: transparent; border: 1px solid var(--border); color: var(--muted);
-      padding: 8px 16px; border-radius: 8px; font-family: var(--font-mono);
-      font-size: 11px; cursor: pointer; transition: all 0.2s; letter-spacing: 0.05em;
+      padding: 5px 11px; border-radius: 7px; font-family: var(--font-mono);
+      font-size: 10px; cursor: pointer; transition: all 0.2s; letter-spacing: 0.05em;
     }
     .logout-btn:hover { border-color: var(--red); color: var(--red); }
 
@@ -5438,7 +5438,7 @@
   function _clearAdminBtnActive() {
     ['adminBtn_settings','adminBtn_team'].forEach(id => {
       const b = document.getElementById(id);
-      if (b) { b.style.color = ''; b.style.borderColor = ''; }
+      if (b) { b.style.color = 'var(--muted)'; b.style.borderColor = 'var(--border)'; }
     });
   }
 
