@@ -7139,9 +7139,21 @@
     const totalComm   = amounts.reduce((s, a) => s + a, 0);
     const totalSalary = amounts.reduce((s, a, i) => s + a + (_commissions[i].baseSalary || 0) / _ilsRate, 0);
     const btnBase = 'font-family:var(--font-mono);font-size:11px;border-radius:6px;padding:5px 14px;cursor:pointer;';
-    tbody.innerHTML = _commissions.map((c, i) => `
+    tbody.innerHTML = _commissions.map((c, i) => {
+      // Look up team member by email to get their photo
+      const teamMember = (c.email && typeof campaignMgrs !== 'undefined')
+        ? campaignMgrs.find(m => m.email && m.email.toLowerCase() === c.email.toLowerCase())
+        : null;
+      const photoUrl = teamMember?.photoUrl || '';
+      const photoSrc = resolvePhotoUrl(photoUrl);
+      const fallbackSrc = (photoUrl && _driveId(photoUrl)) ? `https://drive.google.com/uc?export=view&id=${_driveId(photoUrl)}` : '';
+      const initials = (c.name || '?')[0].toUpperCase();
+      const avatar = photoSrc
+        ? `<img src="${esc(photoSrc)}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:2px solid var(--border);flex-shrink:0" onerror="${fallbackSrc ? `this.src='${esc(fallbackSrc)}';this.onerror=function(){this.style.display='none'};` : `this.style.display='none'`}">`
+        : `<span style="width:28px;height:28px;border-radius:50%;background:var(--surface3);border:2px solid var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--muted);flex-shrink:0">${initials}</span>`;
+      return `
       <tr data-comm-idx="${i}" style="border-bottom:1px solid var(--border)">
-        <td style="font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--text)">${esc(c.name)||'<span style="color:var(--muted)">—</span>'}</td>
+        <td style="font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--text)"><div style="display:flex;align-items:center;gap:8px">${avatar}${esc(c.name)||'<span style="color:var(--muted)">—</span>'}</div></td>
         <td style="font-family:var(--font-mono);font-size:12px;color:var(--text);text-align:center">${c.percentage}%</td>
         <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">${c.base==='revenue'?'Revenue':'Profit'}</td>
         <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);text-align:right;white-space:nowrap">${fmtAmt(amounts[i])}</td>
@@ -7206,7 +7218,7 @@
             </div>
           </div>
         </td>
-      </tr>`).join('') + `
+      </tr>`; }).join('') + `
       <tr style="border-top:2px solid var(--border)">
         <td style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text);padding-top:8px">Total Amounts</td>
         <td id="commissionsTotalPct" style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:center;white-space:nowrap;padding-top:8px">${fmtPct(totalComm)}</td>
