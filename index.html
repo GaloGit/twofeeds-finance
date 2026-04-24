@@ -488,7 +488,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.1.2</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.1.3</div>
   </div>
 </div>
 
@@ -561,7 +561,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.1.2</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.1.3</div>
   </div>
 </div>
 
@@ -603,7 +603,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.1.2</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.1.3</span>
             <div id="adminPanelBtns" style="display:none;gap:4px;margin-top:3px">
               <button id="adminBtn_settings" onclick="showAdminPanel('settings')" title="Settings"
                 style="display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;cursor:pointer;font-family:var(--font-mono);font-size:9px;color:var(--muted);transition:all 0.2s;white-space:nowrap">
@@ -639,14 +639,14 @@
       </div>
 
       <nav class="nav-bar" id="financeNav">
-        <button class="nav-tab active" id="sourcesInfoTab" style="display:none;color:var(--muted)" onclick="showTab('sourcesinfo', this); renderSourcesInfo()"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg><span>Sources Info</span></button>
+        <button class="nav-tab active" id="sourcesInfoTab" style="display:none" onclick="showTab('sourcesinfo', this); renderSourcesInfo()"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg><span>Sources Info</span></button>
         <button class="nav-tab" id="navTab_publishers" style="display:none" onclick="showTab('publishers', this)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg><span>Publishers</span></button>
         <button class="nav-tab" id="navTab_pubview" style="display:none" onclick="showTab('pubview', this); initPubView()"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Publisher View</span></button>
         <button class="nav-tab" id="navTab_internal" style="display:none" onclick="showTab('internal', this); renderInvoices()"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg><span>Internal Sources</span></button>
         <button class="nav-tab" id="navTab_mediabuy" style="display:none" onclick="showTab('mediabuy', this); renderMediaBuying()"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg><span>Media Buying</span></button>
         <button class="nav-tab" id="navTab_costsummary" style="display:none" onclick="showTab('costsummary', this); renderCostSummary()"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>Cost Summary</span></button>
-        <button class="nav-tab" id="advertisersTab" style="display:none;color:var(--muted)" onclick="showTab('advertisers', this); renderAdvertisers()"><svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg><span>Advertisers Info</span></button>
-        <button class="nav-tab" id="revSummaryTab" style="display:none;color:var(--muted)" onclick="showTab('revsummary', this); renderRevSummary()"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8h10M7 12h6"/></svg><span>Rev Summary</span></button>
+        <button class="nav-tab" id="advertisersTab" style="display:none" onclick="showTab('advertisers', this); renderAdvertisers()"><svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg><span>Advertisers Info</span></button>
+        <button class="nav-tab" id="revSummaryTab" style="display:none" onclick="showTab('revsummary', this); renderRevSummary()"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8h10M7 12h6"/></svg><span>Rev Summary</span></button>
         <button class="nav-tab" id="navTab_profit" style="display:none" onclick="showTab('profit', this); renderProfitSummary()"><svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg><span>Profit Summary</span></button>
       </nav>
 
