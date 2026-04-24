@@ -1198,9 +1198,6 @@
               </table>
             </div>
           </div>
-          <div style="display:flex;justify-content:flex-end;margin-top:10px">
-            <button onclick="_saveCommissions()" style="font-family:var(--font-mono);font-size:10px;padding:7px 18px;border-radius:8px;border:1px solid var(--green);background:rgba(34,197,94,0.1);color:var(--green);cursor:pointer">Save Commissions</button>
-          </div>
         </div>
         <!-- User view: personal read-only summary -->
         <div id="commissionsUserView" style="display:none"></div>
@@ -7020,8 +7017,9 @@
     const tbody = document.getElementById('commissionsBody');
     if (!tbody) return;
     let totalComm = 0, totalSalary = 0;
-    tbody.querySelectorAll('tr').forEach((tr, i) => {
-      if (!_commissions[i]) return;
+    tbody.querySelectorAll('tr[data-comm-idx]').forEach(tr => {
+      const i = parseInt(tr.dataset.commIdx);
+      if (isNaN(i) || !_commissions[i]) return;
       const c = _commissions[i];
       const base = c.base === 'revenue' ? revenue : profit;
       const amount = base * (c.percentage / 100);
@@ -7043,6 +7041,27 @@
     if (el('commissionsTotalPct'))  el('commissionsTotalPct').textContent  = fmtPct(totalComm);
     if (el('totalSalaryCell'))      el('totalSalaryCell').textContent      = fmtAmt(totalSalary);
     if (el('totalSalaryPct'))       el('totalSalaryPct').textContent       = fmtPct(totalSalary);
+  }
+
+  function _toggleCommEdit(i) {
+    const row = document.getElementById('commEdit_' + i);
+    if (!row) return;
+    row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+  }
+
+  async function _saveCommissionRowAndClose(i) {
+    const nameEl = document.getElementById('cedit_name_' + i);
+    const pctEl  = document.getElementById('cedit_pct_'  + i);
+    const baseEl = document.getElementById('cedit_base_' + i);
+    const bsEl   = document.getElementById('cedit_bs_'   + i);
+    const emEl   = document.getElementById('cedit_em_'   + i);
+    if (nameEl) _commissions[i].name       = nameEl.value;
+    if (pctEl)  _commissions[i].percentage = parseFloat(pctEl.value) || 0;
+    if (baseEl) _commissions[i].base       = baseEl.value;
+    if (bsEl)   _commissions[i].baseSalary = parseFloat(bsEl.value.replace(/[^0-9.]/g,'')) || 0;
+    if (emEl)   _commissions[i].email      = emEl.value.trim();
+    await _saveCommissions();
+    renderProfitSummary(true);
   }
 
   function _renderCommissions(profit, revenue) {
@@ -7099,9 +7118,9 @@
     const fmtAmt = v => '$' + Number(v).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
     const tbody = document.getElementById('commissionsBody');
     if (!tbody) return;
-    // If row count matches, just update amounts in-place
-    const existingRows = tbody.querySelectorAll('tr');
-    if (_commissions.length && existingRows.length === _commissions.length + 1) {
+    // If display row count matches, just update amounts in-place
+    const existingDisplayRows = tbody.querySelectorAll('tr[data-comm-idx]');
+    if (_commissions.length && existingDisplayRows.length === _commissions.length) {
       _updateCommissionAmounts();
       return;
     }
@@ -7119,29 +7138,74 @@
     });
     const totalComm   = amounts.reduce((s, a) => s + a, 0);
     const totalSalary = amounts.reduce((s, a, i) => s + a + (_commissions[i].baseSalary || 0) / _ilsRate, 0);
-    tbody.innerHTML = _commissions.map((c, i) => `<tr>
-        <td><input value="${esc(c.name)}" oninput="_commissions[${i}].name=this.value"
-          style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;width:100%;min-width:140px"/></td>
-        <td style="text-align:center"><input type="number" value="${c.percentage}" min="0" max="100" step="0.1" oninput="_commissions[${i}].percentage=parseFloat(this.value)||0;_updateCommissionAmounts()"
-          style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;width:64px;text-align:center"/>%</td>
-        <td><select oninput="_commissions[${i}].base=this.value;_updateCommissionAmounts()"
-          style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;cursor:pointer">
-          <option value="profit"  ${c.base==='profit'  ?'selected':''}>Profit</option>
-          <option value="revenue" ${c.base==='revenue' ?'selected':''}>Revenue</option>
-        </select></td>
+    const btnBase = 'font-family:var(--font-mono);font-size:11px;border-radius:6px;padding:5px 14px;cursor:pointer;';
+    tbody.innerHTML = _commissions.map((c, i) => `
+      <tr data-comm-idx="${i}" style="border-bottom:1px solid var(--border)">
+        <td style="font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--text)">${esc(c.name)||'<span style="color:var(--muted)">—</span>'}</td>
+        <td style="font-family:var(--font-mono);font-size:12px;color:var(--text);text-align:center">${c.percentage}%</td>
+        <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">${c.base==='revenue'?'Revenue':'Profit'}</td>
         <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);text-align:right;white-space:nowrap">${fmtAmt(amounts[i])}</td>
         <td style="text-align:right">
-          <input type="text" value="₪${(c.baseSalary||0).toLocaleString()}" oninput="_commissions[${i}].baseSalary=parseFloat(this.value.replace(/[^0-9.]/g,''))||0;_updateCommissionAmounts()"
-            style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;width:100px;text-align:right"/>
+          <span style="font-family:var(--font-mono);font-size:12px;color:var(--text)">₪${(c.baseSalary||0).toLocaleString()}</span>
           <div class="usd-val" style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:2px">${fmtAmt((c.baseSalary||0)/_ilsRate)}</div>
         </td>
         <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:right;white-space:nowrap">${fmtPct((c.baseSalary||0)/_ilsRate)}</td>
         <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--green);text-align:right;white-space:nowrap">${fmtAmt(amounts[i]+(c.baseSalary||0)/_ilsRate)}</td>
         <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:right;white-space:nowrap">${fmtPct(amounts[i]+(c.baseSalary||0)/_ilsRate)}</td>
-        <td><input type="text" autocomplete="off" value="${esc(c.email||'')}" oninput="_commissions[${i}].email=this.value.trim()" placeholder="user@email.com"
-          style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);-webkit-text-fill-color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;width:160px;box-shadow:0 0 0 1000px var(--surface2) inset"/></td>
-        <td style="text-align:center"><button onclick="_commissions.splice(${i},1);renderProfitSummary(true)"
-          style="background:none;border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:4px 10px;color:var(--red);font-family:var(--font-mono);font-size:10px;cursor:pointer">✕</button></td>
+        <td style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${esc(c.email||'')||'<span style="opacity:0.4">—</span>'}</td>
+        <td style="text-align:center">
+          <button onclick="event.stopPropagation();_toggleCommEdit(${i})"
+            style="${btnBase}background:none;border:1px solid var(--border);color:var(--muted);" title="Edit">✎</button>
+        </td>
+      </tr>
+      <tr id="commEdit_${i}" style="display:none;background:var(--surface)">
+        <td colspan="10" style="padding:0">
+          <div style="padding:16px 20px;border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 2fr;gap:12px;margin-bottom:14px">
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Name</div>
+                <input id="cedit_name_${i}" value="${esc(c.name)}" placeholder="Role name"
+                  style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;box-sizing:border-box"/>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">%</div>
+                <div style="display:flex;align-items:center;gap:4px">
+                  <input id="cedit_pct_${i}" type="number" value="${c.percentage}" min="0" max="100" step="0.1"
+                    style="width:64px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 8px;color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;text-align:center"/>
+                  <span style="font-family:var(--font-mono);font-size:12px;color:var(--muted)">%</span>
+                </div>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Based On</div>
+                <select id="cedit_base_${i}"
+                  style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;cursor:pointer">
+                  <option value="profit"  ${c.base==='profit'  ?'selected':''}>Profit</option>
+                  <option value="revenue" ${c.base==='revenue' ?'selected':''}>Revenue</option>
+                </select>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Base Salary (₪)</div>
+                <input id="cedit_bs_${i}" type="text" value="${(c.baseSalary||0).toLocaleString()}" placeholder="0"
+                  style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 8px;color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;text-align:right;box-sizing:border-box"/>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Email</div>
+                <input id="cedit_em_${i}" type="text" autocomplete="off" value="${esc(c.email||'')}" placeholder="user@email.com"
+                  style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 8px;color:var(--text);-webkit-text-fill-color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;box-shadow:0 0 0 1000px var(--surface2) inset;box-sizing:border-box"/>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <button onclick="_commissions.splice(${i},1);renderProfitSummary(true)"
+                style="${btnBase}background:none;border:1px solid rgba(239,68,68,0.35);color:var(--red);">✕ Delete</button>
+              <div style="display:flex;gap:8px">
+                <button onclick="_toggleCommEdit(${i})"
+                  style="${btnBase}background:none;border:1px solid var(--border);color:var(--muted);">Cancel</button>
+                <button onclick="_saveCommissionRowAndClose(${i})"
+                  style="${btnBase}background:var(--accent);border:1px solid var(--accent);color:#fff;font-weight:600;">✓ Save</button>
+              </div>
+            </div>
+          </div>
+        </td>
       </tr>`).join('') + `
       <tr style="border-top:2px solid var(--border)">
         <td style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text);padding-top:8px">Total Amounts</td>
@@ -7158,8 +7222,11 @@
   }
 
   function _addCommissionRow() {
+    const newIdx = _commissions.length;
     _commissions.push({ name: '', percentage: 0, base: 'profit', baseSalary: 0, email: '' });
     renderProfitSummary(true);
+    // Auto-open the edit panel for the new row after render
+    setTimeout(() => _toggleCommEdit(newIdx), 50);
   }
 
   async function _saveCommissions() {
