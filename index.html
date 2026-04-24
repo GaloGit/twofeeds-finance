@@ -7138,8 +7138,8 @@
         <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:right;white-space:nowrap">${fmtPct((c.baseSalary||0)/_ilsRate)}</td>
         <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--green);text-align:right;white-space:nowrap">${fmtAmt(amounts[i]+(c.baseSalary||0)/_ilsRate)}</td>
         <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:right;white-space:nowrap">${fmtPct(amounts[i]+(c.baseSalary||0)/_ilsRate)}</td>
-        <td><input type="email" value="${esc(c.email||'')}" oninput="_commissions[${i}].email=this.value.trim()" placeholder="user@email.com"
-          style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;width:160px"/></td>
+        <td><input type="text" autocomplete="off" value="${esc(c.email||'')}" oninput="_commissions[${i}].email=this.value.trim()" placeholder="user@email.com"
+          style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);-webkit-text-fill-color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;width:160px;box-shadow:0 0 0 1000px var(--surface2) inset"/></td>
         <td style="text-align:center"><button onclick="_commissions.splice(${i},1);renderProfitSummary(true)"
           style="background:none;border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:4px 10px;color:var(--red);font-family:var(--font-mono);font-size:10px;cursor:pointer">✕</button></td>
       </tr>`).join('') + `
