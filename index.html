@@ -2453,8 +2453,8 @@
           ondragstart="cmDragStart(event,${i})" ondragover="cmDragOver(event,${i})"
           ondrop="cmDrop(event,${i})" ondragleave="cmDragLeave(event)" ondragend="cmDragEnd(event)"
           style="cursor:pointer;${!isLive ? 'opacity:0.45;filter:grayscale(0.3);animation:none' : ''}" onclick="toggleCmRow(${i}, event)">
-        <td style="width:24px;padding:0 4px;color:var(--muted);font-size:16px;text-align:center;user-select:none;cursor:${_cmOrderEditMode?'grab':'default'};visibility:${_cmOrderEditMode?'visible':'hidden'}"
-            ondragstart="cmDragStart(event,${i})" onclick="event.stopPropagation()" title="Drag to reorder">⠿</td>
+        <td ondragstart="cmDragStart(event,${i})" onclick="event.stopPropagation()" title="Drag to reorder"
+            style="${_cmOrderEditMode?'cursor:grab;color:var(--muted);user-select:none;padding:0 4px;font-size:16px;text-align:center':'width:0;padding:0;font-size:0;overflow:hidden'}">${_cmOrderEditMode?'⠿':''}</td>
         ${cells}
         <td style="white-space:nowrap">
           <button onclick="event.stopPropagation(); toggleCmRow(${i}, event)"
