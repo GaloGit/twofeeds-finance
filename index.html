@@ -7064,6 +7064,12 @@
     if (emEl)   _commissions[i].email      = emEl.value.trim();
     if (docEl)  _commissions[i].docUrl     = docEl.value.trim();
     await _saveCommissions();
+    // Force re-fetch from sheet so display reflects exactly what was saved
+    try {
+      const res = await fetch(`${FINANCE_API}?action=getCommissions`);
+      const json = await res.json();
+      if (json.success && json.data) _commissions = json.data;
+    } catch {}
     renderProfitSummary(true);
   }
 
