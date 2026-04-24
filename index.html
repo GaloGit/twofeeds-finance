@@ -488,7 +488,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.1.1</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.1.2</div>
   </div>
 </div>
 
@@ -561,7 +561,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.1.1</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.1.2</div>
   </div>
 </div>
 
@@ -603,7 +603,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.1.1</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.1.2</span>
             <div id="adminPanelBtns" style="display:none;gap:4px;margin-top:3px">
               <button id="adminBtn_settings" onclick="showAdminPanel('settings')" title="Settings"
                 style="display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;cursor:pointer;font-family:var(--font-mono);font-size:9px;color:var(--muted);transition:all 0.2s;white-space:nowrap">
@@ -4741,7 +4741,7 @@
     const invPromise = fetchPeriodData('getInvoices').catch(() => []);
     const mbPromise  = fetchPeriodData('getMediaBuying').catch(() => []);
     const revPromise  = fetch(`${FINANCE_API}?action=getRevenue`).then(r => r.json()).catch(() => ({ data: [] }));
-    const commPromise = fetch(`${FINANCE_API}?action=getCommissions`).then(r => r.json()).catch(() => ({ data: [] }));
+    const commPromise = fetch(`${FINANCE_API}?action=getCommissions&period=${encodeURIComponent(pk)}`).then(r => r.json()).catch(() => ({ data: [] }));
     const cmPromise  = fetch(`${FINANCE_API}?action=getCampaignMgrs`).then(r => r.json()).catch(() => ({ data: [] }));
     const siPromise  = fetch(`${FINANCE_API}?action=getSourcesInfo`).then(r => r.json()).catch(() => ({ data: [] }));
     const evPromise  = fetch(`${FINANCE_API}?action=getEvents`).then(r => r.json()).catch(() => ({ data: [] }));
@@ -4868,8 +4868,9 @@
       // Revenue
       (revRes.data || []).forEach(r => { if (r.period) _revenueByPeriod[r.period] = r.amount || 0; });
       if (revRes.lastModified) { _tabMeta.prf = { ts: revRes.lastModified, by: revRes.lastModifiedBy || '' }; _renderLastUpdated('prf'); }
-      // Commissions
+      // Commissions (period-aware — already fetched for startup period)
       _commissions = (commRes.data || []);
+      _lastCommissionPeriod = pk;
       meetings = (mtgRes.data || []).map(r => ({
         id: r['ID']||_uid(), title: r['Title']||'', date: r['Date']||'',
         time: r['Time']||'', attendees: r['Attendees']||'',
@@ -6936,6 +6937,35 @@
       }
     }
 
+    // Commissions — re-fetch when period changes
+    if (pk !== _lastCommissionPeriod) {
+      _lastCommissionPeriod = pk;
+      const _cPeriods = [...getSelectedPeriods()];
+      try {
+        if (_cPeriods.length === 1) {
+          const _cRes = await fetch(`${FINANCE_API}?action=getCommissions&period=${encodeURIComponent(_cPeriods[0])}`).then(r => r.json());
+          if (_cRes.success) _commissions = _cRes.data || [];
+        } else if (_cPeriods.length > 1) {
+          // Multi-period: fetch each period concurrently, then aggregate by person
+          const _cAll = await Promise.all(_cPeriods.map(p =>
+            fetch(`${FINANCE_API}?action=getCommissions&period=${encodeURIComponent(p)}`).then(r => r.json()).catch(() => ({ data: [] }))
+          ));
+          const _cMap = new Map();
+          _cAll.forEach(r => {
+            (r.data || []).forEach(c => {
+              const key = (c.email || c.name || '').toLowerCase();
+              if (_cMap.has(key)) { _cMap.get(key).baseSalary = (_cMap.get(key).baseSalary || 0) + (c.baseSalary || 0); }
+              else { _cMap.set(key, { ...c }); }
+            });
+          });
+          _commissions = [..._cMap.values()];
+        }
+      } catch {}
+      // Force full rebuild so rows reflect new period data
+      const _cTbody = document.getElementById('commissionsBody');
+      if (_cTbody) _cTbody.innerHTML = '';
+    }
+
     // Commissions (admin only)
     _renderCommissions(profit, revenue);
     // Monthly chart — build from _revenueByPeriod and cached cost data
@@ -7069,7 +7099,7 @@
     await _saveCommissions();
     // Force re-fetch from sheet so display reflects exactly what was saved
     try {
-      const res = await fetch(`${FINANCE_API}?action=getCommissions`);
+      const res = await fetch(`${FINANCE_API}?action=getCommissions&period=${encodeURIComponent(periodKey())}`);
       const json = await res.json();
       if (json.success && json.data) _commissions = json.data;
     } catch {}
@@ -7094,10 +7124,11 @@
     const adminCtrl = document.getElementById('commissionsAdminControls');
     const addBtn    = document.getElementById('commissionsAddBtn');
     const badge     = document.getElementById('commissionsSectionBadge');
+    const _singlePer = isSinglePeriod();
     if (adminView) adminView.style.display = isAdm ? 'block' : 'none';
     if (userView)  userView.style.display  = isAdm ? 'none'  : 'block';
     if (adminCtrl) adminCtrl.style.display = isAdm ? 'flex'  : 'none';
-    if (addBtn)    addBtn.style.display    = isAdm ? ''      : 'none';
+    if (addBtn)    addBtn.style.display    = (isAdm && _singlePer) ? '' : 'none';
     if (badge)     badge.textContent       = isAdm ? 'admin only' : 'your summary';
 
     if (!isAdm) {
@@ -7140,7 +7171,10 @@
       return;
     }
     if (!_commissions.length) {
-      tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:16px">No commission rules yet — click "+ Add Rule"</td></tr>`;
+      const emptyMsg = _singlePer
+        ? 'No commission rules yet — click &quot;+ Add Rule&quot;'
+        : 'No commission rules found for the selected periods.';
+      tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:16px">${emptyMsg}</td></tr>`;
       return;
     }
     const fmtPct = v => profit ? (v/profit*100).toFixed(1)+'% of profit' : '';
@@ -7154,7 +7188,10 @@
     const totalComm   = amounts.reduce((s, a) => s + a, 0);
     const totalSalary = amounts.reduce((s, a, i) => s + a + (_commissions[i].baseSalary || 0) / _ilsRate, 0);
     const btnBase = 'font-family:var(--font-mono);font-size:11px;border-radius:6px;padding:5px 14px;cursor:pointer;';
-    tbody.innerHTML = _commissions.map((c, i) => {
+    const _multiNote = !_singlePer ? `<tr><td colspan="10" style="padding:8px 12px;background:rgba(99,102,241,0.07);border-bottom:1px solid var(--border)">
+      <span style="font-family:var(--font-mono);font-size:10px;color:var(--accent-light)">📊 Viewing ${getSelectedPeriods().size}-month aggregate — salaries are summed across months. Select a single month to edit rules.</span>
+    </td></tr>` : '';
+    tbody.innerHTML = _multiNote + _commissions.map((c, i) => {
       // Look up team member by email to get their photo
       const teamMember = (c.email && typeof campaignMgrs !== 'undefined')
         ? campaignMgrs.find(m => m.email && m.email.toLowerCase() === c.email.toLowerCase())
@@ -7184,12 +7221,12 @@
           <div style="display:flex;align-items:center;justify-content:center;gap:6px">
             ${c.docUrl ? `<a href="${esc(c.docUrl)}" target="_blank" onclick="event.stopPropagation()"
               style="${btnBase}background:none;border:1px solid rgba(99,102,241,0.4);color:var(--accent-light);text-decoration:none;display:inline-block" title="Open salary document">📄</a>` : ''}
-            <button onclick="event.stopPropagation();_toggleCommEdit(${i})"
-              style="${btnBase}background:none;border:1px solid var(--border);color:var(--muted);" title="Edit">✎</button>
+            ${_singlePer ? `<button onclick="event.stopPropagation();_toggleCommEdit(${i})"
+              style="${btnBase}background:none;border:1px solid var(--border);color:var(--muted);" title="Edit">✎</button>` : ''}
           </div>
         </td>
       </tr>
-      <tr id="commEdit_${i}" style="display:none;background:var(--surface)">
+      ${_singlePer ? `<tr id="commEdit_${i}" style="display:none;background:var(--surface)">
         <td colspan="10" style="padding:0">
           <div style="padding:16px 20px;border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
             <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 2fr;gap:12px;margin-bottom:14px">
@@ -7242,7 +7279,7 @@
             </div>
           </div>
         </td>
-      </tr>`; }).join('') + `
+      </tr>` : ''}`; }).join('') + `
       <tr style="border-top:2px solid var(--border)">
         <td style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text);padding-top:8px">Total Amounts</td>
         <td id="commissionsTotalPct" style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:center;white-space:nowrap;padding-top:8px">${fmtPct(totalComm)}</td>
@@ -7258,6 +7295,7 @@
   }
 
   function _addCommissionRow() {
+    if (!isSinglePeriod()) { showToast('⚠ Select a single month to add commission rules'); return; }
     const newIdx = _commissions.length;
     _commissions.push({ name: '', percentage: 0, base: 'profit', baseSalary: 0, email: '', docUrl: '' });
     renderProfitSummary(true);
@@ -7266,8 +7304,14 @@
   }
 
   async function _saveCommissions() {
+    if (!isSinglePeriod()) { showToast('⚠ Select a single month to save commission rules'); return; }
     try {
-      const res = await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveCommissions', rows: _commissions, user: localStorage.getItem('tf_current_user') || '' }) });
+      const res = await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({
+        action: 'saveCommissions',
+        period: periodKey(),
+        rows: _commissions,
+        user: localStorage.getItem('tf_current_user') || ''
+      }) });
       const json = await res.json().catch(() => ({}));
       if (!json.success) throw new Error('API returned success:false');
       showToast('✓ Commissions saved');
@@ -7278,7 +7322,8 @@
 
   let _revData = [];
   let _revenueByPeriod = {}; // { '2026-01': 50000, ... } — loaded from Revenue sheet
-  let _commissions = [];    // [{ name, percentage, base }] — admin-only, global rules
+  let _commissions = [];    // [{ name, percentage, base }] — admin-only, per-period rules
+  let _lastCommissionPeriod = null; // tracks which period _commissions was loaded for
   let _profRenderTimer = null;
   let _ilsRate = parseFloat(localStorage.getItem('tf_ils_rate')) || 3.7;
 
