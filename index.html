@@ -487,7 +487,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.0.9</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.1.0</div>
   </div>
 </div>
 
@@ -560,7 +560,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.0.9</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.1.0</div>
   </div>
 </div>
 
@@ -602,7 +602,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.0.9</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.1.0</span>
             <div id="adminPanelBtns" style="display:none;gap:4px;margin-top:3px">
               <button id="adminBtn_settings" onclick="showAdminPanel('settings')" title="Settings"
                 style="display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;cursor:pointer;font-family:var(--font-mono);font-size:9px;color:var(--muted);transition:all 0.2s;white-space:nowrap">
@@ -1172,13 +1172,13 @@
         </div>
       </div>
 
-      <!-- Admin-only: Commissions -->
+      <!-- Commissions (admin full view / user personal view) -->
       <div id="commissionsSection" style="display:none;margin-top:32px">
         <div class="section-header" style="margin-bottom:12px">
           <div>
-            <div class="section-title" style="font-size:14px">Commissions <span style="font-size:10px;color:var(--muted);font-weight:400;margin-left:6px">admin only</span></div>
+            <div class="section-title" style="font-size:14px">Commissions <span id="commissionsSectionBadge" style="font-size:10px;color:var(--muted);font-weight:400;margin-left:6px">admin only</span></div>
             <div class="section-sub">Auto-calculated from current profit / revenue</div>
-            <div style="display:flex;align-items:center;gap:6px;margin-top:6px;font-family:var(--font-mono);font-size:11px;color:var(--muted)">
+            <div id="commissionsAdminControls" style="display:flex;align-items:center;gap:6px;margin-top:6px;font-family:var(--font-mono);font-size:11px;color:var(--muted)">
               Exchange rate: 1 USD =
               <input type="number" id="ilsRateInput" min="0.01" step="0.01"
                 style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;width:64px;text-align:center"
@@ -1186,19 +1186,24 @@
               <span>ILS</span>
             </div>
           </div>
-          <button onclick="_addCommissionRow()" style="font-family:var(--font-mono);font-size:10px;padding:6px 14px;border-radius:8px;border:1px solid var(--accent);background:rgba(99,102,241,0.1);color:var(--accent-light);cursor:pointer">+ Add Rule</button>
+          <button id="commissionsAddBtn" onclick="_addCommissionRow()" style="font-family:var(--font-mono);font-size:10px;padding:6px 14px;border-radius:8px;border:1px solid var(--accent);background:rgba(99,102,241,0.1);color:var(--accent-light);cursor:pointer">+ Add Rule</button>
         </div>
-        <div class="table-wrap">
-          <div class="table-scroll">
-            <table>
-              <thead><tr><th>Name</th><th style="text-align:center">%</th><th>Based On</th><th style="text-align:right">Commission</th><th style="text-align:right">Base Salary (ILS/USD)</th><th style="text-align:right">Base %</th><th style="text-align:right">Total Salary</th><th style="text-align:right">Total %</th><th style="text-align:center">Actions</th></tr></thead>
-              <tbody id="commissionsBody"></tbody>
-            </table>
+        <!-- Admin view: full editable table -->
+        <div id="commissionsAdminView">
+          <div class="table-wrap">
+            <div class="table-scroll">
+              <table>
+                <thead><tr><th>Name</th><th style="text-align:center">%</th><th>Based On</th><th style="text-align:right">Commission</th><th style="text-align:right">Base Salary (ILS/USD)</th><th style="text-align:right">Base %</th><th style="text-align:right">Total Salary</th><th style="text-align:right">Total %</th><th>Email</th><th style="text-align:center">Actions</th></tr></thead>
+                <tbody id="commissionsBody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;margin-top:10px">
+            <button onclick="_saveCommissions()" style="font-family:var(--font-mono);font-size:10px;padding:7px 18px;border-radius:8px;border:1px solid var(--green);background:rgba(34,197,94,0.1);color:var(--green);cursor:pointer">Save Commissions</button>
           </div>
         </div>
-        <div style="display:flex;justify-content:flex-end;margin-top:10px">
-          <button onclick="_saveCommissions()" style="font-family:var(--font-mono);font-size:10px;padding:7px 18px;border-radius:8px;border:1px solid var(--green);background:rgba(34,197,94,0.1);color:var(--green);cursor:pointer">Save Commissions</button>
-        </div>
+        <!-- User view: personal read-only summary -->
+        <div id="commissionsUserView" style="display:none"></div>
       </div>
 
       <!-- Monthly bar chart -->
@@ -1948,7 +1953,7 @@
 
   // ── Pre-load settings cache (populated after FINANCE_API is declared below) ──
   let _loginSettingsCache = null;
-  const FINANCE_API = "https://script.google.com/macros/s/AKfycbxIdLAcspibsrXGFn2Eqo_uPHTh_CqVE2uNYCbHOuvQ-RGOFKsYDV04bweGdc89WvDD/exec";
+  const FINANCE_API = "https://script.google.com/macros/s/AKfycbyxmmhT7G2Da0R34hCgPXj_BPy-jfn4hAchFpcagy0tdNf0W9TxQEbiIt8xvM93ft34/exec";
   const WORKER_URL = 'https://twofeeds-ai.galredwork.workers.dev';
   // Preload settings in background so login password check is instant
   (async () => { try { const r = await fetch(`${FINANCE_API}?action=getSettings`); const j = await r.json(); if (j.success) _loginSettingsCache = j.data || []; } catch {} })();
@@ -7043,8 +7048,53 @@
   function _renderCommissions(profit, revenue) {
     const sec = document.getElementById('commissionsSection');
     if (!sec) return;
-    sec.style.display = isAdmin() ? 'block' : 'none';
-    if (!isAdmin()) return;
+    const currentUser = (localStorage.getItem('tf_current_user') || '').toLowerCase();
+    const isAdm = isAdmin();
+    const userRows = !isAdm ? _commissions.filter(c => c.email && c.email.toLowerCase() === currentUser) : [];
+    sec.style.display = (isAdm || userRows.length > 0) ? 'block' : 'none';
+    if (!isAdm && !userRows.length) return;
+
+    // Toggle admin vs user view
+    const adminView = document.getElementById('commissionsAdminView');
+    const userView  = document.getElementById('commissionsUserView');
+    const adminCtrl = document.getElementById('commissionsAdminControls');
+    const addBtn    = document.getElementById('commissionsAddBtn');
+    const badge     = document.getElementById('commissionsSectionBadge');
+    if (adminView) adminView.style.display = isAdm ? 'block' : 'none';
+    if (userView)  userView.style.display  = isAdm ? 'none'  : 'block';
+    if (adminCtrl) adminCtrl.style.display = isAdm ? 'flex'  : 'none';
+    if (addBtn)    addBtn.style.display    = isAdm ? ''      : 'none';
+    if (badge)     badge.textContent       = isAdm ? 'admin only' : 'your summary';
+
+    if (!isAdm) {
+      // Read-only personal view
+      const fmtAmt = v => '$' + Number(v).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+      const fmtPct = v => profit ? (v/profit*100).toFixed(1)+'% of profit' : '';
+      userView.innerHTML = userRows.map(c => {
+        const base = c.base === 'revenue' ? revenue : profit;
+        const commission = base * (c.percentage / 100);
+        const baseSalaryUsd = (c.baseSalary || 0) / _ilsRate;
+        const total = commission + baseSalaryUsd;
+        return `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:10px">
+          <div style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px">${esc(c.name)}</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+            <div><div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Commission</div>
+              <div style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--accent-light)">${fmtAmt(commission)}</div>
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${c.percentage}% of ${c.base}</div></div>
+            <div><div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Base Salary</div>
+              <div style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--text)">₪${(c.baseSalary||0).toLocaleString()}</div>
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${fmtAmt(baseSalaryUsd)}</div></div>
+            <div><div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Total Salary</div>
+              <div style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--green)">${fmtAmt(total)}</div>
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${fmtPct(total)}</div></div>
+            <div><div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Base %</div>
+              <div style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--text)">${fmtPct(baseSalaryUsd)}</div></div>
+          </div>
+        </div>`;
+      }).join('');
+      return;
+    }
+
     _lastCommissionBase = { profit, revenue };
     const fmtAmt = v => '$' + Number(v).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
     const tbody = document.getElementById('commissionsBody');
@@ -7056,7 +7106,7 @@
       return;
     }
     if (!_commissions.length) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:16px">No commission rules yet — click "+ Add Rule"</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:16px">No commission rules yet — click "+ Add Rule"</td></tr>`;
       return;
     }
     const fmtPct = v => profit ? (v/profit*100).toFixed(1)+'% of profit' : '';
@@ -7088,6 +7138,8 @@
         <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:right;white-space:nowrap">${fmtPct((c.baseSalary||0)/_ilsRate)}</td>
         <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--green);text-align:right;white-space:nowrap">${fmtAmt(amounts[i]+(c.baseSalary||0)/_ilsRate)}</td>
         <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:right;white-space:nowrap">${fmtPct(amounts[i]+(c.baseSalary||0)/_ilsRate)}</td>
+        <td><input type="email" value="${esc(c.email||'')}" oninput="_commissions[${i}].email=this.value.trim()" placeholder="user@email.com"
+          style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;width:160px"/></td>
         <td style="text-align:center"><button onclick="_commissions.splice(${i},1);renderProfitSummary(true)"
           style="background:none;border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:4px 10px;color:var(--red);font-family:var(--font-mono);font-size:10px;cursor:pointer">✕</button></td>
       </tr>`).join('') + `
@@ -7100,13 +7152,13 @@
         <td></td>
         <td id="totalSalaryCell" style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--green);text-align:right;white-space:nowrap;padding-top:8px">${fmtAmt(totalSalary)}</td>
         <td id="totalSalaryPct" style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:right;white-space:nowrap;padding-top:8px">${fmtPct(totalSalary)}</td>
-        <td></td>
+        <td></td><td></td>
       </tr>
       `;
   }
 
   function _addCommissionRow() {
-    _commissions.push({ name: '', percentage: 0, base: 'profit', baseSalary: 0 });
+    _commissions.push({ name: '', percentage: 0, base: 'profit', baseSalary: 0, email: '' });
     renderProfitSummary(true);
   }
 
