@@ -7031,7 +7031,7 @@
       const usdEl = tr.cells[4]?.querySelector('.usd-val');
       if (usdEl) usdEl.textContent = fmtAmt(baseSalaryUsd);
       if (tr.cells[5]) tr.cells[5].textContent = fmtPct(baseSalaryUsd);
-      if (tr.cells[6]) tr.cells[6].textContent = fmtAmt(personTotal);
+      if (tr.cells[6]) tr.cells[6].innerHTML = fmtAmt(personTotal) + `<div class="ils-total-val" style="font-size:10px;color:var(--muted);font-weight:400;margin-top:2px">₪${Math.round(personTotal*_ilsRate).toLocaleString()}</div>`;
       if (tr.cells[7]) tr.cells[7].textContent = fmtPct(personTotal);
     });
     const el = id => document.getElementById(id);
@@ -7039,7 +7039,7 @@
     const bsTotal = _commissions.reduce((s,c) => s+(c.baseSalary||0), 0);
     if (el('baseSalaryTotalCell')) el('baseSalaryTotalCell').innerHTML = `₪${bsTotal.toLocaleString()}<div style="font-size:10px;color:var(--muted);font-weight:400">${fmtAmt(bsTotal/_ilsRate)}</div>`;
     if (el('commissionsTotalPct'))  el('commissionsTotalPct').textContent  = fmtPct(totalComm);
-    if (el('totalSalaryCell'))      el('totalSalaryCell').textContent      = fmtAmt(totalSalary);
+    if (el('totalSalaryCell'))      el('totalSalaryCell').innerHTML        = fmtAmt(totalSalary) + `<div style="font-size:10px;color:var(--muted);font-weight:400;margin-top:2px">₪${Math.round(totalSalary*_ilsRate).toLocaleString()}</div>`;
     if (el('totalSalaryPct'))       el('totalSalaryPct').textContent       = fmtPct(totalSalary);
   }
 
@@ -7150,7 +7150,7 @@
           <div class="usd-val" style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:2px">${fmtAmt((c.baseSalary||0)/_ilsRate)}</div>
         </td>
         <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:right;white-space:nowrap">${fmtPct((c.baseSalary||0)/_ilsRate)}</td>
-        <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--green);text-align:right;white-space:nowrap">${fmtAmt(amounts[i]+(c.baseSalary||0)/_ilsRate)}</td>
+        <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--green);text-align:right;white-space:nowrap">${fmtAmt(amounts[i]+(c.baseSalary||0)/_ilsRate)}<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);font-weight:400;margin-top:2px">₪${Math.round((amounts[i]+(c.baseSalary||0)/_ilsRate)*_ilsRate).toLocaleString()}</div></td>
         <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:right;white-space:nowrap">${fmtPct(amounts[i]+(c.baseSalary||0)/_ilsRate)}</td>
         <td style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${esc(c.email||'')||'<span style="opacity:0.4">—</span>'}</td>
         <td style="text-align:center">
@@ -7214,7 +7214,7 @@
         <td id="commissionsTotalCell" style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);text-align:right;white-space:nowrap;padding-top:8px">${fmtAmt(totalComm)}</td>
         <td id="baseSalaryTotalCell" style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--text);text-align:right;white-space:nowrap;padding-top:8px">₪${_commissions.reduce((s,c)=>s+(c.baseSalary||0),0).toLocaleString()}<div style="font-size:10px;color:var(--muted);font-weight:400">${fmtAmt(_commissions.reduce((s,c)=>s+(c.baseSalary||0),0)/_ilsRate)}</div></td>
         <td></td>
-        <td id="totalSalaryCell" style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--green);text-align:right;white-space:nowrap;padding-top:8px">${fmtAmt(totalSalary)}</td>
+        <td id="totalSalaryCell" style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--green);text-align:right;white-space:nowrap;padding-top:8px">${fmtAmt(totalSalary)}<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);font-weight:400;margin-top:2px">₪${Math.round(totalSalary*_ilsRate).toLocaleString()}</div></td>
         <td id="totalSalaryPct" style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:right;white-space:nowrap;padding-top:8px">${fmtPct(totalSalary)}</td>
         <td></td><td></td>
       </tr>
