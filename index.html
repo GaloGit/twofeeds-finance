@@ -186,12 +186,12 @@
     .summary-card.red::before { background: var(--red); }
     .summary-card.blue::before { background: var(--blue); }
     .card-label { font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.12em; color: var(--muted); text-transform: uppercase; margin-bottom: 3px; }
+    .card-label-sub { letter-spacing:0; text-transform:none; opacity:0.7; }
     .card-value { font-size: 17px; font-weight: 700; font-family: var(--font-mono); }
     .summary-card.green .card-value { color: var(--green); }
     .summary-card.amber .card-value { color: var(--amber); }
     .summary-card.red .card-value { color: var(--red); }
     .summary-card.blue .card-value { color: var(--blue); }
-    .card-sub { font-family: var(--font-mono); font-size: 9px; color: var(--muted); margin-top: 2px; }
 
     /* SECTION HEADER */
     .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
@@ -487,7 +487,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.1.7</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.1.9</div>
   </div>
 </div>
 
@@ -560,7 +560,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.1.7</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.1.9</div>
   </div>
 </div>
 
@@ -602,7 +602,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.1.7</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.1.9</span>
             <div id="adminPanelBtns" style="display:none;gap:4px;margin-top:3px">
               <button id="adminBtn_settings" onclick="showAdminPanel('settings')" title="Settings"
                 style="display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;cursor:pointer;font-family:var(--font-mono);font-size:9px;color:var(--muted);transition:all 0.2s;white-space:nowrap">
@@ -665,24 +665,20 @@
     <div class="page" id="tab-publishers">
       <div class="summary-grid">
         <div class="summary-card blue" style="animation-delay:0.05s">
-          <div class="card-label">Publishers</div>
+          <div class="card-label">Publishers · <span id="pubPeriodLabel" class="card-label-sub"></span></div>
           <div class="card-value" id="pubCount">0</div>
-          <div class="card-sub" id="pubPeriodLabel">—</div>
         </div>
         <div class="summary-card amber" style="animation-delay:0.1s">
           <div class="card-label">Total Payable</div>
           <div class="card-value" id="pubTotal">$0</div>
-          <div class="card-sub"></div>
         </div>
         <div class="summary-card green" style="animation-delay:0.15s">
-          <div class="card-label">Avg per Publisher</div>
+          <div class="card-label">Avg per Publisher · <span class="card-label-sub">mean payment</span></div>
           <div class="card-value" id="pubAvg">$0</div>
-          <div class="card-sub">mean payment</div>
         </div>
         <div class="summary-card red" style="animation-delay:0.2s">
-          <div class="card-label">Top Publisher</div>
+          <div class="card-label">Top Publisher · <span id="pubTopAmt" class="card-label-sub"></span></div>
           <div class="card-value" id="pubTop" style="font-size:16px;line-height:1.3">—</div>
-          <div class="card-sub" id="pubTopAmt">—</div>
         </div>
       </div>
 
@@ -798,24 +794,20 @@
       <div id="pubviewResults" style="display:none">
         <div class="summary-grid" style="margin-top:24px">
           <div class="summary-card amber" style="animation-delay:0.05s">
-            <div class="card-label" id="pvLabelTotal">Total Paid</div>
+            <div class="card-label" id="pvLabelTotal">Total Paid · <span id="pvSubTotal" class="card-label-sub">all periods combined</span></div>
             <div class="card-value" id="pvTotal">$0</div>
-            <div class="card-sub" id="pvSubTotal">all periods combined</div>
           </div>
           <div class="summary-card blue" style="animation-delay:0.1s">
-            <div class="card-label" id="pvLabelMonths">Active Months</div>
+            <div class="card-label" id="pvLabelMonths">Active Months · <span id="pvSubMonths" class="card-label-sub">periods with data</span></div>
             <div class="card-value" id="pvMonths" style="font-family:Arial">0</div>
-            <div class="card-sub" id="pvSubMonths">periods with data</div>
           </div>
           <div class="summary-card green" style="animation-delay:0.15s">
-            <div class="card-label">Monthly Average</div>
+            <div class="card-label">Monthly Average · <span class="card-label-sub">mean per period</span></div>
             <div class="card-value" id="pvAvg">$0</div>
-            <div class="card-sub">mean per period</div>
           </div>
           <div class="summary-card red" style="animation-delay:0.2s">
-            <div class="card-label">Highest Month</div>
+            <div class="card-label">Highest Month · <span id="pvPeakLabel" class="card-label-sub"></span></div>
             <div class="card-value" id="pvPeak">$0</div>
-            <div class="card-sub" id="pvPeakLabel">—</div>
           </div>
         </div>
 
@@ -877,24 +869,20 @@
       <!-- Summary cards -->
       <div class="summary-grid" id="invSummaryGrid" style="display:none">
         <div class="summary-card blue" style="animation-delay:0.05s">
-          <div class="card-label">Invoices</div>
+          <div class="card-label">Invoices · <span id="invPeriodSub" class="card-label-sub"></span></div>
           <div class="card-value" id="invCount" style="font-family:Arial">0</div>
-          <div class="card-sub" id="invPeriodSub">—</div>
         </div>
         <div class="summary-card amber" style="animation-delay:0.1s">
-          <div class="card-label">Total Amount</div>
+          <div class="card-label">Total Amount · <span class="card-label-sub">sum of invoices</span></div>
           <div class="card-value" id="invTotal">$0</div>
-          <div class="card-sub">sum of invoices</div>
         </div>
         <div class="summary-card green" style="animation-delay:0.15s">
-          <div class="card-label">Paid</div>
+          <div class="card-label">Paid · <span class="card-label-sub">fully paid</span></div>
           <div class="card-value" id="invExtracted" style="font-family:Arial">0</div>
-          <div class="card-sub">fully paid</div>
         </div>
         <div class="summary-card red" style="animation-delay:0.2s">
-          <div class="card-label">Waiting</div>
+          <div class="card-label">Waiting · <span class="card-label-sub">pending payment</span></div>
           <div class="card-value" id="invReview" style="font-family:Arial">0</div>
-          <div class="card-sub">pending payment</div>
         </div>
       </div>
 
@@ -956,24 +944,20 @@
     <div class="page" id="tab-mediabuy">
       <div class="summary-grid">
         <div class="summary-card blue" style="animation-delay:0.05s">
-          <div class="card-label">Entries</div>
+          <div class="card-label">Entries · <span id="mbPeriodLabel" class="card-label-sub"></span></div>
           <div class="card-value" id="mbCount">0</div>
-          <div class="card-sub" id="mbPeriodLabel">—</div>
         </div>
         <div class="summary-card amber" style="animation-delay:0.1s">
           <div class="card-label">Total CPC</div>
           <div class="card-value" id="mbTotal">$0</div>
-          <div class="card-sub"></div>
         </div>
         <div class="summary-card green" style="animation-delay:0.15s">
-          <div class="card-label">Avg CPC</div>
+          <div class="card-label">Avg CPC · <span class="card-label-sub">mean per entry</span></div>
           <div class="card-value" id="mbAvg">$0</div>
-          <div class="card-sub">mean per entry</div>
         </div>
         <div class="summary-card red" style="animation-delay:0.2s">
-          <div class="card-label">Top DSP</div>
+          <div class="card-label">Top DSP · <span id="mbTopAmt" class="card-label-sub"></span></div>
           <div class="card-value" id="mbTop" style="font-size:16px;line-height:1.3">—</div>
-          <div class="card-sub" id="mbTopAmt">—</div>
         </div>
       </div>
 
@@ -1042,24 +1026,20 @@
       <!-- Summary cards -->
       <div class="summary-grid">
         <div class="summary-card amber" style="animation-delay:0.05s">
-          <div class="card-label">Publishers</div>
+          <div class="card-label">Publishers · <span id="csPeriodLabel" class="card-label-sub"></span></div>
           <div class="card-value" id="csPubTotal">$0</div>
-          <div class="card-sub" id="csPeriodLabel">—</div>
         </div>
         <div class="summary-card blue" style="animation-delay:0.1s">
-          <div class="card-label">Internal Sources</div>
+          <div class="card-label">Internal Sources · <span class="card-label-sub">KZN · GSM · Octava · JiniAds</span></div>
           <div class="card-value" id="csIntTotal">$0</div>
-          <div class="card-sub">KZN · GSM · Octava · JiniAds</div>
         </div>
         <div class="summary-card green" style="animation-delay:0.15s">
-          <div class="card-label">Grand Total</div>
+          <div class="card-label">Grand Total · <span class="card-label-sub">all categories</span></div>
           <div class="card-value" id="csGrandTotal">$0</div>
-          <div class="card-sub">all categories</div>
         </div>
         <div class="summary-card red" style="animation-delay:0.2s">
-          <div class="card-label">Largest Category</div>
+          <div class="card-label">Largest Category · <span id="csTopCatAmt" class="card-label-sub"></span></div>
           <div class="card-value" id="csTopCat" style="font-size:16px;line-height:1.3">—</div>
-          <div class="card-sub" id="csTopCatAmt">—</div>
         </div>
       </div>
 
@@ -1140,24 +1120,20 @@
       <!-- Summary cards -->
       <div class="summary-grid">
         <div class="summary-card green" style="animation-delay:0.05s">
-          <div class="card-label">Revenue</div>
+          <div class="card-label">Revenue · <span id="profRevSub" class="card-label-sub">manual entry</span></div>
           <div class="card-value" id="profRevCard">$0</div>
-          <div class="card-sub" id="profRevSub">manual entry</div>
         </div>
         <div class="summary-card red" style="animation-delay:0.1s">
-          <div class="card-label">Total Costs</div>
+          <div class="card-label">Total Costs · <span class="card-label-sub">publishers + invoices</span></div>
           <div class="card-value" id="profCostCard">$0</div>
-          <div class="card-sub">publishers + invoices</div>
         </div>
         <div class="summary-card blue" style="animation-delay:0.15s">
-          <div class="card-label">Profit</div>
+          <div class="card-label">Profit · <span id="profProfitSub" class="card-label-sub"></span></div>
           <div class="card-value" id="profProfitCard">$0</div>
-          <div class="card-sub" id="profProfitSub">—</div>
         </div>
         <div class="summary-card amber" style="animation-delay:0.2s">
-          <div class="card-label">Margin</div>
+          <div class="card-label">Margin · <span class="card-label-sub">profit / revenue</span></div>
           <div class="card-value" id="profMarginCard">—</div>
-          <div class="card-sub">profit / revenue</div>
         </div>
       </div>
 
@@ -5670,18 +5646,20 @@
         const barColor  = pct === 100 ? 'var(--green)' : pct >= 50 ? 'var(--accent)' : 'var(--amber)';
         progressWrap.style.display = 'block';
         progressWrap.innerHTML = `
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
-              <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em">Payment Progress · ${periodLabel()}</span>
-              <span style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:${barColor}">${fmt(paidAmt)} <span style="color:var(--muted);font-size:10px;font-weight:400">/ ${fmt(total)}</span></span>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 16px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:12px;flex-wrap:wrap">
+              <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+                <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em">Payment Progress · ${periodLabel()}</span>
+                <span style="font-family:var(--font-mono);font-size:10px;color:var(--green)">✓ ${paidPubs.length} paid (${fmt(paidAmt)})</span>
+                <span style="font-family:var(--font-mono);font-size:10px;color:var(--amber)">⏳ ${all.length - paidPubs.length} waiting (${fmt(waitAmt)})</span>
+              </div>
+              <div style="display:flex;align-items:baseline;gap:8px">
+                <span style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:${barColor}">${pct}%</span>
+                <span style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:${barColor}">${fmt(paidAmt)} <span style="color:var(--muted);font-size:10px;font-weight:400">/ ${fmt(total)}</span></span>
+              </div>
             </div>
-            <div style="background:var(--surface2);border-radius:99px;height:8px;overflow:hidden">
+            <div style="background:var(--surface2);border-radius:99px;height:6px;overflow:hidden">
               <div style="width:${pct}%;background:${barColor};height:100%;border-radius:99px;transition:width 0.6s ease"></div>
-            </div>
-            <div style="display:flex;gap:20px;margin-top:10px;flex-wrap:wrap">
-              <span style="font-family:var(--font-mono);font-size:10px;color:var(--green)">✓ Paid: ${paidPubs.length} publisher${paidPubs.length!==1?'s':''} (${fmt(paidAmt)})</span>
-              <span style="font-family:var(--font-mono);font-size:10px;color:var(--amber)">⏳ Waiting: ${all.length - paidPubs.length} publisher${all.length-paidPubs.length!==1?'s':''} (${fmt(waitAmt)})</span>
-              <span style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:${barColor};margin-left:auto">${pct}%</span>
             </div>
           </div>`;
       } else {
@@ -6306,18 +6284,20 @@
         const barColor   = pct === 100 ? 'var(--green)' : pct >= 50 ? 'var(--accent)' : 'var(--amber)';
         invProgressWrap.style.display = 'block';
         invProgressWrap.innerHTML = `
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
-              <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em">Payment Progress · ${periodLabel()}</span>
-              <span style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:${barColor}">${fmt(paidAmt)} <span style="color:var(--muted);font-size:10px;font-weight:400">/ ${fmt(total)}</span></span>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 16px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:12px;flex-wrap:wrap">
+              <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+                <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em">Payment Progress · ${periodLabel()}</span>
+                <span style="font-family:var(--font-mono);font-size:10px;color:var(--green)">✓ ${paidInvs.length} paid (${fmt(paidAmt)})</span>
+                <span style="font-family:var(--font-mono);font-size:10px;color:var(--amber)">⏳ ${invoices.length - paidInvs.length} waiting (${fmt(waitAmt)})</span>
+              </div>
+              <div style="display:flex;align-items:baseline;gap:8px">
+                <span style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:${barColor}">${pct}%</span>
+                <span style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:${barColor}">${fmt(paidAmt)} <span style="color:var(--muted);font-size:10px;font-weight:400">/ ${fmt(total)}</span></span>
+              </div>
             </div>
-            <div style="background:var(--surface2);border-radius:99px;height:8px;overflow:hidden">
+            <div style="background:var(--surface2);border-radius:99px;height:6px;overflow:hidden">
               <div style="width:${pct}%;background:${barColor};height:100%;border-radius:99px;transition:width 0.6s ease"></div>
-            </div>
-            <div style="display:flex;gap:20px;margin-top:10px;flex-wrap:wrap">
-              <span style="font-family:var(--font-mono);font-size:10px;color:var(--green)">✓ Paid: ${paidInvs.length} invoice${paidInvs.length!==1?'s':''} (${fmt(paidAmt)})</span>
-              <span style="font-family:var(--font-mono);font-size:10px;color:var(--amber)">⏳ Waiting: ${invoices.length - paidInvs.length} invoice${invoices.length-paidInvs.length!==1?'s':''} (${fmt(waitAmt)})</span>
-              <span style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:${barColor};margin-left:auto">${pct}%</span>
             </div>
           </div>`;
       } else {
