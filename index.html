@@ -7070,6 +7070,9 @@
       const json = await res.json();
       if (json.success && json.data) _commissions = json.data;
     } catch {}
+    // Clear tbody so in-place optimisation is bypassed — forces full rebuild (closes edit panel)
+    const tbody = document.getElementById('commissionsBody');
+    if (tbody) tbody.innerHTML = '';
     renderProfitSummary(true);
   }
 
