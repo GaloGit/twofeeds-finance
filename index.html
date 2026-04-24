@@ -7063,6 +7063,9 @@
     if (bsEl)   _commissions[i].baseSalary = parseFloat(bsEl.value.replace(/[^0-9.]/g,'')) || 0;
     if (emEl)   _commissions[i].email      = emEl.value.trim();
     if (docEl)  _commissions[i].docUrl     = docEl.value.trim();
+    // Close immediately — don't wait for save/fetch
+    const editRow = document.getElementById('commEdit_' + i);
+    if (editRow) editRow.style.display = 'none';
     await _saveCommissions();
     // Force re-fetch from sheet so display reflects exactly what was saved
     try {
@@ -7070,7 +7073,7 @@
       const json = await res.json();
       if (json.success && json.data) _commissions = json.data;
     } catch {}
-    // Clear tbody so in-place optimisation is bypassed — forces full rebuild (closes edit panel)
+    // Clear tbody so in-place optimisation is bypassed — forces full rebuild
     const tbody = document.getElementById('commissionsBody');
     if (tbody) tbody.innerHTML = '';
     renderProfitSummary(true);
