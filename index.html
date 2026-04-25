@@ -477,7 +477,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.20</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.21</div>
   </div>
 </div>
 
@@ -550,7 +550,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.20</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.21</div>
   </div>
 </div>
 
@@ -592,7 +592,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.20</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.21</span>
           </div>
         </div>
       </div>
@@ -685,7 +685,7 @@
         <div class="upload-icon">📂</div>
         <div class="upload-title">Upload Publishers CSV</div>
         <div class="upload-sub">Drag & drop or <span onclick="event.stopPropagation();document.getElementById('csvFileInput').click()">browse file</span></div>
-        <div class="upload-sub" style="margin-top:8px">Expected columns: Publisher Name, Amount, Platform, Notes</div>
+        <div class="upload-sub" style="margin-top:8px">Required: Publisher Name, Amount &nbsp;·&nbsp; Optional: Platform, Notes, Approval, Invoice, POP</div>
         <input type="file" id="csvFileInput" accept=".csv" onchange="handleCSV(this.files[0])"/>
       </div>
 
@@ -5553,21 +5553,25 @@
       return -1;
     };
 
-    const nameCol = findCol('publisher', 'name', 'vendor');
-    const amtCol = findCol('amount', 'payment', 'pay', 'price');
-    const platCol = findCol('platform', 'network', 'source');
-    const notesCol = findCol('notes', 'note', 'comment', 'remarks');
-    const approvalCol = findCol('approval', 'approve', 'link', 'url', 'mail');
+    const nameCol    = findCol('publisher', 'name', 'vendor');
+    const amtCol     = findCol('amount', 'payment', 'pay', 'price');
+    const platCol    = findCol('platform', 'network', 'source');
+    const notesCol   = findCol('notes', 'note', 'comment', 'remarks');
+    const approvalCol = findCol('approval', 'approve', 'mail');
+    const invoiceCol  = findCol('invoice');
+    const popCol      = findCol('pop');
 
     return lines.slice(1).filter(l => l.trim()).map((line, idx) => {
       const cols = parseCSVLine(line);
       return {
         id: Date.now() + idx,
-        name: nameCol >= 0 ? (cols[nameCol]||'').trim() : '',
-        amount: amtCol >= 0 ? parseFloat((cols[amtCol]||'0').replace(/[^0-9.]/g,'')) || 0 : 0,
-        platform: platCol >= 0 ? (cols[platCol]||'').trim() : '',
-        notes: notesCol >= 0 ? (cols[notesCol]||'').trim() : '',
-        approval: approvalCol >= 0 ? (cols[approvalCol]||'').trim() : '',
+        name:       nameCol    >= 0 ? (cols[nameCol]   ||'').trim() : '',
+        amount:     amtCol     >= 0 ? parseFloat((cols[amtCol]||'0').replace(/[^0-9.]/g,'')) || 0 : 0,
+        platform:   platCol    >= 0 ? (cols[platCol]   ||'').trim() : '',
+        notes:      notesCol   >= 0 ? (cols[notesCol]  ||'').trim() : '',
+        approval:   approvalCol >= 0 ? (cols[approvalCol]||'').trim() : '',
+        invoiceUrl: invoiceCol  >= 0 ? (cols[invoiceCol] ||'').trim() : '',
+        popUrl:     popCol      >= 0 ? (cols[popCol]     ||'').trim() : '',
       };
     }).filter(r => r.name);
   }
