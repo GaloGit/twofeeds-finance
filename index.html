@@ -477,7 +477,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.25</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.26</div>
   </div>
 </div>
 
@@ -550,7 +550,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.25</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.26</div>
   </div>
 </div>
 
@@ -592,7 +592,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.25</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.26</span>
           </div>
         </div>
       </div>
@@ -4741,7 +4741,10 @@
       _rawCache['pub_' + pk] = _dedupedPubData.map((r, idx) => ({
         id: idx, name: r['Publisher Name']||'', platform: r['Platform']||'',
         amount: parseFloat(r['Amount'])||0, notes: r['Notes']||'',
-        approval: r['Approval']||'', payStatus: r['Pay Status']||'waiting',
+        invoiceUrl: r['InvoiceUrl']||'', popUrl: r['PopUrl']||'',
+        invoiceLabel: r['InvoiceLabel']||'', popLabel: r['PopLabel']||'',
+        approval: r['Approval']||'', approvalLabel: r['ApprovalLabel']||'',
+        payStatus: r['Pay Status']||'waiting',
       }));
 
       // Invoices (with date normalisation)
@@ -5661,8 +5664,12 @@
             amount: parseFloat(r['Amount']) || 0,
             invoiceUrl: r['InvoiceUrl'] || '',
             popUrl: r['PopUrl'] || '',
+            invoiceLabel: r['InvoiceLabel'] || '',
+            popLabel: r['PopLabel'] || '',
             approval: r['Approval'] || '',
+            approvalLabel: r['ApprovalLabel'] || '',
             payStatus: r['Pay Status'] || 'waiting',
+            notes: r['Notes'] || '',
           }));
         _rawCache[cacheKey] = all; // store for next tab switch
       } catch {
@@ -5770,45 +5777,54 @@
         <td style="min-width:180px">
           <div id="pubApprView_${p.id}" style="display:flex;align-items:center;gap:5px">
             ${p.approval
-              ? `<a href="${esc(p.approval)}" target="_blank" style="color:var(--accent-light);text-decoration:none;font-family:var(--font-mono);font-size:11px;white-space:nowrap;border-bottom:1px solid var(--border);padding-bottom:1px" title="${esc(p.approval)}">${esc(approvalText)}</a>`
+              ? `<a href="${esc(p.approval)}" target="_blank" style="color:var(--accent-light);text-decoration:none;font-family:var(--font-mono);font-size:11px;white-space:nowrap;border-bottom:1px solid var(--border);padding-bottom:1px" title="${esc(p.approval)}">${esc(p.approvalLabel || approvalText)}</a>`
               : `<span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">—</span>`}
             ${canEdit ? `<button onclick="pubEditApproval('${p.id}')" title="Edit URL" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:0 3px;line-height:1;opacity:0.6">✏</button>` : ''}
           </div>
-          ${canEdit ? `<div id="pubApprEdit_${p.id}" style="display:none;align-items:center;gap:4px">
+          ${canEdit ? `<div id="pubApprEdit_${p.id}" style="display:none;align-items:center;gap:4px;flex-wrap:wrap">
+            <input id="pubApprLabel_${p.id}" value="${esc(p.approvalLabel||'')}" placeholder="Label…"
+              onkeydown="if(event.key==='Enter')pubSaveApproval('${p.id}');if(event.key==='Escape')pubCancelApproval('${p.id}')"
+              style="width:90px;background:transparent;border:none;border-bottom:1px solid var(--border);padding:2px 4px;font-family:var(--font-mono);font-size:11px;color:var(--muted);outline:none"/>
             <input id="pubApprUrl_${p.id}" value="${esc(p.approval||'')}" placeholder="Paste approval URL…"
-              onkeydown="if(event.key==='Enter')pubSaveApproval('${p.id}',this.value);if(event.key==='Escape')pubCancelApproval('${p.id}')"
+              onkeydown="if(event.key==='Enter')pubSaveApproval('${p.id}');if(event.key==='Escape')pubCancelApproval('${p.id}')"
               style="flex:1;min-width:140px;background:transparent;border:none;border-bottom:1px solid var(--accent);padding:2px 4px;font-family:var(--font-mono);font-size:11px;color:var(--text);outline:none"/>
-            <button onclick="pubSaveApproval('${p.id}',document.getElementById('pubApprUrl_${p.id}').value)" style="width:18px;height:18px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:10px;cursor:pointer;flex-shrink:0">✓</button>
+            <button onclick="pubSaveApproval('${p.id}')" style="width:18px;height:18px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:10px;cursor:pointer;flex-shrink:0">✓</button>
             <button onclick="pubCancelApproval('${p.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;line-height:1">✕</button>
           </div>` : ''}
         </td>
         <td style="min-width:140px">
           <div id="pubInvView_${p.id}" style="display:flex;align-items:center;gap:5px">
             ${p.invoiceUrl
-              ? `<a href="${esc(p.invoiceUrl)}" target="_blank" style="color:var(--accent-light);text-decoration:none;font-family:var(--font-mono);font-size:11px;white-space:nowrap;border-bottom:1px solid var(--border);padding-bottom:1px" title="${esc(p.invoiceUrl)}">Invoice</a>`
+              ? `<a href="${esc(p.invoiceUrl)}" target="_blank" style="color:var(--accent-light);text-decoration:none;font-family:var(--font-mono);font-size:11px;white-space:nowrap;border-bottom:1px solid var(--border);padding-bottom:1px" title="${esc(p.invoiceUrl)}">${esc(p.invoiceLabel || 'Invoice')}</a>`
               : `<span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">—</span>`}
             ${canEdit ? `<button onclick="pubEditInvoice('${p.id}')" title="Edit URL" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:0 3px;line-height:1;opacity:0.6">✏</button>` : ''}
           </div>
-          ${canEdit ? `<div id="pubInvEdit_${p.id}" style="display:none;align-items:center;gap:4px">
+          ${canEdit ? `<div id="pubInvEdit_${p.id}" style="display:none;align-items:center;gap:4px;flex-wrap:wrap">
+            <input id="pubInvLabel_${p.id}" value="${esc(p.invoiceLabel||'')}" placeholder="Label…"
+              onkeydown="if(event.key==='Enter')pubSaveInvoice('${p.id}');if(event.key==='Escape')pubCancelInvoice('${p.id}')"
+              style="width:90px;background:transparent;border:none;border-bottom:1px solid var(--border);padding:2px 4px;font-family:var(--font-mono);font-size:11px;color:var(--muted);outline:none"/>
             <input id="pubInvUrl_${p.id}" value="${esc(p.invoiceUrl||'')}" placeholder="Paste invoice URL…"
-              onkeydown="if(event.key==='Enter')pubSaveInvoice('${p.id}',this.value);if(event.key==='Escape')pubCancelInvoice('${p.id}')"
+              onkeydown="if(event.key==='Enter')pubSaveInvoice('${p.id}');if(event.key==='Escape')pubCancelInvoice('${p.id}')"
               style="flex:1;min-width:110px;background:transparent;border:none;border-bottom:1px solid var(--accent);padding:2px 4px;font-family:var(--font-mono);font-size:11px;color:var(--text);outline:none"/>
-            <button onclick="pubSaveInvoice('${p.id}',document.getElementById('pubInvUrl_${p.id}').value)" style="width:18px;height:18px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:10px;cursor:pointer;flex-shrink:0">✓</button>
+            <button onclick="pubSaveInvoice('${p.id}')" style="width:18px;height:18px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:10px;cursor:pointer;flex-shrink:0">✓</button>
             <button onclick="pubCancelInvoice('${p.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;line-height:1">✕</button>
           </div>` : ''}
         </td>
         <td style="min-width:140px">
           <div id="pubPopView_${p.id}" style="display:flex;align-items:center;gap:5px">
             ${p.popUrl
-              ? `<a href="${esc(p.popUrl)}" target="_blank" style="color:var(--accent-light);text-decoration:none;font-family:var(--font-mono);font-size:11px;white-space:nowrap;border-bottom:1px solid var(--border);padding-bottom:1px" title="${esc(p.popUrl)}">POP</a>`
+              ? `<a href="${esc(p.popUrl)}" target="_blank" style="color:var(--accent-light);text-decoration:none;font-family:var(--font-mono);font-size:11px;white-space:nowrap;border-bottom:1px solid var(--border);padding-bottom:1px" title="${esc(p.popUrl)}">${esc(p.popLabel || 'POP')}</a>`
               : `<span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">—</span>`}
             ${canEdit ? `<button onclick="pubEditPop('${p.id}')" title="Edit URL" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:0 3px;line-height:1;opacity:0.6">✏</button>` : ''}
           </div>
-          ${canEdit ? `<div id="pubPopEdit_${p.id}" style="display:none;align-items:center;gap:4px">
+          ${canEdit ? `<div id="pubPopEdit_${p.id}" style="display:none;align-items:center;gap:4px;flex-wrap:wrap">
+            <input id="pubPopLabel_${p.id}" value="${esc(p.popLabel||'')}" placeholder="Label…"
+              onkeydown="if(event.key==='Enter')pubSavePop('${p.id}');if(event.key==='Escape')pubCancelPop('${p.id}')"
+              style="width:90px;background:transparent;border:none;border-bottom:1px solid var(--border);padding:2px 4px;font-family:var(--font-mono);font-size:11px;color:var(--muted);outline:none"/>
             <input id="pubPopUrl_${p.id}" value="${esc(p.popUrl||'')}" placeholder="Paste POP URL…"
-              onkeydown="if(event.key==='Enter')pubSavePop('${p.id}',this.value);if(event.key==='Escape')pubCancelPop('${p.id}')"
+              onkeydown="if(event.key==='Enter')pubSavePop('${p.id}');if(event.key==='Escape')pubCancelPop('${p.id}')"
               style="flex:1;min-width:110px;background:transparent;border:none;border-bottom:1px solid var(--accent);padding:2px 4px;font-family:var(--font-mono);font-size:11px;color:var(--text);outline:none"/>
-            <button onclick="pubSavePop('${p.id}',document.getElementById('pubPopUrl_${p.id}').value)" style="width:18px;height:18px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:10px;cursor:pointer;flex-shrink:0">✓</button>
+            <button onclick="pubSavePop('${p.id}')" style="width:18px;height:18px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:10px;cursor:pointer;flex-shrink:0">✓</button>
             <button onclick="pubCancelPop('${p.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;line-height:1">✕</button>
           </div>` : ''}
           ${canEdit ? `<button class="add-btn" style="padding:2px 8px;font-size:9px;white-space:nowrap;margin-top:2px" onclick="deletePub('${p.id}')">✕</button>` : ''}
@@ -5950,7 +5966,7 @@
     if (!canEditTab('publishers')) { showToast('⚠ No edit access to Publishers'); return; }
     if (!isSinglePeriod()) { showToast('⚠ Select a single month to add rows'); return; }
     const rows = (_rawCache[_pubCacheKey()] || []).map(r => ({...r}));
-    rows.push({ id: rows.length, name: '', platform: '', amount: 0, invoiceUrl: '', popUrl: '', approval: '', payStatus: 'waiting', notes: '' });
+    rows.push({ id: rows.length, name: '', platform: '', amount: 0, invoiceUrl: '', popUrl: '', invoiceLabel: '', popLabel: '', approval: '', approvalLabel: '', payStatus: 'waiting', notes: '' });
     _rawCache[_pubCacheKey()] = rows;
     _pubInvalidateDiff();
     try {
@@ -5967,6 +5983,27 @@
     updatePub(id, 'amount', raw);
   }
 
+  async function updatePubFields(id, fields) {
+    if (!canEditTab('publishers')) { showToast('⚠ No edit access to Publishers'); return; }
+    const rows = (_rawCache[_pubCacheKey()] || []).map(r => ({...r}));
+    const r = rows.find(r => String(r.id) === String(id));
+    if (!r) return;
+    let changed = false;
+    for (const [field, value] of Object.entries(fields)) {
+      const newVal = field === 'amount' ? (parseFloat(value)||0) : value;
+      if (String(r[field] ?? '') !== String(newVal)) { r[field] = newVal; changed = true; }
+    }
+    if (!changed) return;
+    _rawCache[_pubCacheKey()] = rows;
+    _pubInvalidateDiff();
+    try {
+      await _pubSaveRows(rows);
+      logActivity('edit_publisher', `Updated fields for publisher #${id} in ${periodKey()}`);
+      showToast();
+    } catch { showToast('⚠ Save failed'); }
+    renderPublishers();
+  }
+
   // ── Publisher approval inline editing ──
   function pubEditApproval(id) {
     const view = document.getElementById('pubApprView_' + id);
@@ -5980,9 +6017,11 @@
     if (view) view.style.display = 'flex';
     if (edit) edit.style.display = 'none';
   }
-  async function pubSaveApproval(id, url) {
+  async function pubSaveApproval(id) {
+    const url   = (document.getElementById('pubApprUrl_'   + id) || {}).value || '';
+    const label = (document.getElementById('pubApprLabel_' + id) || {}).value || '';
     pubCancelApproval(id);
-    await updatePub(id, 'approval', url.trim());
+    await updatePubFields(id, { approval: url.trim(), approvalLabel: label.trim() });
   }
 
   // ── Publisher invoice URL inline editing ──
@@ -5998,9 +6037,11 @@
     if (view) view.style.display = 'flex';
     if (edit) edit.style.display = 'none';
   }
-  async function pubSaveInvoice(id, url) {
+  async function pubSaveInvoice(id) {
+    const url   = (document.getElementById('pubInvUrl_'   + id) || {}).value || '';
+    const label = (document.getElementById('pubInvLabel_' + id) || {}).value || '';
     pubCancelInvoice(id);
-    await updatePub(id, 'invoiceUrl', url.trim());
+    await updatePubFields(id, { invoiceUrl: url.trim(), invoiceLabel: label.trim() });
   }
 
   // ── Publisher POP URL inline editing ──
@@ -6016,9 +6057,11 @@
     if (view) view.style.display = 'flex';
     if (edit) edit.style.display = 'none';
   }
-  async function pubSavePop(id, url) {
+  async function pubSavePop(id) {
+    const url   = (document.getElementById('pubPopUrl_'   + id) || {}).value || '';
+    const label = (document.getElementById('pubPopLabel_' + id) || {}).value || '';
     pubCancelPop(id);
-    await updatePub(id, 'popUrl', url.trim());
+    await updatePubFields(id, { popUrl: url.trim(), popLabel: label.trim() });
   }
 
   // ── Publisher order edit mode ──
