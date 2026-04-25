@@ -477,7 +477,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.9</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.10</div>
   </div>
 </div>
 
@@ -550,7 +550,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.9</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.10</div>
   </div>
 </div>
 
@@ -592,7 +592,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.9</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.10</span>
           </div>
         </div>
       </div>
@@ -1377,19 +1377,21 @@
 
     <!-- ADVERTISERS PAGE -->
     <div class="page" id="tab-advertisers">
-      <div class="section-header" style="margin-bottom:28px">
+      <div class="section-header" style="margin-bottom:16px">
         <div>
           <div class="section-title">🏢 Advertisers Info</div>
-          <div class="section-sub">Manage advertiser details — logo, IDs, managers and platform info</div>
         </div>
-        <div id="advLastUpdated" style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-align:right;white-space:nowrap;line-height:1.6"></div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div id="advLastUpdated" style="font-family:var(--font-mono);font-size:9px;color:var(--muted);white-space:nowrap;line-height:1.6"></div>
+          <button id="advOrderBtn" onclick="toggleAdvOrderEdit()" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">↕ Edit Order</button>
+          <button onclick="openColPanel('adv', this)" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">⊞ Columns</button>
+          <button id="advFormToggle" onclick="toggleAdvForm()" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px dashed var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">+ Add Advertiser</button>
+        </div>
       </div>
 
       <!-- Add advertiser form (collapsible) -->
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:24px;overflow:hidden">
-        <button onclick="toggleAdvForm()" id="advFormToggle" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:none;border:none;cursor:pointer;text-align:left">
-          <span style="font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase">+ Add Advertiser</span>
-          <span id="advFormArrow" style="font-size:16px;color:var(--muted);transition:transform 0.25s">▼</span>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:24px;overflow:hidden;display:none" id="advFormWrap">
+        <div style="display:none">
         </button>
         <div id="advFormBody" style="display:none;padding:0 20px 20px">
           <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
@@ -1485,10 +1487,6 @@
         </div>
       </div>
 
-      <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:8px">
-        <button id="advOrderBtn" onclick="toggleAdvOrderEdit()" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">↕ Edit Order</button>
-        <button onclick="openColPanel('adv', this)" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">⊞ Columns</button>
-      </div>
 
       <!-- Advertisers table -->
       <div class="table-wrap">
@@ -3325,6 +3323,11 @@
   }
 
   function toggleAdvForm() {
+    const wrap = document.getElementById('advFormWrap');
+    const btn  = document.getElementById('advFormToggle');
+    const open = wrap.style.display !== 'none';
+    wrap.style.display = open ? 'none' : 'block';
+    if (btn) btn.style.color = open ? 'var(--muted)' : 'var(--accent-light)';
     const body = document.getElementById('advFormBody');
     const arrow = document.getElementById('advFormArrow');
     if (!body) return;
