@@ -477,7 +477,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.21</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.22</div>
   </div>
 </div>
 
@@ -550,7 +550,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.21</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.22</div>
   </div>
 </div>
 
@@ -592,7 +592,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.21</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.22</span>
           </div>
         </div>
       </div>
@@ -5509,6 +5509,16 @@
       const user = localStorage.getItem('tf_current_user') || 'unknown';
       const timestamp = new Date().toISOString();
 
+      // Warn if any rows parsed as $0 amount
+      const zeroRows = rows.filter(r => !r.amount);
+      if (zeroRows.length > 0) {
+        const confirmed = await showConfirmModal(
+          `<strong>${zeroRows.length} of ${rows.length}</strong> row${zeroRows.length !== 1 ? 's have' : ' has'} a <strong>$0 amount</strong> — this may be a column format issue.<br><br>Check that your CSV has an <code>Amount</code> column with numeric values.`,
+          'Import Anyway', 'Cancel'
+        );
+        if (!confirmed) { document.getElementById('csvFileInput').value = ''; return; }
+      }
+
       // Check for existing data in this period
       const existing = _rawCache['pub_' + periodKey()] || [];
       if (existing.length > 0) {
@@ -5542,7 +5552,7 @@
   function parseCSV(text) {
     const lines = text.trim().split('\n');
     if (lines.length < 2) return [];
-    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,'').toLowerCase());
+    const headers = parseCSVLine(lines[0]).map(h => h.trim().toLowerCase());
 
     // Map flexible column names
     const findCol = (...names) => {
