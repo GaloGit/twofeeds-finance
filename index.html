@@ -7576,9 +7576,11 @@
     document.getElementById('pubviewInput').disabled = true;
     document.getElementById('pubviewInput').placeholder = 'Loading data…';
     document.getElementById('pubviewSelect').innerHTML = '<option value="">Loading...</option>';
+    document.getElementById('pubviewSelect').disabled = true;
     await Promise.all([buildPublisherIndex(), buildVendorIndex()]);
     document.getElementById('pubviewInput').disabled = false;
     document.getElementById('pubviewInput').placeholder = 'Search publisher...';
+    document.getElementById('pubviewSelect').disabled = false;
     populatePubSelect();
   }
 
