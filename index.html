@@ -477,7 +477,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.24</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.25</div>
   </div>
 </div>
 
@@ -550,7 +550,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.24</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.25</div>
   </div>
 </div>
 
@@ -592,7 +592,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.24</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.25</span>
           </div>
         </div>
       </div>
@@ -687,6 +687,13 @@
         <div class="upload-sub">Drag & drop or <span onclick="event.stopPropagation();document.getElementById('csvFileInput').click()">browse file</span></div>
         <div class="upload-sub" style="margin-top:8px">Required: Publisher Name, Amount &nbsp;·&nbsp; Optional: Platform, Notes, Approval, Invoice, POP</div>
         <input type="file" id="csvFileInput" accept=".csv" onchange="handleCSV(this.files[0])"/>
+        <div onclick="event.stopPropagation()" style="margin-top:16px;display:flex;gap:8px;align-items:center;width:100%;max-width:480px">
+          <input id="pubUrlInput" type="text" placeholder="Or paste Google Sheet / Drive link…"
+            style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:7px 12px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none"
+            onkeydown="if(event.key==='Enter')importFromUrl()"/>
+          <button onclick="importFromUrl()"
+            style="padding:7px 14px;border-radius:7px;border:1px solid var(--accent);background:transparent;color:var(--accent-light);font-family:var(--font-mono);font-size:11px;cursor:pointer;white-space:nowrap">↓ Import</button>
+        </div>
       </div>
 
       <!-- Publisher payment progress bar -->
@@ -710,7 +717,15 @@
             <button class="export-btn" onclick="exportCSV()">↓ Export CSV</button>
             <button class="clear-btn" onclick="clearPublishers()">✕ Clear All</button>
             <button class="add-btn" onclick="document.getElementById('csvFileInput').click()">↑ Re-upload CSV</button>
+            <button class="add-btn" onclick="document.getElementById('pubUrlImportBar').style.display=document.getElementById('pubUrlImportBar').style.display==='none'?'flex':'none'">↓ From URL</button>
           </div>
+        </div>
+        <div id="pubUrlImportBar" style="display:none;align-items:center;gap:8px;padding:10px 0 4px">
+          <input id="pubUrlInput" type="text" placeholder="Paste Google Sheet or Drive shared link…"
+            style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:7px 12px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none"
+            onkeydown="if(event.key==='Enter')importFromUrl()"/>
+          <button onclick="importFromUrl()"
+            style="padding:7px 14px;border-radius:7px;border:1px solid var(--accent);background:transparent;color:var(--accent-light);font-family:var(--font-mono);font-size:11px;cursor:pointer;white-space:nowrap">↓ Import</button>
         </div>
         <div class="table-wrap">
           <div class="table-scroll">
@@ -5496,6 +5511,44 @@
     if (file && file.name.endsWith('.csv')) handleCSV(file);
   }
 
+  async function _importCSVRows(rows) {
+    if (!rows.length) { showToast('⚠ No valid rows found'); return; }
+    const user = localStorage.getItem('tf_current_user') || 'unknown';
+    const timestamp = new Date().toISOString();
+
+    const zeroRows = rows.filter(r => !r.amount);
+    if (zeroRows.length > 0) {
+      const confirmed = await showConfirmModal(
+        `<strong>${zeroRows.length} of ${rows.length}</strong> row${zeroRows.length !== 1 ? 's have' : ' has'} a <strong>$0 amount</strong> — this may be a column format issue.<br><br>Check that your CSV has an <strong>Amount</strong> column with numeric values.`,
+        'Import Anyway', 'Cancel'
+      );
+      if (!confirmed) return;
+    }
+
+    const existing = _rawCache['pub_' + periodKey()] || [];
+    if (existing.length > 0) {
+      const confirmed = await showConfirmModal(
+        `This period already has <strong>${existing.length}</strong> publisher${existing.length !== 1 ? 's' : ''}.<br>Uploading will <strong>replace all of them</strong> with the ${rows.length} row${rows.length !== 1 ? 's' : ''} from this file.`,
+        'Replace All', 'Cancel'
+      );
+      if (!confirmed) return;
+    }
+
+    try {
+      await fetch(FINANCE_API, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'savePublishers', period: periodKey(), rows, user, timestamp })
+      });
+      _invalidateCache('pub_');
+      pvAllPublishers = [];
+      logActivity('import_publishers', `Imported ${rows.length} publishers for ${periodKey()}`);
+      showToast('✓ CSV imported — ' + rows.length + ' publishers');
+      renderPublishers();
+    } catch {
+      showToast('⚠ Failed to save. Check connection.');
+    }
+  }
+
   function handleCSV(file) {
     if (!canEditTab('publishers')) { showToast('⚠ No edit access to Publishers'); return; }
     if (!isSinglePeriod()) { showToast('⚠ Select a single month to upload'); return; }
@@ -5503,50 +5556,42 @@
     if (file.size > 5 * 1024 * 1024) { showToast('⚠ CSV file too large (max 5MB)'); return; }
     if (!file.name.toLowerCase().endsWith('.csv') && file.type !== 'text/csv') { showToast('⚠ Only CSV files are accepted'); return; }
     const reader = new FileReader();
-    reader.onload = async function(e) {
-      const text = e.target.result;
-      const rows = parseCSV(text);
-      const user = localStorage.getItem('tf_current_user') || 'unknown';
-      const timestamp = new Date().toISOString();
-
-      // Warn if any rows parsed as $0 amount
-      const zeroRows = rows.filter(r => !r.amount);
-      if (zeroRows.length > 0) {
-        const confirmed = await showConfirmModal(
-          `<strong>${zeroRows.length} of ${rows.length}</strong> row${zeroRows.length !== 1 ? 's have' : ' has'} a <strong>$0 amount</strong> — this may be a column format issue.<br><br>Check that your CSV has an <strong>Amount</strong> column with numeric values.`,
-          'Import Anyway', 'Cancel'
-        );
-        if (!confirmed) { document.getElementById('csvFileInput').value = ''; return; }
-      }
-
-      // Check for existing data in this period
-      const existing = _rawCache['pub_' + periodKey()] || [];
-      if (existing.length > 0) {
-        const confirmed = await showConfirmModal(
-          `This period already has <strong>${existing.length}</strong> publisher${existing.length !== 1 ? 's' : ''}.<br>Uploading will <strong>replace all of them</strong> with the ${rows.length} row${rows.length !== 1 ? 's' : ''} from this file.`,
-          'Replace All', 'Cancel'
-        );
-        if (!confirmed) {
-          document.getElementById('csvFileInput').value = '';
-          return;
-        }
-      }
-
-      try {
-        await fetch(FINANCE_API, {
-          method: 'POST',
-          body: JSON.stringify({ action: 'savePublishers', period: periodKey(), rows, user, timestamp })
-        });
-        _invalidateCache('pub_');
-        logActivity('import_publishers', `Imported ${rows.length} publishers for ${periodKey()}`);
-        showToast('✓ CSV imported — ' + rows.length + ' publishers');
-        renderPublishers();
-      } catch {
-        showToast('⚠ Failed to save. Check connection.');
-      }
-    };
+    reader.onload = async (e) => { await _importCSVRows(parseCSV(e.target.result)); };
     reader.readAsText(file);
     document.getElementById('csvFileInput').value = '';
+  }
+
+  function _gdriveToFetchUrl(url) {
+    const sheetsMatch = url.match(/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
+    if (sheetsMatch) {
+      const gidMatch = url.match(/[#&?]gid=(\d+)/);
+      return `https://docs.google.com/spreadsheets/d/${sheetsMatch[1]}/export?format=csv${gidMatch ? '&gid=' + gidMatch[1] : ''}`;
+    }
+    const fileMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if (fileMatch) return `https://drive.google.com/uc?export=download&id=${fileMatch[1]}`;
+    const openMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (openMatch) return `https://drive.google.com/uc?export=download&id=${openMatch[1]}`;
+    return null;
+  }
+
+  async function importFromUrl() {
+    if (!canEditTab('publishers')) { showToast('⚠ No edit access to Publishers'); return; }
+    if (!isSinglePeriod()) { showToast('⚠ Select a single month to import'); return; }
+    const input = document.getElementById('pubUrlInput');
+    const raw = (input ? input.value : '').trim();
+    if (!raw) { showToast('⚠ Paste a Google Sheet or Drive link first'); return; }
+    const fetchUrl = _gdriveToFetchUrl(raw);
+    if (!fetchUrl) { showToast('⚠ Unrecognized link — paste a Google Sheet or Drive URL'); return; }
+    showToast('⏳ Fetching…');
+    try {
+      const res = await fetch(fetchUrl);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const text = await res.text();
+      if (input) input.value = '';
+      await _importCSVRows(parseCSV(text));
+    } catch {
+      showToast('⚠ Could not fetch — make sure it\'s shared as "Anyone with the link"', true);
+    }
   }
 
   function parseCSV(text) {
