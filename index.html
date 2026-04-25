@@ -488,7 +488,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.1.10</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.1.11</div>
   </div>
 </div>
 
@@ -561,7 +561,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.1.10</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.1.11</div>
   </div>
 </div>
 
@@ -603,7 +603,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.1.10</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.1.11</span>
             <div id="adminPanelBtns" style="display:none;gap:4px;margin-top:3px">
               <button id="adminBtn_settings" onclick="showAdminPanel('settings')" title="Settings"
                 style="display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;cursor:pointer;font-family:var(--font-mono);font-size:9px;color:var(--muted);transition:all 0.2s;white-space:nowrap">
@@ -848,18 +848,8 @@
     <!-- INTERNAL SOURCES TAB -->
     <div class="page" id="tab-internal">
 
-      <!-- Upload area -->
-      <div class="inv-upload-area" id="invUploadArea"
-        onclick="document.getElementById('invFileInput').click()"
-        ondragover="event.preventDefault();this.classList.add('drag')"
-        ondragleave="this.classList.remove('drag')"
-        ondrop="handleInvDrop(event)">
-        <div class="inv-upload-icon" style="font-size:28px;color:var(--muted)">↑</div>
-        <div class="inv-upload-title">Upload Invoices</div>
-        <div class="inv-upload-sub">Drag & drop or <span onclick="event.stopPropagation();document.getElementById('invFileInput').click()">browse</span> · PDF, JPG, PNG</div>
-        <div class="inv-upload-sub" style="margin-top:6px;opacity:0.6">AI will extract: Vendor, Amount, Date, Invoice Number</div>
-        <input type="file" id="invFileInput" accept=".pdf,.jpg,.jpeg,.png" multiple onchange="handleInvFiles(this.files)"/>
-      </div>
+      <!-- Hidden file input -->
+      <input type="file" id="invFileInput" accept=".pdf,.jpg,.jpeg,.png" multiple onchange="handleInvFiles(this.files)" style="display:none"/>
 
       <!-- Processing indicator -->
       <div class="inv-processing" id="invProcessing" style="display:none">
@@ -888,16 +878,16 @@
       </div>
 
       <!-- Toolbar -->
-      <div class="inv-toolbar" id="invToolbar" style="display:none">
+      <div class="inv-toolbar" id="invToolbar" style="display:flex">
         <div class="section-title">Invoice List — <span id="invPeriodLabel" style="color:var(--accent-light)"></span></div>
         <div id="invLastUpdated" style="font-family:var(--font-mono);font-size:9px;color:var(--muted);white-space:nowrap"></div>
         <div style="display:flex;gap:8px">
-          <button id="invOrderBtn" onclick="toggleInvOrderEdit()" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">↕ Edit Order</button>
-          <button onclick="markAllInvStatus('paid')" style="font-family:var(--font-mono);font-size:10px;padding:5px 12px;border-radius:6px;border:1px solid rgba(34,197,94,0.3);background:rgba(34,197,94,0.08);color:var(--green);cursor:pointer">✓ All Paid</button>
-          <button onclick="markAllInvStatus('waiting')" style="font-family:var(--font-mono);font-size:10px;padding:5px 12px;border-radius:6px;border:1px solid rgba(245,158,11,0.3);background:rgba(245,158,11,0.08);color:var(--amber);cursor:pointer">⏳ All Waiting</button>
-          <button class="export-btn" onclick="exportInvoices()">↓ Export CSV</button>
-          <button class="clear-btn" onclick="clearInvoices()">✕ Clear All</button>
-          <button class="add-btn" onclick="document.getElementById('invFileInput').click()">+ Add More</button>
+          <button id="invOrderBtn" onclick="toggleInvOrderEdit()" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:none;align-items:center;gap:6px">↕ Edit Order</button>
+          <button id="invAllPaidBtn" onclick="markAllInvStatus('paid')" style="font-family:var(--font-mono);font-size:10px;padding:5px 12px;border-radius:6px;border:1px solid rgba(34,197,94,0.3);background:rgba(34,197,94,0.08);color:var(--green);cursor:pointer;display:none">✓ All Paid</button>
+          <button id="invAllWaitBtn" onclick="markAllInvStatus('waiting')" style="font-family:var(--font-mono);font-size:10px;padding:5px 12px;border-radius:6px;border:1px solid rgba(245,158,11,0.3);background:rgba(245,158,11,0.08);color:var(--amber);cursor:pointer;display:none">⏳ All Waiting</button>
+          <button id="invExportBtn" class="export-btn" style="display:none" onclick="exportInvoices()">↓ Export CSV</button>
+          <button id="invClearBtn" class="clear-btn" style="display:none" onclick="clearInvoices()">✕ Clear All</button>
+          <button class="add-btn" onclick="document.getElementById('invFileInput').click()">↑ Upload Invoice</button>
         </div>
       </div>
 
@@ -6072,7 +6062,6 @@
 
   function handleInvDrop(e) {
     e.preventDefault();
-    document.getElementById('invUploadArea').classList.remove('drag');
     handleInvFiles(e.dataTransfer.files);
   }
 
@@ -6260,10 +6249,11 @@
     const review = invoices.filter(inv => inv.status !== 'paid').length;
 
     document.getElementById('invSummaryGrid').style.display = hasData ? 'flex' : 'none';
-    document.getElementById('invToolbar').style.display = hasData ? 'flex' : 'none';
     document.getElementById('invTableWrap').style.display = hasData ? 'block' : 'none';
-    // Collapse upload area to compact strip when invoices exist
-    document.getElementById('invUploadArea').classList.toggle('compact', hasData);
+    ['invOrderBtn','invAllPaidBtn','invAllWaitBtn','invExportBtn','invClearBtn'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = hasData ? (id === 'invOrderBtn' ? 'flex' : 'inline-flex') : 'none';
+    });
 
     if (hasData) {
       document.getElementById('invCount').textContent = invoices.length;
