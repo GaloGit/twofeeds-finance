@@ -5598,9 +5598,11 @@
     }
 
     const search = (document.getElementById('pubSearch')||{}).value || '';
+    const searchChanged = search !== _pubLastSearch;
+    _pubLastSearch = search;
 
     // ── Skip re-render if DOM is already up to date ──
-    if (_isSame(cacheKey + '|' + search, all)) return;
+    if (!searchChanged && _isSame(cacheKey, all)) return;
 
     const filtered = all.filter(p => !search || p.name.toLowerCase().includes(search.toLowerCase()) || (p.platform||'').toLowerCase().includes(search.toLowerCase()));
 
@@ -5777,7 +5779,8 @@
     delete _rawCache[k + '_raw'];
     delete _cache['cs_' + periodKey()];
   }
-  let _pubSaving = false; // guard against concurrent saves
+  let _pubSaving = false;
+  let _pubLastSearch = null;
   async function _pubSaveRows(rows) {
     if (_pubSaving) return; // skip if a save is already in-flight
     _pubSaving = true;
