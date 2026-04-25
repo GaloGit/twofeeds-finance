@@ -5597,10 +5597,11 @@
       }
     }
 
-    // ── Skip re-render if DOM is already up to date ──
-    if (_isSame(cacheKey, all)) return;
-
     const search = (document.getElementById('pubSearch')||{}).value || '';
+
+    // ── Skip re-render if DOM is already up to date ──
+    if (_isSame(cacheKey + '|' + search, all)) return;
+
     const filtered = all.filter(p => !search || p.name.toLowerCase().includes(search.toLowerCase()) || (p.platform||'').toLowerCase().includes(search.toLowerCase()));
 
     const total = all.reduce((s,p) => s + (p.amount||0), 0);
