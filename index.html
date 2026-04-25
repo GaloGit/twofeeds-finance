@@ -477,7 +477,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.17</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.18</div>
   </div>
 </div>
 
@@ -550,7 +550,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.17</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.18</div>
   </div>
 </div>
 
@@ -592,7 +592,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.17</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.18</span>
           </div>
         </div>
       </div>
@@ -2771,6 +2771,20 @@
     const initial = name.trim()[0]?.toUpperCase() || '?';
     const hue = [...name].reduce((h, c) => h + c.charCodeAt(0), 0) % 360;
     return `<span style="width:${size}px;height:${size}px;border-radius:${radius};background:hsl(${hue},35%,28%);color:hsl(${hue},60%,75%);display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:${Math.round(size*0.46)}px;font-weight:700;flex-shrink:0;vertical-align:middle">${initial}</span>`;
+  }
+
+  function getSourceLogoUrl(name) {
+    if (!name) return '';
+    const nameLower = name.trim().toLowerCase();
+    let url = sourcesMap[nameLower];
+    if (!url) {
+      for (const [key, val] of Object.entries(sourcesMap)) {
+        if (key.length >= 3 && (nameLower.includes(key) || key.includes(nameLower))) {
+          url = val; break;
+        }
+      }
+    }
+    return url ? (resolvePhotoUrl(url) || url) : '';
   }
 
   function toggleSiForm() {
@@ -7714,7 +7728,10 @@
       document.getElementById('pvPeakLabel').textContent = '—';
     }
 
-    document.getElementById('pvTitle').innerHTML = `<span style="display:inline-flex;align-items:center;gap:10px">${getSourceLogo(name,28)||''}${esc(name)} — Invoice History</span>`;
+    const _vLogoUrl = getSourceLogoUrl(name);
+    const _vLogo = getSourceLogo(name, 28);
+    const _vClickable = _vLogo ? `<span onclick="previewSourceLogo('${esc(_vLogoUrl)}','${esc(name)}','Internal Source')" style="cursor:zoom-in;display:inline-flex">${_vLogo}</span>` : '';
+    document.getElementById('pvTitle').innerHTML = `<span style="display:inline-flex;align-items:center;gap:10px">${_vClickable}${esc(name)} — Invoice History</span>`;
     document.getElementById('pvSubtitle').textContent = `${entries.length} invoice${entries.length!==1?'s':''} across ${vendor.periods} period${vendor.periods!==1?'s':''}`;
 
     // Table headers → vendor mode
@@ -7775,7 +7792,10 @@
     document.getElementById('pvAvg').textContent = fmt(avg);
     document.getElementById('pvPeak').textContent = fmt(peak ? peak.amount : 0);
     document.getElementById('pvPeakLabel').textContent = peak ? `${shortMonths[peak.month]} ${peak.year}` : '—';
-    document.getElementById('pvTitle').innerHTML = `<span style="display:inline-flex;align-items:center;gap:10px">${getSourceLogo(name,28)||''}${esc(name)} — Full History</span>`;
+    const _pLogoUrl = getSourceLogoUrl(name);
+    const _pLogo = getSourceLogo(name, 28);
+    const _pClickable = _pLogo ? `<span onclick="previewSourceLogo('${esc(_pLogoUrl)}','${esc(name)}','Publisher')" style="cursor:zoom-in;display:inline-flex">${_pLogo}</span>` : '';
+    document.getElementById('pvTitle').innerHTML = `<span style="display:inline-flex;align-items:center;gap:10px">${_pClickable}${esc(name)} — Full History</span>`;
     document.getElementById('pvSubtitle').textContent = `${entries.length} period${entries.length!==1?'s':''} · ${pub.entries[0]?shortMonths[pub.entries[0].month]+' '+pub.entries[0].year:''} → ${peak?shortMonths[entries[entries.length-1].month]+' '+entries[entries.length-1].year:''}`;
 
     const shortName = name.replace(/\s*\(.*?\)\s*/g,'').trim();
