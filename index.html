@@ -477,7 +477,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.14</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.15</div>
   </div>
 </div>
 
@@ -550,7 +550,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.14</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.15</div>
   </div>
 </div>
 
@@ -592,7 +592,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.14</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.15</span>
           </div>
         </div>
       </div>
@@ -726,6 +726,7 @@
                 <th>Approval</th>
                 <th>Invoice</th>
                 <th>POP</th>
+                <th>Notes</th>
               </tr>
             </thead>
             <tbody id="publisherBody"></tbody>
@@ -5736,9 +5737,10 @@
           </div>` : ''}
           ${canEdit ? `<button class="add-btn" style="padding:2px 8px;font-size:9px;white-space:nowrap;margin-top:2px" onclick="deletePub('${p.id}')">✕</button>` : ''}
         </td>
+        <td style="min-width:160px"><input class="editable" value="${esc(p.notes||'')}" onblur="updatePub('${p.id}','notes',this.value)" placeholder="Notes…" style="width:100%;min-width:140px"/></td>
       </tr>`;
     }).join('') +
-      (canEdit ? `<tr class="add-row"><td colspan="9"><button class="add-btn" onclick="addPubRow()">+ Add Publisher Manually</button></td></tr>` : '');
+      (canEdit ? `<tr class="add-row"><td colspan="10"><button class="add-btn" onclick="addPubRow()">+ Add Publisher Manually</button></td></tr>` : '');
 
     // ── Pinned total row in tfoot ──
     const pubTfoot = document.getElementById('publisherTfoot');
@@ -5746,7 +5748,7 @@
       <tr>
         <td colspan="4" style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.08em;padding:12px 18px;text-transform:uppercase">Total</td>
         <td class="mono text-green" style="font-size:15px;font-weight:700;white-space:nowrap;padding:12px 18px">${fmt(filtered.reduce((s,p)=>s+(parseFloat(p.amount)||0),0))}</td>
-        <td colspan="4"></td>
+        <td colspan="5"></td>
       </tr>`;
 
     setTimeout(() => renderPubChart(all), 50);
@@ -5870,7 +5872,7 @@
     if (!canEditTab('publishers')) { showToast('⚠ No edit access to Publishers'); return; }
     if (!isSinglePeriod()) { showToast('⚠ Select a single month to add rows'); return; }
     const rows = (_rawCache[_pubCacheKey()] || []).map(r => ({...r}));
-    rows.push({ id: rows.length, name: '', platform: '', amount: 0, invoiceUrl: '', popUrl: '', approval: '', payStatus: 'waiting' });
+    rows.push({ id: rows.length, name: '', platform: '', amount: 0, invoiceUrl: '', popUrl: '', approval: '', payStatus: 'waiting', notes: '' });
     _rawCache[_pubCacheKey()] = rows;
     _pubInvalidateDiff();
     try {
