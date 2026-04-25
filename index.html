@@ -7573,8 +7573,12 @@
     document.getElementById('pubviewEmpty').style.display = 'block';
     document.getElementById('pubviewResults').style.display = 'none';
     document.getElementById('pubviewInput').value = '';
+    document.getElementById('pubviewInput').disabled = true;
+    document.getElementById('pubviewInput').placeholder = 'Loading data…';
     document.getElementById('pubviewSelect').innerHTML = '<option value="">Loading...</option>';
     await Promise.all([buildPublisherIndex(), buildVendorIndex()]);
+    document.getElementById('pubviewInput').disabled = false;
+    document.getElementById('pubviewInput').placeholder = 'Search publisher...';
     populatePubSelect();
   }
 
