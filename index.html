@@ -477,7 +477,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.5</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.6</div>
   </div>
 </div>
 
@@ -550,7 +550,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.5</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.6</div>
   </div>
 </div>
 
@@ -592,7 +592,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.5</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.6</span>
           </div>
         </div>
       </div>
@@ -1287,16 +1287,13 @@
           <div id="siLastUpdated" style="font-family:var(--font-mono);font-size:9px;color:var(--muted);white-space:nowrap;line-height:1.6"></div>
           <button id="siOrderBtn" onclick="toggleSiOrderEdit()" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">↕ Edit Order</button>
           <button onclick="openColPanel('si', this)" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">⊞ Columns</button>
+          <button id="siFormToggle" onclick="toggleSiForm()" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px dashed var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">+ Add Source</button>
         </div>
       </div>
 
       <!-- Add source form (collapsible) -->
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:24px;overflow:hidden">
-        <button onclick="toggleSiForm()" id="siFormToggle" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:none;border:none;cursor:pointer;text-align:left">
-          <span style="font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase">+ Add Source</span>
-          <span id="siFormArrow" style="font-size:16px;color:var(--muted);transition:transform 0.25s">▼</span>
-        </button>
-        <div id="siFormBody" style="display:none;padding:0 20px 20px">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:24px;overflow:hidden;display:none" id="siFormWrap">
+        <div id="siFormBody" style="padding:20px">
           <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
             <div style="flex:1;min-width:160px">
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Source Name</div>
@@ -2785,11 +2782,11 @@
   }
 
   function toggleSiForm() {
-    const body = document.getElementById('siFormBody');
-    const arrow = document.getElementById('siFormArrow');
-    const open = body.style.display === 'block';
-    body.style.display = open ? 'none' : 'block';
-    arrow.style.transform = open ? '' : 'rotate(180deg)';
+    const wrap = document.getElementById('siFormWrap');
+    const btn  = document.getElementById('siFormToggle');
+    const open = wrap.style.display !== 'none';
+    wrap.style.display = open ? 'none' : 'block';
+    if (btn) btn.style.color = open ? 'var(--muted)' : 'var(--accent-light)';
   }
 
   const _SI_TYPE_COLORS = {
