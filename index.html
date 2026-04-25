@@ -139,25 +139,17 @@
     }
     .logout-btn:hover { border-color: var(--red); color: var(--red); }
 
-    /* YEAR/MONTH PICKER */
+    /* YEAR/MONTH PICKER DROPDOWNS */
     .period-wrap { display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding: 8px 0 4px; }
-    .period-bar { display: flex; flex-direction: row; align-items: center; gap: 12px; flex-wrap: wrap; }
-    .period-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .period-label { font-family: var(--font-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; min-width: 36px; }
-    .year-btn, .month-btn {
-      padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border);
-      background: transparent; color: var(--muted); font-family: var(--font-mono);
-      font-size: 10px; cursor: pointer; transition: all 0.2s; letter-spacing: 0.05em;
-      white-space: nowrap;
-    }
-    .month-btn:hover { border-color: var(--accent); color: var(--accent-light); }
-    .month-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-    .all-btn { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: var(--font-mono); font-size: 10px; cursor: pointer; transition: all 0.18s; letter-spacing: 0.05em; font-weight: 700; }
-    .all-btn:hover { border-color: var(--accent); color: var(--accent-light); }
-    .all-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-    .year-btn:hover { border-color: #a855f7; color: #c084fc; }
-    .year-btn.active { background: #a855f7; color: #fff; border-color: #a855f7; box-shadow: 0 0 12px rgba(168,85,247,0.35); }
-    .period-divider { color: var(--border); font-size: 14px; margin: 0 2px; flex-shrink: 0; }
+    .period-dd { position: relative; }
+    .period-dd-btn { font-family: var(--font-mono); font-size: 10px; padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.18s; white-space: nowrap; letter-spacing: 0.05em; }
+    .period-dd-btn:hover { border-color: var(--accent); color: var(--accent-light); }
+    .period-dd-btn.active { background: #a855f7; color: #fff; border-color: #a855f7; box-shadow: 0 0 12px rgba(168,85,247,0.3); }
+    .period-dd-panel { position: absolute; top: calc(100% + 6px); left: 0; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 6px; z-index: 200; min-width: 130px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+    .period-dd-item { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-radius: 6px; cursor: pointer; font-family: var(--font-mono); font-size: 10px; color: var(--muted); transition: background 0.12s; user-select: none; }
+    .period-dd-item:hover { background: var(--surface3); color: var(--text); }
+    .period-dd-item.checked { color: var(--accent-light); }
+    .period-dd-item input[type=checkbox] { accent-color: #a855f7; width: 12px; height: 12px; cursor: pointer; flex-shrink: 0; }
 
     /* NAV */
     .nav-bar { display: flex; margin-top: 8px; gap: 4px; }
@@ -393,10 +385,7 @@
 
       /* Period picker */
       .period-wrap { flex-wrap: wrap; gap: 8px; padding: 8px 0 2px; }
-      .period-bar { gap: 8px; flex-wrap: wrap; }
-      .period-row { gap: 6px; }
-      .period-label { font-size: 9px; min-width: 30px; }
-      .year-btn, .month-btn, .all-btn { padding: 5px 10px; font-size: 9px; }
+      .period-dd-btn { font-size: 9px; padding: 4px 10px; }
 
       /* Nav tabs */
       .nav-bar { gap: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
@@ -453,7 +442,7 @@
       .card-value { font-size: 18px; }
       .logo h1 { font-size: 15px; }
       .nav-tab { padding: 8px 10px; font-size: 8px; }
-      .year-btn, .month-btn, .all-btn { padding: 4px 8px; font-size: 8px; }
+      .period-dd-btn { font-size: 8px; padding: 3px 8px; }
     }
   /* ── LOADING CURTAIN ── */
   #loadingCurtain {
@@ -488,7 +477,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.1.12</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.0</div>
   </div>
 </div>
 
@@ -561,7 +550,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.1.12</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.0</div>
   </div>
 </div>
 
@@ -603,7 +592,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.1.12</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.0</span>
             <div id="adminPanelBtns" style="display:none;gap:4px;margin-top:3px">
               <button id="adminBtn_settings" onclick="showAdminPanel('settings')" title="Settings"
                 style="display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;cursor:pointer;font-family:var(--font-mono);font-size:9px;color:var(--muted);transition:all 0.2s;white-space:nowrap">
@@ -626,15 +615,14 @@
           <button id="sswFinance" class="ssw-btn active" onclick="switchSection('finance')">Finance</button>
           <button id="sswOps"     class="ssw-btn"        onclick="switchSection('ops')">Operations</button>
         </div>
-        <div class="period-bar" id="financePeriodBar">
-          <div class="period-row">
-            <span class="period-label">Year</span>
-            <div id="yearBtns" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+        <div id="financePeriodBar" style="display:flex;gap:8px;align-items:center">
+          <div class="period-dd" id="yearDropdown">
+            <button class="period-dd-btn" id="yearDdBtn" onclick="togglePeriodDd('year')"><span id="yearDdLabel">Year</span> ▾</button>
+            <div class="period-dd-panel" id="yearDdPanel" style="display:none"></div>
           </div>
-          <span class="period-divider">·</span>
-          <div class="period-row">
-            <span class="period-label">Month</span>
-            <div id="monthBtns" style="display:flex;gap:5px;flex-wrap:wrap"></div>
+          <div class="period-dd" id="monthDropdown">
+            <button class="period-dd-btn" id="monthDdBtn" onclick="togglePeriodDd('month')"><span id="monthDdLabel">Month</span> ▾</button>
+            <div class="period-dd-panel" id="monthDdPanel" style="display:none"></div>
           </div>
         </div>
       </div>
@@ -5134,81 +5122,97 @@
     }
   }
 
-  // ── PERIOD PICKER ──
+  // ── PERIOD PICKER DROPDOWNS ──
+  function togglePeriodDd(which) {
+    const yearPanel  = document.getElementById('yearDdPanel');
+    const monthPanel = document.getElementById('monthDdPanel');
+    if (which === 'year') {
+      const open = yearPanel.style.display !== 'none';
+      yearPanel.style.display  = open ? 'none' : 'block';
+      monthPanel.style.display = 'none';
+    } else {
+      const open = monthPanel.style.display !== 'none';
+      monthPanel.style.display = open ? 'none' : 'block';
+      yearPanel.style.display  = 'none';
+    }
+  }
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#yearDropdown'))  document.getElementById('yearDdPanel').style.display  = 'none';
+    if (!e.target.closest('#monthDropdown')) document.getElementById('monthDdPanel').style.display = 'none';
+  });
+
   function buildPeriodPicker() {
     const currentYear = new Date().getFullYear();
+    const totalYears  = currentYear - START_YEAR + 1;
 
-    // ── Year buttons (multi-select) ──
-    const yearWrap = document.getElementById('yearBtns');
-    yearWrap.innerHTML = '';
+    // ── Year dropdown ──
+    const yearPanel     = document.getElementById('yearDdPanel');
+    const allYearsActive = selectedYears.size === totalYears;
+    yearPanel.innerHTML = '';
 
-    // ALL years button
-    const allYearBtn = document.createElement('button');
-    const allYearsActive = selectedYears.size === (currentYear - START_YEAR + 1);
-    allYearBtn.className = 'all-btn' + (allYearsActive ? ' active' : '');
-    allYearBtn.textContent = 'ALL';
-    allYearBtn.onclick = () => {
-      if (allYearsActive) {
-        // deselect all → keep current year
-        selectedYears = new Set([currentYear]);
-      } else {
-        selectedYears = new Set();
-        for (let y = START_YEAR; y <= currentYear; y++) selectedYears.add(y);
-      }
-      buildPeriodPicker();
-      onPeriodChange();
-    };
-    yearWrap.appendChild(allYearBtn);
+    const allYearItem = _ddItem('All', allYearsActive, e => {
+      selectedYears = e.target.checked
+        ? new Set(Array.from({length: totalYears}, (_, i) => START_YEAR + i))
+        : new Set([currentYear]);
+      buildPeriodPicker(); onPeriodChange();
+    });
+    yearPanel.appendChild(allYearItem);
 
     for (let y = START_YEAR; y <= currentYear; y++) {
-      const btn = document.createElement('button');
-      btn.className = 'year-btn' + (selectedYears.has(y) ? ' active' : '');
-      btn.textContent = y;
-      btn.onclick = () => {
-        if (selectedYears.has(y) && selectedYears.size > 1) {
-          selectedYears.delete(y); // always keep at least one
-        } else {
-          selectedYears.add(y);
-        }
-        buildPeriodPicker();
-        onPeriodChange();
-      };
-      yearWrap.appendChild(btn);
+      const yy = y;
+      yearPanel.appendChild(_ddItem(String(y), selectedYears.has(y), e => {
+        if (e.target.checked) selectedYears.add(yy);
+        else if (selectedYears.size > 1) selectedYears.delete(yy);
+        else { e.target.checked = true; return; }
+        buildPeriodPicker(); onPeriodChange();
+      }));
     }
 
-    // ── Month buttons (multi-select) + ALL ──
-    const monthWrap = document.getElementById('monthBtns');
-    monthWrap.innerHTML = '';
+    const yearLabel = document.getElementById('yearDdLabel');
+    yearLabel.textContent = allYearsActive ? 'All Years'
+      : selectedYears.size === 1 ? [...selectedYears][0]
+      : [...selectedYears].sort().join(', ');
+    document.getElementById('yearDdBtn').className = 'period-dd-btn' + (allYearsActive ? '' : ' active');
 
-    const allMonths = selectedMonths.size === 12;
-    const allMonthBtn = document.createElement('button');
-    allMonthBtn.className = 'all-btn' + (allMonths ? ' active' : '');
-    allMonthBtn.textContent = 'ALL';
-    allMonthBtn.onclick = () => {
-      if (allMonths) {
-        // All selected → collapse back to current month only
-        selectedMonths = new Set([new Date().getMonth()]);
-      } else {
-        // Select all 12 months
-        selectedMonths = new Set([0,1,2,3,4,5,6,7,8,9,10,11]);
-      }
-      buildPeriodPicker();
-      onPeriodChange();
-    };
-    monthWrap.appendChild(allMonthBtn);
+    // ── Month dropdown ──
+    const monthPanel  = document.getElementById('monthDdPanel');
+    const allMonths   = selectedMonths.size === 12;
+    monthPanel.innerHTML = '';
+
+    monthPanel.appendChild(_ddItem('All', allMonths, e => {
+      selectedMonths = e.target.checked
+        ? new Set([0,1,2,3,4,5,6,7,8,9,10,11])
+        : new Set([new Date().getMonth()]);
+      buildPeriodPicker(); onPeriodChange();
+    }));
 
     MONTHS.forEach((m, i) => {
-      const btn = document.createElement('button');
-      btn.className = 'month-btn' + (selectedMonths.has(i) ? ' active' : '');
-      btn.textContent = m;
-      btn.onclick = () => {
-        if (selectedMonths.has(i)) selectedMonths.delete(i);
-        else selectedMonths.add(i);
-        buildPeriodPicker();
-        onPeriodChange();
-      };
-      monthWrap.appendChild(btn);
+      const ii = i;
+      monthPanel.appendChild(_ddItem(m, selectedMonths.has(i), e => {
+        if (e.target.checked) selectedMonths.add(ii);
+        else if (selectedMonths.size > 1) selectedMonths.delete(ii);
+        else { e.target.checked = true; return; }
+        buildPeriodPicker(); onPeriodChange();
+      }));
     });
+
+    const monthLabel = document.getElementById('monthDdLabel');
+    monthLabel.textContent = allMonths ? 'All Months'
+      : selectedMonths.size === 1 ? MONTHS[[...selectedMonths][0]]
+      : [...selectedMonths].sort((a,b)=>a-b).map(i=>MONTHS[i]).join(', ');
+    document.getElementById('monthDdBtn').className = 'period-dd-btn' + (allMonths ? '' : ' active');
+  }
+
+  function _ddItem(label, checked, onChange) {
+    const div = document.createElement('label');
+    div.className = 'period-dd-item' + (checked ? ' checked' : '');
+    const cb = document.createElement('input');
+    cb.type = 'checkbox'; cb.checked = checked;
+    cb.addEventListener('change', onChange);
+    div.appendChild(cb);
+    div.appendChild(document.createTextNode(label));
+    return div;
   }
 
   // Derive the full Set of "YYYY-MM" period strings from current selections
