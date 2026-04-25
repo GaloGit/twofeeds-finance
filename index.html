@@ -784,11 +784,11 @@
       <div id="pubviewResults" style="display:none">
         <div class="summary-grid" style="margin-top:24px">
           <div class="summary-card amber" style="animation-delay:0.05s">
-            <div class="card-label" id="pvLabelTotal">Total Paid · <span id="pvSubTotal" class="card-label-sub">all periods combined</span></div>
+            <div class="card-label" id="pvLabelTotal"><span id="pvLabelTotalTxt">Total Paid</span> · <span id="pvSubTotal" class="card-label-sub">all periods combined</span></div>
             <div class="card-value" id="pvTotal">$0</div>
           </div>
           <div class="summary-card blue" style="animation-delay:0.1s">
-            <div class="card-label" id="pvLabelMonths">Active Months · <span id="pvSubMonths" class="card-label-sub">periods with data</span></div>
+            <div class="card-label" id="pvLabelMonths"><span id="pvLabelMonthsTxt">Active Months</span> · <span id="pvSubMonths" class="card-label-sub">periods with data</span></div>
             <div class="card-value" id="pvMonths" style="font-family:Arial">0</div>
           </div>
           <div class="summary-card green" style="animation-delay:0.15s">
@@ -7698,9 +7698,9 @@
     const avgPerPeriod = vendor.periods > 0 ? total / vendor.periods : 0;
 
     // Stat card labels → vendor mode
-    document.getElementById('pvLabelTotal').textContent = 'Total Spent';
+    document.getElementById('pvLabelTotalTxt').textContent = 'Total Spent';
     document.getElementById('pvSubTotal').textContent = 'all periods combined';
-    document.getElementById('pvLabelMonths').textContent = 'Active Periods';
+    document.getElementById('pvLabelMonthsTxt').textContent = 'Active Periods';
     document.getElementById('pvSubMonths').textContent = 'periods with invoices';
     document.getElementById('pvTotal').textContent = fmt(total);
     document.getElementById('pvMonths').textContent = vendor.periods;
@@ -7747,9 +7747,9 @@
   function renderPubView(name) {
     try {
     // Reset to publisher table headers and card labels
-    document.getElementById('pvLabelTotal').textContent = 'Total Paid';
+    document.getElementById('pvLabelTotalTxt').textContent = 'Total Paid';
     document.getElementById('pvSubTotal').textContent = 'all periods combined';
-    document.getElementById('pvLabelMonths').textContent = 'Active Months';
+    document.getElementById('pvLabelMonthsTxt').textContent = 'Active Months';
     document.getElementById('pvSubMonths').textContent = 'periods with data';
     document.getElementById('pvTh1').textContent = 'Period';
     document.getElementById('pvTh2').textContent = 'Platform';
