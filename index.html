@@ -477,7 +477,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.2</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.3</div>
   </div>
 </div>
 
@@ -550,7 +550,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.2</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.3</div>
   </div>
 </div>
 
@@ -592,7 +592,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.2</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.3</span>
             <div id="adminPanelBtns" style="display:none;gap:4px;margin-top:3px">
               <button id="adminBtn_settings" onclick="showAdminPanel('settings')" title="Settings"
                 style="display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;cursor:pointer;font-family:var(--font-mono);font-size:9px;color:var(--muted);transition:all 0.2s;white-space:nowrap">
@@ -630,7 +630,7 @@
     </header>
 
     <!-- SECTION SWITCHER + PERIOD PICKER (below nav, dropdown opens into page) -->
-    <div class="period-wrap" style="border-bottom:1px solid var(--border);margin-bottom:0;padding:6px 0;">
+    <div class="period-wrap" style="border-bottom:1px solid var(--border);margin-bottom:0;padding:6px 0;flex-wrap:nowrap;">
       <div id="sectionSwitcher" class="section-switcher" style="display:none">
         <button id="sswFinance" class="ssw-btn active" onclick="switchSection('finance')">Finance</button>
         <button id="sswOps"     class="ssw-btn"        onclick="switchSection('ops')">Operations</button>
@@ -5423,7 +5423,7 @@
     const isOps = section === 'ops';
     document.getElementById('sswFinance').classList.toggle('active', !isOps);
     document.getElementById('sswOps').classList.toggle('active', isOps);
-    document.getElementById('financePeriodBar').style.display = isOps ? 'none' : '';
+    document.getElementById('financePeriodBar').style.display = isOps ? 'none' : 'flex';
     document.getElementById('financeNav').style.display       = isOps ? 'none' : '';
     document.getElementById('opsNav').style.display           = isOps ? 'flex' : 'none';
     document.getElementById('financePages').style.display     = isOps ? 'none' : '';
