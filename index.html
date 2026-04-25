@@ -7637,7 +7637,7 @@
 
     document.getElementById('pubviewDropdown').innerHTML = allMatches.map((p, i) =>
       `<div class="pubview-option" data-i="${i}" data-name="${esc(p.displayName)}" data-type="${p.type}" onclick="selectPublisher(this.dataset.name,this.dataset.type)">
-        <span class="pubview-option-name">${p.type==='vendor'?'🧾':'📋'} ${esc(p.displayName)}</span>
+        <span class="pubview-option-name" style="display:flex;align-items:center;gap:8px">${getSourceLogo(p.displayName,22)||`<span style="font-size:14px">${p.type==='vendor'?'🧾':'📋'}</span>`} ${esc(p.displayName)}</span>
         <span class="pubview-option-meta">${p.periods} period${p.periods!==1?'s':''} · ${fmt(p.total)}</span>
       </div>`).join('');
     document.getElementById('pubviewDropdown').style.display = 'block';
@@ -7714,7 +7714,7 @@
       document.getElementById('pvPeakLabel').textContent = '—';
     }
 
-    document.getElementById('pvTitle').textContent = name + ' — Invoice History';
+    document.getElementById('pvTitle').innerHTML = `<span style="display:inline-flex;align-items:center;gap:10px">${getSourceLogo(name,28)||''}${esc(name)} — Invoice History</span>`;
     document.getElementById('pvSubtitle').textContent = `${entries.length} invoice${entries.length!==1?'s':''} across ${vendor.periods} period${vendor.periods!==1?'s':''}`;
 
     // Table headers → vendor mode
@@ -7775,7 +7775,7 @@
     document.getElementById('pvAvg').textContent = fmt(avg);
     document.getElementById('pvPeak').textContent = fmt(peak ? peak.amount : 0);
     document.getElementById('pvPeakLabel').textContent = peak ? `${shortMonths[peak.month]} ${peak.year}` : '—';
-    document.getElementById('pvTitle').textContent = name + ' — Full History';
+    document.getElementById('pvTitle').innerHTML = `<span style="display:inline-flex;align-items:center;gap:10px">${getSourceLogo(name,28)||''}${esc(name)} — Full History</span>`;
     document.getElementById('pvSubtitle').textContent = `${entries.length} period${entries.length!==1?'s':''} · ${pub.entries[0]?shortMonths[pub.entries[0].month]+' '+pub.entries[0].year:''} → ${peak?shortMonths[entries[entries.length-1].month]+' '+entries[entries.length-1].year:''}`;
 
     const shortName = name.replace(/\s*\(.*?\)\s*/g,'').trim();
