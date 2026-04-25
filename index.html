@@ -7515,7 +7515,7 @@
                 const year = y;
                 const month = m - 1;
                 const amount = parseFloat(r['Amount']) || 0;
-                if (!map[key]) map[key] = { displayName: name, total: 0, periods: 0, entries: [] };
+                if (!map[key]) map[key] = { displayName: name.trim(), total: 0, periods: 0, entries: [] };
                 map[key].entries.push({
                   name, year, month, period,
                   platform: r['Platform'] || '',
@@ -7745,6 +7745,7 @@
   }
 
   function renderPubView(name) {
+    try {
     // Reset to publisher table headers and card labels
     document.getElementById('pvLabelTotal').textContent = 'Total Paid';
     document.getElementById('pvSubTotal').textContent = 'all periods combined';
@@ -7757,7 +7758,9 @@
     document.getElementById('pvTh5').textContent = 'Notes';
 
     // Use already-loaded pvAllPublishers index (populated by initPubView)
-    const pub = pvAllPublishers.find(p => p.displayName === name);
+    const nameTrimmed = name.trim();
+    const pub = pvAllPublishers.find(p => p.displayName === nameTrimmed)
+             || pvAllPublishers.find(p => p.displayName.trim().toLowerCase() === nameTrimmed.toLowerCase());
     if (!pub) { showPubViewEmpty(); return; }
 
     const entries = pub.entries.sort((a,b) => a.year!==b.year ? a.year-b.year : a.month-b.month);
@@ -7797,6 +7800,7 @@
 
     // Render timeline chart
     setTimeout(() => renderPvChart(entries), 50);
+    } catch(err) { showToast('⚠ Error loading publisher: ' + err.message); showPubViewEmpty(); }
   }
 
   function exportPubView() {
