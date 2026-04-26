@@ -243,10 +243,12 @@
       display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 16px; flex-wrap: wrap; gap: 12px;
     }
-    .pub-search { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px 8px 36px; color: var(--text); font-family: var(--font-mono); font-size: 12px; width: 220px; outline: none; transition: border-color 0.2s; }
+    .pub-search { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 28px 8px 36px; color: var(--text); font-family: var(--font-mono); font-size: 12px; width: 220px; outline: none; transition: border-color 0.2s; }
     .pub-search:focus { border-color: var(--accent); }
     .pub-search-wrap { position: relative; }
     .pub-search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 13px; }
+    .search-clear-btn { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--muted); cursor: pointer; font-size: 15px; padding: 0; line-height: 1; display: none; }
+    .search-clear-btn:hover { color: var(--text); }
     .export-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); padding: 8px 16px; border-radius: 8px; font-family: var(--font-mono); font-size: 11px; cursor: pointer; transition: all 0.2s; }
     .export-btn:hover { border-color: var(--green); color: var(--green); }
     .clear-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); padding: 8px 16px; border-radius: 8px; font-family: var(--font-mono); font-size: 11px; cursor: pointer; transition: all 0.2s; }
@@ -477,7 +479,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.3.1</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.3.2</div>
   </div>
 </div>
 
@@ -550,7 +552,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.3.1</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.3.2</div>
   </div>
 </div>
 
@@ -598,7 +600,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.3.1</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.3.2</span>
           </div>
         </div>
       </div>
@@ -714,7 +716,8 @@
         <div class="pub-toolbar">
           <div class="pub-search-wrap">
             <span class="pub-search-icon">🔍</span>
-            <input type="text" class="pub-search" id="pubSearch" placeholder="Search publishers..." oninput="renderPublishers()"/>
+            <input type="text" class="pub-search" id="pubSearch" placeholder="Search publishers..." oninput="renderPublishers();_updateSearchClear('pubSearch')"/>
+            <button class="search-clear-btn" id="pubSearchClear" onclick="_clearSearch('pubSearch',renderPublishers)">×</button>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <button onclick="scrollToChart('pubChartWrap')" style="font-family:var(--font-mono);font-size:10px;padding:5px 12px;border-radius:6px;border:1px solid rgba(124,58,237,0.4);background:rgba(124,58,237,0.12);color:#a78bfa;cursor:pointer;display:flex;align-items:center;gap:5px"><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" style="flex-shrink:0"><rect x="0" y="5" width="3" height="7" rx="1"/><rect x="4.5" y="2.5" width="3" height="9.5" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/></svg> Charts ↓</button>
@@ -1024,7 +1027,8 @@
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-left:auto">
             <div class="pub-search-wrap">
               <span class="pub-search-icon">🔍</span>
-              <input type="text" class="pub-search" id="mbSearch" placeholder="Search DSP or GEO..." oninput="renderMediaBuying()"/>
+              <input type="text" class="pub-search" id="mbSearch" placeholder="Search DSP or GEO..." oninput="renderMediaBuying();_updateSearchClear('mbSearch')"/>
+              <button class="search-clear-btn" id="mbSearchClear" onclick="_clearSearch('mbSearch',renderMediaBuying)">×</button>
             </div>
             <button onclick="scrollToChart('mbChartWrap')" style="font-family:var(--font-mono);font-size:10px;padding:5px 12px;border-radius:6px;border:1px solid rgba(124,58,237,0.4);background:rgba(124,58,237,0.12);color:#a78bfa;cursor:pointer;display:flex;align-items:center;gap:5px"><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" style="flex-shrink:0"><rect x="0" y="5" width="3" height="7" rx="1"/><rect x="4.5" y="2.5" width="3" height="9.5" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/></svg> Charts ↓</button>
             <button class="export-btn" onclick="exportMediaCSV()">↓ Export CSV</button>
@@ -1344,7 +1348,8 @@
           </div>
           <div class="pub-search-wrap" style="width:200px">
             <span class="pub-search-icon">🔍</span>
-            <input type="text" class="pub-search" id="siSearch" placeholder="Search sources..." oninput="_renderSiTable()"/>
+            <input type="text" class="pub-search" id="siSearch" placeholder="Search sources..." oninput="_renderSiTable();_updateSearchClear('siSearch')"/>
+            <button class="search-clear-btn" id="siSearchClear" onclick="_clearSearch('siSearch',_renderSiTable)">×</button>
           </div>
           <button id="siOrderBtn" onclick="toggleSiOrderEdit()" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">↕ Edit Order</button>
           <button onclick="openColPanel('si', this)" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">⊞ Columns</button>
@@ -8834,6 +8839,19 @@
         }
       }
     });
+  }
+
+  function _updateSearchClear(id) {
+    const inp = document.getElementById(id);
+    const btn = document.getElementById(id + 'Clear');
+    if (inp && btn) btn.style.display = inp.value ? 'block' : 'none';
+  }
+  function _clearSearch(id, cb) {
+    const inp = document.getElementById(id);
+    if (inp) { inp.value = ''; inp.focus(); }
+    const btn = document.getElementById(id + 'Clear');
+    if (btn) btn.style.display = 'none';
+    if (cb) cb();
   }
 
   function _showLoader() {
