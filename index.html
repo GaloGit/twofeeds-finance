@@ -477,7 +477,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.43</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.44</div>
   </div>
 </div>
 
@@ -550,7 +550,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.43</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.44</div>
   </div>
 </div>
 
@@ -598,7 +598,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.43</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.44</span>
           </div>
         </div>
       </div>
@@ -5247,9 +5247,21 @@
     }
   }
 
+  let _periodDirty = false;
+
   document.addEventListener('click', e => {
-    if (!e.target.closest('#yearDropdown'))  document.getElementById('yearDdPanel').style.display  = 'none';
-    if (!e.target.closest('#monthDropdown')) document.getElementById('monthDdPanel').style.display = 'none';
+    const yearPanel  = document.getElementById('yearDdPanel');
+    const monthPanel = document.getElementById('monthDdPanel');
+    const yearWasOpen  = yearPanel.style.display  !== 'none';
+    const monthWasOpen = monthPanel.style.display !== 'none';
+    if (!e.target.closest('#yearDropdown'))  yearPanel.style.display  = 'none';
+    if (!e.target.closest('#monthDropdown')) monthPanel.style.display = 'none';
+    const justClosed = (yearWasOpen && !e.target.closest('#yearDropdown')) ||
+                       (monthWasOpen && !e.target.closest('#monthDropdown'));
+    if (justClosed && _periodDirty) {
+      _periodDirty = false;
+      onPeriodChange();
+    }
   });
 
   function buildPeriodPicker() {
@@ -5265,7 +5277,7 @@
       selectedYears = e.target.checked
         ? new Set(Array.from({length: totalYears}, (_, i) => START_YEAR + i))
         : new Set([currentYear]);
-      buildPeriodPicker(); onPeriodChange();
+      _periodDirty = true; buildPeriodPicker();
     });
     yearPanel.appendChild(allYearItem);
 
@@ -5275,7 +5287,7 @@
         if (e.target.checked) selectedYears.add(yy);
         else if (selectedYears.size > 1) selectedYears.delete(yy);
         else { e.target.checked = true; return; }
-        buildPeriodPicker(); onPeriodChange();
+        _periodDirty = true; buildPeriodPicker();
       }));
     }
 
@@ -5294,7 +5306,7 @@
       selectedMonths = e.target.checked
         ? new Set([0,1,2,3,4,5,6,7,8,9,10,11])
         : new Set([new Date().getMonth()]);
-      buildPeriodPicker(); onPeriodChange();
+      _periodDirty = true; buildPeriodPicker();
     }));
 
     MONTHS.forEach((m, i) => {
@@ -5303,7 +5315,7 @@
         if (e.target.checked) selectedMonths.add(ii);
         else if (selectedMonths.size > 1) selectedMonths.delete(ii);
         else { e.target.checked = true; return; }
-        buildPeriodPicker(); onPeriodChange();
+        _periodDirty = true; buildPeriodPicker();
       }));
     });
 
