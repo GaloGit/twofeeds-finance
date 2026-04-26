@@ -262,6 +262,8 @@
     .pub-table th, .pub-table td { padding: 10px 10px; }
     .pub-table .row-num { font-size: 12px; }
     .pub-table thead th { font-size: 10px; }
+    .expand-txt-btn { background:none;border:1px solid transparent;border-radius:3px;color:var(--muted);cursor:pointer;font-size:10px;padding:0 3px;line-height:1.5;flex-shrink:0;transition:all 0.15s; }
+    .expand-txt-btn:hover { border-color:var(--border);color:var(--accent-light);background:var(--surface3); }
     .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin-bottom: 8px; }
 
     /* CHART */
@@ -613,6 +615,17 @@
       </div>
 
     </div>
+  </div>
+</div>
+
+<!-- TEXT EXPAND MODAL -->
+<div id="textExpandModal" onclick="if(event.target===this)closeFullText()" style="display:none;position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,0.65);align-items:center;justify-content:center">
+  <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;width:min(500px,90vw);max-height:70vh;overflow:auto;box-shadow:0 16px 48px rgba(0,0,0,0.7);padding:20px 24px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <span id="textExpandTitle" style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted)">Full Text</span>
+      <button onclick="closeFullText()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:20px;line-height:1;padding:0">×</button>
+    </div>
+    <div id="textExpandBody" style="font-size:13px;color:var(--text);line-height:1.7;word-break:break-word;white-space:pre-wrap"></div>
   </div>
 </div>
 
@@ -6094,7 +6107,7 @@
             <button onclick="pubCancelPop('${p.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;line-height:1">✕</button>
           </div>` : ''}
         </td>
-        <td style="min-width:100px"><input class="editable" value="${esc(p.notes||'')}" onblur="updatePub('${p.id}','notes',this.value)" placeholder="Notes…" style="width:100%;min-width:80px"/></td>
+        <td style="min-width:100px"><div style="display:flex;align-items:center;gap:4px"><input class="editable" id="pubNote_${p.id}" value="${esc(p.notes||'')}" onblur="updatePub('${p.id}','notes',this.value)" placeholder="Notes…" style="width:100%;min-width:0"/>${(p.notes||'').length>=20?`<button class="expand-txt-btn" onclick="showFullText(document.getElementById('pubNote_${p.id}').value,'Notes')" title="Show full text">⤢</button>`:''}</div></td>
         <td style="width:32px;text-align:center;padding:0 8px">${canEdit ? `<button class="add-btn" style="padding:2px 8px;font-size:9px;white-space:nowrap" onclick="deletePub('${p.id}')">✕</button>` : ''}</td>
       </tr>`;
     }).join('') +
@@ -8920,6 +8933,22 @@
     if (cb) cb();
   }
 
+  function showFullText(text, label) {
+    const m = document.getElementById('textExpandModal');
+    if (!m) return;
+    document.getElementById('textExpandTitle').textContent = label || 'Full Text';
+    document.getElementById('textExpandBody').textContent = text;
+    m.style.display = 'flex';
+  }
+  function closeFullText() {
+    const m = document.getElementById('textExpandModal');
+    if (m) m.style.display = 'none';
+  }
+  function _txtExpBtn(text, label) {
+    if (!text || text.length < 20) return '';
+    return `<button class="expand-txt-btn" data-text="${esc(text)}" onclick="showFullText(this.dataset.text,'${label||'Text'}')" title="Show full text">⤢</button>`;
+  }
+
   function showHelp() {
     const m = document.getElementById('helpModal');
     if (m) { m.style.display = 'flex'; }
@@ -9137,9 +9166,9 @@
         <td style="font-family:var(--font-mono);font-size:11px">${m.title}</td>
         <td style="font-family:var(--font-mono);font-size:11px">${m.date || '—'}</td>
         <td style="font-family:var(--font-mono);font-size:11px">${m.time || '—'}</td>
-        <td style="font-family:var(--font-mono);font-size:11px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${m.attendees}">${m.attendees || '—'}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;max-width:160px"><div style="display:flex;align-items:center;gap:4px;min-width:0"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1">${m.attendees || '—'}</span>${_txtExpBtn(m.attendees||'','Attendees')}</div></td>
         <td>${_statusBadge(m.status)}</td>
-        <td style="font-family:var(--font-mono);font-size:11px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${m.notes}">${m.notes || '—'}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;max-width:180px"><div style="display:flex;align-items:center;gap:4px;min-width:0"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1">${m.notes || '—'}</span>${_txtExpBtn(m.notes||'','Notes')}</div></td>
         <td style="white-space:nowrap">
           ${_opsEditBtn(`editMeeting('${m.id}')`)}
           ${_opsDelBtn(`deleteMeeting('${m.id}')`)}
@@ -9244,7 +9273,7 @@
         <td style="font-family:var(--font-mono);font-size:11px;${taskDueCss}">${t.dueDate || '—'}</td>
         <td>${_priorityBadge(t.priority)}</td>
         <td>${_statusBadge(t.status)}</td>
-        <td style="font-family:var(--font-mono);font-size:11px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${t.notes}">${t.notes || '—'}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;max-width:180px"><div style="display:flex;align-items:center;gap:4px;min-width:0"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1">${t.notes || '—'}</span>${_txtExpBtn(t.notes||'','Notes')}</div></td>
         <td style="white-space:nowrap">
           ${_opsEditBtn(`editTask('${t.id}')`)}
           ${_opsDelBtn(`deleteTask('${t.id}')`)}
