@@ -477,7 +477,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.50</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.51</div>
   </div>
 </div>
 
@@ -550,7 +550,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.50</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.51</div>
   </div>
 </div>
 
@@ -598,7 +598,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.50</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.51</span>
           </div>
         </div>
       </div>
@@ -5385,8 +5385,7 @@
   }
 
   async function onPeriodChange() {
-    const loader = document.getElementById('periodLoader');
-    if (loader) { loader.style.opacity = '1'; loader.style.display = 'flex'; }
+    _showLoader();
     // Clear both caches so data re-fetches on period switch
     Object.keys(_cache).forEach(k => delete _cache[k]);
     Object.keys(_rawCache).forEach(k => delete _rawCache[k]);
@@ -5397,10 +5396,7 @@
     if (activeTab?.id === 'tab-costsummary') renders.push(renderCostSummary());
     if (activeTab?.id === 'tab-profit') renderProfitSummary();
     await Promise.all(renders);
-    if (loader) {
-      loader.style.opacity = '0';
-      setTimeout(() => { loader.style.display = 'none'; loader.style.opacity = '1'; }, 250);
-    }
+    _hideLoader();
     // Prefetch profit data in background so Profit tab loads instantly
     setTimeout(_prefetchProfitData, 200);
   }
@@ -5708,6 +5704,7 @@
       if (!confirmed) return;
     }
 
+    _showLoader();
     try {
       await fetch(FINANCE_API, {
         method: 'POST',
@@ -5717,10 +5714,11 @@
       pvAllPublishers = [];
       logActivity('import_publishers', `Imported ${rows.length} publishers for ${periodKey()}`);
       showToast('✓ CSV imported — ' + rows.length + ' publishers');
-      renderPublishers();
+      await renderPublishers();
     } catch {
       showToast('⚠ Failed to save. Check connection.');
     }
+    _hideLoader();
   }
 
   function handleCSV(file) {
@@ -5756,7 +5754,7 @@
     if (!raw) { showToast('⚠ Paste a Google Sheet or Drive link first'); return; }
     const fetchUrl = _gdriveToFetchUrl(raw);
     if (!fetchUrl) { showToast('⚠ Unrecognized link — paste a Google Sheet or Drive URL'); return; }
-    showToast('⏳ Fetching…');
+    _showLoader();
     try {
       const res = await fetch(fetchUrl);
       if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -5764,6 +5762,7 @@
       if (input) input.value = '';
       await _importCSVRows(parseCSV(text));
     } catch {
+      _hideLoader();
       showToast('⚠ Could not fetch — make sure it\'s shared as "Anyone with the link"', true);
     }
   }
@@ -6339,11 +6338,13 @@
     if (!isSinglePeriod()) { showToast('⚠ Select a single month to clear'); return; }
     _invalidateCache('pub_');
     if (!confirmDelete(`Clear ALL publisher data for ${periodLabel()}?`)) return;
+    _showLoader();
     try {
       await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'savePublishers', period: periodKey(), rows: [], user: localStorage.getItem('tf_current_user')||'unknown', timestamp: new Date().toISOString() }) });
       logActivity('clear_publishers', `Cleared all publishers for ${periodKey()}`);
     } catch { showToast('⚠ Clear failed'); }
-    renderPublishers();
+    await renderPublishers();
+    _hideLoader();
   }
 
   async function exportCSV() {
@@ -6872,6 +6873,7 @@
     if (!canEditTab('internal')) { showToast('⚠ No edit access to Internal Sources'); return; }
     _invalidateCache('inv_');
     if (!confirmDelete(`Clear ALL invoices for ${periodLabel()}?`)) return;
+    _showLoader();
     const user = localStorage.getItem('tf_current_user') || '';
     try {
       const res = await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'clearInvoices', period: periodKey(), user }) });
@@ -6881,7 +6883,8 @@
       _renderLastUpdated('inv');
       logActivity('clear_invoices', `Cleared all invoices for ${periodKey()}`);
     } catch { showToast('⚠ Clear failed'); }
-    renderInvoices();
+    await renderInvoices();
+    _hideLoader();
   }
 
   async function exportInvoices() {
@@ -7059,6 +7062,7 @@
     if (!canEditTab('mediabuy')) { showToast('⚠ No edit access to Media Buying'); return; }
     if (!isSinglePeriod()) { showToast('⚠ Select a single month to clear'); return; }
     if (!confirmDelete(`Clear ALL Media Buying data for ${periodLabel()}?`)) return;
+    _showLoader();
     _invalidateCache('mb_');
     const user = localStorage.getItem('tf_current_user') || '';
     try {
@@ -7069,7 +7073,8 @@
       _renderLastUpdated('mb');
       logActivity('clear_mediabuy', `Cleared all media buying data for ${periodKey()}`);
     } catch { showToast('⚠ Clear failed'); }
-    renderMediaBuying();
+    await renderMediaBuying();
+    _hideLoader();
   }
 
   function exportMediaCSV() {
@@ -8818,6 +8823,15 @@
         }
       }
     });
+  }
+
+  function _showLoader() {
+    const el = document.getElementById('periodLoader');
+    if (el) { el.style.opacity = '1'; el.style.display = 'flex'; }
+  }
+  function _hideLoader() {
+    const el = document.getElementById('periodLoader');
+    if (el) { el.style.opacity = '0'; setTimeout(() => { el.style.display = 'none'; el.style.opacity = '1'; }, 250); }
   }
 
   function scrollToChart(id) {
