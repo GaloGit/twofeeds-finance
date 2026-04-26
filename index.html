@@ -479,7 +479,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.3.3</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.3.4</div>
   </div>
 </div>
 
@@ -552,7 +552,64 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.3.3</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.3.4</div>
+  </div>
+</div>
+
+<!-- HELP MODAL -->
+<div id="helpModal" onclick="if(event.target===this)closeHelp()" style="display:none;position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,0.65);align-items:center;justify-content:center">
+  <div style="background:var(--surface2);border:1px solid var(--border);border-radius:16px;width:min(720px,94vw);max-height:85vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,0.8)">
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 28px 16px;border-bottom:1px solid var(--border);flex-shrink:0">
+      <div style="display:flex;align-items:center;gap:10px">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span style="font-family:var(--font-syne);font-size:17px;font-weight:800;color:var(--text)">How to Use the System</span>
+      </div>
+      <button onclick="closeHelp()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:20px;line-height:1;padding:0">×</button>
+    </div>
+    <!-- Scrollable body -->
+    <div id="helpContent" style="overflow-y:auto;padding:24px 28px;font-family:var(--font-mono);font-size:12px;color:var(--text);line-height:1.8">
+
+      <div style="margin-bottom:24px">
+        <div style="font-family:var(--font-syne);font-size:13px;font-weight:800;color:#a78bfa;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.08em">Overview</div>
+        <p style="color:var(--muted);margin:0">This is the TwoFeeds Finance dashboard — a single tool for tracking publisher costs, invoices, media buying, and revenue across months and years.</p>
+      </div>
+
+      <div style="margin-bottom:24px">
+        <div style="font-family:var(--font-syne);font-size:13px;font-weight:800;color:#a78bfa;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.08em">Tabs</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div><span style="color:#38bdf8;font-weight:700">Sources Info</span> — Master list of all publishers and vendors. Add logos, types (DSP/RW/MB), managers, and contacts here. All other tabs pull data from this list.</div>
+          <div><span style="color:#38bdf8;font-weight:700">Publishers</span> — Upload your monthly publisher cost sheet (CSV or Google Sheet link). Rows highlighted red = publisher not found in Sources Info.</div>
+          <div><span style="color:#38bdf8;font-weight:700">Publisher View</span> — Search any publisher to see their full cost history across all periods with a trend chart.</div>
+          <div><span style="color:#38bdf8;font-weight:700">Internal Sources</span> — Upload and manage invoices. Attach PDF files and track paid/waiting status.</div>
+          <div><span style="color:#38bdf8;font-weight:700">Media Buying</span> — Track CPC rates by DSP and GEO. Upload via CSV.</div>
+          <div><span style="color:#38bdf8;font-weight:700">Cost Summary</span> — Auto-calculated breakdown of all costs by category for the selected period.</div>
+          <div><span style="color:#38bdf8;font-weight:700">Profit Summary</span> — Revenue vs. cost view showing net profit per period.</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:24px">
+        <div style="font-family:var(--font-syne);font-size:13px;font-weight:800;color:#a78bfa;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.08em">Monthly Workflow</div>
+        <ol style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;color:var(--muted)">
+          <li>Select the correct <strong style="color:var(--text)">Year</strong> and <strong style="color:var(--text)">Month</strong> from the dropdowns — data loads when you close the dropdown.</li>
+          <li>Go to <strong style="color:var(--text)">Publishers</strong> and upload your monthly CSV (or paste a Google Sheet link).</li>
+          <li>Any publishers not in Sources Info will be flagged in red — add them in Sources Info first.</li>
+          <li>Upload invoices in <strong style="color:var(--text)">Internal Sources</strong> and mark them paid as payments clear.</li>
+          <li>Check <strong style="color:var(--text)">Cost Summary</strong> for a full breakdown of the month.</li>
+        </ol>
+      </div>
+
+      <div style="margin-bottom:24px">
+        <div style="font-family:var(--font-syne);font-size:13px;font-weight:800;color:#a78bfa;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.08em">CSV Upload Format — Publishers</div>
+        <div style="color:var(--muted)">Required columns: <strong style="color:var(--text)">Publisher, Amount</strong><br>
+        Optional columns: <strong style="color:var(--text)">Type, Approval Label, Approval URL, Invoice Label, Invoice URL, POP Label, POP URL, Notes</strong></div>
+      </div>
+
+      <div style="background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.2);border-radius:8px;padding:12px 16px;color:var(--muted);font-size:11px">
+        💡 This page will be updated as the system evolves. Last updated: April 2026.
+      </div>
+
+    </div>
   </div>
 </div>
 
@@ -600,7 +657,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.3.3</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.3.4</span>
           </div>
         </div>
       </div>
@@ -642,6 +699,11 @@
         </div>
       </div>
       <div id="adminPanelBtns" style="display:none;gap:8px;margin-left:auto;align-items:center">
+        <button onclick="showHelp()" title="Help & Instructions"
+          style="display:flex;align-items:center;gap:4px;background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.3);border-radius:6px;padding:4px 8px;cursor:pointer;font-family:var(--font-mono);font-size:9px;color:#a78bfa;transition:all 0.2s;white-space:nowrap">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Help
+        </button>
         <button id="adminBtn_settings" onclick="showAdminPanel('settings')" title="Settings"
           style="display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;cursor:pointer;font-family:var(--font-mono);font-size:9px;color:var(--muted);transition:all 0.2s;white-space:nowrap">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -8852,6 +8914,15 @@
     const btn = document.getElementById(id + 'Clear');
     if (btn) btn.style.display = 'none';
     if (cb) cb();
+  }
+
+  function showHelp() {
+    const m = document.getElementById('helpModal');
+    if (m) { m.style.display = 'flex'; }
+  }
+  function closeHelp() {
+    const m = document.getElementById('helpModal');
+    if (m) { m.style.display = 'none'; }
   }
 
   function _showLoader() {
