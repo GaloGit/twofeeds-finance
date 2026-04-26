@@ -814,6 +814,7 @@
                 <th>Invoice</th>
                 <th>POP</th>
                 <th>Notes</th>
+                <th style="width:32px"></th>
               </tr>
             </thead>
             <tbody id="publisherBody"></tbody>
@@ -6089,12 +6090,12 @@
             <button onclick="pubSavePop('${p.id}')" style="width:18px;height:18px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:10px;cursor:pointer;flex-shrink:0">✓</button>
             <button onclick="pubCancelPop('${p.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;line-height:1">✕</button>
           </div>` : ''}
-          ${canEdit ? `<button class="add-btn" style="padding:2px 8px;font-size:9px;white-space:nowrap;margin-top:2px" onclick="deletePub('${p.id}')">✕</button>` : ''}
         </td>
         <td style="min-width:160px"><input class="editable" value="${esc(p.notes||'')}" onblur="updatePub('${p.id}','notes',this.value)" placeholder="Notes…" style="width:100%;min-width:140px"/></td>
+        <td style="width:32px;text-align:center;padding:0 8px">${canEdit ? `<button class="add-btn" style="padding:2px 8px;font-size:9px;white-space:nowrap" onclick="deletePub('${p.id}')">✕</button>` : ''}</td>
       </tr>`;
     }).join('') +
-      (canEdit ? `<tr class="add-row"><td colspan="10"><button class="add-btn" onclick="addPubRow()">+ Add Publisher Manually</button></td></tr>` : '');
+      (canEdit ? `<tr class="add-row"><td colspan="11"><button class="add-btn" onclick="addPubRow()">+ Add Publisher Manually</button></td></tr>` : '');
 
     // ── Pinned total row in tfoot ──
     const pubTfoot = document.getElementById('publisherTfoot');
@@ -6102,7 +6103,7 @@
       <tr>
         <td colspan="4" style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.08em;padding:12px 18px;text-transform:uppercase">Total</td>
         <td class="mono text-green" style="font-size:15px;font-weight:700;white-space:nowrap;padding:12px 18px">${fmt(filtered.reduce((s,p)=>s+(parseFloat(p.amount)||0),0))}</td>
-        <td colspan="5"></td>
+        <td colspan="6"></td>
       </tr>`;
 
     setTimeout(() => {
