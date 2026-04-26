@@ -479,7 +479,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.3.2</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.3.3</div>
   </div>
 </div>
 
@@ -552,7 +552,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.3.2</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.3.3</div>
   </div>
 </div>
 
@@ -600,7 +600,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.3.2</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.3.3</span>
           </div>
         </div>
       </div>
@@ -1346,9 +1346,9 @@
             <div id="siLastUpdated" style="font-family:var(--font-mono);font-size:9px;color:var(--muted);white-space:nowrap;line-height:1.6"></div>
             <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);opacity:0.6;white-space:nowrap">visible only to admin</div>
           </div>
-          <div class="pub-search-wrap" style="width:200px">
+          <div class="pub-search-wrap" style="width:150px">
             <span class="pub-search-icon">🔍</span>
-            <input type="text" class="pub-search" id="siSearch" placeholder="Search sources..." oninput="_renderSiTable();_updateSearchClear('siSearch')"/>
+            <input type="text" class="pub-search" id="siSearch" placeholder="Search..." oninput="_renderSiTable();_updateSearchClear('siSearch')" style="width:100%"/>
             <button class="search-clear-btn" id="siSearchClear" onclick="_clearSearch('siSearch',_renderSiTable)">×</button>
           </div>
           <button id="siOrderBtn" onclick="toggleSiOrderEdit()" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">↕ Edit Order</button>
