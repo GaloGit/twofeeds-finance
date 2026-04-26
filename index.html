@@ -259,6 +259,9 @@
     .toast.show { transform: translateY(0); opacity: 1; }
 
     .empty-row td { text-align: center; padding: 48px; color: var(--muted); font-family: var(--font-mono); font-size: 12px; }
+    .pub-table th, .pub-table td { padding: 10px 10px; }
+    .pub-table .row-num { font-size: 12px; }
+    .pub-table thead th { font-size: 10px; }
     .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin-bottom: 8px; }
 
     /* CHART */
@@ -801,12 +804,12 @@
         </div>
         <div class="table-wrap">
           <div class="table-scroll">
-          <table>
+          <table class="pub-table">
             <thead id="pubThead">
               <tr>
                 <th style="width:0;padding:0;overflow:hidden"></th>
                 <th class="th-hash">#</th>
-                <th style="min-width:200px">Publisher Name</th>
+                <th style="min-width:140px">Publisher Name</th>
                 <th>Platform</th>
                 <th>Amount</th>
                 <th>Status</th>
@@ -6035,9 +6038,9 @@
         <td class="row-num">${i+1}</td>
         <td><div style="display:flex;align-items:center;gap:8px">${getSourceLogo(p.name,26)}<input class="editable" value="${esc(shortName)}" onblur="updatePub('${p.id}','name',this.value)" placeholder="Publisher name" style="min-width:0;flex:1"/></div></td>
         <td>${getSourceTypeBadge(p.name)}</td>
-        <td><input class="editable" value="${esc(fmtAmt)}" onfocus="this.value='${p.amount||0}';this.select()" onblur="pubAmtBlur('${p.id}',this)" style="width:110px;font-family:var(--font-mono);color:var(--green);font-weight:700;text-align:left"/></td>
+        <td><input class="editable" value="${esc(fmtAmt)}" onfocus="this.value='${p.amount||0}';this.select()" onblur="pubAmtBlur('${p.id}',this)" style="width:90px;font-family:var(--font-mono);color:var(--green);font-weight:700;text-align:left"/></td>
         <td><span class="inv-status-badge ${p.payStatus==='paid'?'paid':'waiting'}" onclick="${canEdit?`togglePubStatus('${p.id}',this)`:''}" style="${!canEdit?'cursor:default':''}">${p.payStatus==='paid'?'✓ Paid':'⏳ Waiting'}</span></td>
-        <td style="min-width:180px">
+        <td style="min-width:120px">
           <div id="pubApprView_${p.id}" style="display:flex;align-items:center;gap:5px">
             ${p.approval
               ? `<a href="${esc(p.approval)}" target="_blank" style="color:var(--accent-light);text-decoration:none;font-family:var(--font-mono);font-size:11px;white-space:nowrap;border-bottom:1px solid var(--border);padding-bottom:1px" title="${esc(p.approval)}">${esc(p.approvalLabel || approvalText)}</a>`
@@ -6055,7 +6058,7 @@
             <button onclick="pubCancelApproval('${p.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;line-height:1">✕</button>
           </div>` : ''}
         </td>
-        <td style="min-width:140px">
+        <td style="min-width:100px">
           <div id="pubInvView_${p.id}" style="display:flex;align-items:center;gap:5px">
             ${p.invoiceUrl
               ? `<a href="${esc(p.invoiceUrl)}" target="_blank" style="color:var(--accent-light);text-decoration:none;font-family:var(--font-mono);font-size:11px;white-space:nowrap;border-bottom:1px solid var(--border);padding-bottom:1px" title="${esc(p.invoiceUrl)}">${esc(p.invoiceLabel || 'Invoice')}</a>`
@@ -6073,7 +6076,7 @@
             <button onclick="pubCancelInvoice('${p.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;line-height:1">✕</button>
           </div>` : ''}
         </td>
-        <td style="min-width:140px">
+        <td style="min-width:100px">
           <div id="pubPopView_${p.id}" style="display:flex;align-items:center;gap:5px">
             ${p.popUrl
               ? `<a href="${esc(p.popUrl)}" target="_blank" style="color:var(--accent-light);text-decoration:none;font-family:var(--font-mono);font-size:11px;white-space:nowrap;border-bottom:1px solid var(--border);padding-bottom:1px" title="${esc(p.popUrl)}">${esc(p.popLabel || 'POP')}</a>`
@@ -6091,7 +6094,7 @@
             <button onclick="pubCancelPop('${p.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;line-height:1">✕</button>
           </div>` : ''}
         </td>
-        <td style="min-width:160px"><input class="editable" value="${esc(p.notes||'')}" onblur="updatePub('${p.id}','notes',this.value)" placeholder="Notes…" style="width:100%;min-width:140px"/></td>
+        <td style="min-width:100px"><input class="editable" value="${esc(p.notes||'')}" onblur="updatePub('${p.id}','notes',this.value)" placeholder="Notes…" style="width:100%;min-width:80px"/></td>
         <td style="width:32px;text-align:center;padding:0 8px">${canEdit ? `<button class="add-btn" style="padding:2px 8px;font-size:9px;white-space:nowrap" onclick="deletePub('${p.id}')">✕</button>` : ''}</td>
       </tr>`;
     }).join('') +
