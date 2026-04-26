@@ -477,7 +477,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.48</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.49</div>
   </div>
 </div>
 
@@ -550,7 +550,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.48</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.49</div>
   </div>
 </div>
 
@@ -598,7 +598,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.48</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.49</span>
           </div>
         </div>
       </div>
@@ -5676,6 +5676,16 @@
       const confirmed = await showConfirmModal(
         `<strong>${typeMismatches.length}</strong> publisher${typeMismatches.length !== 1 ? 's have' : ' has'} a type mismatch between the uploaded file and Sources Info:<br><br><ul style="margin:8px 0 0;padding-left:20px;text-align:left">${list}</ul><br>Import anyway?`,
         'Import Anyway', 'Cancel'
+      );
+      if (!confirmed) return;
+    }
+
+    const noSiRows = rows.filter(r => !isInSourcesInfo(r.name));
+    if (noSiRows.length > 0) {
+      const list = noSiRows.map(r => `<li style="margin-bottom:4px">${esc(r.name)}</li>`).join('');
+      const confirmed = await showConfirmModal(
+        `<strong>${noSiRows.length}</strong> publisher${noSiRows.length !== 1 ? 's are' : ' is'} not found in <strong>Sources Info</strong>:<br><br><ul style="margin:8px 0 0;padding-left:20px;text-align:left">${list}</ul><br>These rows will appear highlighted in red until you add them to Sources Info.<br><br>Import anyway, or cancel to add them to Sources Info first?`,
+        'Import Anyway', 'Cancel — Add to Sources Info'
       );
       if (!confirmed) return;
     }
