@@ -1246,7 +1246,7 @@
       <div class="table-wrap">
         <div class="table-scroll">
           <table>
-            <thead><tr><th>Component</th><th style="text-align:right">Amount</th><th style="text-align:right">% of Revenue</th></tr></thead>
+            <thead><tr><th>Component</th><th>Amount</th><th style="text-align:right">% of Revenue</th></tr></thead>
             <tbody id="profBreakBody"></tbody>
           </table>
         </div>
@@ -1668,7 +1668,7 @@
                   <th class="th-hash">#</th>
                   <th>Logo</th>
                   <th>ADV Name</th>
-                  <th style="text-align:right">Amount</th>
+                  <th>Amount</th>
                   <th>Status</th>
                 </tr>
               </thead>
@@ -6034,7 +6034,7 @@
         <td class="row-num">${i+1}</td>
         <td><div style="display:flex;align-items:center;gap:8px">${getSourceLogo(p.name,26)}<input class="editable" value="${esc(shortName)}" onblur="updatePub('${p.id}','name',this.value)" placeholder="Publisher name" style="min-width:0;flex:1"/></div></td>
         <td>${getSourceTypeBadge(p.name)}</td>
-        <td><input class="editable" value="${esc(fmtAmt)}" onfocus="this.value='${p.amount||0}';this.select()" onblur="pubAmtBlur('${p.id}',this)" style="width:110px;font-family:var(--font-mono);color:var(--green);font-weight:700;text-align:right"/></td>
+        <td><input class="editable" value="${esc(fmtAmt)}" onfocus="this.value='${p.amount||0}';this.select()" onblur="pubAmtBlur('${p.id}',this)" style="width:110px;font-family:var(--font-mono);color:var(--green);font-weight:700;text-align:left"/></td>
         <td><span class="inv-status-badge ${p.payStatus==='paid'?'paid':'waiting'}" onclick="${canEdit?`togglePubStatus('${p.id}',this)`:''}" style="${!canEdit?'cursor:default':''}">${p.payStatus==='paid'?'✓ Paid':'⏳ Waiting'}</span></td>
         <td style="min-width:180px">
           <div id="pubApprView_${p.id}" style="display:flex;align-items:center;gap:5px">
@@ -7355,7 +7355,7 @@
         tbody.innerHTML = rows.map(r => `
           <tr style="${r.highlight?'border-top:1px solid var(--border)':''}">
             <td style="font-family:var(--font-mono);font-size:12px${r.highlight?';font-weight:700;color:var(--text)':';color:var(--muted)'}">${r.label}</td>
-            <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:${r.color};text-align:right;white-space:nowrap">${fmtAmt(r.amount)}</td>
+            <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:${r.color};white-space:nowrap">${fmtAmt(r.amount)}</td>
             <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:right">${r.label==='Revenue'?'100%':pctOf(r.amount)}</td>
           </tr>`).join('');
       }
@@ -7810,7 +7810,7 @@
         <td class="row-num">${i + 1}</td>
         <td style="width:36px">${logoHtml}</td>
         <td style="font-family:var(--font-mono);font-size:12px">${esc(r.name)}</td>
-        <td style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--green);text-align:right">${fmtAmt}</td>
+        <td style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--green)">${fmtAmt}</td>
         <td><span class="inv-status-badge ${r.status==='paid'?'paid':'waiting'}" onclick="revToggleStatus(${i})">${r.status==='paid'?'✓ Paid':'⏳ Waiting'}</span></td>
       </tr>`;
     }).join('');
@@ -7818,7 +7818,7 @@
     const foot = document.getElementById('revFoot');
     foot.innerHTML = `<tr style="border-top:2px solid var(--border)">
       <td colspan="3" style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);padding:10px 12px;text-transform:uppercase;letter-spacing:0.08em">Total</td>
-      <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--green);text-align:right;padding:10px 12px">${fmt(total)}</td>
+      <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--green);padding:10px 12px">${fmt(total)}</td>
       <td></td>
     </tr>`;
   }
