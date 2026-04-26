@@ -477,7 +477,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.42</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.43</div>
   </div>
 </div>
 
@@ -550,8 +550,14 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.42</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.43</div>
   </div>
+</div>
+
+<!-- PERIOD LOADER -->
+<div id="periodLoader" style="display:none;position:fixed;inset:0;z-index:450;background:rgba(10,7,24,0.6);backdrop-filter:blur(2px);align-items:center;justify-content:center;flex-direction:column;gap:10px;transition:opacity 0.25s">
+  <div class="spinner" style="width:28px;height:28px;border-width:3px"></div>
+  <div style="font-family:var(--font-mono);font-size:11px;color:var(--accent-light);letter-spacing:0.1em">Loading period data…</div>
 </div>
 
 <!-- APP -->
@@ -592,7 +598,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.42</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.43</span>
           </div>
         </div>
       </div>
@@ -5332,16 +5338,23 @@
     return periods;
   }
 
-  function onPeriodChange() {
+  async function onPeriodChange() {
+    const loader = document.getElementById('periodLoader');
+    if (loader) { loader.style.opacity = '1'; loader.style.display = 'flex'; }
     // Clear both caches so data re-fetches on period switch
     Object.keys(_cache).forEach(k => delete _cache[k]);
     Object.keys(_rawCache).forEach(k => delete _rawCache[k]);
-    renderPublishers();
     const activeTab = document.querySelector('.page.active');
-    if (activeTab && activeTab.id === 'tab-internal') renderInvoices();
-    if (activeTab && activeTab.id === 'tab-mediabuy') renderMediaBuying();
-    if (activeTab && activeTab.id === 'tab-costsummary') renderCostSummary();
-    if (activeTab && activeTab.id === 'tab-profit') renderProfitSummary();
+    const renders = [renderPublishers()];
+    if (activeTab?.id === 'tab-internal') renders.push(renderInvoices());
+    if (activeTab?.id === 'tab-mediabuy') renders.push(renderMediaBuying());
+    if (activeTab?.id === 'tab-costsummary') renders.push(renderCostSummary());
+    if (activeTab?.id === 'tab-profit') renderProfitSummary();
+    await Promise.all(renders);
+    if (loader) {
+      loader.style.opacity = '0';
+      setTimeout(() => { loader.style.display = 'none'; loader.style.opacity = '1'; }, 250);
+    }
     // Prefetch profit data in background so Profit tab loads instantly
     setTimeout(_prefetchProfitData, 200);
   }
