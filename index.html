@@ -477,7 +477,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.49</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.50</div>
   </div>
 </div>
 
@@ -550,7 +550,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.49</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.50</div>
   </div>
 </div>
 
@@ -598,7 +598,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.49</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.50</span>
           </div>
         </div>
       </div>
@@ -5786,21 +5786,34 @@
     const amtCol     = findCol('amount', 'payment', 'pay', 'price');
     const platCol    = findCol('platform', 'network', 'source');
     const notesCol   = findCol('notes', 'note', 'comment', 'remarks');
-    const approvalCol = findCol('approval', 'approve', 'mail');
-    const invoiceCol  = findCol('invoice');
-    const popCol      = findCol('pop');
+
+    // Prefer the specific "xxx url" column before falling back to a loose match
+    const approvalUrlCol   = findCol('approval url', 'approve url');
+    const approvalLabelCol = findCol('approval label', 'approve label');
+    const approvalCol      = approvalUrlCol   >= 0 ? approvalUrlCol   : findCol('approval', 'approve', 'mail');
+
+    const invoiceUrlCol    = findCol('invoice url');
+    const invoiceLabelCol  = findCol('invoice label');
+    const invoiceCol       = invoiceUrlCol    >= 0 ? invoiceUrlCol    : findCol('invoice');
+
+    const popUrlCol        = findCol('pop url');
+    const popLabelCol      = findCol('pop label');
+    const popCol           = popUrlCol        >= 0 ? popUrlCol        : findCol('pop');
 
     return lines.slice(1).filter(l => l.trim()).map((line, idx) => {
       const cols = parseCSVLine(line);
       return {
         id: Date.now() + idx,
-        name:       nameCol    >= 0 ? (cols[nameCol]   ||'').trim() : '',
-        amount:     amtCol     >= 0 ? parseFloat((cols[amtCol]||'0').replace(/[^0-9.]/g,'')) || 0 : 0,
-        platform:   platCol    >= 0 ? (cols[platCol]   ||'').trim() : '',
-        notes:      notesCol   >= 0 ? (cols[notesCol]  ||'').trim() : '',
-        approval:   approvalCol >= 0 ? (cols[approvalCol]||'').trim() : '',
-        invoiceUrl: invoiceCol  >= 0 ? (cols[invoiceCol] ||'').trim() : '',
-        popUrl:     popCol      >= 0 ? (cols[popCol]     ||'').trim() : '',
+        name:          nameCol         >= 0 ? (cols[nameCol]        ||'').trim() : '',
+        amount:        amtCol          >= 0 ? parseFloat((cols[amtCol]||'0').replace(/[^0-9.]/g,'')) || 0 : 0,
+        platform:      platCol         >= 0 ? (cols[platCol]        ||'').trim() : '',
+        notes:         notesCol        >= 0 ? (cols[notesCol]       ||'').trim() : '',
+        approval:      approvalCol     >= 0 ? (cols[approvalCol]    ||'').trim() : '',
+        approvalLabel: approvalLabelCol >= 0 ? (cols[approvalLabelCol]||'').trim() : '',
+        invoiceUrl:    invoiceCol      >= 0 ? (cols[invoiceCol]     ||'').trim() : '',
+        invoiceLabel:  invoiceLabelCol >= 0 ? (cols[invoiceLabelCol]||'').trim() : '',
+        popUrl:        popCol          >= 0 ? (cols[popCol]         ||'').trim() : '',
+        popLabel:      popLabelCol     >= 0 ? (cols[popLabelCol]    ||'').trim() : '',
       };
     }).filter(r => r.name);
   }
