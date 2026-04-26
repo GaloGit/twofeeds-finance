@@ -477,7 +477,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.35</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.36</div>
   </div>
 </div>
 
@@ -550,7 +550,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.35</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.36</div>
   </div>
 </div>
 
@@ -592,7 +592,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.35</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.36</span>
           </div>
         </div>
       </div>
@@ -5856,7 +5856,7 @@
         <td style="${canDrag?'cursor:grab;color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center':'width:0;padding:0;font-size:0;overflow:hidden'}">${canDrag?'⠿':''}</td>
         <td class="row-num">${i+1}</td>
         <td><div style="display:flex;align-items:center;gap:8px">${getSourceLogo(p.name,26)}<input class="editable" value="${esc(shortName)}" onblur="updatePub('${p.id}','name',this.value)" placeholder="Publisher name" style="min-width:0;flex:1"/></div></td>
-        <td><div style="display:flex;align-items:center;gap:6px">${getSourceTypeBadge(p.name)}<input class="editable" value="${esc(displayPlatform)}" onblur="updatePub('${p.id}','platform',this.value)" placeholder="Platform" style="width:100px"/></div></td>
+        <td>${getSourceTypeBadge(p.name)}</td>
         <td><input class="editable" value="${esc(fmtAmt)}" onfocus="this.value='${p.amount||0}';this.select()" onblur="pubAmtBlur('${p.id}',this)" style="width:110px;font-family:var(--font-mono);color:var(--green);font-weight:700;text-align:right"/></td>
         <td><span class="inv-status-badge ${p.payStatus==='paid'?'paid':'waiting'}" onclick="${canEdit?`togglePubStatus('${p.id}',this)`:''}" style="${!canEdit?'cursor:default':''}">${p.payStatus==='paid'?'✓ Paid':'⏳ Waiting'}</span></td>
         <td style="min-width:180px">
