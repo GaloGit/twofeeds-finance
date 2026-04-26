@@ -477,7 +477,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.45</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.46</div>
   </div>
 </div>
 
@@ -550,7 +550,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.45</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.46</div>
   </div>
 </div>
 
@@ -598,7 +598,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.45</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.46</span>
           </div>
         </div>
       </div>
@@ -765,6 +765,28 @@
           </div>
           <div class="chart-container">
             <canvas id="pubChart"></canvas>
+          </div>
+        </div>
+
+        <!-- DSP Chart -->
+        <div class="chart-wrap" id="pubDspChartWrap" style="margin-top:16px;display:none">
+          <div class="chart-header">
+            <div class="chart-title" id="pubDspChartTitle">DSP Publishers</div>
+            <div class="chart-sub" id="pubDspChartSub">—</div>
+          </div>
+          <div class="chart-container">
+            <canvas id="pubDspChart"></canvas>
+          </div>
+        </div>
+
+        <!-- RW Chart -->
+        <div class="chart-wrap" id="pubRwChartWrap" style="margin-top:16px;display:none">
+          <div class="chart-header">
+            <div class="chart-title" id="pubRwChartTitle">RW Publishers</div>
+            <div class="chart-sub" id="pubRwChartSub">—</div>
+          </div>
+          <div class="chart-container">
+            <canvas id="pubRwChart"></canvas>
           </div>
         </div>
 
@@ -5971,7 +5993,12 @@
         <td colspan="5"></td>
       </tr>`;
 
-    setTimeout(() => { renderPubChart(all); renderPubPlatformPieChart(all); }, 50);
+    setTimeout(() => {
+      renderPubChart(all);
+      _renderPubTypeChart(all, 'DSP', 'pubDspChart', 'pubDspChartWrap', 'pubDspChartTitle', 'pubDspChartSub', 'rgba(124,58,237,0.8)', 'pubDspChartInstance');
+      _renderPubTypeChart(all, 'RW',  'pubRwChart',  'pubRwChartWrap',  'pubRwChartTitle',  'pubRwChartSub',  'rgba(56,189,248,0.8)',  'pubRwChartInstance');
+      renderPubPlatformPieChart(all);
+    }, 50);
   }
 
   function _invalidateCache(prefix) {
@@ -8615,6 +8642,56 @@
   }
 
   let pubPlatformChartInstance = null;
+  let pubDspChartInstance = null;
+  let pubRwChartInstance  = null;
+
+  function _renderPubTypeChart(publishers, type, canvasId, wrapId, titleId, subId, color, instanceKey) {
+    const wrap = document.getElementById(wrapId);
+    const canvas = document.getElementById(canvasId);
+    if (!wrap || !canvas) return;
+
+    const filtered = publishers.filter(p => (getSourceType(p.name)||'').toUpperCase() === type);
+    if (!filtered.length) { wrap.style.display = 'none'; return; }
+    wrap.style.display = 'block';
+
+    const sorted = [...filtered].sort((a,b) => (b.amount||0)-(a.amount||0));
+    const labels  = sorted.map(p => { const n = p.name||''; return n.length > 22 ? n.slice(0,20)+'…' : n; });
+    const amounts = sorted.map(p => p.amount||0);
+    const total   = amounts.reduce((s,a) => s+a, 0);
+
+    document.getElementById(titleId).textContent = `${type} Publishers — ${periodLabel()}`;
+    document.getElementById(subId).textContent   = `${sorted.length} publisher${sorted.length!==1?'s':''} · Total: ${fmt(total)}`;
+
+    if (window[instanceKey]) { window[instanceKey].destroy(); window[instanceKey] = null; }
+
+    window[instanceKey] = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{ label: 'Amount ($)', data: amounts, backgroundColor: color, borderColor: color.replace('0.8','1'), borderWidth: 1, borderRadius: 6, borderSkipped: false }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#16112b', borderColor: '#2e2550', borderWidth: 1,
+            titleColor: '#f0eeff', bodyColor: '#9d5ff7',
+            titleFont: { family: 'Syne', weight: '800', size: 13 },
+            bodyFont: { family: 'Space Mono', size: 11 }, padding: 12,
+            callbacks: {
+              label: ctx => ' $' + Number(ctx.parsed.y).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}),
+              afterLabel: ctx => ` ${total > 0 ? ((ctx.parsed.y/total)*100).toFixed(1) : 0}% of total`
+            }
+          }
+        },
+        scales: {
+          x: { grid: { color: 'rgba(46,37,80,0.5)' }, ticks: { color: '#7b6ea8', font: { family: 'Space Mono', size: 11 }, maxRotation: 35, minRotation: 20 } },
+          y: { grid: { color: 'rgba(46,37,80,0.5)' }, ticks: { color: '#7b6ea8', font: { family: 'Space Mono', size: 11 }, callback: v => '$' + Number(v).toLocaleString() } }
+        }
+      }
+    });
+  }
 
   function renderPubPlatformPieChart(publishers) {
     const canvas = document.getElementById('pubPlatformChart');
