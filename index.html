@@ -477,7 +477,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.46</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.2.47</div>
   </div>
 </div>
 
@@ -550,7 +550,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.46</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.2.47</div>
   </div>
 </div>
 
@@ -598,7 +598,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.46</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.2.47</span>
           </div>
         </div>
       </div>
@@ -2806,6 +2806,16 @@
     const type = getSourceType(name);
     if (!type) return '';
     return _siTypeBadge(type);
+  }
+
+  function isInSourcesInfo(name) {
+    if (!name) return false;
+    const nameLower = name.trim().toLowerCase();
+    if (nameLower in sourcesMap) return true;
+    for (const key of Object.keys(sourcesMap)) {
+      if (key.length >= 3 && (nameLower.includes(key) || key.includes(nameLower))) return true;
+    }
+    return false;
   }
 
   function getSourceLogo(name, size = 28) {
@@ -5917,7 +5927,7 @@
       const displayPlatform = /^(RW|DSP|CPA|CPL|CPC)$/i.test((p.platform||'').trim()) ? '' : (p.platform||'');
       const approvalText = `${shortName} Numbers Approval mail ${_approvalPeriod}`;
       return `
-      <tr id="pubRow_${i}" draggable="${canDrag}" ondragstart="pubDragStart(event,${i})" ondragover="pubDragOver(event,${i})" ondrop="pubDrop(event,${i})" ondragleave="pubDragLeave(event)" ondragend="pubDragEnd(event)" style="animation-delay:${i*0.03}s">
+      <tr id="pubRow_${i}" draggable="${canDrag}" ondragstart="pubDragStart(event,${i})" ondragover="pubDragOver(event,${i})" ondrop="pubDrop(event,${i})" ondragleave="pubDragLeave(event)" ondragend="pubDragEnd(event)" style="animation-delay:${i*0.03}s${!isInSourcesInfo(p.name)?';background:rgba(239,68,68,0.07);border-left:3px solid rgba(239,68,68,0.5)':''}">
         <td style="${canDrag?'cursor:grab;color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center':'width:0;padding:0;font-size:0;overflow:hidden'}">${canDrag?'⠿':''}</td>
         <td class="row-num">${i+1}</td>
         <td><div style="display:flex;align-items:center;gap:8px">${getSourceLogo(p.name,26)}<input class="editable" value="${esc(shortName)}" onblur="updatePub('${p.id}','name',this.value)" placeholder="Publisher name" style="min-width:0;flex:1"/></div></td>
