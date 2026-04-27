@@ -4296,6 +4296,7 @@
   }
 
   async function saveSettings() {
+    _showLoader();
     try {
       const res = await fetch(FINANCE_API, {
         method: 'POST',
@@ -4304,10 +4305,10 @@
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const j = await res.json();
       if (!j.success) throw new Error(j.error || 'Save failed');
-      // Update local EDITORS list
       EDITORS = settingsUsers.filter(u => u.role === 'editor').map(u => u.email);
+      _hideLoader();
       return true;
-    } catch (e) { showToast(`⚠ Failed to save settings — ${e.message}`, true); return false; }
+    } catch (e) { _hideLoader(); showToast(`⚠ Failed to save settings — ${e.message}`, true); return false; }
   }
 
   // ── CONFIRM DELETE HELPER ──
@@ -4395,6 +4396,7 @@
 
   // ── SYSTEM CONFIG ──
   async function saveConfig() {
+    _showLoader();
     const refresh   = parseInt(document.getElementById('cfgRefresh').value)  || appConfig.refreshInterval;
     const session   = parseInt(document.getElementById('cfgSession').value)  || 0;
     const reminder      = parseInt(document.getElementById('cfgReminder').value) || appConfig.invoiceReminderDays;
@@ -4433,7 +4435,8 @@
       status.style.opacity = '1';
       setTimeout(() => { status.style.opacity = '0'; }, 2500);
       _renderCfgLastUpdated(now);
-    } catch (e) { showToast(`⚠ Failed to save config — ${e.message}`, true); }
+      _hideLoader();
+    } catch (e) { _hideLoader(); showToast(`⚠ Failed to save config — ${e.message}`, true); }
   }
 
   function _renderCfgLastUpdated(iso) {
