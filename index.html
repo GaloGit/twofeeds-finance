@@ -352,6 +352,9 @@
     .inv-status-badge:hover { opacity: 0.75; }
     .inv-status-badge.paid { background: rgba(34,197,94,0.12); color: var(--green); border: 1px solid rgba(34,197,94,0.25); }
     .inv-status-badge.waiting { background: rgba(245,158,11,0.12); color: var(--amber); border: 1px solid rgba(245,158,11,0.25); }
+    /* Disable interactivity on row cells while reordering so drag-drop targets the <tr> not inputs */
+    #invBody.inv-reordering input, #invBody.inv-reordering button, #invBody.inv-reordering span, #invBody.inv-reordering a { pointer-events: none !important; }
+    #invBody.inv-reordering td:first-child { pointer-events: auto !important; cursor: grab; }
 
     .cm-status { display: inline-block; padding: 3px 10px; border-radius: 20px; font-family: var(--font-mono); font-size: 10px; font-weight: 700; cursor: pointer; user-select: none; transition: opacity 0.15s; white-space: nowrap; }
     .cm-status:hover { opacity: 0.75; }
@@ -7216,6 +7219,8 @@
     _showLoader('Saving order…');
     await renderInvoices();
     _hideLoader();
+    const invBody = document.getElementById('invBody');
+    if (invBody) invBody.classList.toggle('inv-reordering', _invOrderEditMode);
     if (!_invOrderEditMode) showToast('✓ Order saved');
   }
   function invGripDown(e, i) {
