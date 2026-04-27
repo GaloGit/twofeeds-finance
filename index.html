@@ -705,6 +705,7 @@
         <button class="nav-tab" id="navTab_costsummary" style="display:none" onclick="showTab('costsummary', this); renderCostSummary()"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>Cost Summary</span></button>
         <button class="nav-tab" id="advertisersTab" style="display:none" onclick="showTab('advertisers', this); renderAdvertisers()"><svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg><span>Advertisers Info</span></button>
         <button class="nav-tab" id="revSummaryTab" style="display:none" onclick="showTab('revsummary', this); renderRevSummary()"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8h10M7 12h6"/></svg><span>Rev Summary</span></button>
+        <button class="nav-tab" id="navTab_overview" style="display:none" onclick="showTab('overview', this); renderOverview()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>Overview</span></button>
         <button class="nav-tab" id="navTab_profit" style="display:none" onclick="showTab('profit', this); renderProfitSummary()"><svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg><span>Profit Summary</span></button>
       </nav>
 
@@ -1236,6 +1237,25 @@
 
     </div>
 
+    <!-- OVERVIEW TAB -->
+    <div class="page" id="tab-overview">
+      <div class="section-header" style="margin-bottom:28px">
+        <div>
+          <div class="section-title">Overview</div>
+          <div class="section-sub">Monthly Revenue · Costs · Profit</div>
+        </div>
+      </div>
+      <div class="chart-wrap" id="profChartWrap" style="display:none">
+        <div class="chart-header">
+          <div class="chart-title">Monthly Overview</div>
+          <div class="chart-sub" id="profChartSub">Revenue · Costs · Profit</div>
+        </div>
+        <div class="chart-container">
+          <canvas id="profChart"></canvas>
+        </div>
+      </div>
+    </div>
+
     <!-- PROFIT SUMMARY TAB -->
     <div class="page" id="tab-profit">
       <div class="section-header" style="margin-bottom:16px">
@@ -1318,16 +1338,6 @@
         <div id="commissionsUserView" style="display:none"></div>
       </div>
 
-      <!-- Monthly bar chart -->
-      <div class="chart-wrap" id="profChartWrap" style="display:none;margin-top:28px">
-        <div class="chart-header">
-          <div class="chart-title">Monthly Overview</div>
-          <div class="chart-sub" id="profChartSub">Revenue · Costs · Profit</div>
-        </div>
-        <div class="chart-container">
-          <canvas id="profChart"></canvas>
-        </div>
-      </div>
     </div>
 
     <!-- CAMPAIGN MANAGERS PAGE (admin only) -->
@@ -2155,6 +2165,8 @@
     if (advt) advt.style.display = admin ? 'inline-flex' : 'none';
     const revt = document.getElementById('revSummaryTab');
     if (revt) revt.style.display = admin ? 'inline-flex' : 'none';
+    const ovrvw = document.getElementById('navTab_overview');
+    if (ovrvw) ovrvw.style.display = admin ? 'inline-flex' : 'none';
     const prft = document.getElementById('navTab_profit');
     if (prft) prft.style.display = admin ? 'inline-flex' : 'none';
 
@@ -5526,6 +5538,7 @@
     if (activeTab?.id === 'tab-mediabuy') renders.push(renderMediaBuying());
     if (activeTab?.id === 'tab-costsummary') renders.push(renderCostSummary());
     if (activeTab?.id === 'tab-profit') renderProfitSummary();
+    if (activeTab?.id === 'tab-overview') renderOverview();
     await Promise.all(renders);
     _hideLoader();
     // Prefetch profit data in background so Profit tab loads instantly
@@ -5610,6 +5623,7 @@
           else if (id === 'tab-mediabuy') renderMediaBuying();
           else if (id === 'tab-costsummary') renderCostSummary();
           else if (id === 'tab-profit') renderProfitSummary();
+          else if (id === 'tab-overview') renderOverview();
         }
       }
       const el = document.getElementById('countdown');
@@ -7321,6 +7335,11 @@
   }
 
   // ── PROFIT SUMMARY ──
+  function renderOverview() {
+    _prefetchProfitData();
+    setTimeout(() => _renderProfitChart(), 50);
+  }
+
   function renderProfitSummary(inputOnly = false) {
     clearTimeout(_profRenderTimer);
     _profRenderTimer = setTimeout(() => _renderProfitSummaryCore(inputOnly), inputOnly ? 80 : 0);
