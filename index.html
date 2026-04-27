@@ -2764,7 +2764,7 @@
     logActivity('cm_status', `${campaignMgrs[i].name} set to ${newStatus}`);
   }
 
-  function toggleCmOrderEdit() {
+  async function toggleCmOrderEdit() {
     _cmOrderEditMode = !_cmOrderEditMode;
     const btn = document.getElementById('cmOrderBtn');
     if (_cmOrderEditMode) {
@@ -2774,11 +2774,14 @@
       btn.style.borderColor = 'var(--accent)';
     } else {
       _saveCmOrder();
-      _saveCampaignMgrs().then(ok => { if (ok) showToast('✓ Order saved to sheet'); });
       btn.textContent = '↕ Edit Order';
       btn.style.background = 'var(--surface2)';
       btn.style.color = 'var(--muted)';
       btn.style.borderColor = 'var(--border)';
+      _showLoader('Saving order…');
+      await _saveCampaignMgrs();
+      _hideLoader();
+      showToast('✓ Order saved to sheet');
     }
     _renderCmTable();
   }
@@ -3511,7 +3514,7 @@
   let _siDragFrom = null;
   let _siOrderEditMode = false;
 
-  function toggleSiOrderEdit() {
+  async function toggleSiOrderEdit() {
     _siOrderEditMode = !_siOrderEditMode;
     const btn = document.getElementById('siOrderBtn');
     if (_siOrderEditMode) {
@@ -3521,11 +3524,14 @@
       btn.style.borderColor = 'var(--accent)';
     } else {
       _saveSiOrder();
-      _saveSourcesInfo().then(ok => { if (ok) showToast('✓ Order saved to sheet'); });
       btn.textContent = '↕ Edit Order';
       btn.style.background = 'var(--surface2)';
       btn.style.color = 'var(--muted)';
       btn.style.borderColor = 'var(--border)';
+      _showLoader('Saving order…');
+      const ok = await _saveSourcesInfo();
+      _hideLoader();
+      if (ok) showToast('✓ Order saved to sheet');
     }
     _renderSiTable();
   }
@@ -3975,7 +3981,7 @@
     if (await _saveAdvertisers()) showToast('✓ Removed');
   }
 
-  function toggleAdvOrderEdit() {
+  async function toggleAdvOrderEdit() {
     _advOrderEditMode = !_advOrderEditMode;
     const btn = document.getElementById('advOrderBtn');
     if (_advOrderEditMode) {
@@ -3983,11 +3989,14 @@
       btn.style.cssText += ';background:var(--accent);color:#fff;border-color:var(--accent)';
     } else {
       _saveAdvOrder();
-      _saveAdvertisers().then(ok => { if (ok) showToast('✓ Order saved'); });
       btn.textContent = '↕ Edit Order';
       btn.style.background = 'var(--surface2)';
       btn.style.color = 'var(--muted)';
       btn.style.borderColor = 'var(--border)';
+      _showLoader('Saving order…');
+      const ok = await _saveAdvertisers();
+      _hideLoader();
+      if (ok) showToast('✓ Order saved');
     }
     _renderAdvTable();
   }
@@ -6624,15 +6633,17 @@
     if (pubTh) { pubTh.style.cssText = _pubOrderEditMode ? 'width:22px' : 'width:0;padding:0;overflow:hidden'; }
     _pubInvalidateDiff();
     renderPublishers();
-    // Save to sheet in background after UI has already updated
+    // Save to sheet after UI has already updated
     if (!_pubOrderEditMode) {
+      _showLoader('Saving order…');
       let waited = 0;
       while (_pubSaving && waited < 30) { await new Promise(r => setTimeout(r, 100)); waited++; }
       const data = _rawCache[_pubCacheKey()] || [];
       try {
         await _pubSaveRows(data);
+        _hideLoader();
         showToast('✓ Order saved to sheet');
-      } catch { showToast('⚠ Failed to save order', true); }
+      } catch { _hideLoader(); showToast('⚠ Failed to save order', true); }
     }
   }
 
@@ -7183,7 +7194,7 @@
       );
     } catch { return arr; }
   }
-  function toggleInvOrderEdit() {
+  async function toggleInvOrderEdit() {
     _invOrderEditMode = !_invOrderEditMode;
     const btn = document.getElementById('invOrderBtn');
     if (_invOrderEditMode) {
@@ -7197,13 +7208,15 @@
       btn.style.background = 'var(--surface2)';
       btn.style.color = 'var(--muted)';
       btn.style.borderColor = 'var(--border)';
-      showToast('✓ Order saved');
     }
     // Full re-render so grip column and draggable state are correctly rebuilt
     const invTh = document.querySelector('#invThead tr th:first-child');
     if (invTh) { invTh.style.cssText = _invOrderEditMode ? 'width:22px' : 'width:0;padding:0;overflow:hidden'; }
     delete _cache['inv_' + periodKey()];
-    renderInvoices();
+    _showLoader('Saving order…');
+    await renderInvoices();
+    _hideLoader();
+    if (!_invOrderEditMode) showToast('✓ Order saved');
   }
   function invGripDown(e, i) {
     if (!_invOrderEditMode) return;
