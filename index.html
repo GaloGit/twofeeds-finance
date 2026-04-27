@@ -484,7 +484,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.6.5</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.6.6</div>
   </div>
 </div>
 
@@ -557,7 +557,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.6.5</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.6.6</div>
   </div>
 </div>
 
@@ -691,7 +691,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.6.5</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.6.6</span>
           </div>
         </div>
       </div>
@@ -5061,22 +5061,34 @@
         payStatus: r['Pay Status']||'waiting',
       }));
 
-      // Invoices (with date normalisation)
-      _rawCache['inv_' + pk] = invData.map((r, idx) => {
-        let date = r['Date'] || '';
-        if (date instanceof Date || (typeof date === 'object' && date !== null)) {
-          date = date.toISOString ? date.toISOString().split('T')[0] : '';
-        } else if (typeof date === 'number') {
-          date = new Date((date - 25569) * 86400 * 1000).toISOString().split('T')[0];
-        } else {
-          date = String(date).trim();
-          if (/^\d{4}-\d{2}-\d{2}T/.test(date)) {
-            const d = new Date(date);
-            date = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-          }
+      // Invoices (with date normalisation — keep in sync with renderInvoices mapping)
+      const _normalizeDate = raw => {
+        if (!raw) return '';
+        if (raw instanceof Date || (typeof raw === 'object' && raw !== null))
+          return raw.toISOString ? raw.toISOString().split('T')[0] : '';
+        if (typeof raw === 'number') {
+          const d = new Date((raw - 25569) * 86400 * 1000);
+          return d.toISOString().split('T')[0];
         }
-        return { id: idx, vendor: r['Vendor']||'', invoiceNum: r['Invoice #']||'', date, amount: parseFloat(r['Amount'])||0, status: r['Status']||'ok', filename: r['Filename']||'' };
-      });
+        const s = String(raw).trim();
+        if (/^\d{4}-\d{2}-\d{2}T/.test(s)) {
+          const d = new Date(s);
+          return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        }
+        return s;
+      };
+      _rawCache['inv_' + pk] = invData.map((r, idx) => ({
+        id: idx,
+        vendor:     r['Vendor']     || '',
+        invoiceNum: r['Invoice #']  || '',
+        date:       _normalizeDate(r['Date']),
+        dueDate:    _normalizeDate(r['Due Date']),
+        amount:     parseFloat(r['Amount']) || 0,
+        status:     r['Status']     || 'ok',
+        filename:   r['Filename']   || '',
+        popUrl:     r['PopUrl']     || '',
+        popLabel:   r['PopLabel']   || '',
+      }));
 
       // Media Buying
       _rawCache['mb_' + pk] = mbData.map((r, idx) => ({
