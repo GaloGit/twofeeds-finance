@@ -1051,6 +1051,9 @@
       <!-- Invoice payment progress bar -->
       <div id="invProgressWrap" style="display:none;margin-bottom:18px"></div>
 
+      <!-- Overdue notification banner -->
+      <div id="invOverdueBanner" style="display:none;margin-bottom:18px"></div>
+
       <!-- Invoice table -->
       <div class="table-wrap" id="invTableWrap" style="display:none">
         <div class="table-scroll">
@@ -1845,13 +1848,6 @@
           </div>
 
           <div>
-            <div style="font-family:var(--font-mono);font-size:10px;color:var(--text);font-weight:700;margin-bottom:3px">Invoice Overdue Threshold</div>
-            <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-bottom:8px;line-height:1.5">Invoices unpaid beyond this many days are flagged as overdue and highlighted in red on the dashboard. Recommended: 15.</div>
-            <input type="number" id="cfgReminder" min="1" max="365" placeholder="7"
-              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
-          </div>
-
-          <div>
             <div style="font-family:var(--font-mono);font-size:10px;color:var(--text);font-weight:700;margin-bottom:3px">Shared App Password</div>
             <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-bottom:8px;line-height:1.5">Fallback password for users who don't have a personal password set. Leave blank to keep the current one.</div>
             <input type="password" id="cfgPassword" placeholder="New password..."
@@ -2109,7 +2105,7 @@
 <script>
   // ── CONFIG ──
   let appPassword = 'TFfinance'; // overridden by Config sheet on load; fallback for users with no personal password
-  let appConfig = { refreshInterval: 60, sessionTimeout: 0, invoiceReminderDays: 7, extractionInstructions: '' };
+  let appConfig = { refreshInterval: 60, sessionTimeout: 0, extractionInstructions: '' };
 
   // ── SHA-256 (for password hashing — never store plain text) ──
   async function sha256(str) {
@@ -4331,7 +4327,6 @@
         if (c.password)             appPassword = c.password;
         if (c.refreshInterval)      appConfig.refreshInterval      = parseInt(c.refreshInterval) || 60;
         if (c.sessionTimeout)       appConfig.sessionTimeout       = parseInt(c.sessionTimeout)  || 0;
-        if (c.invoiceReminderDays)  appConfig.invoiceReminderDays  = parseInt(c.invoiceReminderDays) || 7;
         if (c.extractionInstructions !== undefined) appConfig.extractionInstructions = c.extractionInstructions || '';
         secondsLeft = appConfig.refreshInterval;
       }
@@ -4399,14 +4394,12 @@
     _showLoader();
     const refresh   = parseInt(document.getElementById('cfgRefresh').value)  || appConfig.refreshInterval;
     const session   = parseInt(document.getElementById('cfgSession').value)  || 0;
-    const reminder      = parseInt(document.getElementById('cfgReminder').value) || appConfig.invoiceReminderDays;
     const instructions  = (document.getElementById('cfgExtractionInstructions')?.value || '').trim();
     const newPw         = document.getElementById('cfgPassword').value.trim();
 
     const config = {
       refreshInterval: refresh,
       sessionTimeout: session,
-      invoiceReminderDays: reminder,
       extractionInstructions: instructions,
     };
     if (newPw) config.password = newPw;
@@ -4419,7 +4412,6 @@
       // Apply immediately
       appConfig.refreshInterval          = refresh;
       appConfig.sessionTimeout           = session;
-      appConfig.invoiceReminderDays      = reminder;
       appConfig.extractionInstructions   = instructions;
       secondsLeft = refresh;
       if (newPw) { appPassword = newPw; }
@@ -4455,7 +4447,6 @@
     const d = document.getElementById('cfgReminder');
     if (r) r.value = appConfig.refreshInterval || 60;
     if (s) s.value = appConfig.sessionTimeout  || 0;
-    if (d) d.value = appConfig.invoiceReminderDays || 7;
     const ei = document.getElementById('cfgExtractionInstructions');
     if (ei) ei.value = appConfig.extractionInstructions || '';
     _renderCfgLastUpdated(localStorage.getItem('tf_config_updated'));
@@ -6860,21 +6851,46 @@
       }
     }
 
+    // ── Overdue banner ──
+    const overdueBanner = document.getElementById('invOverdueBanner');
+    if (overdueBanner) {
+      const now2 = Date.now();
+      const overdueInvs = invoices.filter(inv => {
+        if (inv.status === 'paid' || !inv.dueDate) return false;
+        const d = new Date(inv.dueDate);
+        return !isNaN(d) && now2 > d.getTime();
+      });
+      if (overdueInvs.length > 0) {
+        const worst = Math.max(...overdueInvs.map(inv => Math.floor((now2 - new Date(inv.dueDate).getTime()) / 86400000)));
+        overdueBanner.style.display = 'block';
+        overdueBanner.innerHTML = `
+          <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.35);border-radius:12px;padding:12px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <span style="font-size:16px">🔴</span>
+            <div style="flex:1">
+              <span style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:#ef4444">${overdueInvs.length} invoice${overdueInvs.length > 1 ? 's' : ''} past due date</span>
+              <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-left:10px">oldest is ${worst} day${worst !== 1 ? 's' : ''} overdue</span>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+              ${overdueInvs.map(inv => `<span style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:#ef4444;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.25);border-radius:6px;padding:2px 8px">${inv.vendor || 'Unknown'}</span>`).join('')}
+            </div>
+          </div>`;
+      } else {
+        overdueBanner.style.display = 'none';
+      }
+    }
+
     const reminderDays = appConfig.invoiceReminderDays || 7;
     const now = Date.now();
     document.getElementById('invBody').innerHTML = invoices.map((inv, i) => {
       const isWaiting = inv.status !== 'paid';
       let overdue = false;
       let overdueDays = 0;
-      if (isWaiting) {
-        const checkDate = inv.dueDate || inv.date;
-        if (checkDate) {
-          const d = new Date(checkDate);
-          if (!isNaN(d)) {
-            const elapsed = now - d.getTime();
-            overdueDays = Math.floor(elapsed / 86400000);
-            overdue = inv.dueDate ? elapsed > 0 : elapsed > reminderDays * 86400 * 1000;
-          }
+      if (isWaiting && inv.dueDate) {
+        const d = new Date(inv.dueDate);
+        if (!isNaN(d)) {
+          const elapsed = now - d.getTime();
+          overdueDays = Math.floor(elapsed / 86400000);
+          overdue = elapsed > 0;
         }
       }
       return `
