@@ -705,8 +705,8 @@
         <button class="nav-tab" id="navTab_costsummary" style="display:none" onclick="showTab('costsummary', this); renderCostSummary()"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>Cost Summary</span></button>
         <button class="nav-tab" id="advertisersTab" style="display:none" onclick="showTab('advertisers', this); renderAdvertisers()"><svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg><span>Advertisers Info</span></button>
         <button class="nav-tab" id="revSummaryTab" style="display:none" onclick="showTab('revsummary', this); renderRevSummary()"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8h10M7 12h6"/></svg><span>Rev Summary</span></button>
-        <button class="nav-tab" id="navTab_overview" style="display:none" onclick="showTab('overview', this); renderOverview()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>Overview</span></button>
         <button class="nav-tab" id="navTab_profit" style="display:none" onclick="showTab('profit', this); renderProfitSummary()"><svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg><span>Profit Summary</span></button>
+        <button class="nav-tab" id="navTab_overview" style="display:none" onclick="showTab('overview', this); renderOverview()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>Overview</span></button>
       </nav>
 
       <!-- OPERATIONS NAV (hidden until switchSection('ops')) -->
@@ -1245,7 +1245,7 @@
           <div class="section-sub">Monthly Revenue · Costs · Profit</div>
         </div>
       </div>
-      <div class="chart-wrap" id="profChartWrap" style="display:none">
+      <div class="chart-wrap" id="profChartWrap" style="display:none;max-width:700px">
         <div class="chart-header">
           <div class="chart-title">Monthly Overview</div>
           <div class="chart-sub" id="profChartSub">Revenue · Costs · Profit</div>
