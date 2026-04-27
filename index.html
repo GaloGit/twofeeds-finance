@@ -7379,6 +7379,8 @@
     const pKey = 'pub_' + pk;
     const iKey = 'inv_' + pk;
     const mKey = 'mb_'  + pk;
+    const needsFetch = !inputOnly && (!_rawCache[pKey] || !_rawCache[iKey] || !_rawCache[mKey]);
+    if (needsFetch) _showLoader();
     let pubRows, invRows, mbRows;
     try {
       [pubRows, invRows, mbRows] = await Promise.all([
@@ -7387,6 +7389,7 @@
         _rawCache[mKey] ? Promise.resolve(_rawCache[mKey]) : fetchPeriodData('getMediaBuying').then(d => { _rawCache[mKey] = d; return d; }),
       ]);
     } catch { pubRows = []; invRows = []; mbRows = []; }
+    if (needsFetch) _hideLoader();
 
     const pubCost = (pubRows || []).reduce((s,r) => s + (r.amount !== undefined ? (r.amount||0) : (parseFloat(r['Amount'])||0)), 0);
     const invCost = (invRows || []).reduce((s,r) => s + (r.amount !== undefined ? (r.amount||0) : (parseFloat(r['Amount'])||0)), 0);
