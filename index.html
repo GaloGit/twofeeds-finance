@@ -487,7 +487,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.7.6</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.7.7</div>
   </div>
 </div>
 
@@ -560,7 +560,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.7.6</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.7.7</div>
   </div>
 </div>
 
@@ -707,7 +707,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.7.6</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.7.7</span>
           </div>
         </div>
       </div>
@@ -1052,7 +1052,7 @@
           <button id="invOrderBtn" onclick="toggleInvOrderEdit()" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:none;align-items:center;gap:6px">↕ Edit Order</button>
           <button id="invAllPaidBtn" onclick="markAllInvStatus('paid')" style="font-family:var(--font-mono);font-size:10px;padding:5px 12px;border-radius:6px;border:1px solid rgba(34,197,94,0.3);background:rgba(34,197,94,0.08);color:var(--green);cursor:pointer;display:none">✓ All Paid</button>
           <button id="invAllWaitBtn" onclick="markAllInvStatus('waiting')" style="font-family:var(--font-mono);font-size:10px;padding:5px 12px;border-radius:6px;border:1px solid rgba(245,158,11,0.3);background:rgba(245,158,11,0.08);color:var(--amber);cursor:pointer;display:none">⏳ All Waiting</button>
-          <button id="invExportBtn" class="export-btn" style="display:none" onclick="exportInvoices()">↓ Export CSV</button>
+
           <button id="invClearBtn" class="clear-btn" style="display:none" onclick="clearInvoices()">✕ Clear All</button>
           <button class="add-btn" onclick="document.getElementById('invFileInput').click()">↑ Upload Invoice</button>
           <button class="add-btn" onclick="toggleDriveUrlInput()" id="invDriveBtn" style="background:rgba(124,58,237,0.15);border-color:rgba(124,58,237,0.4);color:#a78bfa">🔗 From Drive URL</button>
@@ -7020,7 +7020,7 @@
 
     document.getElementById('invSummaryGrid').style.display = hasData ? 'flex' : 'none';
     document.getElementById('invTableWrap').style.display = hasData ? 'block' : 'none';
-    ['invOrderBtn','invAllPaidBtn','invAllWaitBtn','invExportBtn','invClearBtn'].forEach(id => {
+    ['invOrderBtn','invAllPaidBtn','invAllWaitBtn','invClearBtn'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = hasData ? (id === 'invOrderBtn' ? 'flex' : 'inline-flex') : 'none';
     });
