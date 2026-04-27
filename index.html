@@ -7379,7 +7379,7 @@
     const pKey = 'pub_' + pk;
     const iKey = 'inv_' + pk;
     const mKey = 'mb_'  + pk;
-    const needsFetch = !inputOnly && (!_rawCache[pKey] || !_rawCache[iKey] || !_rawCache[mKey]);
+    const needsFetch = !inputOnly && (!_rawCache[pKey] || !_rawCache[iKey] || !_rawCache[mKey] || pk !== _lastCommissionPeriod);
     if (needsFetch) _showLoader();
     let pubRows, invRows, mbRows;
     try {
@@ -7389,7 +7389,6 @@
         _rawCache[mKey] ? Promise.resolve(_rawCache[mKey]) : fetchPeriodData('getMediaBuying').then(d => { _rawCache[mKey] = d; return d; }),
       ]);
     } catch { pubRows = []; invRows = []; mbRows = []; }
-    if (needsFetch) _hideLoader();
 
     const pubCost = (pubRows || []).reduce((s,r) => s + (r.amount !== undefined ? (r.amount||0) : (parseFloat(r['Amount'])||0)), 0);
     const invCost = (invRows || []).reduce((s,r) => s + (r.amount !== undefined ? (r.amount||0) : (parseFloat(r['Amount'])||0)), 0);
@@ -7473,6 +7472,7 @@
       if (_cTbody) _cTbody.innerHTML = '';
     }
 
+    if (needsFetch) _hideLoader();
     // Commissions (admin only)
     _renderCommissions(profit, revenue);
     // Monthly chart — build from _revenueByPeriod and cached cost data
