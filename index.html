@@ -484,7 +484,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.5.6</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.5.7</div>
   </div>
 </div>
 
@@ -557,7 +557,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.5.6</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.5.7</div>
   </div>
 </div>
 
@@ -691,7 +691,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.5.6</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.5.7</span>
           </div>
         </div>
       </div>
@@ -5731,21 +5731,31 @@
       const old = document.getElementById('invPreviewModal');
       if (old) old.remove();
 
-      const fmtAmt = v => (v && parseFloat(v)) ? `$${parseFloat(v).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 })}` : '';
+      const inputStyle = `width:100%;font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--text);background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:5px 8px;outline:none;box-sizing:border-box;`;
+      const emptyInputStyle = `width:100%;font-family:var(--font-mono);font-size:12px;color:var(--amber);background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.35);border-radius:6px;padding:5px 8px;outline:none;box-sizing:border-box;`;
+
+      const rawAmt = (extracted.amount && parseFloat(extracted.amount)) ? String(parseFloat(extracted.amount)) : '';
       const fields = [
-        { label: 'Vendor',      value: extracted.vendor     || '' },
-        { label: 'Invoice #',   value: extracted.invoiceNum || '' },
-        { label: 'Date Issued', value: extracted.date       || '' },
-        { label: 'Due Date',    value: extracted.dueDate    || '' },
-        { label: 'Amount',      value: fmtAmt(extracted.amount)   },
+        { id: 'ipVendor',  label: 'Vendor',      value: extracted.vendor     || '', type: 'text' },
+        { id: 'ipInvNum',  label: 'Invoice #',   value: extracted.invoiceNum || '', type: 'text' },
+        { id: 'ipDate',    label: 'Date Issued', value: extracted.date       || '', type: 'date' },
+        { id: 'ipDueDate', label: 'Due Date',    value: extracted.dueDate    || '', type: 'date' },
+        { id: 'ipAmount',  label: 'Amount',      value: rawAmt,                    type: 'number', placeholder: '0.00' },
       ];
+
       const renderField = f => {
         const empty = !f.value;
+        const style = empty ? emptyInputStyle : inputStyle;
+        const placeholder = f.placeholder || (empty ? 'not found — enter manually' : '');
         return `<div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border)">
-          <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);min-width:88px;text-transform:uppercase;letter-spacing:0.07em;flex-shrink:0">${f.label}</span>
-          <span style="font-family:var(--font-mono);font-size:12px;font-weight:${empty?'400':'600'};color:${empty?'var(--amber)':'var(--text)'}">${empty ? '— not found' : esc(f.value)}</span>
+          <label for="${f.id}" style="font-family:var(--font-mono);font-size:10px;color:var(--muted);min-width:88px;text-transform:uppercase;letter-spacing:0.07em;flex-shrink:0;cursor:pointer">${f.label}</label>
+          <input id="${f.id}" type="${f.type}" value="${esc(f.value)}" placeholder="${esc(placeholder)}"
+            style="${empty ? emptyInputStyle : inputStyle}"
+            onfocus="this.style.borderColor='var(--accent)'"
+            onblur="this.style.borderColor='${empty ? 'rgba(245,158,11,0.35)' : 'var(--border)'}'"/>
         </div>`;
       };
+
       const hasMissing  = fields.some(f => !f.value);
       const needsReview = extracted.needsReview;
       const shortName   = filename.length > 42 ? filename.slice(0, 40) + '…' : filename;
@@ -5754,13 +5764,14 @@
       overlay.id = 'invPreviewModal';
       overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.65);display:flex;align-items:center;justify-content:center;';
       overlay.innerHTML = `
-        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:28px 30px;max-width:440px;width:92%;box-shadow:0 20px 60px rgba(0,0,0,0.8);">
-          <div style="margin-bottom:20px">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:28px 30px;max-width:460px;width:92%;box-shadow:0 20px 60px rgba(0,0,0,0.8);">
+          <div style="margin-bottom:18px">
             <div style="font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent-light);margin-bottom:5px">AI Extraction Summary</div>
             <div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(filename)}">${esc(shortName)}</div>
+            <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:4px">Review and edit the fields below before saving.</div>
           </div>
           <div style="margin-bottom:16px">${fields.map(renderField).join('')}</div>
-          ${hasMissing ? `<div style="font-family:var(--font-mono);font-size:10px;color:var(--amber);margin-bottom:14px;padding:8px 12px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:8px">⚠ Fields marked "not found" will be left blank — you can fill them in manually.</div>` : ''}
+          ${hasMissing ? `<div style="font-family:var(--font-mono);font-size:10px;color:var(--amber);margin-bottom:14px;padding:8px 12px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:8px">⚠ Highlighted fields were not found — you can fill them in above or leave blank.</div>` : ''}
           ${needsReview && !hasMissing ? `<div style="font-family:var(--font-mono);font-size:10px;color:var(--amber);margin-bottom:14px;padding:8px 12px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:8px">⚠ AI flagged this invoice for manual review.</div>` : ''}
           <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:4px">
             <button id="invPreviewCancel" style="padding:8px 18px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:13px;cursor:pointer">Cancel</button>
@@ -5768,7 +5779,25 @@
           </div>
         </div>`;
       document.body.appendChild(overlay);
-      const cleanup = r => { overlay.remove(); resolve(r); };
+
+      const cleanup = (confirmed) => {
+        if (confirmed) {
+          const amtRaw = parseFloat(document.getElementById('ipAmount')?.value) || 0;
+          resolve({
+            confirmed: true,
+            vendor:     document.getElementById('ipVendor')?.value.trim()  || '',
+            invoiceNum: document.getElementById('ipInvNum')?.value.trim()  || '',
+            date:       document.getElementById('ipDate')?.value.trim()    || '',
+            dueDate:    document.getElementById('ipDueDate')?.value.trim() || '',
+            amount:     amtRaw,
+            needsReview: extracted.needsReview,
+          });
+        } else {
+          resolve({ confirmed: false });
+        }
+        overlay.remove();
+      };
+
       document.getElementById('invPreviewConfirm').addEventListener('click', () => cleanup(true));
       document.getElementById('invPreviewCancel').addEventListener('click',  () => cleanup(false));
       overlay.addEventListener('click', e => { if (e.target === overlay) cleanup(false); });
@@ -6688,19 +6717,19 @@
         }
 
         procEl.style.display = 'none'; // hide spinner while user reviews
-        const confirmed = await _showInvoicePreviewModal(extracted, file.name);
-        if (!confirmed) { showToast('Invoice upload cancelled', false, 3000); continue; }
+        const result = await _showInvoicePreviewModal(extracted, file.name);
+        if (!result.confirmed) { showToast('Invoice upload cancelled', false, 3000); continue; }
         procEl.style.display = 'flex';
         procText.textContent = `Saving "${file.name}"…`;
 
         const invoice = {
-          vendor: extracted.vendor || '',
-          invoiceNum: extracted.invoiceNum || '',
-          date: extracted.date || '',
-          dueDate: extracted.dueDate || '',
-          amount: extracted.amount || 0,
-          status: extracted.needsReview ? 'review' : 'ok',
-          filename: file.name,
+          vendor:     result.vendor,
+          invoiceNum: result.invoiceNum,
+          date:       result.date,
+          dueDate:    result.dueDate,
+          amount:     result.amount,
+          status:     result.needsReview ? 'review' : 'ok',
+          filename:   file.name,
         };
         const user = localStorage.getItem('tf_current_user') || 'unknown';
         await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'saveInvoice', period: periodKey(), invoice, user }) });
@@ -6801,21 +6830,20 @@
 
       procEl.style.display = 'none'; // hide spinner while user reviews
       const driveLabel = url.split('/d/')[1]?.split('/')[0] || 'Drive file';
-      const confirmed = await _showInvoicePreviewModal(extracted, driveLabel);
-      if (!confirmed) { showToast('Invoice upload cancelled', false, 3000); return; }
+      const result = await _showInvoicePreviewModal(extracted, driveLabel);
+      if (!result.confirmed) { showToast('Invoice upload cancelled', false, 3000); return; }
       procEl.style.display = 'flex';
       procText.textContent = 'Saving…';
 
       // Store the full Drive URL so the row can render an "Open" button
-      const filename = url;
       const invoice = {
-        vendor:     extracted.vendor     || '',
-        invoiceNum: extracted.invoiceNum || '',
-        date:       extracted.date       || '',
-        dueDate:    extracted.dueDate    || '',
-        amount:     extracted.amount     || 0,
-        status:     extracted.needsReview ? 'review' : 'ok',
-        filename,
+        vendor:     result.vendor,
+        invoiceNum: result.invoiceNum,
+        date:       result.date,
+        dueDate:    result.dueDate,
+        amount:     result.amount,
+        status:     result.needsReview ? 'review' : 'ok',
+        filename:   url,
       };
       const user = localStorage.getItem('tf_current_user') || 'unknown';
       await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveInvoice', period: periodKey(), invoice, user }) });
