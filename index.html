@@ -484,7 +484,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.5.9</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.6.0</div>
   </div>
 </div>
 
@@ -557,7 +557,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.5.9</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.6.0</div>
   </div>
 </div>
 
@@ -691,7 +691,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.5.9</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.6.0</span>
           </div>
         </div>
       </div>
@@ -7060,6 +7060,16 @@
         <td class="mono text-green" style="font-size:15px;font-weight:700;white-space:nowrap;padding:12px 18px">${fmt(invoices.reduce((s,inv)=>s+(parseFloat(inv.amount)||0),0))}</td>
         <td colspan="2"></td>
       </tr>`;
+
+    // Set date input values programmatically — the value attribute in innerHTML
+    // is not reliably reflected as .value for input[type="date"] in all browsers
+    invoices.forEach((inv, i) => {
+      const row = document.getElementById(`invRow_${i}`);
+      if (!row) return;
+      const dateInputs = row.querySelectorAll('input[type="date"]');
+      if (dateInputs[0] && inv.date)    dateInputs[0].value = inv.date;
+      if (dateInputs[1] && inv.dueDate) dateInputs[1].value = inv.dueDate;
+    });
 
     // Render chart after table
     setTimeout(() => renderInvChart(invoices), 50);
