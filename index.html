@@ -484,7 +484,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.5.3</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.5.4</div>
   </div>
 </div>
 
@@ -557,7 +557,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.5.3</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.5.4</div>
   </div>
 </div>
 
@@ -691,7 +691,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.5.3</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.5.4</span>
           </div>
         </div>
       </div>
@@ -5710,18 +5710,34 @@
   function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function loadLS(key) { try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch { return []; } }
   function saveLS(key, d) { localStorage.setItem(key, JSON.stringify(d)); }
-  function showToast(msg='✓ Saved', isError=false) {
+  function showToast(msg='✓ Saved', isError=false, duration=0) {
     const t = document.getElementById('toast');
     if (!t) return;
     t.textContent = msg;
-    t.style.color = isError ? 'var(--red)' : 'var(--green)';
-    t.style.borderColor = isError ? 'rgba(239,68,68,0.3)' : '';
+    const isWarn = !isError && duration > 0;
+    t.style.color = isError ? 'var(--red)' : isWarn ? 'var(--amber)' : 'var(--green)';
+    t.style.borderColor = isError ? 'rgba(239,68,68,0.3)' : isWarn ? 'rgba(245,158,11,0.3)' : '';
     t.classList.add('show');
+    const ms = duration || (isError ? 4000 : 2000);
     setTimeout(() => {
       t.classList.remove('show');
       t.style.color = '';
       t.style.borderColor = '';
-    }, isError ? 4000 : 2000);
+    }, ms);
+  }
+
+  function _warnMissingInvoiceFields(extracted, filename) {
+    const FIELDS = [
+      { key: 'vendor',     label: 'Vendor' },
+      { key: 'invoiceNum', label: 'Invoice #' },
+      { key: 'date',       label: 'Date Issued' },
+      { key: 'amount',     label: 'Amount' },
+    ];
+    const missing = FIELDS.filter(f => !extracted[f.key]).map(f => f.label);
+    if (missing.length > 0) {
+      const name = filename.length > 30 ? filename.slice(0, 28) + '…' : filename;
+      showToast(`⚠ "${name}" — AI couldn't find: ${missing.join(', ')}`, false, 6000);
+    }
   }
 
   // ── CONFIRM MODAL ──
@@ -6636,6 +6652,7 @@
         _tabMeta.inv = { ts: new Date().toISOString(), by: user };
         _renderLastUpdated('inv');
         _invalidateCache('inv_');
+        _warnMissingInvoiceFields(extracted, file.name);
         logActivity('add_invoice', `Extracted invoice "${file.name}" for ${periodKey()}`);
         savedCount++;
         await renderInvoices();
@@ -6744,6 +6761,7 @@
       _tabMeta.inv = { ts: new Date().toISOString(), by: user };
       _renderLastUpdated('inv');
       _invalidateCache('inv_');
+      _warnMissingInvoiceFields(extracted, url.split('/').pop() || 'Drive file');
       logActivity('add_invoice', `Extracted invoice from Drive URL for ${periodKey()}`);
       input.value = '';
       toggleDriveUrlInput();
