@@ -7486,8 +7486,7 @@
       const pk = p;
       const pub = (_rawCache['pub_' + pk] || []).reduce((s,r) => s + (r.amount||0), 0);
       const inv = (_rawCache['inv_' + pk] || []).reduce((s,r) => s + (r.amount||0), 0);
-      const mb  = (_rawCache['mb_'  + pk] || []).reduce((s,r) => s + (r.cpc  ||0), 0);
-      return pub + inv + mb;
+      return pub + inv;
     });
     const profits = revenues.map((r,i) => r - costs[i]);
 
