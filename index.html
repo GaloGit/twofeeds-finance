@@ -6704,8 +6704,8 @@
         extracted.amount = parseFloat(amtStr) || 0;
       }
 
-      // Use Drive URL as filename reference
-      const filename = url.split('/').filter(Boolean).pop() || 'drive-invoice';
+      // Store the full Drive URL so the row can render an "Open" button
+      const filename = url;
       const invoice = {
         vendor:     extracted.vendor     || '',
         invoiceNum: extracted.invoiceNum || '',
@@ -6872,7 +6872,9 @@
         </td>
         <td>
           <div style="display:flex;align-items:center;gap:8px">
-            <span class="inv-filename" title="${esc(inv.filename)}">${esc(inv.filename)}</span>
+            ${inv.filename && inv.filename.startsWith('http')
+              ? `<a href="${esc(inv.filename)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--accent-light);background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3);border-radius:6px;padding:3px 8px;text-decoration:none;white-space:nowrap">📄 View PDF</a>`
+              : `<span class="inv-filename" title="${esc(inv.filename)}">${esc(inv.filename)}</span>`}
             <button class="add-btn" style="padding:2px 8px;font-size:9px" onclick="deleteInvoice(${i})">✕</button>
           </div>
         </td>
