@@ -1039,6 +1039,12 @@
           <button id="invExportBtn" class="export-btn" style="display:none" onclick="exportInvoices()">↓ Export CSV</button>
           <button id="invClearBtn" class="clear-btn" style="display:none" onclick="clearInvoices()">✕ Clear All</button>
           <button class="add-btn" onclick="document.getElementById('invFileInput').click()">↑ Upload Invoice</button>
+          <button class="add-btn" onclick="toggleDriveUrlInput()" id="invDriveBtn" style="background:rgba(124,58,237,0.15);border-color:rgba(124,58,237,0.4);color:#a78bfa">🔗 From Drive URL</button>
+        </div>
+        <div id="invDriveUrlRow" style="display:none;margin-top:10px;display:none;align-items:center;gap:8px">
+          <input id="invDriveUrlInput" type="text" placeholder="Paste Google Drive URL…" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none" onkeydown="if(event.key==='Enter')handleInvDriveUrl()"/>
+          <button onclick="handleInvDriveUrl()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">Extract</button>
+          <button onclick="toggleDriveUrlInput()" style="background:transparent;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:11px;color:var(--muted);cursor:pointer">✕</button>
         </div>
       </div>
 
@@ -6631,6 +6637,66 @@
     }
 
     return parsed;
+  }
+
+  function toggleDriveUrlInput() {
+    const row = document.getElementById('invDriveUrlRow');
+    const visible = row.style.display === 'flex';
+    row.style.display = visible ? 'none' : 'flex';
+    if (!visible) setTimeout(() => document.getElementById('invDriveUrlInput').focus(), 50);
+  }
+
+  async function handleInvDriveUrl() {
+    const input = document.getElementById('invDriveUrlInput');
+    const url = (input?.value || '').trim();
+    if (!url) { showToast('⚠ Paste a Google Drive URL first'); return; }
+
+    const procEl = document.getElementById('invProcessing');
+    const procText = document.getElementById('invProcText');
+    procEl.style.display = 'flex';
+    procText.textContent = 'Fetching from Drive…';
+
+    try {
+      const response = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Access-Token': 'tf-2026-xK9mP3qL8nR5vW2j' },
+        body: JSON.stringify({ driveUrl: url }),
+      });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err?.error || `Worker error ${response.status}`);
+      }
+      const extracted = await response.json();
+      if (extracted.amount !== undefined) {
+        const amtStr = String(extracted.amount).replace(/[^0-9.]/g, '');
+        extracted.amount = parseFloat(amtStr) || 0;
+      }
+
+      // Use Drive URL as filename reference
+      const filename = url.split('/').filter(Boolean).pop() || 'drive-invoice';
+      const invoice = {
+        vendor:     extracted.vendor     || '',
+        invoiceNum: extracted.invoiceNum || '',
+        date:       extracted.date       || '',
+        amount:     extracted.amount     || 0,
+        status:     extracted.needsReview ? 'review' : 'ok',
+        filename,
+      };
+      const user = localStorage.getItem('tf_current_user') || 'unknown';
+      await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveInvoice', period: periodKey(), invoice, user }) });
+      _tabMeta.inv = { ts: new Date().toISOString(), by: user };
+      _renderLastUpdated('inv');
+      _invalidateCache('inv_');
+      logActivity('add_invoice', `Extracted invoice from Drive URL for ${periodKey()}`);
+      input.value = '';
+      toggleDriveUrlInput();
+      await renderInvoices();
+      showToast('✓ Invoice extracted from Drive');
+    } catch (err) {
+      showToast(`⚠ Failed to extract from Drive: ${err.message}`, true);
+    } finally {
+      procEl.style.display = 'none';
+    }
   }
 
   function fileToBase64(file) {
