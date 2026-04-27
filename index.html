@@ -1061,7 +1061,8 @@
               <th class="th-hash">#</th>
               <th>Vendor / Supplier</th>
               <th>Invoice #</th>
-              <th>Date</th>
+              <th>Date Issued</th>
+              <th>Due Date</th>
               <th>Amount</th>
               <th>Status</th>
               <th>File</th>
@@ -6600,7 +6601,7 @@
         if (!extracted.vendor && !extracted.amount) {
           showToast(`⚠ Could not extract data from "${file.name}" — please fill in manually`);
           // Save as review so user can fill in manually
-          const invoice = { vendor: '', invoiceNum: '', date: '', amount: 0, status: 'review', filename: file.name };
+          const invoice = { vendor: '', invoiceNum: '', date: '', dueDate: '', amount: 0, status: 'review', filename: file.name };
           const user = localStorage.getItem('tf_current_user') || 'unknown';
           await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'saveInvoice', period: periodKey(), invoice, user }) });
           _tabMeta.inv = { ts: new Date().toISOString(), by: user };
@@ -6615,6 +6616,7 @@
           vendor: extracted.vendor || '',
           invoiceNum: extracted.invoiceNum || '',
           date: extracted.date || '',
+          dueDate: '',
           amount: extracted.amount || 0,
           status: extracted.needsReview ? 'review' : 'ok',
           filename: file.name,
@@ -6722,6 +6724,7 @@
         vendor:     extracted.vendor     || '',
         invoiceNum: extracted.invoiceNum || '',
         date:       extracted.date       || '',
+        dueDate:    '',
         amount:     extracted.amount     || 0,
         status:     extracted.needsReview ? 'review' : 'ok',
         filename,
@@ -6788,6 +6791,7 @@
               amount: parseFloat(r['Amount']) || 0,
               status: r['Status'] || 'ok',
               filename: r['Filename'] || '',
+              dueDate: r['Due Date'] || '',
             };
           });
         _rawCache[cacheKey] = invoices; // store for next tab switch
@@ -6859,12 +6863,15 @@
       const isWaiting = inv.status !== 'paid';
       let overdue = false;
       let overdueDays = 0;
-      if (isWaiting && inv.date) {
-        const invDate = new Date(inv.date);
-        if (!isNaN(invDate)) {
-          const elapsed = now - invDate.getTime();
-          overdueDays = Math.floor(elapsed / 86400000);
-          overdue = elapsed > reminderDays * 86400 * 1000;
+      if (isWaiting) {
+        const checkDate = inv.dueDate || inv.date;
+        if (checkDate) {
+          const d = new Date(checkDate);
+          if (!isNaN(d)) {
+            const elapsed = now - d.getTime();
+            overdueDays = Math.floor(elapsed / 86400000);
+            overdue = inv.dueDate ? elapsed > 0 : elapsed > reminderDays * 86400 * 1000;
+          }
         }
       }
       return `
@@ -6874,6 +6881,7 @@
         <td><div style="display:flex;align-items:center;gap:8px">${getSourceLogo(inv.vendor,26)}${getSourceTypeBadge(inv.vendor)}<input class="editable" value="${esc(inv.vendor)}" onblur="updateInvoice(${i},'vendor',this.value)" placeholder="Vendor name" style="min-width:0;flex:1"/></div></td>
         <td><input class="editable mono" value="${esc(inv.invoiceNum)}" onblur="updateInvoice(${i},'invoiceNum',this.value)" placeholder="INV-001" style="width:110px"/></td>
         <td><input class="editable mono" type="date" value="${esc(inv.date)}" onblur="updateInvoice(${i},'date',this.value)" style="width:140px"/></td>
+        <td><input class="editable mono" type="date" value="${esc(inv.dueDate||'')}" onblur="updateInvoice(${i},'dueDate',this.value)" style="width:140px;${inv.dueDate && new Date(inv.dueDate)<new Date() && inv.status!=='paid' ? 'color:var(--red);font-weight:700' : ''}"/></td>
         <td class="mono text-green" style="font-weight:700;white-space:nowrap;cursor:pointer"
           onclick="editInvAmount(this, ${i}, ${inv.amount||0})">
           $${Number(inv.amount||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
@@ -6892,13 +6900,13 @@
         </td>
       </tr>`;
     }).join('') +
-      `<tr class="add-row"><td colspan="8"><button class="add-btn" onclick="document.getElementById('invFileInput').click()">+ Upload More Invoices</button></td></tr>`;
+      `<tr class="add-row"><td colspan="9"><button class="add-btn" onclick="document.getElementById('invFileInput').click()">+ Upload More Invoices</button></td></tr>`;
 
     // ── Pinned total row in tfoot ──
     const invTfoot = document.getElementById('invTfoot');
     if (invTfoot) invTfoot.innerHTML = `
       <tr>
-        <td colspan="5" style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.08em;padding:12px 18px;text-transform:uppercase">Total</td>
+        <td colspan="6" style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.08em;padding:12px 18px;text-transform:uppercase">Total</td>
         <td class="mono text-green" style="font-size:15px;font-weight:700;white-space:nowrap;padding:12px 18px">${fmt(invoices.reduce((s,inv)=>s+(parseFloat(inv.amount)||0),0))}</td>
         <td colspan="2"></td>
       </tr>`;
