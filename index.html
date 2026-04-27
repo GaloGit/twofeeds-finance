@@ -484,7 +484,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.6.9</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.7.0</div>
   </div>
 </div>
 
@@ -557,7 +557,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.6.9</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.7.0</div>
   </div>
 </div>
 
@@ -704,7 +704,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.6.9</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.7.0</span>
           </div>
         </div>
       </div>
@@ -6765,7 +6765,9 @@
           // Save as review so user can fill in manually
           const invoice = { vendor: '', invoiceNum: '', date: '', dueDate: '', amount: 0, status: 'review', filename: file.name, popUrl: '', popLabel: '' };
           const user = localStorage.getItem('tf_current_user') || 'unknown';
+          _showLoader('Saving invoice…');
           await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'saveInvoice', period: periodKey(), invoice, user }) });
+          _hideLoader();
           _tabMeta.inv = { ts: new Date().toISOString(), by: user };
           _renderLastUpdated('inv');
           _invalidateCache('inv_');
@@ -6777,9 +6779,6 @@
         procEl.style.display = 'none'; // hide spinner while user reviews
         const result = await _showInvoicePreviewModal(extracted, file.name);
         if (!result.confirmed) { showToast('Invoice upload cancelled', false, 3000); continue; }
-        procEl.style.display = 'flex';
-        procText.textContent = `Saving "${file.name}"…`;
-
         const invoice = {
           vendor:     result.vendor,
           invoiceNum: result.invoiceNum,
@@ -6792,7 +6791,9 @@
           popLabel:   '',
         };
         const user = localStorage.getItem('tf_current_user') || 'unknown';
+        _showLoader('Saving invoice…');
         await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'saveInvoice', period: periodKey(), invoice, user }) });
+        _hideLoader();
         _tabMeta.inv = { ts: new Date().toISOString(), by: user };
         _renderLastUpdated('inv');
         _invalidateCache('inv_');
@@ -6894,9 +6895,6 @@
       const driveLabel = url.split('/d/')[1]?.split('/')[0] || 'Drive file';
       const result = await _showInvoicePreviewModal(extracted, driveLabel);
       if (!result.confirmed) { showToast('Invoice upload cancelled', false, 3000); return; }
-      procEl.style.display = 'flex';
-      procText.textContent = 'Saving…';
-
       // Store the full Drive URL so the row can render an "Open" button
       const invoice = {
         vendor:     result.vendor,
@@ -6910,7 +6908,9 @@
         popLabel:   '',
       };
       const user = localStorage.getItem('tf_current_user') || 'unknown';
+      _showLoader('Saving invoice…');
       await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveInvoice', period: periodKey(), invoice, user }) });
+      _hideLoader();
       _tabMeta.inv = { ts: new Date().toISOString(), by: user };
       _renderLastUpdated('inv');
       _invalidateCache('inv_');
