@@ -484,7 +484,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.7.3</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.7.4</div>
   </div>
 </div>
 
@@ -557,7 +557,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.7.3</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.7.4</div>
   </div>
 </div>
 
@@ -704,7 +704,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.7.3</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.7.4</span>
           </div>
         </div>
       </div>
@@ -7095,8 +7095,8 @@
         }
       }
       return `
-      <tr id="invRow_${i}" draggable="${_invOrderEditMode}" ondragstart="invDragStart(event,${i})" ondragover="invDragOver(event,${i})" ondrop="invDrop(event,${i})" ondragleave="invDragLeave(event)" ondragend="invDragEnd(event)" style="animation-delay:${i*0.03}s${overdue ? ';background:rgba(239,68,68,0.05)' : ''}">
-        <td style="${_invOrderEditMode?'cursor:grab;color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center':'width:0;padding:0;font-size:0;overflow:hidden'}">${_invOrderEditMode?'⠿':''}</td>
+      <tr id="invRow_${i}" ondragstart="invDragStart(event,${i})" ondragover="invDragOver(event,${i})" ondrop="invDrop(event,${i})" ondragleave="invDragLeave(event)" ondragend="invDragEnd(event)" style="animation-delay:${i*0.03}s${overdue ? ';background:rgba(239,68,68,0.05)' : ''}">
+        <td onmousedown="invGripDown(event,${i})" onmouseup="invGripUp()" style="${_invOrderEditMode?'cursor:grab;color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center':'width:0;padding:0;font-size:0;overflow:hidden'}">${_invOrderEditMode?'⠿':''}</td>
         <td class="row-num">${i+1}</td>
         <td><div style="display:flex;align-items:center;gap:8px">${getSourceLogo(inv.vendor,26)}${getSourceTypeBadge(inv.vendor)}<input class="editable" value="${esc(inv.vendor)}" onblur="updateInvoice(${i},'vendor',this.value)" placeholder="Vendor name" style="min-width:0;flex:1"/></div></td>
         <td><input class="editable mono" value="${esc(inv.invoiceNum)}" onblur="updateInvoice(${i},'invoiceNum',this.value)" placeholder="INV-001" style="width:110px"/></td>
@@ -7199,23 +7199,11 @@
       btn.style.borderColor = 'var(--border)';
       showToast('✓ Order saved');
     }
-    // Update grip column header
+    // Full re-render so grip column and draggable state are correctly rebuilt
     const invTh = document.querySelector('#invThead tr th:first-child');
     if (invTh) { invTh.style.cssText = _invOrderEditMode ? 'width:22px' : 'width:0;padding:0;overflow:hidden'; }
-    // Update rows in-place — no full re-render to avoid flash and cache wipe
-    document.querySelectorAll('#invBody tr').forEach(row => {
-      row.draggable = _invOrderEditMode;
-      const gripTd = row.querySelector('td:first-child');
-      if (gripTd) {
-        if (_invOrderEditMode) {
-          gripTd.style.cssText = 'cursor:grab;color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center';
-          gripTd.textContent = '⠿';
-        } else {
-          gripTd.style.cssText = 'width:0;padding:0;font-size:0;overflow:hidden';
-          gripTd.textContent = '';
-        }
-      }
-    });
+    delete _cache['inv_' + periodKey()];
+    renderInvoices();
   }
   function invGripDown(e, i) {
     if (!_invOrderEditMode) return;
@@ -7226,11 +7214,13 @@
     document.querySelectorAll('#invBody tr').forEach(r => r.draggable = false);
   }
   function invDragStart(e, i) {
+    if (!e.currentTarget.draggable) { e.preventDefault(); return; }
     _invDragFrom = i;
     e.dataTransfer.effectAllowed = 'move';
     setTimeout(() => { if (e.currentTarget) e.currentTarget.style.opacity = '0.45'; }, 0);
   }
   function invDragEnd(e) {
+    e.currentTarget.draggable = false;
     e.currentTarget.style.opacity = '';
     document.querySelectorAll('#invBody tr').forEach(r => r.style.outline = '');
   }
