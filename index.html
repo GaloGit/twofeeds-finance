@@ -5611,20 +5611,12 @@
       _refreshAllLastUpdated();
       if (secondsLeft <= 0) {
         secondsLeft = appConfig.refreshInterval || 60;
-        // Clear raw cache so auto-refresh actually fetches fresh data
+        // Silently clear caches — next tab render will fetch fresh data without jarring re-render
         Object.keys(_rawCache).forEach(k => delete _rawCache[k]);
         Object.keys(_cache).forEach(k => delete _cache[k]);
-        // Auto-refresh active tab data from Sheets
-        const activeTab = document.querySelector('.page.active');
-        if (activeTab) {
-          const id = activeTab.id;
-          if (id === 'tab-publishers') renderPublishers();
-          else if (id === 'tab-internal') renderInvoices();
-          else if (id === 'tab-mediabuy') renderMediaBuying();
-          else if (id === 'tab-costsummary') renderCostSummary();
-          else if (id === 'tab-profit') renderProfitSummary();
-          else if (id === 'tab-overview') renderOverview();
-        }
+        const el = document.getElementById('countdown');
+        if (el) { el.textContent = '✓ synced'; setTimeout(() => { el.textContent = `next sync in ${secondsLeft}s`; }, 1500); }
+        return;
       }
       const el = document.getElementById('countdown');
       if (el) el.textContent = `next sync in ${secondsLeft}s`;
