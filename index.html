@@ -1858,6 +1858,12 @@
           </div>
 
         </div>
+        <div style="margin-top:16px">
+          <div style="font-family:var(--font-mono);font-size:10px;color:var(--text);font-weight:700;margin-bottom:3px">AI Extraction Instructions</div>
+          <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-bottom:8px;line-height:1.5">Extra instructions sent to Claude when reading invoices. Use this to handle edge cases specific to your vendors — e.g. "always use USD", "the total is the line labelled Net Amount", "ignore VAT lines".</div>
+          <textarea id="cfgExtractionInstructions" rows="3" placeholder="e.g. Always extract amounts in USD. The vendor name is in the top-left header. Ignore any VAT breakdown lines."
+            style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;resize:vertical;box-sizing:border-box"></textarea>
+        </div>
         <div style="margin-top:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
           <button onclick="saveConfig()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 24px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.05em">SAVE CONFIG</button>
           <span id="cfgStatus" style="font-family:var(--font-mono);font-size:11px;color:var(--green);opacity:0;transition:opacity 0.3s"></span>
@@ -2102,7 +2108,7 @@
 <script>
   // ── CONFIG ──
   let appPassword = 'TFfinance'; // overridden by Config sheet on load; fallback for users with no personal password
-  let appConfig = { refreshInterval: 60, sessionTimeout: 0, invoiceReminderDays: 7 };
+  let appConfig = { refreshInterval: 60, sessionTimeout: 0, invoiceReminderDays: 7, extractionInstructions: '' };
 
   // ── SHA-256 (for password hashing — never store plain text) ──
   async function sha256(str) {
@@ -4324,6 +4330,7 @@
         if (c.refreshInterval)      appConfig.refreshInterval      = parseInt(c.refreshInterval) || 60;
         if (c.sessionTimeout)       appConfig.sessionTimeout       = parseInt(c.sessionTimeout)  || 0;
         if (c.invoiceReminderDays)  appConfig.invoiceReminderDays  = parseInt(c.invoiceReminderDays) || 7;
+        if (c.extractionInstructions !== undefined) appConfig.extractionInstructions = c.extractionInstructions || '';
         secondsLeft = appConfig.refreshInterval;
       }
     } catch {}
@@ -4389,13 +4396,15 @@
   async function saveConfig() {
     const refresh   = parseInt(document.getElementById('cfgRefresh').value)  || appConfig.refreshInterval;
     const session   = parseInt(document.getElementById('cfgSession').value)  || 0;
-    const reminder  = parseInt(document.getElementById('cfgReminder').value) || appConfig.invoiceReminderDays;
-    const newPw     = document.getElementById('cfgPassword').value.trim();
+    const reminder      = parseInt(document.getElementById('cfgReminder').value) || appConfig.invoiceReminderDays;
+    const instructions  = (document.getElementById('cfgExtractionInstructions')?.value || '').trim();
+    const newPw         = document.getElementById('cfgPassword').value.trim();
 
     const config = {
       refreshInterval: refresh,
       sessionTimeout: session,
       invoiceReminderDays: reminder,
+      extractionInstructions: instructions,
     };
     if (newPw) config.password = newPw;
 
@@ -4405,9 +4414,10 @@
       const j = await res.json();
       if (!j.success) throw new Error(j.error || 'Save failed');
       // Apply immediately
-      appConfig.refreshInterval     = refresh;
-      appConfig.sessionTimeout      = session;
-      appConfig.invoiceReminderDays = reminder;
+      appConfig.refreshInterval          = refresh;
+      appConfig.sessionTimeout           = session;
+      appConfig.invoiceReminderDays      = reminder;
+      appConfig.extractionInstructions   = instructions;
       secondsLeft = refresh;
       if (newPw) { appPassword = newPw; }
       document.getElementById('cfgPassword').value = '';
@@ -4442,6 +4452,8 @@
     if (r) r.value = appConfig.refreshInterval || 60;
     if (s) s.value = appConfig.sessionTimeout  || 0;
     if (d) d.value = appConfig.invoiceReminderDays || 7;
+    const ei = document.getElementById('cfgExtractionInstructions');
+    if (ei) ei.value = appConfig.extractionInstructions || '';
     _renderCfgLastUpdated(localStorage.getItem('tf_config_updated'));
   }
 
@@ -6648,7 +6660,7 @@
         'Content-Type': 'application/json',
         'X-Access-Token': 'tf-2026-xK9mP3qL8nR5vW2j'
       },
-      body: JSON.stringify({ fileData: base64, mediaType })
+      body: JSON.stringify({ fileData: base64, mediaType, instructions: appConfig.extractionInstructions || '' })
     });
 
     if (!response.ok) {
@@ -6692,7 +6704,7 @@
       const response = await fetch(WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Access-Token': 'tf-2026-xK9mP3qL8nR5vW2j' },
-        body: JSON.stringify({ driveUrl: url }),
+        body: JSON.stringify({ driveUrl: url, instructions: appConfig.extractionInstructions || '' }),
       });
       if (!response.ok) {
         const err = await response.json().catch(() => ({}));
