@@ -3974,6 +3974,7 @@
   async function renderSettings() {
     const body = document.getElementById('settingsBody');
     body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>';
+    _showLoader();
     try {
       const res = await fetch(`${FINANCE_API}?action=getSettings`);
       const json = await res.json();
@@ -3982,6 +3983,7 @@
         tabs: u.tabs && typeof u.tabs === 'object' ? u.tabs : defaultTabs()
       }));
     } catch { settingsUsers = []; }
+    _hideLoader();
 
     // Re-apply role UI with fresh data (updates nav tabs + edit restrictions)
     EDITORS = settingsUsers.filter(u => u.role === 'editor').map(u => u.email);
@@ -7328,6 +7330,8 @@
 
   // ── PROFIT SUMMARY ──
   async function renderOverview() {
+    const needsFetch = !_rawCache['pub_chart_all'] || !_rawCache['inv_chart_all'];
+    if (needsFetch) _showLoader();
     await Promise.all([
       _rawCache['pub_chart_all']
         ? Promise.resolve()
@@ -7340,6 +7344,7 @@
             _rawCache['inv_chart_all'] = (j.data || []).map(r => ({ period: r['Period']||'', amount: parseFloat(r['Amount'])||0 }));
           }).catch(() => {}),
     ]);
+    if (needsFetch) _hideLoader();
     _renderProfitChart();
   }
 
