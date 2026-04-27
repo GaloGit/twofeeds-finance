@@ -484,7 +484,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.6.4</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.6.5</div>
   </div>
 </div>
 
@@ -557,7 +557,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.6.4</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.6.5</div>
   </div>
 </div>
 
@@ -691,7 +691,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.6.4</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.6.5</span>
           </div>
         </div>
       </div>
@@ -6557,6 +6557,27 @@
     await updatePubFields(id, { popUrl: url.trim(), popLabel: label.trim() });
   }
 
+  function invEditPop(i) {
+    const view = document.getElementById('invPopView_' + i);
+    const edit = document.getElementById('invPopEdit_' + i);
+    if (view) view.style.display = 'none';
+    if (edit) { edit.style.display = 'flex'; const inp = document.getElementById('invPopUrl_' + i); if (inp) { inp.focus(); inp.select(); } }
+  }
+  function invCancelPop(i) {
+    const view = document.getElementById('invPopView_' + i);
+    const edit = document.getElementById('invPopEdit_' + i);
+    if (view) view.style.display = 'flex';
+    if (edit) edit.style.display = 'none';
+  }
+  async function invSavePop(i) {
+    const url   = (document.getElementById('invPopUrl_'   + i) || {}).value || '';
+    const label = (document.getElementById('invPopLabel_' + i) || {}).value || '';
+    invCancelPop(i);
+    await updateInvoice(i, 'popUrl',   url.trim(),   true);
+    await updateInvoice(i, 'popLabel', label.trim(), true);
+    await renderInvoices();
+  }
+
   // ── Publisher order edit mode ──
   let _pubOrderEditMode = false;
   async function togglePubOrderEdit() {
@@ -7059,11 +7080,22 @@
             <button class="add-btn" style="padding:2px 8px;font-size:9px" onclick="deleteInvoice(${i})">✕</button>
           </div>
         </td>
-        <td>
-          <div style="display:flex;flex-direction:column;gap:4px;min-width:150px">
-            ${inv.popUrl ? `<a href="${esc(inv.popUrl)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--green);background:rgba(34,197,94,0.10);border:1px solid rgba(34,197,94,0.3);border-radius:6px;padding:3px 8px;text-decoration:none;white-space:nowrap;margin-bottom:2px">📎 ${esc(inv.popLabel||'View POP')}</a>` : ''}
-            <input class="editable mono" value="${esc(inv.popUrl||'')}" placeholder="POP URL" onblur="updateInvoice(${i},'popUrl',this.value)" style="font-size:10px;width:100%;min-width:0"/>
-            <input class="editable mono" value="${esc(inv.popLabel||'')}" placeholder="Link label" onblur="updateInvoice(${i},'popLabel',this.value)" style="font-size:10px;width:100%;min-width:0"/>
+        <td style="min-width:100px">
+          <div id="invPopView_${i}" style="display:flex;align-items:center;gap:5px">
+            ${inv.popUrl
+              ? `<a href="${esc(inv.popUrl)}" target="_blank" rel="noopener" style="color:var(--accent-light);text-decoration:none;font-family:var(--font-mono);font-size:11px;white-space:nowrap;border-bottom:1px solid var(--border);padding-bottom:1px" title="${esc(inv.popUrl)}">${esc(inv.popLabel||'POP')}</a>`
+              : `<span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">—</span>`}
+            <button onclick="invEditPop(${i})" title="Edit POP" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:0 3px;line-height:1;opacity:0.6">✏</button>
+          </div>
+          <div id="invPopEdit_${i}" style="display:none;align-items:center;gap:4px;flex-wrap:wrap">
+            <input id="invPopLabel_${i}" value="${esc(inv.popLabel||'')}" placeholder="Label…"
+              onkeydown="if(event.key==='Enter')invSavePop(${i});if(event.key==='Escape')invCancelPop(${i})"
+              style="width:80px;background:transparent;border:none;border-bottom:1px solid var(--border);padding:2px 4px;font-family:var(--font-mono);font-size:11px;color:var(--muted);outline:none"/>
+            <input id="invPopUrl_${i}" value="${esc(inv.popUrl||'')}" placeholder="Paste POP URL…"
+              onkeydown="if(event.key==='Enter')invSavePop(${i});if(event.key==='Escape')invCancelPop(${i})"
+              style="flex:1;min-width:110px;background:transparent;border:none;border-bottom:1px solid var(--accent);padding:2px 4px;font-family:var(--font-mono);font-size:11px;color:var(--text);outline:none"/>
+            <button onclick="invSavePop(${i})" style="width:18px;height:18px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:10px;cursor:pointer;flex-shrink:0">✓</button>
+            <button onclick="invCancelPop(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;line-height:1">✕</button>
           </div>
         </td>
       </tr>`;
