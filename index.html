@@ -7180,23 +7180,6 @@
   let _invOrderEditMode = false;
   let _invDragFrom = null;
 
-  function _saveInvOrder() {
-    const data = _rawCache['inv_' + periodKey()] || [];
-    const keys = data.map(inv => (inv.invoiceNum || inv.vendor || inv.filename || '').trim().toLowerCase());
-    localStorage.setItem('tf_inv_order', JSON.stringify(keys));
-  }
-  function _applyInvOrder(arr) {
-    const raw = localStorage.getItem('tf_inv_order');
-    if (!raw) return arr;
-    try {
-      const order = JSON.parse(raw);
-      const rankOf = k => { const i = order.indexOf(k); return i === -1 ? 9999 : i; };
-      return [...arr].sort((a, b) =>
-        rankOf((a.invoiceNum || a.vendor || a.filename || '').trim().toLowerCase()) -
-        rankOf((b.invoiceNum || b.vendor || b.filename || '').trim().toLowerCase())
-      );
-    } catch { return arr; }
-  }
   async function toggleInvOrderEdit() {
     _invOrderEditMode = !_invOrderEditMode;
     const btn = document.getElementById('invOrderBtn');
@@ -7206,7 +7189,6 @@
       btn.style.color = '#fff';
       btn.style.borderColor = 'var(--accent)';
     } else {
-      _saveInvOrder();
       btn.textContent = '↕ Edit Order';
       btn.style.background = 'var(--surface2)';
       btn.style.color = 'var(--muted)';
@@ -7216,20 +7198,23 @@
     const invTh = document.querySelector('#invThead tr th:first-child');
     if (invTh) { invTh.style.cssText = _invOrderEditMode ? 'width:22px' : 'width:0;padding:0;overflow:hidden'; }
     delete _cache['inv_' + periodKey()];
-    _showLoader('Saving order…');
-    await renderInvoices();
-    _hideLoader();
-    const invBody = document.getElementById('invBody');
-    if (invBody) invBody.classList.toggle('inv-reordering', _invOrderEditMode);
-    if (!_invOrderEditMode) showToast('✓ Order saved');
-  }
-  function invGripDown(e, i) {
-    if (!_invOrderEditMode) return;
-    const row = document.getElementById('invRow_' + i);
-    if (row) row.draggable = true;
-  }
-  function invGripUp() {
-    document.querySelectorAll('#invBody tr').forEach(r => r.draggable = false);
+    renderInvoices();
+    if (!_invOrderEditMode) {
+      const data = _rawCache['inv_' + periodKey()] || [];
+      const period = periodKey();
+      const user = localStorage.getItem('tf_current_user') || 'unknown';
+      _showLoader();
+      try {
+        await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'clearInvoices', period, user }) });
+        for (const inv of data) {
+          await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveInvoice', period, invoice: inv, user }) });
+        }
+        _tabMeta.inv = { ts: new Date().toISOString(), by: user };
+        _renderLastUpdated('inv');
+        showToast('✓ Order saved to sheet');
+      } catch { showToast('⚠ Failed to save order', true); }
+      _hideLoader();
+    }
   }
   function invDragStart(e, i) {
     if (!e.currentTarget.draggable) { e.preventDefault(); return; }
@@ -7258,11 +7243,14 @@
     e.preventDefault();
     document.querySelectorAll('#invBody tr').forEach(r => { r.draggable = false; r.style.outline = ''; r.style.opacity = ''; });
     if (_invDragFrom === null || _invDragFrom === toI) { _invDragFrom = null; return; }
-    const data = _rawCache['inv_' + periodKey()] || [];
+    const cacheKey = 'inv_' + periodKey();
+    const data = _rawCache[cacheKey] || [];
     const moved = data.splice(_invDragFrom, 1)[0];
     data.splice(toI, 0, moved);
+    data.forEach((r, i) => r.id = i);
+    _rawCache[cacheKey] = data;
     _invDragFrom = null;
-    delete _cache['inv_' + periodKey()];
+    delete _cache[cacheKey];
     renderInvoices();
   }
 
