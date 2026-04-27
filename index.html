@@ -484,7 +484,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.7.0</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.7.1</div>
   </div>
 </div>
 
@@ -557,7 +557,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.7.0</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.7.1</div>
   </div>
 </div>
 
@@ -704,7 +704,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.7.0</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.7.1</span>
           </div>
         </div>
       </div>
@@ -1054,11 +1054,11 @@
           <button class="add-btn" onclick="document.getElementById('invFileInput').click()">↑ Upload Invoice</button>
           <button class="add-btn" onclick="toggleDriveUrlInput()" id="invDriveBtn" style="background:rgba(124,58,237,0.15);border-color:rgba(124,58,237,0.4);color:#a78bfa">🔗 From Drive URL</button>
         </div>
-        <div id="invDriveUrlRow" style="display:none;margin-top:10px;display:none;align-items:center;gap:8px">
-          <input id="invDriveUrlInput" type="text" placeholder="Paste Google Drive URL…" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none" onkeydown="if(event.key==='Enter')handleInvDriveUrl()"/>
-          <button onclick="handleInvDriveUrl()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">Extract</button>
-          <button onclick="toggleDriveUrlInput()" style="background:transparent;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:11px;color:var(--muted);cursor:pointer">✕</button>
-        </div>
+      </div>
+      <div id="invDriveUrlRow" style="display:none;align-items:center;gap:8px;margin-bottom:16px">
+        <input id="invDriveUrlInput" type="text" placeholder="Paste Google Drive URL…" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none" onkeydown="if(event.key==='Enter')handleInvDriveUrl()"/>
+        <button onclick="handleInvDriveUrl()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">Extract</button>
+        <button onclick="toggleDriveUrlInput()" style="background:transparent;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:11px;color:var(--muted);cursor:pointer">✕</button>
       </div>
 
       <!-- Invoice payment progress bar -->
@@ -9454,8 +9454,10 @@
     const el = document.getElementById('periodLoader');
     if (!el) return;
     el.style.opacity = '0';
+    el.style.pointerEvents = 'none';
     setTimeout(() => {
       el.style.display = 'none'; el.style.opacity = '1';
+      el.style.pointerEvents = '';
       const msgEl = document.getElementById('loaderMsg');
       if (msgEl) msgEl.textContent = 'Loading Data';
     }, 250);
