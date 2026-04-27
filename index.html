@@ -7335,9 +7335,20 @@
   }
 
   // ── PROFIT SUMMARY ──
-  function renderOverview() {
-    _prefetchProfitData();
-    setTimeout(() => _renderProfitChart(), 50);
+  async function renderOverview() {
+    await Promise.all([
+      _rawCache['pub_chart_all']
+        ? Promise.resolve()
+        : fetch(`${FINANCE_API}?action=getPublishers`).then(r => r.json()).then(j => {
+            _rawCache['pub_chart_all'] = (j.data || []).map(r => ({ period: r['Period']||'', amount: parseFloat(r['Amount'])||0 }));
+          }).catch(() => {}),
+      _rawCache['inv_chart_all']
+        ? Promise.resolve()
+        : fetch(`${FINANCE_API}?action=getInvoices`).then(r => r.json()).then(j => {
+            _rawCache['inv_chart_all'] = (j.data || []).map(r => ({ period: r['Period']||'', amount: parseFloat(r['Amount'])||0 }));
+          }).catch(() => {}),
+    ]);
+    _renderProfitChart();
   }
 
   function renderProfitSummary(inputOnly = false) {
@@ -7483,9 +7494,13 @@
     });
     const revenues = allPeriods.map(p => _revenueByPeriod[p] || 0);
     const costs = allPeriods.map(p => {
-      const pk = p;
-      const pub = (_rawCache['pub_' + pk] || []).reduce((s,r) => s + (r.amount||0), 0);
-      const inv = (_rawCache['inv_' + pk] || []).reduce((s,r) => s + (r.amount||0), 0);
+      if (_rawCache['pub_chart_all']) {
+        const pub = (_rawCache['pub_chart_all']).filter(r => r.period === p).reduce((s,r) => s + r.amount, 0);
+        const inv = (_rawCache['inv_chart_all'] || []).filter(r => r.period === p).reduce((s,r) => s + r.amount, 0);
+        return pub + inv;
+      }
+      const pub = (_rawCache['pub_' + p] || []).reduce((s,r) => s + (r.amount||0), 0);
+      const inv = (_rawCache['inv_' + p] || []).reduce((s,r) => s + (r.amount||0), 0);
       return pub + inv;
     });
     const profits = revenues.map((r,i) => r - costs[i]);
