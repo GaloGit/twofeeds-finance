@@ -484,7 +484,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.7.1</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.7.2</div>
   </div>
 </div>
 
@@ -557,7 +557,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.7.1</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.7.2</div>
   </div>
 </div>
 
@@ -704,7 +704,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.7.1</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.7.2</span>
           </div>
         </div>
       </div>
@@ -7186,10 +7186,23 @@
       btn.style.borderColor = 'var(--border)';
       showToast('✓ Order saved');
     }
+    // Update grip column header
     const invTh = document.querySelector('#invThead tr th:first-child');
     if (invTh) { invTh.style.cssText = _invOrderEditMode ? 'width:22px' : 'width:0;padding:0;overflow:hidden'; }
-    delete _cache['inv_' + periodKey()];
-    renderInvoices();
+    // Update rows in-place — no full re-render to avoid flash and cache wipe
+    document.querySelectorAll('#invBody tr').forEach(row => {
+      row.draggable = _invOrderEditMode;
+      const gripTd = row.querySelector('td:first-child');
+      if (gripTd) {
+        if (_invOrderEditMode) {
+          gripTd.style.cssText = 'cursor:grab;color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center';
+          gripTd.textContent = '⠿';
+        } else {
+          gripTd.style.cssText = 'width:0;padding:0;font-size:0;overflow:hidden';
+          gripTd.textContent = '';
+        }
+      }
+    });
   }
   function invGripDown(e, i) {
     if (!_invOrderEditMode) return;
@@ -7335,7 +7348,7 @@
 
   async function updateInvoice(i, field, value, silent = false) {
     if (!canEditTab('internal')) { showToast('⚠ No edit access to Internal Sources'); return; }
-    _invalidateCache('inv_');
+    if (!_invOrderEditMode) _invalidateCache('inv_');
     const user = localStorage.getItem('tf_current_user') || '';
     try {
       const res = await fetch(FINANCE_API, { method:'POST', body: JSON.stringify({ action:'updateInvoice', period: periodKey(), index: i, field, value, user }) });
