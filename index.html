@@ -484,7 +484,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.5.2</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.5.3</div>
   </div>
 </div>
 
@@ -557,7 +557,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.5.2</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.5.3</div>
   </div>
 </div>
 
@@ -691,7 +691,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.5.2</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.5.3</span>
           </div>
         </div>
       </div>
@@ -5302,6 +5302,22 @@
       });
     });
 
+    // Invoices — overdue or due within 3 days (skip paid)
+    Object.keys(_rawCache).filter(k => k.startsWith('inv_') && !k.endsWith('_raw')).forEach(key => {
+      (_rawCache[key] || []).forEach(inv => {
+        if (!inv.vendor || !inv.dueDate || inv.status === 'paid') return;
+        const d = new Date(inv.dueDate); if (isNaN(d)) return;
+        const eventDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        const days = Math.round((eventDay - todayMidnight) / 86400000);
+        if (days <= 3) notifs.push({
+          name: inv.vendor, photoUrl: '', type: 'invoice', days,
+          label: days < 0 ? 'Invoice Overdue' : 'Invoice Due',
+          extra: inv.invoiceNum || '',
+          notifId: `${key}__${inv.id}__invoice__${inv.dueDate}`,
+        });
+      });
+    });
+
     return notifs.sort((a, b) => a.days - b.days);
   }
 
@@ -5361,8 +5377,8 @@
     const overdueItems  = notifs.filter(n => n.days < 0);
     const todayItems    = notifs.filter(n => n.days === 0);
     const upcomingItems = notifs.filter(n => n.days > 0);
-    const typeColor = t => ({ birthday:'var(--accent)', anniversary:'var(--green)', event:'var(--amber)', meeting:'var(--blue)', task:'var(--amber)', ticket:'var(--red)' }[t] || 'var(--muted)');
-    const typeIcon  = t => ({ birthday:'&#9836;', anniversary:'&#9733;', event:'&#9670;', meeting:'&#128197;', task:'&#10003;', ticket:'&#9888;' }[t] || '&#9670;');
+    const typeColor = t => ({ birthday:'var(--accent)', anniversary:'var(--green)', event:'var(--amber)', meeting:'var(--blue)', task:'var(--amber)', ticket:'var(--red)', invoice:'var(--red)' }[t] || 'var(--muted)');
+    const typeIcon  = t => ({ birthday:'&#9836;', anniversary:'&#9733;', event:'&#9670;', meeting:'&#128197;', task:'&#10003;', ticket:'&#9888;', invoice:'&#128196;' }[t] || '&#9670;');
     const avatar = n => {
       const resolved = resolvePhotoUrl(n.photoUrl || '');
       const init = esc(n.name[0] || '?');
