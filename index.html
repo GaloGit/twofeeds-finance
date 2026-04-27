@@ -484,7 +484,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.5.7</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.5.8</div>
   </div>
 </div>
 
@@ -557,7 +557,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.5.7</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.5.8</div>
   </div>
 </div>
 
@@ -691,7 +691,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.5.7</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.5.8</span>
           </div>
         </div>
       </div>
@@ -5734,13 +5734,14 @@
       const inputStyle = `width:100%;font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--text);background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:5px 8px;outline:none;box-sizing:border-box;`;
       const emptyInputStyle = `width:100%;font-family:var(--font-mono);font-size:12px;color:var(--amber);background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.35);border-radius:6px;padding:5px 8px;outline:none;box-sizing:border-box;`;
 
-      const rawAmt = (extracted.amount && parseFloat(extracted.amount)) ? String(parseFloat(extracted.amount)) : '';
+      const parsedAmt = extracted.amount ? parseFloat(extracted.amount) : 0;
+      const fmtDisplayAmt = v => v ? v.toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 }) : '';
       const fields = [
         { id: 'ipVendor',  label: 'Vendor',      value: extracted.vendor     || '', type: 'text' },
         { id: 'ipInvNum',  label: 'Invoice #',   value: extracted.invoiceNum || '', type: 'text' },
         { id: 'ipDate',    label: 'Date Issued', value: extracted.date       || '', type: 'date' },
         { id: 'ipDueDate', label: 'Due Date',    value: extracted.dueDate    || '', type: 'date' },
-        { id: 'ipAmount',  label: 'Amount',      value: rawAmt,                    type: 'number', placeholder: '0.00' },
+        { id: 'ipAmount',  label: 'Amount ($)',  value: fmtDisplayAmt(parsedAmt),  type: 'text',   placeholder: '0.00' },
       ];
 
       const renderField = f => {
@@ -5782,7 +5783,7 @@
 
       const cleanup = (confirmed) => {
         if (confirmed) {
-          const amtRaw = parseFloat(document.getElementById('ipAmount')?.value) || 0;
+          const amtRaw = parseFloat((document.getElementById('ipAmount')?.value || '').replace(/,/g, '')) || 0;
           resolve({
             confirmed: true,
             vendor:     document.getElementById('ipVendor')?.value.trim()  || '',
