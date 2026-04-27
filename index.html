@@ -6649,6 +6649,7 @@
       // Use in-memory data — no network fetch
       invoices = _rawCache[cacheKey];
     } else {
+      _showLoader();
       try {
         const rawData = await fetchPeriodData('getInvoices');
         invoices = rawData.map((r, idx) => {
@@ -6683,6 +6684,7 @@
       } catch {
         showToast('⚠ Could not load invoices from sheet.');
       }
+      _hideLoader();
     }
 
     // ── Skip re-render if DOM is already up to date ──
