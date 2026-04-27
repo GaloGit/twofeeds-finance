@@ -484,7 +484,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.6.2</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.6.3</div>
   </div>
 </div>
 
@@ -557,7 +557,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.6.2</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.6.3</div>
   </div>
 </div>
 
@@ -650,7 +650,7 @@
       </svg>
     </div>
   </div>
-  <div style="font-family:var(--font-mono);font-size:11px;color:var(--accent-light);letter-spacing:0.18em;text-transform:uppercase">Loading Data</div>
+  <div id="loaderMsg" style="font-family:var(--font-mono);font-size:11px;color:var(--accent-light);letter-spacing:0.18em;text-transform:uppercase">Loading Data</div>
 </div>
 
 <!-- APP -->
@@ -691,7 +691,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.6.2</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.6.3</span>
           </div>
         </div>
       </div>
@@ -6709,7 +6709,9 @@
       }
 
       try {
+        _showLoader(`Reading invoice${fileArr.length > 1 ? ` (${i+1}/${fileArr.length})` : ''}…`);
         const extracted = await extractInvoiceWithAI(file);
+        _hideLoader();
 
         // Validate — must have at least vendor or amount
         if (!extracted.vendor && !extracted.amount) {
@@ -6752,8 +6754,8 @@
         savedCount++;
         await renderInvoices();
       } catch(err) {
+        _hideLoader();
         console.error('Invoice extraction error:', err);
-        // Show error — do NOT save empty record
         showToast(`⚠ Failed to extract "${file.name}": ${err.message}`, true);
         procEl.style.display = 'none';
       }
@@ -6823,6 +6825,7 @@
     const procText = document.getElementById('invProcText');
     procEl.style.display = 'flex';
     procText.textContent = 'Fetching from Drive…';
+    _showLoader('Reading invoice from Drive…');
 
     try {
       const response = await fetch(WORKER_URL, {
@@ -6840,6 +6843,7 @@
         extracted.amount = parseFloat(amtStr) || 0;
       }
 
+      _hideLoader();
       procEl.style.display = 'none'; // hide spinner while user reviews
       const driveLabel = url.split('/d/')[1]?.split('/')[0] || 'Drive file';
       const result = await _showInvoicePreviewModal(extracted, driveLabel);
@@ -6870,6 +6874,7 @@
       await renderInvoices();
       showToast('✓ Invoice extracted from Drive');
     } catch (err) {
+      _hideLoader();
       showToast(`⚠ Failed to extract from Drive: ${err.message}`, true);
     } finally {
       procEl.style.display = 'none';
@@ -9380,13 +9385,22 @@
     if (m) { m.style.display = 'none'; }
   }
 
-  function _showLoader() {
+  function _showLoader(msg) {
     const el = document.getElementById('periodLoader');
-    if (el) { el.style.opacity = '1'; el.style.display = 'flex'; }
+    if (!el) return;
+    const msgEl = document.getElementById('loaderMsg');
+    if (msgEl) msgEl.textContent = msg || 'Loading Data';
+    el.style.opacity = '1'; el.style.display = 'flex';
   }
   function _hideLoader() {
     const el = document.getElementById('periodLoader');
-    if (el) { el.style.opacity = '0'; setTimeout(() => { el.style.display = 'none'; el.style.opacity = '1'; }, 250); }
+    if (!el) return;
+    el.style.opacity = '0';
+    setTimeout(() => {
+      el.style.display = 'none'; el.style.opacity = '1';
+      const msgEl = document.getElementById('loaderMsg');
+      if (msgEl) msgEl.textContent = 'Loading Data';
+    }, 250);
   }
 
   function scrollToChart(id) {
