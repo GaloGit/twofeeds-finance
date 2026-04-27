@@ -484,7 +484,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.5.8</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.5.9</div>
   </div>
 </div>
 
@@ -557,7 +557,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.5.8</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.5.9</div>
   </div>
 </div>
 
@@ -691,7 +691,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.5.8</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.5.9</span>
           </div>
         </div>
       </div>
@@ -5781,6 +5781,14 @@
         </div>`;
       document.body.appendChild(overlay);
 
+      // Set date values programmatically after DOM insertion — the value attribute
+      // in innerHTML is not reliably reflected as .value for input[type="date"]
+      const dateFieldMap = { ipDate: extracted.date || '', ipDueDate: extracted.dueDate || '' };
+      Object.entries(dateFieldMap).forEach(([id, val]) => {
+        const el = document.getElementById(id);
+        if (el && val) el.value = val;
+      });
+
       const cleanup = (confirmed) => {
         if (confirmed) {
           const amtRaw = parseFloat((document.getElementById('ipAmount')?.value || '').replace(/,/g, '')) || 0;
@@ -5788,8 +5796,8 @@
             confirmed: true,
             vendor:     document.getElementById('ipVendor')?.value.trim()  || '',
             invoiceNum: document.getElementById('ipInvNum')?.value.trim()  || '',
-            date:       document.getElementById('ipDate')?.value.trim()    || '',
-            dueDate:    document.getElementById('ipDueDate')?.value.trim() || '',
+            date:       document.getElementById('ipDate')?.value           || '',
+            dueDate:    document.getElementById('ipDueDate')?.value        || '',
             amount:     amtRaw,
             needsReview: extracted.needsReview,
           });
