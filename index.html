@@ -484,7 +484,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.6.7</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.6.8</div>
   </div>
 </div>
 
@@ -557,7 +557,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.6.7</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.6.8</div>
   </div>
 </div>
 
@@ -704,7 +704,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.6.7</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.6.8</span>
           </div>
         </div>
       </div>
@@ -7105,27 +7105,26 @@
             <button class="add-btn" style="padding:2px 8px;font-size:9px" onclick="deleteInvoice(${i})">✕</button>
           </div>
         </td>
-        <td style="min-width:100px">
+        <td style="min-width:100px;position:relative">
           <div id="invPopView_${i}" style="display:flex;align-items:center;gap:5px">
             ${inv.popUrl
               ? `<a href="${esc(inv.popUrl)}" target="_blank" rel="noopener" style="color:var(--accent-light);text-decoration:none;font-family:var(--font-mono);font-size:11px;white-space:nowrap;border-bottom:1px solid var(--border);padding-bottom:1px" title="${esc(inv.popUrl)}">${esc(inv.popLabel||'POP')}</a>`
               : `<span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">—</span>`}
             <button onclick="invEditPop(${i})" title="Edit POP" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:0 3px;line-height:1;opacity:0.6">✏</button>
           </div>
-          <div id="invPopEdit_${i}" style="display:none;align-items:center;gap:4px;flex-wrap:wrap">
+          <div id="invPopEdit_${i}" style="display:none;position:absolute;top:50%;transform:translateY(-50%);left:0;right:0;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:4px 6px;z-index:10;flex-wrap:nowrap">
             <input id="invPopLabel_${i}" value="${esc(inv.popLabel||'')}" placeholder="Label…"
               onkeydown="if(event.key==='Enter')invSavePop(${i});if(event.key==='Escape')invCancelPop(${i})"
-              style="width:80px;background:transparent;border:none;border-bottom:1px solid var(--border);padding:2px 4px;font-family:var(--font-mono);font-size:11px;color:var(--muted);outline:none"/>
-            <input id="invPopUrl_${i}" value="${esc(inv.popUrl||'')}" placeholder="Paste POP URL…"
+              style="width:70px;background:transparent;border:none;border-bottom:1px solid var(--border);padding:2px 4px;font-family:var(--font-mono);font-size:11px;color:var(--muted);outline:none"/>
+            <input id="invPopUrl_${i}" value="${esc(inv.popUrl||'')}" placeholder="Paste URL…"
               onkeydown="if(event.key==='Enter')invSavePop(${i});if(event.key==='Escape')invCancelPop(${i})"
-              style="flex:1;min-width:110px;background:transparent;border:none;border-bottom:1px solid var(--accent);padding:2px 4px;font-family:var(--font-mono);font-size:11px;color:var(--text);outline:none"/>
+              style="flex:1;min-width:80px;background:transparent;border:none;border-bottom:1px solid var(--accent);padding:2px 4px;font-family:var(--font-mono);font-size:11px;color:var(--text);outline:none"/>
             <button onclick="invSavePop(${i})" style="width:18px;height:18px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:10px;cursor:pointer;flex-shrink:0">✓</button>
             <button onclick="invCancelPop(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;line-height:1">✕</button>
           </div>
         </td>
       </tr>`;
-    }).join('') +
-      `<tr class="add-row"><td colspan="9"><button class="add-btn" onclick="document.getElementById('invFileInput').click()">+ Upload More Invoices</button></td></tr>`;
+    }).join('');
 
     // ── Pinned total row in tfoot ──
     const invTfoot = document.getElementById('invTfoot');
