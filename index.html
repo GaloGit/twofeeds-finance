@@ -1260,6 +1260,38 @@
           <canvas id="profChart"></canvas>
         </div>
       </div>
+      <div id="trendChartsWrap" style="display:none;margin-top:16px">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+          <div class="chart-wrap">
+            <div class="chart-header">
+              <div class="chart-title" style="color:rgba(34,197,94,0.9)">Revenue</div>
+              <div class="chart-sub">Over Time</div>
+            </div>
+            <div class="chart-container"><canvas id="trendRevChart"></canvas></div>
+          </div>
+          <div class="chart-wrap">
+            <div class="chart-header">
+              <div class="chart-title" style="color:rgba(239,68,68,0.9)">Costs</div>
+              <div class="chart-sub">Over Time</div>
+            </div>
+            <div class="chart-container"><canvas id="trendCostChart"></canvas></div>
+          </div>
+          <div class="chart-wrap">
+            <div class="chart-header">
+              <div class="chart-title" style="color:rgba(99,102,241,0.9)">Profit</div>
+              <div class="chart-sub">Over Time</div>
+            </div>
+            <div class="chart-container"><canvas id="trendProfChart"></canvas></div>
+          </div>
+        </div>
+        <div class="chart-wrap" style="margin-top:16px">
+          <div class="chart-header">
+            <div class="chart-title">Combined Trend</div>
+            <div class="chart-sub">Revenue · Costs · Profit</div>
+          </div>
+          <div class="chart-container"><canvas id="trendAllChart"></canvas></div>
+        </div>
+      </div>
     </div>
 
     <!-- PROFIT SUMMARY TAB -->
@@ -7554,7 +7586,7 @@
 
     // Gather all periods we have revenue for
     const allPeriods = Object.keys(_revenueByPeriod).sort();
-    if (allPeriods.length < 2) { if (wrap) wrap.style.display = 'none'; return; }
+    if (allPeriods.length < 2) { if (wrap) wrap.style.display = 'none'; const tw = document.getElementById('trendChartsWrap'); if (tw) tw.style.display = 'none'; return; }
 
     const labels = allPeriods.map(p => {
       const [y, m] = p.split('-');
@@ -7594,6 +7626,64 @@
         }
       }
     });
+    _renderTrendCharts(labels, revenues, costs, profits);
+  }
+
+  function _renderTrendCharts(labels, revenues, costs, profits) {
+    const wrap = document.getElementById('trendChartsWrap');
+    if (!wrap) return;
+
+    const scaleOpts = {
+      x: { ticks: { color: 'rgba(255,255,255,0.5)', font: { family: 'JetBrains Mono', size: 9 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+      y: { ticks: { color: 'rgba(255,255,255,0.5)', font: { family: 'JetBrains Mono', size: 9 }, callback: v => '$'+v.toLocaleString() }, grid: { color: 'rgba(255,255,255,0.05)' } }
+    };
+    const tooltipFmt = { callbacks: { label: ctx => ' $' + ctx.parsed.y.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) } };
+
+    const mkDs = (label, data, color, fill) => ({
+      label, data,
+      borderColor: color,
+      backgroundColor: fill ? color.replace(',1)', ',0.15)') : 'transparent',
+      fill, tension: 0.3, pointRadius: 3, pointBackgroundColor: color, borderWidth: 2
+    });
+
+    const single = (id, key, ds) => {
+      const canvas = document.getElementById(id);
+      if (!canvas) return;
+      if (window[key]) { window[key].destroy(); window[key] = null; }
+      window[key] = new Chart(canvas, {
+        type: 'line',
+        data: { labels, datasets: [ds] },
+        options: {
+          responsive: true, maintainAspectRatio: true,
+          plugins: { legend: { display: false }, tooltip: tooltipFmt },
+          scales: scaleOpts
+        }
+      });
+    };
+
+    single('trendRevChart',  '_trendRevChart',  mkDs('Revenue', revenues, 'rgba(34,197,94,1)',  true));
+    single('trendCostChart', '_trendCostChart', mkDs('Costs',   costs,    'rgba(239,68,68,1)',  true));
+    single('trendProfChart', '_trendProfChart', mkDs('Profit',  profits,  'rgba(99,102,241,1)', true));
+
+    const allCanvas = document.getElementById('trendAllChart');
+    if (allCanvas) {
+      if (window._trendAllChart) { window._trendAllChart.destroy(); window._trendAllChart = null; }
+      window._trendAllChart = new Chart(allCanvas, {
+        type: 'line',
+        data: { labels, datasets: [
+          mkDs('Revenue', revenues, 'rgba(34,197,94,1)',  false),
+          mkDs('Costs',   costs,    'rgba(239,68,68,1)',  false),
+          mkDs('Profit',  profits,  'rgba(99,102,241,1)', false),
+        ]},
+        options: {
+          responsive: true, maintainAspectRatio: true,
+          plugins: { legend: { display: true, labels: { color: 'rgba(255,255,255,0.6)', font: { family: 'JetBrains Mono', size: 10 } } }, tooltip: tooltipFmt },
+          scales: scaleOpts
+        }
+      });
+    }
+
+    wrap.style.display = 'block';
   }
 
   async function saveRevenueForPeriod() {
