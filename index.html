@@ -8056,35 +8056,44 @@
       });
     }
 
-    // Summary cards for latest period
-    const latestPeriod = allPeriods[allPeriods.length - 1];
+    // Summary cards — total across all periods with revenue
     const cardsEl = document.getElementById('ovrvwCommCards');
     if (cardsEl) {
-      const revenue = _revenueByPeriod[latestPeriod] || 0;
-      const pubCost = (_rawCache['pub_chart_all'] || []).filter(r => r.period === latestPeriod).reduce((s, r) => s + r.amount, 0);
-      const invCost = (_rawCache['inv_chart_all'] || []).filter(r => r.period === latestPeriod).reduce((s, r) => s + r.amount, 0);
-      const profit  = revenue - pubCost - invCost;
-      const fmtAmt  = v => '$' + Number(v).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
-      const [ly, lm] = latestPeriod.split('-');
-      const latestLabel = (MONTHS[parseInt(lm)-1] || lm) + ' ' + ly;
+      const fmtAmt = v => '$' + Number(v).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+      const periodsWithRevenue = allPeriods.filter(p => (_revenueByPeriod[p] || 0) > 0);
 
       cardsEl.innerHTML = personOrder.map((name, pi) => {
         const rows = allComms.filter(c => normName(c.name) === name);
-        let row = rows.find(r => r.period === latestPeriod) || rows.find(r => !r.period || r.period === '');
-        if (!row) return '';
-        const base = row.base === 'revenue' ? revenue : profit;
-        const comm = Math.max(0, base * (row.percentage / 100));
-        const total = comm + (row.baseSalary || 0) / (_ilsRate || 1);
         const color = PALETTE[pi % PALETTE.length].replace('0.8)', '1)');
+
+        // Sum commission across all periods that have revenue
+        let totalComm = 0;
+        let totalBaseSalary = 0;
+        periodsWithRevenue.forEach(period => {
+          const revenue = _revenueByPeriod[period] || 0;
+          const pubCost = (_rawCache['pub_chart_all'] || []).filter(r => r.period === period).reduce((s, r) => s + r.amount, 0);
+          const invCost = (_rawCache['inv_chart_all'] || []).filter(r => r.period === period).reduce((s, r) => s + r.amount, 0);
+          const profit  = revenue - pubCost - invCost;
+          let row = rows.find(r => r.period === period) || rows.find(r => !r.period || r.period === '');
+          if (!row) return;
+          const base = row.base === 'revenue' ? revenue : profit;
+          totalComm += Math.max(0, base * (row.percentage / 100));
+          totalBaseSalary += (row.baseSalary || 0) / (_ilsRate || 1);
+        });
+
+        if (totalComm === 0 && totalBaseSalary === 0) return '';
+        // Show the rule info from the most recent period's row
+        const lastRow = rows.find(r => r.period === periodsWithRevenue[periodsWithRevenue.length - 1]) || rows.find(r => !r.period || r.period === '') || rows[0];
+        const grandTotal = totalComm + totalBaseSalary;
         return `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 18px;min-width:180px;flex:1;max-width:220px">
-          <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.06em">${latestLabel}</div>
+          <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.06em">${periodsWithRevenue.length} period${periodsWithRevenue.length !== 1 ? 's' : ''} total</div>
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
             <div style="width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0"></div>
             <div style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--text)">${name}</div>
           </div>
-          <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:2px">${row.percentage}% of ${row.base}</div>
-          <div style="font-family:var(--font-mono);font-size:16px;font-weight:700;color:${color}">${fmtAmt(comm)}</div>
-          ${row.baseSalary ? `<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:4px">+ base: ${fmtAmt(total)} total</div>` : ''}
+          <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:2px">${lastRow ? lastRow.percentage + '% of ' + lastRow.base : ''}</div>
+          <div style="font-family:var(--font-mono);font-size:16px;font-weight:700;color:${color}">${fmtAmt(totalComm)}</div>
+          ${totalBaseSalary ? `<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:4px">+ base: ${fmtAmt(grandTotal)} total</div>` : ''}
         </div>`;
       }).join('');
     }
