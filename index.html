@@ -8046,7 +8046,10 @@
           responsive: true, maintainAspectRatio: true,
           plugins: {
             legend: { labels: { color: 'rgba(255,255,255,0.6)', font: { family: 'JetBrains Mono', size: 10 } } },
-            tooltip: { callbacks: { label: ctx => ' ' + ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) } }
+            tooltip: { callbacks: { label: ctx => [
+              ' ' + ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}),
+              ' ₪' + Math.round(ctx.parsed.y * (_ilsRate||1)).toLocaleString()
+            ] } }
           },
           scales: {
             x: { ticks: { color: 'rgba(255,255,255,0.5)', font: { family: 'JetBrains Mono', size: 9 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
@@ -8093,7 +8096,8 @@
           </div>
           <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:2px">${lastRow ? lastRow.percentage + '% of ' + lastRow.base : ''}</div>
           <div style="font-family:var(--font-mono);font-size:16px;font-weight:700;color:${color}">${fmtAmt(totalComm)}</div>
-          ${totalBaseSalary ? `<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:4px">+ base: ${fmtAmt(grandTotal)} total</div>` : ''}
+          <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-top:2px">₪${Math.round(totalComm * (_ilsRate||1)).toLocaleString()}</div>
+          ${totalBaseSalary ? `<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:4px">+ base: ${fmtAmt(grandTotal)} · ₪${Math.round(grandTotal * (_ilsRate||1)).toLocaleString()} total</div>` : ''}
         </div>`;
       }).join('');
     }
