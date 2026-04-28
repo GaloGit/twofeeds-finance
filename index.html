@@ -7180,6 +7180,15 @@
   let _invOrderEditMode = false;
   let _invDragFrom = null;
 
+  function invGripDown(e, i) {
+    if (!_invOrderEditMode) return;
+    const row = document.getElementById('invRow_' + i);
+    if (row) row.draggable = true;
+  }
+  function invGripUp() {
+    document.querySelectorAll('#invBody tr').forEach(r => r.draggable = false);
+  }
+
   async function toggleInvOrderEdit() {
     _invOrderEditMode = !_invOrderEditMode;
     const btn = document.getElementById('invOrderBtn');
