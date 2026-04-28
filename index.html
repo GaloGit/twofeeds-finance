@@ -7805,11 +7805,11 @@
 
     // Breakdown table — update in-place to avoid layout jumps
     const rows = [
-      { label: 'Revenue',        amount: revenue,   highlight: true, color: 'var(--green)' },
-      { label: 'Publisher Costs',amount: pubCost,   highlight: false, color: 'var(--red)'  },
-      { label: 'Invoice Costs',  amount: invCost,   highlight: false, color: 'var(--red)'  },
-      { label: 'Total Costs',    amount: totalCost, highlight: true,  color: 'var(--amber)'},
-      { label: 'Profit',         amount: profit,    highlight: true,  color: profit>=0?'var(--green)':'var(--red)' },
+      { label: 'Revenue',        amount: revenue,   highlight: true, color: 'var(--green)', bg: '' },
+      { label: 'Publisher Costs',amount: pubCost,   highlight: false, color: 'var(--red)',  bg: '' },
+      { label: 'Invoice Costs',  amount: invCost,   highlight: false, color: 'var(--red)',  bg: '' },
+      { label: 'Total Costs',    amount: totalCost, highlight: true,  color: 'var(--amber)', bg: '' },
+      { label: 'Profit',         amount: profit,    highlight: true,  color: profit>=0?'var(--green)':'var(--red)', bg: profit>=0?'rgba(34,197,94,0.08)':'rgba(239,68,68,0.08)' },
     ];
     const tbody = document.getElementById('profBreakBody');
     if (tbody) {
@@ -7819,10 +7819,11 @@
           existing[i].cells[1].textContent = fmtAmt(r.amount);
           existing[i].cells[1].style.color = r.color;
           existing[i].cells[2].textContent = r.label === 'Revenue' ? '100%' : pctOf(r.amount);
+          if (r.bg) existing[i].style.background = r.bg;
         });
       } else {
         tbody.innerHTML = rows.map(r => `
-          <tr style="${r.highlight?'border-top:1px solid var(--border)':''}">
+          <tr style="${r.highlight?'border-top:1px solid var(--border)':''}${r.bg?';background:'+r.bg:''}">
             <td style="font-family:var(--font-mono);font-size:12px${r.highlight?';font-weight:700;color:var(--text)':';color:var(--muted)'}">${r.label}</td>
             <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:${r.color};white-space:nowrap">${fmtAmt(r.amount)}</td>
             <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:right">${r.label==='Revenue'?'100%':pctOf(r.amount)}</td>
