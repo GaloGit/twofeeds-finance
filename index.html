@@ -8085,19 +8085,27 @@
         });
 
         if (totalComm === 0 && totalBaseSalary === 0) return '';
-        // Show the rule info from the most recent period's row
         const lastRow = rows.find(r => r.period === periodsWithRevenue[periodsWithRevenue.length - 1]) || rows.find(r => !r.period || r.period === '') || rows[0];
+        const totalBaseSalaryILS = _commissions.filter(c => normName(c.name) === name).reduce((s,c) => s+(c.baseSalary||0), 0);
         const grandTotal = totalComm + totalBaseSalary;
-        return `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 18px;min-width:180px;flex:1;max-width:220px">
-          <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.06em">${periodsWithRevenue.length} period${periodsWithRevenue.length !== 1 ? 's' : ''} total</div>
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        const ils = v => '₪' + Math.round(v * (_ilsRate||1)).toLocaleString();
+        const row = (label, usd, ilsVal, bold, labelColor) => `
+          <div style="display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+            <span style="font-family:var(--font-mono);font-size:10px;color:${labelColor||'var(--muted)'};text-transform:uppercase;letter-spacing:0.05em">${label}</span>
+            <div style="text-align:right">
+              <div style="font-family:var(--font-mono);font-size:${bold?'14px':'12px'};font-weight:${bold?'700':'500'};color:${bold?color:'var(--text)'}">${usd}</div>
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${ilsVal}</div>
+            </div>
+          </div>`;
+        return `<div style="background:var(--surface2);border:1px solid var(--border);border-left:3px solid ${color};border-radius:12px;padding:16px 18px;min-width:220px;flex:1;max-width:280px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
             <div style="width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0"></div>
-            <div style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--text)">${name}</div>
+            <div style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--text)">${name}</div>
           </div>
-          <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:2px">${lastRow ? lastRow.percentage + '% of ' + lastRow.base : ''}</div>
-          <div style="font-family:var(--font-mono);font-size:16px;font-weight:700;color:${color}">${fmtAmt(totalComm)}</div>
-          <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-top:2px">₪${Math.round(totalComm * (_ilsRate||1)).toLocaleString()}</div>
-          ${totalBaseSalary ? `<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:4px">+ base: ${fmtAmt(grandTotal)} · ₪${Math.round(grandTotal * (_ilsRate||1)).toLocaleString()} total</div>` : ''}
+          <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:12px">${lastRow ? lastRow.percentage + '% of ' + lastRow.base + ' · ' : ''}${periodsWithRevenue.length} period${periodsWithRevenue.length !== 1 ? 's' : ''}</div>
+          ${row('Commission', fmtAmt(totalComm), ils(totalComm), false, '')}
+          ${totalBaseSalaryILS ? row('Base Salary', fmtAmt(totalBaseSalaryILS / (_ilsRate||1)), '₪' + totalBaseSalaryILS.toLocaleString(), false, '') : ''}
+          ${row('Total', fmtAmt(grandTotal), ils(grandTotal), true, color)}
         </div>`;
       }).join('');
     }
