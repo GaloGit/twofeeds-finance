@@ -5038,6 +5038,8 @@
     document.getElementById('themeBtn').textContent = isLight ? '🌑' : '🌙';
     localStorage.setItem('tf_theme', isLight ? 'light' : 'dark');
     _applyLogoTheme(isLight);
+    _applyChartDefaults();
+    _destroyAllCharts();
   }
 
   // Apply saved theme on load, falling back to system preference
@@ -7967,10 +7969,10 @@
       },
       options: {
         responsive: true, maintainAspectRatio: true,
-        plugins: { legend: { labels: { color: 'rgba(255,255,255,0.6)', font: { family: 'JetBrains Mono', size: 10 } } }, tooltip: { callbacks: { label: ctx => ' $' + ctx.parsed.y.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) } } },
+        plugins: { legend: { labels: { color: _chartC().legend, font: { family: 'JetBrains Mono', size: 10 } } }, tooltip: { callbacks: { label: ctx => ' $' + ctx.parsed.y.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) } } },
         scales: {
-          x: { ticks: { color: 'rgba(255,255,255,0.5)', font: { family: 'JetBrains Mono', size: 9 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
-          y: { ticks: { color: 'rgba(255,255,255,0.5)', font: { family: 'JetBrains Mono', size: 9 }, callback: v => '$'+v.toLocaleString() }, grid: { color: 'rgba(255,255,255,0.05)' } }
+          x: { ticks: { color: _chartC().tick, font: { family: 'JetBrains Mono', size: 9 } }, grid: { color: _chartC().gridFaint } },
+          y: { ticks: { color: _chartC().tick, font: { family: 'JetBrains Mono', size: 9 }, callback: v => '$'+v.toLocaleString() }, grid: { color: _chartC().gridFaint } }
         }
       }
     });
@@ -7982,8 +7984,8 @@
     if (!wrap) return;
 
     const scaleOpts = {
-      x: { ticks: { color: 'rgba(255,255,255,0.5)', font: { family: 'JetBrains Mono', size: 9 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
-      y: { ticks: { color: 'rgba(255,255,255,0.5)', font: { family: 'JetBrains Mono', size: 9 }, callback: v => '$'+v.toLocaleString() }, grid: { color: 'rgba(255,255,255,0.05)' } }
+      x: { ticks: { color: _chartC().tick, font: { family: 'JetBrains Mono', size: 9 } }, grid: { color: _chartC().gridFaint } },
+      y: { ticks: { color: _chartC().tick, font: { family: 'JetBrains Mono', size: 9 }, callback: v => '$'+v.toLocaleString() }, grid: { color: _chartC().gridFaint } }
     };
     const tooltipFmt = { callbacks: { label: ctx => ' $' + ctx.parsed.y.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) } };
 
@@ -8025,7 +8027,7 @@
         ]},
         options: {
           responsive: true, maintainAspectRatio: true,
-          plugins: { legend: { display: true, labels: { color: 'rgba(255,255,255,0.6)', font: { family: 'JetBrains Mono', size: 10 } } }, tooltip: tooltipFmt },
+          plugins: { legend: { display: true, labels: { color: _chartC().legend, font: { family: 'JetBrains Mono', size: 10 } } }, tooltip: tooltipFmt },
           scales: scaleOpts
         }
       });
@@ -8089,15 +8091,15 @@
         options: {
           responsive: true, maintainAspectRatio: true,
           plugins: {
-            legend: { labels: { color: 'rgba(255,255,255,0.6)', font: { family: 'JetBrains Mono', size: 10 } } },
+            legend: { labels: { color: _chartC().legend, font: { family: 'JetBrains Mono', size: 10 } } },
             tooltip: { callbacks: { label: ctx => [
               ' ' + ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}),
               ' ₪' + Math.round(ctx.parsed.y * (_ilsRate||1)).toLocaleString()
             ] } }
           },
           scales: {
-            x: { ticks: { color: 'rgba(255,255,255,0.5)', font: { family: 'JetBrains Mono', size: 9 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
-            y: { ticks: { color: 'rgba(255,255,255,0.5)', font: { family: 'JetBrains Mono', size: 9 }, callback: v => '$'+v.toLocaleString() }, grid: { color: 'rgba(255,255,255,0.05)' } }
+            x: { ticks: { color: _chartC().tick, font: { family: 'JetBrains Mono', size: 9 } }, grid: { color: _chartC().gridFaint } },
+            y: { ticks: { color: _chartC().tick, font: { family: 'JetBrains Mono', size: 9 }, callback: v => '$'+v.toLocaleString() }, grid: { color: _chartC().gridFaint } }
           }
         }
       });
@@ -8134,7 +8136,7 @@
         const grandTotal = totalComm + totalBaseSalary;
         const ils = v => '₪' + Math.round(v * (_ilsRate||1)).toLocaleString();
         const row = (label, usd, ilsVal, bold, labelColor) => `
-          <div style="display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--border)">
             <span style="font-family:var(--font-mono);font-size:10px;color:${labelColor||'var(--muted)'};text-transform:uppercase;letter-spacing:0.05em">${label}</span>
             <div style="text-align:right">
               <div style="font-family:var(--font-mono);font-size:${bold?'14px':'12px'};font-weight:${bold?'700':'500'};color:${bold?color:'var(--text)'}">${usd}</div>
@@ -8995,9 +8997,40 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha512-CQBWl4fJHWbryGE+Pc7UAxWMUMNMWzWxF4SQo9CgkJIN1kx6djDQZjh3Y8SZ1d+6I+1zze6Z7kHXO7q3UyZAWw==" crossorigin="anonymous"></script>
 <script>
-  // Override Chart.js 4 defaults so all text is visible on dark backgrounds
-  Chart.defaults.color = '#e0d9ff';
-  Chart.defaults.borderColor = 'rgba(255,255,255,0.08)';
+  // ── Chart theme helper ──────────────────────────────────────────────────────
+  // Returns color tokens for the current light/dark theme, used in every chart.
+  function _chartC() {
+    const l = document.body.classList.contains('light-mode');
+    return {
+      tick:      l ? 'rgba(26,16,53,0.55)'   : 'rgba(255,255,255,0.5)',
+      legend:    l ? 'rgba(26,16,53,0.70)'   : 'rgba(255,255,255,0.6)',
+      grid:      l ? 'rgba(107,95,168,0.18)' : 'rgba(46,37,80,0.5)',
+      gridFaint: l ? 'rgba(107,95,168,0.12)' : 'rgba(255,255,255,0.05)',
+      ttBg:      l ? '#f0edf9'               : '#16112b',
+      ttBorder:  l ? '#b8aede'               : '#2e2550',
+      ttTitle:   l ? '#1a1035'               : '#f0eeff',
+      ttBody:    l ? '#6b3fa8'               : '#9d5ff7',
+    };
+  }
+  // Destroy every known chart instance — called on theme toggle so charts
+  // are re-created with the correct colour set when re-rendered.
+  function _destroyAllCharts() {
+    const keys = [
+      '_profChart','_trendRevChart','_trendCostChart','_trendProfChart','_trendAllChart',
+      '_commPersonChart','csPieChartInstance','csChartInstance','mbChartInstance',
+      'invChartInstance','pvChartInstance','pubChartInstance','pubPlatformChartInstance',
+      'pubDspChartInstance','pubRwChartInstance'
+    ];
+    keys.forEach(k => { if (window[k]) { try { window[k].destroy(); } catch(e){} window[k] = null; } });
+  }
+
+  // Override Chart.js 4 defaults — re-applied after every theme toggle
+  function _applyChartDefaults() {
+    const l = document.body.classList.contains('light-mode');
+    Chart.defaults.color = l ? '#3a2c70' : '#e0d9ff';
+    Chart.defaults.borderColor = _chartC().grid;
+  }
+  _applyChartDefaults();
 
   let pubChartInstance = null;
   let pvChartInstance = null;
@@ -9041,8 +9074,8 @@
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#16112b', borderColor: '#2e2550', borderWidth: 1,
-            titleColor: '#f0eeff', bodyColor: '#9d5ff7',
+            backgroundColor: _chartC().ttBg, borderColor: _chartC().ttBorder, borderWidth: 1,
+            titleColor: _chartC().ttTitle, bodyColor: _chartC().ttBody,
             titleFont: { family: 'Syne', weight: '800', size: 13 },
             bodyFont: { family: 'Space Mono', size: 11 },
             padding: 12,
@@ -9108,8 +9141,8 @@
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#16112b', borderColor: '#2e2550', borderWidth: 1,
-            titleColor: '#f0eeff', bodyColor: '#9d5ff7',
+            backgroundColor: _chartC().ttBg, borderColor: _chartC().ttBorder, borderWidth: 1,
+            titleColor: _chartC().ttTitle, bodyColor: _chartC().ttBody,
             titleFont: { family: 'Syne', weight: '800', size: 13 },
             bodyFont: { family: 'Space Mono', size: 11 },
             padding: 12,
@@ -9121,13 +9154,13 @@
         },
         scales: {
           x: {
-            grid: { color: 'rgba(46,37,80,0.5)' },
-            ticks: { color: '#7b6ea8', font: { family: 'Space Mono', size: 11 } }
+            grid: { color: _chartC().grid },
+            ticks: { color: _chartC().tick, font: { family: 'Space Mono', size: 11 } }
           },
           y: {
-            grid: { color: 'rgba(46,37,80,0.5)' },
+            grid: { color: _chartC().grid },
             ticks: {
-              color: '#7b6ea8', font: { family: 'Space Mono', size: 11 },
+              color: _chartC().tick, font: { family: 'Space Mono', size: 11 },
               callback: v => '$' + Number(v).toLocaleString()
             }
           }
@@ -9211,8 +9244,8 @@
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#16112b', borderColor: '#2e2550', borderWidth: 1,
-            titleColor: '#f0eeff', bodyColor: '#9d5ff7',
+            backgroundColor: _chartC().ttBg, borderColor: _chartC().ttBorder, borderWidth: 1,
+            titleColor: _chartC().ttTitle, bodyColor: _chartC().ttBody,
             titleFont: { family: 'Syne', weight: '800', size: 13 },
             bodyFont: { family: 'Space Mono', size: 11 },
             padding: 12,
@@ -9223,18 +9256,18 @@
         },
         scales: {
           x: {
-            grid: { color: 'rgba(46,37,80,0.5)' },
+            grid: { color: _chartC().grid },
             ticks: {
-              color: '#7b6ea8',
+              color: _chartC().tick,
               font: { family: 'Space Mono', size: 11 },
               maxRotation: 35,
               padding: 22,   // push DSP label down to make room for GEO labels
             }
           },
           y: {
-            grid: { color: 'rgba(46,37,80,0.5)' },
+            grid: { color: _chartC().grid },
             ticks: {
-              color: '#7b6ea8', font: { family: 'Space Mono', size: 11 },
+              color: _chartC().tick, font: { family: 'Space Mono', size: 11 },
               callback: v => '$' + Number(v).toFixed(10)
             }
           }
@@ -9295,11 +9328,11 @@
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#16112b',
-            borderColor: '#2e2550',
+            backgroundColor: _chartC().ttBg,
+            borderColor: _chartC().ttBorder,
             borderWidth: 1,
-            titleColor: '#f0eeff',
-            bodyColor: '#9d5ff7',
+            titleColor: _chartC().ttTitle,
+            bodyColor: _chartC().ttBody,
             titleFont: { family: 'Syne', weight: '800', size: 13 },
             bodyFont: { family: 'Space Mono', size: 11 },
             padding: 12,
@@ -9314,13 +9347,13 @@
         },
         scales: {
           x: {
-            grid: { color: 'rgba(46,37,80,0.5)' },
-            ticks: { color: '#7b6ea8', font: { family: 'Space Mono', size: 11 }, maxRotation: 35 }
+            grid: { color: _chartC().grid },
+            ticks: { color: _chartC().tick, font: { family: 'Space Mono', size: 11 }, maxRotation: 35 }
           },
           y: {
-            grid: { color: 'rgba(46,37,80,0.5)' },
+            grid: { color: _chartC().grid },
             ticks: {
-              color: '#7b6ea8', font: { family: 'Space Mono', size: 11 },
+              color: _chartC().tick, font: { family: 'Space Mono', size: 11 },
               callback: v => '$' + Number(v).toLocaleString()
             }
           }
@@ -9379,14 +9412,14 @@
         plugins: {
           legend: {
             display: true,
-            labels: { color: '#7b6ea8', font: { family: 'Space Mono', size: 10 }, boxWidth: 12, padding: 16 }
+            labels: { color: _chartC().tick, font: { family: 'Space Mono', size: 10 }, boxWidth: 12, padding: 16 }
           },
           tooltip: {
-            backgroundColor: '#16112b',
-            borderColor: '#2e2550',
+            backgroundColor: _chartC().ttBg,
+            borderColor: _chartC().ttBorder,
             borderWidth: 1,
-            titleColor: '#f0eeff',
-            bodyColor: '#9d5ff7',
+            titleColor: _chartC().ttTitle,
+            bodyColor: _chartC().ttBody,
             titleFont: { family: 'Syne', weight: '800', size: 13 },
             bodyFont: { family: 'Space Mono', size: 11 },
             padding: 12,
@@ -9399,13 +9432,13 @@
         },
         scales: {
           x: {
-            grid: { color: 'rgba(46,37,80,0.5)' },
-            ticks: { color: '#7b6ea8', font: { family: 'Space Mono', size: 11 } }
+            grid: { color: _chartC().grid },
+            ticks: { color: _chartC().tick, font: { family: 'Space Mono', size: 11 } }
           },
           y: {
-            grid: { color: 'rgba(46,37,80,0.5)' },
+            grid: { color: _chartC().grid },
             ticks: {
-              color: '#7b6ea8',
+              color: _chartC().tick,
               font: { family: 'Space Mono', size: 11 },
               callback: v => '$' + Number(v).toLocaleString()
             }
@@ -9473,11 +9506,11 @@
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#16112b',
-            borderColor: '#2e2550',
+            backgroundColor: _chartC().ttBg,
+            borderColor: _chartC().ttBorder,
             borderWidth: 1,
-            titleColor: '#f0eeff',
-            bodyColor: '#9d5ff7',
+            titleColor: _chartC().ttTitle,
+            bodyColor: _chartC().ttBody,
             titleFont: { family: 'Syne', weight: '800', size: 13 },
             bodyFont: { family: 'Space Mono', size: 11 },
             padding: 12,
@@ -9492,18 +9525,18 @@
         },
         scales: {
           x: {
-            grid: { color: 'rgba(46,37,80,0.5)' },
+            grid: { color: _chartC().grid },
             ticks: {
-              color: '#7b6ea8',
+              color: _chartC().tick,
               font: { family: 'Space Mono', size: 11 },
               maxRotation: 35,
               minRotation: 20,
             }
           },
           y: {
-            grid: { color: 'rgba(46,37,80,0.5)' },
+            grid: { color: _chartC().grid },
             ticks: {
-              color: '#7b6ea8',
+              color: _chartC().tick,
               font: { family: 'Space Mono', size: 11 },
               callback: v => '$' + Number(v).toLocaleString()
             }
@@ -9547,8 +9580,8 @@
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#16112b', borderColor: '#2e2550', borderWidth: 1,
-            titleColor: '#f0eeff', bodyColor: '#9d5ff7',
+            backgroundColor: _chartC().ttBg, borderColor: _chartC().ttBorder, borderWidth: 1,
+            titleColor: _chartC().ttTitle, bodyColor: _chartC().ttBody,
             titleFont: { family: 'Syne', weight: '800', size: 13 },
             bodyFont: { family: 'Space Mono', size: 11 }, padding: 12,
             callbacks: {
@@ -9558,8 +9591,8 @@
           }
         },
         scales: {
-          x: { grid: { color: 'rgba(46,37,80,0.5)' }, ticks: { color: '#7b6ea8', font: { family: 'Space Mono', size: 11 }, maxRotation: 35, minRotation: 20 } },
-          y: { grid: { color: 'rgba(46,37,80,0.5)' }, ticks: { color: '#7b6ea8', font: { family: 'Space Mono', size: 11 }, callback: v => '$' + Number(v).toLocaleString() } }
+          x: { grid: { color: _chartC().grid }, ticks: { color: _chartC().tick, font: { family: 'Space Mono', size: 11 }, maxRotation: 35, minRotation: 20 } },
+          y: { grid: { color: _chartC().grid }, ticks: { color: _chartC().tick, font: { family: 'Space Mono', size: 11 }, callback: v => '$' + Number(v).toLocaleString() } }
         }
       }
     });
@@ -9637,11 +9670,11 @@
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#16112b',
-            borderColor: '#2e2550',
+            backgroundColor: _chartC().ttBg,
+            borderColor: _chartC().ttBorder,
             borderWidth: 1,
-            titleColor: '#f0eeff',
-            bodyColor: '#9d5ff7',
+            titleColor: _chartC().ttTitle,
+            bodyColor: _chartC().ttBody,
             titleFont: { family: 'Syne', weight: '800', size: 13 },
             bodyFont: { family: 'Space Mono', size: 11 },
             padding: 12,
