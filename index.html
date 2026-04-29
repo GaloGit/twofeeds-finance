@@ -8180,12 +8180,16 @@
     const bsEl   = document.getElementById('cedit_bs_'   + i);
     const emEl   = document.getElementById('cedit_em_'   + i);
     const docEl  = document.getElementById('cedit_doc_'  + i);
-    if (nameEl) _commissions[i].name       = nameEl.value;
-    if (pctEl)  _commissions[i].percentage = parseFloat(pctEl.value) || 0;
-    if (baseEl) _commissions[i].base       = baseEl.value;
-    if (bsEl)   _commissions[i].baseSalary = parseFloat(bsEl.value.replace(/[^0-9.]/g,'')) || 0;
-    if (emEl)   _commissions[i].email      = emEl.value.trim();
-    if (docEl)  _commissions[i].docUrl     = docEl.value.trim();
+    const rcEl   = document.getElementById('cedit_rc_'   + i);
+    const rsEl   = document.getElementById('cedit_rs_'   + i);
+    if (nameEl) _commissions[i].name           = nameEl.value;
+    if (pctEl)  _commissions[i].percentage     = parseFloat(pctEl.value) || 0;
+    if (baseEl) _commissions[i].base           = baseEl.value;
+    if (bsEl)   _commissions[i].baseSalary     = parseFloat(bsEl.value.replace(/[^0-9.]/g,'')) || 0;
+    if (emEl)   _commissions[i].email          = emEl.value.trim();
+    if (docEl)  _commissions[i].docUrl         = docEl.value.trim();
+    if (rcEl)   _commissions[i].realCommission = parseFloat(rcEl.value.replace(/[^0-9.]/g,'')) || 0;
+    if (rsEl)   _commissions[i].realSalary     = parseFloat(rsEl.value.replace(/[^0-9.]/g,'')) || 0;
     // Close immediately — don't wait for save/fetch
     const editRow = document.getElementById('commEdit_' + i);
     if (editRow) editRow.style.display = 'none';
@@ -8303,13 +8307,34 @@
         <td style="font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--text)"><div style="display:flex;align-items:center;gap:8px">${avatar}${esc(c.name)||'<span style="color:var(--muted)">—</span>'}</div></td>
         <td style="font-family:var(--font-mono);font-size:12px;color:var(--text);text-align:center">${c.percentage}%</td>
         <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">${c.base==='revenue'?'Revenue':'Profit'}</td>
-        <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);text-align:right;white-space:nowrap">${fmtAmt(amounts[i])}</td>
+        <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);text-align:right;white-space:nowrap">
+          ${fmtAmt(amounts[i])}
+          <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);font-weight:400;margin-top:2px">₪${Math.round(amounts[i]*_ilsRate).toLocaleString()} calc</div>
+          ${(c.realCommission||0) > 0 ? (() => {
+            const diff = Math.round(c.realCommission - amounts[i]*_ilsRate);
+            const pct  = amounts[i] > 0 ? ((diff / (amounts[i]*_ilsRate))*100).toFixed(1) : '—';
+            const col  = diff >= 0 ? 'var(--green)' : 'var(--red)';
+            return `<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:3px">₪${(c.realCommission).toLocaleString()} actual</div>
+                    <div style="font-family:var(--font-mono);font-size:10px;color:${col};font-weight:600">${diff>=0?'+':''}₪${diff.toLocaleString()} (${diff>=0?'+':''}${pct}%)</div>`;
+          })() : ''}
+        </td>
         <td style="text-align:right">
           <span style="font-family:var(--font-mono);font-size:12px;color:var(--text)">₪${(c.baseSalary||0).toLocaleString()}</span>
           <div class="usd-val" style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:2px">${fmtAmt((c.baseSalary||0)/_ilsRate)}</div>
         </td>
         <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:right;white-space:nowrap">${fmtPct((c.baseSalary||0)/_ilsRate)}</td>
-        <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--green);text-align:right;white-space:nowrap">${fmtAmt(amounts[i]+(c.baseSalary||0)/_ilsRate)}<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);font-weight:400;margin-top:2px">₪${((amounts[i]+(c.baseSalary||0)/_ilsRate)*_ilsRate).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</div></td>
+        <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--green);text-align:right;white-space:nowrap">
+          ${fmtAmt(amounts[i]+(c.baseSalary||0)/_ilsRate)}
+          <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);font-weight:400;margin-top:2px">₪${Math.round((amounts[i]+(c.baseSalary||0)/_ilsRate)*_ilsRate).toLocaleString()} calc</div>
+          ${(c.realSalary||0) > 0 ? (() => {
+            const calcILS = Math.round((amounts[i]+(c.baseSalary||0)/_ilsRate)*_ilsRate);
+            const diff = Math.round(c.realSalary - calcILS);
+            const pct  = calcILS > 0 ? ((diff / calcILS)*100).toFixed(1) : '—';
+            const col  = diff >= 0 ? 'var(--green)' : 'var(--red)';
+            return `<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:3px">₪${(c.realSalary).toLocaleString()} actual</div>
+                    <div style="font-family:var(--font-mono);font-size:10px;color:${col};font-weight:600">${diff>=0?'+':''}₪${diff.toLocaleString()} (${diff>=0?'+':''}${pct}%)</div>`;
+          })() : ''}
+        </td>
         <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:right;white-space:nowrap">${fmtPct(amounts[i]+(c.baseSalary||0)/_ilsRate)}</td>
         <td style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${esc(c.email||'')||'<span style="opacity:0.4">—</span>'}</td>
         <td style="text-align:center">
@@ -8361,6 +8386,19 @@
               <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Salary Document URL (Google Docs)</div>
               <input id="cedit_doc_${i}" type="text" value="${esc(c.docUrl||'')}" placeholder="https://docs.google.com/…"
                 style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;box-sizing:border-box"/>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;padding:12px 14px;background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.2);border-radius:8px">
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--accent-light);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;grid-column:1/-1">📄 Actual amounts from document (₪ ILS)</div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Actual Commission (₪)</div>
+                <input id="cedit_rc_${i}" type="text" value="${(c.realCommission||0) > 0 ? (c.realCommission||0).toLocaleString() : ''}" placeholder="e.g. 15,000"
+                  style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 8px;color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;text-align:right;box-sizing:border-box"/>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Actual Total Salary (₪)</div>
+                <input id="cedit_rs_${i}" type="text" value="${(c.realSalary||0) > 0 ? (c.realSalary||0).toLocaleString() : ''}" placeholder="e.g. 34,000"
+                  style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 8px;color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;text-align:right;box-sizing:border-box"/>
+              </div>
             </div>
             <div style="display:flex;justify-content:space-between;align-items:center">
               <button onclick="_commissions.splice(${i},1);renderProfitSummary(true)"
