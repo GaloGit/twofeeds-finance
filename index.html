@@ -366,55 +366,67 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* ── TABLET (max 800px) ── */
-    @media (max-width: 800px) {
-      .summary-grid { flex-wrap: wrap; }
-      .summary-card { flex: 1 1 20%; }
-      .nav-tab { padding: 12px 16px; font-size: 10px; }
+    /* ── TABLET (max 1024px) ── */
+    @media (max-width: 1024px) {
+      .nav-bar { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; padding-bottom: 2px; }
+      .nav-tab { white-space: nowrap; flex-shrink: 0; padding: 10px 14px; font-size: 10px; }
       .header-top { gap: 10px; }
       .logo h1 { font-size: 18px; }
       .section-title { font-size: 18px; }
+      .section-header { flex-wrap: wrap; gap: 10px; }
+      .summary-grid { flex-wrap: wrap; }
+      .summary-card { flex: 1 1 40%; }
+      .trend-charts-grid { grid-template-columns: repeat(2, 1fr) !important; }
+      .chart-container { height: 200px; }
+      #profChartWrap, #ovrvwCommWrap .chart-wrap { max-width: 100% !important; }
     }
 
     /* ── MOBILE (max 600px) ── */
     @media (max-width: 600px) {
-      .container { padding: 0 14px; }
+      .container { padding: 0 12px; }
 
       /* Header */
-      header { padding: 16px 0 0; }
+      header { padding: 14px 0 0; }
       .header-top { flex-direction: column; align-items: flex-start; gap: 10px; padding-bottom: 12px; }
       .header-right { width: 100%; flex-wrap: wrap; gap: 8px; justify-content: flex-start; }
-      .logo h1 { font-size: 17px; }
+      .logo h1 { font-size: 16px; }
       .logo span { display: none; }
-      .logo-icon { width: 38px; height: 38px; border-radius: 10px; }
+      .logo-icon { width: 36px; height: 36px; border-radius: 10px; }
       .sync-info { font-size: 10px; width: 100%; }
       .countdown { display: inline; margin-left: 6px; }
-      .refresh-btn { font-size: 10px; padding: 6px 12px; }
-      .logout-btn { font-size: 10px; padding: 6px 12px; }
-      .theme-toggle { font-size: 12px; padding: 6px 10px; }
+      .refresh-btn, .logout-btn { font-size: 10px; padding: 8px 12px; min-height: 36px; }
+      .theme-toggle { font-size: 12px; padding: 8px 10px; min-height: 36px; }
 
       /* Period picker */
       .period-wrap { flex-wrap: wrap; gap: 8px; padding: 8px 0 2px; }
-      .period-dd-btn { font-size: 9px; padding: 4px 10px; }
+      .period-dd-btn { font-size: 9px; padding: 6px 10px; min-height: 32px; }
 
       /* Nav tabs */
       .nav-bar { gap: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
-      .nav-tab { padding: 10px 14px; font-size: 9px; white-space: nowrap; flex-shrink: 0; }
+      .nav-tab { padding: 10px 12px; font-size: 9px; white-space: nowrap; flex-shrink: 0; min-height: 44px; }
 
       /* Cards */
-      .summary-grid { flex-wrap: wrap; }
-      .summary-card { flex: 1 1 40%; border-right: none; border-bottom: 1px solid var(--border); }
-      .summary-card:last-child { border-bottom: none; }
-      .card-value { font-size: 16px; }
+      .summary-grid { flex-wrap: wrap; display: grid; grid-template-columns: 1fr 1fr; }
+      .summary-card { flex: unset; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+      .summary-card:nth-child(even) { border-right: none; }
+      .summary-card:nth-last-child(-n+2) { border-bottom: none; }
+      .card-value { font-size: 15px; }
+      .card-label { font-size: 7.5px; }
 
       /* Section titles */
-      .section-title { font-size: 16px; }
+      .section-title { font-size: 15px; }
       .section-header { flex-wrap: wrap; gap: 8px; }
+      .section-header > div:last-child { flex-wrap: wrap !important; gap: 6px !important; width: 100%; }
 
       /* Tables */
-      .table-scroll { max-height: 60vh; }
-      table th, table td { padding: 10px 12px; font-size: 11px; }
-      table thead th { font-size: 10px; }
+      .table-scroll { max-height: 65vh; }
+      table th, table td { padding: 9px 10px; font-size: 11px; }
+      table thead th { font-size: 9px; letter-spacing: 0.04em; }
+
+      /* Buttons — bigger touch targets */
+      .add-btn  { font-size: 9px !important; padding: 7px 10px !important; min-height: 34px; }
+      .export-btn { font-size: 9px !important; padding: 7px 10px !important; min-height: 34px; }
+      .clear-btn  { font-size: 9px !important; padding: 7px 10px !important; min-height: 34px; }
 
       /* Publisher toolbar */
       .pub-toolbar { flex-direction: column; align-items: flex-start; }
@@ -425,15 +437,36 @@
 
       /* Invoice toolbar */
       .inv-toolbar { flex-wrap: wrap; gap: 8px; }
-      .inv-toolbar > div { flex-wrap: wrap; gap: 6px; }
+      .inv-toolbar > div { flex-wrap: wrap; gap: 6px; width: 100%; }
 
       /* Upload areas */
-      .upload-area { padding: 28px 16px; }
-      .inv-upload-area { padding: 32px 16px; }
+      .upload-area { padding: 24px 14px; }
+      .inv-upload-area { padding: 28px 14px; }
 
       /* Charts */
-      .chart-wrap { padding: 16px; }
-      .chart-container { height: 180px; }
+      .chart-wrap { padding: 14px; }
+      .chart-container { height: 180px !important; }
+      .trend-charts-grid { grid-template-columns: 1fr !important; }
+      #profChartWrap, #ovrvwCommWrap .chart-wrap { max-width: 100% !important; }
+
+      /* Commission edit form: 5-col → 2-col */
+      .comm-edit-grid { grid-template-columns: 1fr 1fr !important; }
+      /* Commission card info grid: 4-col → 2-col */
+      .comm-card-grid { grid-template-columns: 1fr 1fr !important; }
+      /* Commission real fields: stay 2-col but smaller */
+      .comm-real-grid { grid-template-columns: 1fr 1fr !important; }
+
+      /* Overview commission cards */
+      #ovrvwCommCards { gap: 8px; }
+      #ovrvwCommCards > div { min-width: 0 !important; max-width: none !important; flex: 1 1 calc(50% - 4px) !important; }
+
+      /* Profit tab section header controls */
+      #tab-profit .section-header { flex-direction: column; align-items: flex-start; }
+      #tab-profit .section-header > div:last-child { width: 100%; }
+
+      /* Drive URL input row */
+      #invDriveUrlRow { flex-wrap: wrap; }
+      #invDriveUrlInput { min-width: 0; }
 
       /* Publisher view */
       .pubview-search-wrap { flex-direction: column; gap: 8px; }
@@ -442,17 +475,21 @@
       .pubview-select { width: 100%; }
 
       /* Gate */
-      .gate-box { padding: 36px 24px; width: 95vw; }
-      .gate-title { font-size: 20px; }
+      .gate-box { padding: 32px 20px; width: 95vw; }
+      .gate-title { font-size: 18px; }
     }
 
     /* ── SMALL PHONES (max 380px) ── */
     @media (max-width: 380px) {
-      .summary-grid { grid-template-columns: 1fr 1fr; }
-      .card-value { font-size: 18px; }
-      .logo h1 { font-size: 15px; }
+      .container { padding: 0 10px; }
+      .card-value { font-size: 14px; }
+      .logo h1 { font-size: 14px; }
       .nav-tab { padding: 8px 10px; font-size: 8px; }
-      .period-dd-btn { font-size: 8px; padding: 3px 8px; }
+      .period-dd-btn { font-size: 8px; padding: 5px 8px; }
+      #ovrvwCommCards > div { flex: 1 1 100% !important; }
+      .comm-edit-grid { grid-template-columns: 1fr !important; }
+      .comm-real-grid { grid-template-columns: 1fr !important; }
+      table th, table td { padding: 7px 8px; font-size: 10px; }
     }
   /* ── LOADING CURTAIN ── */
   #loadingCurtain {
@@ -1282,7 +1319,7 @@
         </div>
       </div>
       <div id="trendChartsWrap" style="display:none;margin-top:16px">
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+        <div class="trend-charts-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
           <div class="chart-wrap">
             <div class="chart-header">
               <div class="chart-title" style="color:rgba(34,197,94,0.9)">Revenue</div>
@@ -8241,7 +8278,7 @@
         const total = commission + baseSalaryUsd;
         return `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:10px">
           <div style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px">${esc(c.name)}</div>
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+          <div class="comm-card-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
             <div><div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Commission</div>
               <div style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--accent-light)">${fmtAmt(commission)}</div>
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${c.percentage}% of ${c.base}</div></div>
@@ -8349,7 +8386,7 @@
       ${_singlePer ? `<tr id="commEdit_${i}" style="display:none;background:var(--surface)">
         <td colspan="10" style="padding:0">
           <div style="padding:16px 20px;border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
-            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 2fr;gap:12px;margin-bottom:14px">
+            <div class="comm-edit-grid" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 2fr;gap:12px;margin-bottom:14px">
               <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Name</div>
                 <input id="cedit_name_${i}" value="${esc(c.name)}" placeholder="Role name"
@@ -8387,7 +8424,7 @@
               <input id="cedit_doc_${i}" type="text" value="${esc(c.docUrl||'')}" placeholder="https://docs.google.com/…"
                 style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;box-sizing:border-box"/>
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;padding:12px 14px;background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.2);border-radius:8px">
+            <div class="comm-real-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;padding:12px 14px;background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.2);border-radius:8px">
               <div style="font-family:var(--font-mono);font-size:9px;color:var(--accent-light);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;grid-column:1/-1">📄 Actual amounts from document (₪ ILS)</div>
               <div>
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Actual Commission (₪)</div>
