@@ -3711,14 +3711,14 @@
         switch (c) {
           case 'idx':        return `<td class="row-num">${i+1}</td>`;
           case 'logo':       return `<td style="padding:6px 12px">${logoHtml}</td>`;
-          case 'name':       return `<td style="min-width:140px;white-space:nowrap"><input class="editable" value="${esc(a.name)}" onblur="advNameConfirm(${i},this.value)" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape'){this.value='${esc(a.name)}';this.blur();}" style="font-family:var(--font-mono);font-size:12px;font-weight:600;width:100%"/></td>`;
-          case 'platform':   return `<td><select onchange="advFieldChange(${i},'platform',this.value);this.style.cssText+=';${_advPlatformStyle(a.platform||'Appsflyer')}'" style="${platStyle};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none">${_ADV_PLATFORMS.map(t=>`<option value="${t}" ${(a.platform||'Appsflyer')===t?'selected':''}>${t}</option>`).join('')}</select></td>`;
-          case 'type':       return `<td><select onchange="advFieldChange(${i},'type',this.value)" style="${(a.type||'Direct')==='Agency'?'background:rgba(245,158,11,0.15);color:#f59e0b;border-color:rgba(245,158,11,0.45)':'background:rgba(56,189,248,0.13);color:#38bdf8;border-color:rgba(56,189,248,0.45)'};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none"><option value="Direct" ${(a.type||'Direct')==='Direct'?'selected':''}>Direct</option><option value="Agency" ${a.type==='Agency'?'selected':''}>Agency</option></select></td>`;
+          case 'name':       return `<td style="min-width:140px;white-space:nowrap"><span style="font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--text)">${esc(a.name)}</span></td>`;
+          case 'platform':   return `<td><span style="${platStyle};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700">${esc(a.platform||'Appsflyer')}</span></td>`;
+          case 'type':       return `<td><span style="${(a.type||'Direct')==='Agency'?'background:rgba(245,158,11,0.15);color:#f59e0b;border-color:rgba(245,158,11,0.45)':'background:rgba(56,189,248,0.13);color:#38bdf8;border-color:rgba(56,189,248,0.45)'};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700">${esc(a.type||'Direct')}</span></td>`;
           case 'tfManager':  return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(a.tfManager||'—')}</td>`;
           case 'to2Manager': return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(a.to2Manager||'—')}</td>`;
           case 'tlTo2':      return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(a.tlTo2||'—')}</td>`;
           case 'geo':        return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:5px">${esc(a.geo||'—')}${a.geo&&a.geo.length===2?countryFlagImg(a.geo,'20x15'):''}</span></td>`;
-          case 'status':     return `<td><select id="advStatusSelect_${i}" onchange="advStatusChange(${i},this.value);_applyStatusSelectColor(this,this.value)" style="${_siStatusSelectStyle(a.status)};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none"><option value="live" ${(a.status||'live')==='live'?'selected':''}>Live</option><option value="paused" ${a.status==='paused'?'selected':''}>Paused</option></select></td>`;
+          case 'status':     return `<td><span style="${_siStatusSelectStyle(a.status)};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700">${(a.status||'live')==='live'?'Live':'Paused'}</span></td>`;
           default:           return '<td></td>';
         }
       }).join('');
@@ -3788,12 +3788,29 @@
             <div id="advEdit_${i}" style="display:none">
               <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:14px">
                 <div>
+                  <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Name</div>
+                  <input id="advName_${i}" class="editable" value="${esc(a.name||'')}" placeholder="Advertiser name" style="width:100%;font-weight:600"/>
+                </div>
+                <div>
+                  <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Platform</div>
+                  <select id="advPlatform_${i}" class="editable" style="width:100%;cursor:pointer">
+                    ${_ADV_PLATFORMS.map(t=>`<option value="${t}" ${(a.platform||'Appsflyer')===t?'selected':''}>${t}</option>`).join('')}
+                  </select>
+                </div>
+                <div>
+                  <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Status</div>
+                  <select id="advStatus_${i}" class="editable" style="width:100%;cursor:pointer">
+                    <option value="live"   ${(a.status||'live')==='live'  ?'selected':''}>Live</option>
+                    <option value="paused" ${a.status==='paused'?'selected':''}>Paused</option>
+                  </select>
+                </div>
+                <div>
                   <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Logo URL</div>
                   <input id="advUrl_${i}" class="editable" value="${esc(a.logoUrl||'')}" placeholder="Paste image or Drive URL" style="width:100%"/>
                 </div>
                 <div>
                   <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Type</div>
-                  <select id="advType_${i}" class="editable" onchange="if(advertisers[${i}])advertisers[${i}].type=this.value" style="width:100%;cursor:pointer">
+                  <select id="advType_${i}" class="editable" style="width:100%;cursor:pointer">
                     <option value="Direct" ${(a.type||'Direct')==='Direct'?'selected':''}>Direct</option>
                     <option value="Agency" ${a.type==='Agency'?'selected':''}>Agency</option>
                   </select>
@@ -3950,14 +3967,18 @@
 
   async function advDetailSave(i) {
     if (!advertisers[i]) return;
-    advertisers[i].logoUrl    = (document.getElementById('advUrl_'    + i)?.value || '').trim();
-    advertisers[i].type       = (document.getElementById('advType_'  + i)?.value || 'Direct').trim();
-    advertisers[i].tfManager  = (document.getElementById('advTfm_'   + i)?.value || '').trim();
-    advertisers[i].to2Manager = (document.getElementById('advTo2m_'  + i)?.value || '').trim();
-    advertisers[i].tlTo2      = (document.getElementById('advTlTo2_' + i)?.value || '').trim();
-    advertisers[i].tfId       = (document.getElementById('advTfId_'  + i)?.value || '').trim();
-    advertisers[i].to2Id      = (document.getElementById('advTo2Id_' + i)?.value || '').trim();
-    advertisers[i].geo        = (document.getElementById('advGeo_'   + i)?.value || '').trim().toUpperCase();
+    const nameVal = (document.getElementById('advName_'     + i)?.value || '').trim();
+    if (nameVal) advertisers[i].name = nameVal;
+    advertisers[i].platform   = (document.getElementById('advPlatform_'+ i)?.value || 'Appsflyer').trim();
+    advertisers[i].status     = (document.getElementById('advStatus_'  + i)?.value || 'live').trim();
+    advertisers[i].logoUrl    = (document.getElementById('advUrl_'     + i)?.value || '').trim();
+    advertisers[i].type       = (document.getElementById('advType_'    + i)?.value || 'Direct').trim();
+    advertisers[i].tfManager  = (document.getElementById('advTfm_'     + i)?.value || '').trim();
+    advertisers[i].to2Manager = (document.getElementById('advTo2m_'    + i)?.value || '').trim();
+    advertisers[i].tlTo2      = (document.getElementById('advTlTo2_'   + i)?.value || '').trim();
+    advertisers[i].tfId       = (document.getElementById('advTfId_'    + i)?.value || '').trim();
+    advertisers[i].to2Id      = (document.getElementById('advTo2Id_'   + i)?.value || '').trim();
+    advertisers[i].geo        = (document.getElementById('advGeo_'     + i)?.value || '').trim().toUpperCase();
     _renderAdvTable();
     if (await _saveAdvertisers()) showToast('✓ Saved');
   }
