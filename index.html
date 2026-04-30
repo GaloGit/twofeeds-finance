@@ -5405,18 +5405,21 @@
       if (advRes.lastModified) { _tabMeta.adv = { ts: advRes.lastModified, by: advRes.lastModifiedBy || '' }; _renderLastUpdated('adv'); }
       const advRaw = advRes.data || [];
       const advMapped = advRaw.map(r => ({
-        name:       r['Name']        || '',
-        logoUrl:    r['LogoUrl']     || '',
-        tfId:       r['TF ID']       || '',
-        to2Id:      r['TO2 ID']      || '',
-        to2Manager: r['TO2 Manager'] || '',
-        tlTo2:      r['TL TO2']      || '',
-        tfManager:  r['TF Manager']  || '',
-        geo:        r['GEO']         || '',
-        platform:   r['Platform']    || 'Appsflyer',
-        type:       r['Type']        || 'Direct',
-        status:     r['Status']      || 'live',
-        campaigns:  (() => { try { return (JSON.parse(r['Campaigns'] || '[]')).map(c => typeof c === 'string' ? { name: c, to2Status: 'live', tfStatus: 'live', notes: '', url: '', iconUrl: '', big: false, ctv: false, inct: false } : { url: '', iconUrl: '', big: false, ctv: false, inct: false, ...c }); } catch { return []; } })(),
+        name:        r['Name']        || '',
+        logoUrl:     r['LogoUrl']     || '',
+        tfId:        r['TF ID']       || '',
+        to2Id:       r['TO2 ID']      || '',
+        to2Manager:  r['TO2 Manager'] || '',
+        tlTo2:       r['TL TO2']      || '',
+        tfManager:   r['TF Manager']  || '',
+        geo:         r['GEO']         || '',
+        platform:    r['Platform']    || 'Appsflyer',
+        type:        r['Type']        || 'Direct',
+        status:      r['Status']      || 'live',
+        campaigns:   (() => { try { return (JSON.parse(r['Campaigns'] || '[]')).map(c => typeof c === 'string' ? { name: c, to2Status: 'live', tfStatus: 'live', notes: '', url: '', iconUrl: '', big: false, ctv: false, inct: false } : { url: '', iconUrl: '', big: false, ctv: false, inct: false, ...c }); } catch { return []; } })(),
+        verticals:   (() => { try { return JSON.parse(r['Verticals'] || '[]'); } catch { return []; } })(),
+        websiteUrl:  r['WebsiteUrl']  || '',
+        linkedinUrl: r['LinkedinUrl'] || '',
       }));
       advertisers = _applyAdvOrder(_dedupeAdvertisers(advMapped));
       if (advRaw.length > advertisers.length) _saveAdvertisers();
