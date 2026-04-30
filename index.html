@@ -9178,12 +9178,16 @@
     const urlInp = document.getElementById('revSheetUrl');
     const advInp = document.getElementById('revAdvCol');
     const amtInp = document.getElementById('revAmtCol');
-    const url    = (urlInp?.value || '').trim();
+    let url = (urlInp?.value || '').trim();
     if (!url) {
       document.getElementById('revSheetHint').style.display = 'block';
       showToast('⚠ Paste a Google Sheets CSV URL first', true);
       return;
     }
+    // Auto-fix: convert pubhtml URL to CSV export URL
+    url = url.replace(/\/pubhtml(\?|$)/, '/pub$1');
+    if (!url.includes('output=csv')) url += (url.includes('?') ? '&' : '?') + 'output=csv';
+    if (urlInp) urlInp.value = url; // show corrected URL in field
     const advCol = (advInp?.value || '').trim() || 'Advertiser';
     const amtCol = (amtInp?.value || '').trim() || 'Revenue';
 
