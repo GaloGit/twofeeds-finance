@@ -1909,7 +1909,7 @@
                   <th>ADV Name</th>
                   <th>Revenue</th>
                   <th>TO2 Cost</th>
-                  <th>YF MGR</th>
+                  <th>TF Manager</th>
                   <th>TO2 MGR</th>
                   <th>Status</th>
                 </tr>
@@ -9445,6 +9445,9 @@
     _revData = [];
     _revSave();
     localStorage.removeItem('tf_rev_lastFetch');
+    if (_revChartInstance) { _revChartInstance.destroy(); _revChartInstance = null; }
+    const wrap = document.getElementById('revChartWrap');
+    if (wrap) wrap.style.display = 'none';
     renderRevSummary();
   }
 
