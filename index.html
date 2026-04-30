@@ -8421,32 +8421,40 @@
     const profSub = document.getElementById('profProfitSub');
     if (profSub) profSub.textContent = margin !== null ? `${margin.toFixed(1)}% margin` : 'no revenue set';
 
-    // Breakdown table — update in-place to avoid layout jumps
+    // Group internal source costs by vendor
+    const intGroupTotals = {};
+    CS_GROUPS.forEach(g => { intGroupTotals[g] = 0; });
+    intGroupTotals['Other'] = 0;
+    (invRows || []).forEach(r => {
+      const vendor = r['Vendor'] || r.vendor || '';
+      const amt = r.amount !== undefined ? (r.amount || 0) : (parseFloat(r['Amount']) || 0);
+      intGroupTotals[csMatchGroup(vendor)] += amt;
+    });
+    const activeIntGroups = [
+      ...CS_GROUPS.filter(g => intGroupTotals[g] > 0),
+      ...(intGroupTotals['Other'] > 0 ? ['Other'] : []),
+    ];
+
+    // Breakdown table rows (dynamic — internal sources expanded per group)
     const rows = [
-      { label: 'Revenue',        amount: revenue,   highlight: true, color: 'var(--green)', bg: '' },
-      { label: 'Publisher Costs',amount: pubCost,   highlight: false, color: 'var(--red)',  bg: '' },
-      { label: 'Invoice Costs',  amount: invCost,   highlight: false, color: 'var(--red)',  bg: '' },
-      { label: 'Total Costs',    amount: totalCost, highlight: true,  color: 'var(--amber)', bg: '' },
-      { label: 'Profit',         amount: profit,    highlight: true,  color: profit>=0?'var(--green)':'var(--red)', bg: profit>=0?'rgba(34,197,94,0.08)':'rgba(239,68,68,0.08)' },
+      { label: 'Revenue',         amount: revenue,   highlight: true,  color: 'var(--green)', bg: '' },
+      { label: 'Publisher Costs', amount: pubCost,   highlight: false, color: 'var(--red)',   bg: '' },
+      ...activeIntGroups.map(g => ({
+        label: g, amount: intGroupTotals[g], highlight: false, color: 'var(--red)', bg: '', indent: true,
+      })),
+      { label: 'Total Costs',     amount: totalCost, highlight: true,  color: 'var(--amber)', bg: '' },
+      { label: 'Profit',          amount: profit,    highlight: true,  color: profit>=0?'var(--green)':'var(--red)', bg: profit>=0?'rgba(34,197,94,0.08)':'rgba(239,68,68,0.08)' },
     ];
     const tbody = document.getElementById('profBreakBody');
     if (tbody) {
-      const existing = tbody.querySelectorAll('tr');
-      if (existing.length === rows.length) {
-        rows.forEach((r, i) => {
-          existing[i].cells[1].textContent = fmtAmt(r.amount);
-          existing[i].cells[1].style.color = r.color;
-          existing[i].cells[2].textContent = r.label === 'Revenue' ? '100%' : pctOf(r.amount);
-          if (r.bg) existing[i].style.background = r.bg;
-        });
-      } else {
-        tbody.innerHTML = rows.map(r => `
-          <tr style="${r.highlight?'border-top:1px solid var(--border)':''}${r.bg?';background:'+r.bg:''}">
-            <td style="font-family:var(--font-mono);font-size:12px${r.highlight?';font-weight:700;color:var(--text)':';color:var(--muted)'}">${r.label}</td>
-            <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:${r.color};white-space:nowrap">${fmtAmt(r.amount)}</td>
-            <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:right">${r.label==='Revenue'?'100%':pctOf(r.amount)}</td>
-          </tr>`).join('');
-      }
+      tbody.innerHTML = rows.map(r => `
+        <tr style="${r.highlight?'border-top:1px solid var(--border)':''}${r.bg?';background:'+r.bg:''}">
+          <td style="font-family:var(--font-mono);font-size:12px${r.highlight?';font-weight:700;color:var(--text)':';color:var(--muted)'}${r.indent?';padding-left:22px':''}">
+            ${r.indent ? '<span style="opacity:0.5;margin-right:4px">↳</span>' : ''}${r.label}
+          </td>
+          <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:${r.color};white-space:nowrap">${fmtAmt(r.amount)}</td>
+          <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:right">${r.label==='Revenue'?'100%':pctOf(r.amount)}</td>
+        </tr>`).join('');
     }
 
     // Commissions — re-fetch when period changes
