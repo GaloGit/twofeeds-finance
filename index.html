@@ -9162,7 +9162,7 @@
     const hasData = _revData.length > 0;
     if (configBody && configBody.style.display === '') {
       // First render: collapse if we have data, expand if we don't
-      const shouldExpand = !savedUrl || !hasData;
+      const shouldExpand = !savedUrl || !hasData || !savedCostCol;
       configBody.style.display = shouldExpand ? 'block' : 'none';
       if (configIcon) configIcon.style.transform = shouldExpand ? 'rotate(180deg)' : '';
     }
