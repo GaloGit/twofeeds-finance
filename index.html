@@ -4198,6 +4198,7 @@
     if (!isEditing && advertisers[i]) {
       const list = document.getElementById('advCampList_' + i);
       if (list) list.innerHTML = _advCampaignsHtml(advertisers[i].campaigns || [], i);
+      _advFetchMissingIcons(i); // silently fill in any icons that weren't fetched yet
     }
   }
 
@@ -4424,26 +4425,49 @@
     advertisers[i].campaigns[j][field] = value;
   }
 
+  async function _itunesIcon(url) {
+    const appleMatch = url.match(/\/id(\d+)/);
+    if (!appleMatch) return '';
+    const countryMatch = url.match(/apps\.apple\.com\/([a-z]{2})\//);
+    const country = countryMatch ? `&country=${countryMatch[1]}` : '';
+    try {
+      const res  = await fetch(`https://itunes.apple.com/lookup?id=${appleMatch[1]}${country}`);
+      const data = await res.json();
+      if (data.results && data.results[0]) {
+        return data.results[0].artworkUrl100 || data.results[0].artworkUrl60 || '';
+      }
+    } catch {}
+    return '';
+  }
+
   async function advCampSetUrl(i, j, url) {
     if (!advertisers[i] || !advertisers[i].campaigns[j]) return;
     const c = advertisers[i].campaigns[j];
     c.url = url.trim();
     if (c.url) {
-      const appleMatch = c.url.match(/\/id(\d+)/);
-      if (appleMatch) {
-        try {
-          const res  = await fetch(`https://itunes.apple.com/lookup?id=${appleMatch[1]}`);
-          const data = await res.json();
-          if (data.results && data.results[0]) {
-            c.iconUrl = data.results[0].artworkUrl100 || data.results[0].artworkUrl60 || '';
-          }
-        } catch {}
-      }
+      c.iconUrl = await _itunesIcon(c.url);
     } else {
       c.iconUrl = '';
     }
     const list = document.getElementById('advCampList_' + i);
     if (list) list.innerHTML = _advCampaignsHtml(advertisers[i].campaigns, i);
+  }
+
+  // Fetch icons for any campaign that has a URL but no icon yet, then auto-save
+  async function _advFetchMissingIcons(i) {
+    if (!advertisers[i]) return;
+    let updated = false;
+    for (const c of advertisers[i].campaigns || []) {
+      if (c.url && !c.iconUrl) {
+        const icon = await _itunesIcon(c.url);
+        if (icon) { c.iconUrl = icon; updated = true; }
+      }
+    }
+    if (updated) {
+      const list = document.getElementById('advCampList_' + i);
+      if (list) list.innerHTML = _advCampaignsHtml(advertisers[i].campaigns, i);
+      _saveAdvertisers();
+    }
   }
 
   function advAddCampaign(i) {
