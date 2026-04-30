@@ -531,7 +531,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.7.9</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.8.0</div>
   </div>
 </div>
 
@@ -604,7 +604,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.7.9</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.8.0</div>
   </div>
 </div>
 
@@ -751,7 +751,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.7.9</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.8.0</span>
           </div>
         </div>
       </div>
@@ -1720,6 +1720,21 @@
               </div>
             </div>
           </div>
+          <div style="margin-top:12px">
+            <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:8px">Fraud Tools</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+              <div id="advNewFraudChips" style="display:contents"></div>
+              <button type="button" onclick="advNewFraudAddPrompt()" id="advNewFraudAddBtn"
+                style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;border:1px dashed var(--border);background:transparent;color:var(--muted);cursor:pointer;line-height:1.4">+ New</button>
+              <div id="advNewFraudInput" style="display:none;align-items:center;gap:6px">
+                <input id="advNewFraudText" placeholder="Tool name…"
+                  onkeydown="if(event.key==='Enter')advAddCustomFraudTool();else if(event.key==='Escape')advNewFraudCancelInput();"
+                  style="font-family:var(--font-mono);font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid var(--accent);background:var(--surface2);color:var(--text);outline:none;width:130px"/>
+                <button type="button" onclick="advAddCustomFraudTool()" style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;border:none;background:var(--accent);color:#fff;cursor:pointer">Add</button>
+                <button type="button" onclick="advNewFraudCancelInput()" style="font-family:var(--font-mono);font-size:10px;padding:4px 8px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer">✕</button>
+              </div>
+            </div>
+          </div>
           <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-top:12px">
             <div style="flex:1;min-width:140px">
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">TF Manager</div>
@@ -2558,7 +2573,8 @@
     { key:'tlTo2',      label:'TL TO2'     },
     { key:'geo',        label:'GEO'        },
     { key:'status',     label:'Status'     },
-    { key:'verticals',  label:'Verticals'  },
+    { key:'verticals',  label:'Verticals'   },
+    { key:'fraudTools', label:'Fraud Tools' },
   ];
 
   function _cmColState()       { return _getColState('tf_cm_cols',  _CM_COL_DEFS); }
@@ -3684,7 +3700,7 @@
     const open = wrap.style.display !== 'none';
     wrap.style.display = open ? 'none' : 'block';
     if (btn) btn.style.color = open ? 'var(--muted)' : 'var(--accent-light)';
-    if (!open) _renderNewAdvVertChips();
+    if (!open) { _renderNewAdvVertChips(); _renderNewAdvFraudChips(); }
   }
 
   const _ADV_PLATFORMS  = ['Appsflyer','Adjust','Singular','Kochava','Impact','Network','Multiple Platforms'];
@@ -3737,6 +3753,72 @@
   function advNewVertCancelInput() {
     document.getElementById('advNewVertInput').style.display = 'none';
     document.getElementById('advNewVertAddBtn').style.display = '';
+  }
+  // ── Fraud Tools ──────────────────────────────────────────────────────────────
+  const _ADV_FRAUD_TOOLS = [
+    { key: 'Protect360',   bg: 'rgba(239,68,68,0.15)',   border: 'rgba(239,68,68,0.45)',   color: '#ef4444'  },
+    { key: 'TrafficGuard', bg: 'rgba(59,130,246,0.15)',  border: 'rgba(59,130,246,0.45)',  color: '#3b82f6'  },
+    { key: 'Forensiq',     bg: 'rgba(168,85,247,0.15)',  border: 'rgba(168,85,247,0.45)',  color: '#a855f7'  },
+  ];
+  const _FRAUD_PALETTE = [
+    { bg:'rgba(245,158,11,0.15)', border:'rgba(245,158,11,0.45)', color:'#f59e0b' },
+    { bg:'rgba(20,184,166,0.15)', border:'rgba(20,184,166,0.45)', color:'#14b8a6' },
+    { bg:'rgba(34,197,94,0.13)',  border:'rgba(34,197,94,0.40)',  color:'var(--green)' },
+    { bg:'rgba(236,72,153,0.15)', border:'rgba(236,72,153,0.45)', color:'#ec4899' },
+    { bg:'rgba(99,102,241,0.15)', border:'rgba(99,102,241,0.45)', color:'#6366f1' },
+  ];
+  function _getCustomFraudTools() {
+    try { return JSON.parse(localStorage.getItem('_advCustomFraudTools') || '[]'); } catch { return []; }
+  }
+  function _getAllFraudTools() {
+    return [..._ADV_FRAUD_TOOLS, ..._getCustomFraudTools()];
+  }
+  let _newAdvFraudSel = [];
+  function _renderNewAdvFraudChips() {
+    _newAdvFraudSel = [];
+    const wrap = document.getElementById('advNewFraudChips');
+    if (!wrap) return;
+    wrap.innerHTML = _getAllFraudTools().map(v =>
+      `<button type="button" id="advNewFraud_${v.key}" onclick="advNewFraudToggle('${v.key}')"
+        style="font-family:var(--font-mono);font-size:10px;font-weight:600;padding:4px 12px;border-radius:20px;
+          border:1px solid var(--border);background:var(--surface3);color:var(--muted);cursor:pointer;transition:all 0.15s">${v.key}</button>`
+    ).join('');
+  }
+  function advNewFraudToggle(key) {
+    const idx = _newAdvFraudSel.indexOf(key);
+    if (idx >= 0) _newAdvFraudSel.splice(idx, 1); else _newAdvFraudSel.push(key);
+    const def = _getAllFraudTools().find(v => v.key === key);
+    const btn = document.getElementById(`advNewFraud_${key}`);
+    if (btn && def) {
+      const on = _newAdvFraudSel.includes(key);
+      btn.style.background  = on ? def.bg     : 'var(--surface3)';
+      btn.style.borderColor = on ? def.border  : 'var(--border)';
+      btn.style.color       = on ? def.color   : 'var(--muted)';
+    }
+  }
+  function advNewFraudAddPrompt() {
+    document.getElementById('advNewFraudInput').style.display = 'flex';
+    document.getElementById('advNewFraudAddBtn').style.display = 'none';
+    const t = document.getElementById('advNewFraudText');
+    t.value = ''; t.focus();
+  }
+  function advNewFraudCancelInput() {
+    document.getElementById('advNewFraudInput').style.display = 'none';
+    document.getElementById('advNewFraudAddBtn').style.display = '';
+  }
+  function advAddCustomFraudTool() {
+    const key = (document.getElementById('advNewFraudText').value || '').trim();
+    if (!key) return;
+    if (_getAllFraudTools().find(v => v.key.toLowerCase() === key.toLowerCase())) {
+      showToast('⚠ Tool already exists', true); return;
+    }
+    const custom = _getCustomFraudTools();
+    const pal = _FRAUD_PALETTE[custom.length % _FRAUD_PALETTE.length];
+    custom.push({ key, ...pal });
+    localStorage.setItem('_advCustomFraudTools', JSON.stringify(custom));
+    advNewFraudCancelInput();
+    _renderNewAdvFraudChips();
+    advNewFraudToggle(key);
   }
   function advAddCustomVertical() {
     const key = (document.getElementById('advNewVertText').value || '').trim();
@@ -3801,6 +3883,7 @@
           case 'geo':        return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:5px">${esc(a.geo||'—')}${a.geo&&a.geo.length===2?countryFlagImg(a.geo,'20x15'):''}</span></td>`;
           case 'status':     return `<td><span style="${_siStatusSelectStyle(a.status)};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700">${(a.status||'live')==='live'?'Live':'Paused'}</span></td>`;
           case 'verticals':  return `<td><div style="display:flex;flex-wrap:wrap;gap:4px">${(a.verticals||[]).length?_advVerticalBadges(a.verticals):'<span style="color:var(--muted);font-family:var(--font-mono);font-size:10px">—</span>'}</div></td>`;
+          case 'fraudTools': return `<td><div style="display:flex;flex-wrap:wrap;gap:4px">${(a.fraudTools||[]).length?_advFraudToolBadges(a.fraudTools):'<span style="color:var(--muted);font-family:var(--font-mono);font-size:10px">—</span>'}</div></td>`;
           default:           return '<td></td>';
         }
       }).join('');
@@ -3832,6 +3915,7 @@
                   ['TO2 ID', `<span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text)">${esc(a.to2Id||'—')}</span>`],
                   ['GEO', `<span style="display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--text)">${esc(a.geo||'—')}${a.geo&&a.geo.length===2?countryFlagImg(a.geo,'20x15'):''}</span>`],
                   ['Verticals', `<div style="display:flex;flex-wrap:wrap;gap:4px">${(a.verticals||[]).length?_advVerticalBadges(a.verticals):'<span style="color:var(--muted);font-family:var(--font-mono);font-size:11px">—</span>'}</div>`],
+                  ['Fraud Tools', `<div style="display:flex;flex-wrap:wrap;gap:4px">${(a.fraudTools||[]).length?_advFraudToolBadges(a.fraudTools):'<span style="color:var(--muted);font-family:var(--font-mono);font-size:11px">—</span>'}</div>`],
                 ].map(([lbl,val])=>`
                   <div>
                     <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">${lbl}</div>
@@ -3949,6 +4033,16 @@
                     }).join('')}
                   </div>
                 </div>
+                <div style="grid-column:1/-1">
+                  <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">Fraud Tools</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:6px">
+                    ${_getAllFraudTools().map(v => {
+                      const active = (a.fraudTools||[]).includes(v.key);
+                      return `<button type="button" id="advFraud_${i}_${esc(v.key)}" onclick="advToggleFraudTool(${i},'${esc(v.key)}')"
+                        style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;border:1px solid ${active?v.border:'var(--border)'};background:${active?v.bg:'transparent'};color:${active?v.color:'var(--muted)'};cursor:pointer;transition:all 0.15s">${esc(v.key)}</button>`;
+                    }).join('')}
+                  </div>
+                </div>
               </div>
               <div style="display:flex;gap:14px;margin-top:14px;flex-wrap:wrap">
                 <div style="flex:1;min-width:180px">
@@ -4013,7 +4107,14 @@
 
   function _advVerticalBadges(verticals) {
     return (verticals || []).map(v => {
-      const def = _ADV_VERTICALS.find(x => x.key === v);
+      const def = _getAllVerticals().find(x => x.key === v);
+      if (!def) return `<span style="font-family:var(--font-mono);font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid var(--border);color:var(--muted)">${esc(v)}</span>`;
+      return `<span style="font-family:var(--font-mono);font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid ${def.border};background:${def.bg};color:${def.color}">${esc(v)}</span>`;
+    }).join('');
+  }
+  function _advFraudToolBadges(fraudTools) {
+    return (fraudTools || []).map(v => {
+      const def = _getAllFraudTools().find(x => x.key === v);
       if (!def) return `<span style="font-family:var(--font-mono);font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid var(--border);color:var(--muted)">${esc(v)}</span>`;
       return `<span style="font-family:var(--font-mono);font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid ${def.border};background:${def.bg};color:${def.color}">${esc(v)}</span>`;
     }).join('');
@@ -4024,16 +4125,29 @@
     if (!Array.isArray(advertisers[i].verticals)) advertisers[i].verticals = [];
     const verts = advertisers[i].verticals;
     const idx = verts.indexOf(v);
-    if (idx >= 0) verts.splice(idx, 1);
-    else verts.push(v);
-    // Update button appearance immediately
-    const def = _ADV_VERTICALS.find(x => x.key === v);
+    if (idx >= 0) verts.splice(idx, 1); else verts.push(v);
+    const def = _getAllVerticals().find(x => x.key === v);
     const btn = document.getElementById('advVert_' + i + '_' + v);
     if (btn && def) {
       const active = verts.includes(v);
-      btn.style.borderColor  = active ? def.border : 'var(--border)';
-      btn.style.background   = active ? def.bg     : 'transparent';
-      btn.style.color        = active ? def.color  : 'var(--muted)';
+      btn.style.borderColor = active ? def.border : 'var(--border)';
+      btn.style.background  = active ? def.bg     : 'transparent';
+      btn.style.color       = active ? def.color  : 'var(--muted)';
+    }
+  }
+  function advToggleFraudTool(i, v) {
+    if (!advertisers[i]) return;
+    if (!Array.isArray(advertisers[i].fraudTools)) advertisers[i].fraudTools = [];
+    const tools = advertisers[i].fraudTools;
+    const idx = tools.indexOf(v);
+    if (idx >= 0) tools.splice(idx, 1); else tools.push(v);
+    const def = _getAllFraudTools().find(x => x.key === v);
+    const btn = document.getElementById('advFraud_' + i + '_' + v);
+    if (btn && def) {
+      const active = tools.includes(v);
+      btn.style.borderColor = active ? def.border : 'var(--border)';
+      btn.style.background  = active ? def.bg     : 'transparent';
+      btn.style.color       = active ? def.color  : 'var(--muted)';
     }
   }
 
@@ -4073,9 +4187,10 @@
           type:       r['Type']         || 'Direct',
           status:     r['Status']       || 'live',
           campaigns:  (() => { try { return (JSON.parse(r['Campaigns'] || '[]')).map(c => typeof c === 'string' ? { name: c, to2Status: 'live', tfStatus: 'live', notes: '', url: '', iconUrl: '', big: false, ctv: false, inct: false } : { url: '', iconUrl: '', big: false, ctv: false, inct: false, ...c }); } catch { return []; } })(),
-          verticals:   (() => { try { return JSON.parse(r['Verticals'] || '[]'); } catch { return []; } })(),
+          verticals:   (() => { try { return JSON.parse(r['Verticals']   || '[]'); } catch { return []; } })(),
           websiteUrl:  r['WebsiteUrl']  || '',
           linkedinUrl: r['LinkedinUrl'] || '',
+          fraudTools:  (() => { try { return JSON.parse(r['FraudTools']  || '[]'); } catch { return []; } })(),
         }))));
         if (raw.length > advertisers.length) _saveAdvertisers();
       } catch { advertisers = []; }
@@ -4243,12 +4358,13 @@
     const tfId       = document.getElementById('advTfId').value.trim();
     const to2Id      = document.getElementById('advTo2Id').value.trim();
     if (!name) { showToast('⚠ Advertiser name is required', true); return; }
-    const verticals = [...(_newAdvVertSel || [])];
+    const verticals   = [...(_newAdvVertSel  || [])];
+    const fraudTools  = [...(_newAdvFraudSel || [])];
     const existing = advertisers.find(a => a.name.toLowerCase() === name.toLowerCase());
     if (existing) {
-      Object.assign(existing, { logoUrl, platform, geo, tfManager, to2Manager, tlTo2, status, tfId, to2Id, verticals });
+      Object.assign(existing, { logoUrl, platform, geo, tfManager, to2Manager, tlTo2, status, tfId, to2Id, verticals, fraudTools });
     } else {
-      advertisers.push({ name, logoUrl, platform, geo, tfManager, to2Manager, tlTo2, status, tfId, to2Id, verticals });
+      advertisers.push({ name, logoUrl, platform, geo, tfManager, to2Manager, tlTo2, status, tfId, to2Id, verticals, fraudTools });
     }
     _renderAdvTable();
     ['advName','advLogoUrl','advTfId','advTo2Id','advGeo'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
@@ -5494,9 +5610,10 @@
         type:        r['Type']        || 'Direct',
         status:      r['Status']      || 'live',
         campaigns:   (() => { try { return (JSON.parse(r['Campaigns'] || '[]')).map(c => typeof c === 'string' ? { name: c, to2Status: 'live', tfStatus: 'live', notes: '', url: '', iconUrl: '', big: false, ctv: false, inct: false } : { url: '', iconUrl: '', big: false, ctv: false, inct: false, ...c }); } catch { return []; } })(),
-        verticals:   (() => { try { return JSON.parse(r['Verticals'] || '[]'); } catch { return []; } })(),
+        verticals:   (() => { try { return JSON.parse(r['Verticals']  || '[]'); } catch { return []; } })(),
         websiteUrl:  r['WebsiteUrl']  || '',
         linkedinUrl: r['LinkedinUrl'] || '',
+        fraudTools:  (() => { try { return JSON.parse(r['FraudTools'] || '[]'); } catch { return []; } })(),
       }));
       advertisers = _applyAdvOrder(_dedupeAdvertisers(advMapped));
       if (advRaw.length > advertisers.length) _saveAdvertisers();
