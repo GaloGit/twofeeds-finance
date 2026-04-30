@@ -9267,8 +9267,30 @@
       <td colspan="3"></td>
     </tr>`;
 
-    // Charts
-    setTimeout(() => { _renderRevChart(); _renderRevMgrChart('tf'); _renderRevMgrChart('to2'); }, 50);
+    // Charts — ensure advertisers are loaded before drawing manager charts
+    setTimeout(async () => {
+      _renderRevChart();
+      if (!advertisers.length) {
+        try {
+          const res  = await fetch(`${FINANCE_API}?action=getAdvertisers`);
+          const json = await res.json();
+          const raw  = json.data || [];
+          if (raw.length) advertisers = _applyAdvOrder(_dedupeAdvertisers(raw.map(r => ({
+            name: r['Name'] || '', logoUrl: r['LogoUrl'] || '', tfManager: r['TF Manager'] || '',
+            to2Manager: r['TO2 Manager'] || '', tlTo2: r['TL TO2'] || '', tfId: r['TF ID'] || '',
+            to2Id: r['TO2 ID'] || '', geo: r['GEO'] || '', platform: r['Platform'] || 'Appsflyer',
+            type: r['Type'] || 'Direct', status: r['Status'] || 'live',
+            campaigns: (() => { try { return JSON.parse(r['Campaigns'] || '[]').map(c => typeof c === 'string' ? { name: c, url: '', iconUrl: '' } : c); } catch { return []; } })(),
+            verticals: (() => { try { return JSON.parse(r['Verticals'] || '[]'); } catch { return []; } })(),
+            websiteUrl: r['WebsiteUrl'] || '', linkedinUrl: r['LinkedinUrl'] || '',
+            fraudTools: (() => { try { return JSON.parse(r['FraudTools'] || '[]'); } catch { return []; } })(),
+            operatingSystems: (() => { try { return JSON.parse(r['OperatingSystems'] || '[]'); } catch { return []; } })(),
+          }))));
+        } catch {}
+      }
+      _renderRevMgrChart('tf');
+      _renderRevMgrChart('to2');
+    }, 50);
   }
 
   let _revChartInstance = null;
