@@ -3942,7 +3942,7 @@
                 <div style="grid-column:1/-1">
                   <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">Verticals</div>
                   <div style="display:flex;flex-wrap:wrap;gap:6px">
-                    ${_ADV_VERTICALS.map(v => {
+                    ${_getAllVerticals().map(v => {
                       const active = (a.verticals||[]).includes(v.key);
                       return `<button type="button" id="advVert_${i}_${esc(v.key)}" onclick="advToggleVertical(${i},'${esc(v.key)}')"
                         style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;border:1px solid ${active?v.border:'var(--border)'};background:${active?v.bg:'transparent'};color:${active?v.color:'var(--muted)'};cursor:pointer;transition:all 0.15s">${esc(v.key)}</button>`;
@@ -3970,7 +3970,7 @@
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Campaigns</div>
                 <div id="advCampList_${i}">${_advCampaignsHtml(a.campaigns||[],i)}</div>
                 <div style="display:flex;gap:8px;margin-top:10px">
-                  <input id="advCampInput_${i}" class="editable" placeholder="Campaign name…" onkeydown="if(event.key==='Enter')advAddCampaign(${i})" style="flex:1;font-family:var(--font-mono);font-size:11px"/>
+                  <input id="advCampInput_${i}" placeholder="Campaign name…" onkeydown="if(event.key==='Enter')advAddCampaign(${i})" style="flex:1;min-width:0;font-family:var(--font-mono);font-size:11px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 10px;color:var(--text);outline:none;transition:border-color 0.2s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
                   <button onclick="advAddCampaign(${i})" style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:5px 14px;border-radius:6px;border:1px solid var(--border);background:var(--surface3);color:var(--text);cursor:pointer">+ Add</button>
                 </div>
               </div>
