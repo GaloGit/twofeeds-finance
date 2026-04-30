@@ -1921,11 +1921,27 @@
         </div>
       </div>
 
-      <!-- Bar chart -->
+      <!-- Bar chart: by advertiser -->
       <div id="revChartWrap" style="display:none;margin-top:18px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
         <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Revenue by Advertiser</div>
         <div id="revChartBox" style="position:relative;width:100%">
           <canvas id="revChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Bar chart: by TF Manager -->
+      <div id="revChartTfWrap" style="display:none;margin-top:14px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
+        <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Revenue by TF Manager</div>
+        <div id="revChartTfBox" style="position:relative;width:100%">
+          <canvas id="revChartTf"></canvas>
+        </div>
+      </div>
+
+      <!-- Bar chart: by TO2 MGR -->
+      <div id="revChartTo2Wrap" style="display:none;margin-top:14px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
+        <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Revenue by TO2 MGR</div>
+        <div id="revChartTo2Box" style="position:relative;width:100%">
+          <canvas id="revChartTo2"></canvas>
         </div>
       </div>
 
@@ -9256,8 +9272,8 @@
       <td colspan="3"></td>
     </tr>`;
 
-    // Chart
-    setTimeout(() => _renderRevChart(), 50);
+    // Charts
+    setTimeout(() => { _renderRevChart(); _renderRevMgrChart('tf'); _renderRevMgrChart('to2'); }, 50);
   }
 
   let _revChartInstance = null;
@@ -9320,6 +9336,67 @@
             grid: { display: false },
             ticks: { color: tickColor, font: { family: "'Space Mono', monospace", size: 8 } },
           },
+        },
+      },
+    });
+  }
+
+  const _revMgrChartInstances = {};
+  function _renderRevMgrChart(type) {
+    const wrapId  = type === 'tf' ? 'revChartTfWrap'  : 'revChartTo2Wrap';
+    const boxId   = type === 'tf' ? 'revChartTfBox'   : 'revChartTo2Box';
+    const canvasId = type === 'tf' ? 'revChartTf'     : 'revChartTo2';
+    const field    = type === 'tf' ? 'tfManager'       : 'to2Manager';
+
+    const wrap   = document.getElementById(wrapId);
+    const box    = document.getElementById(boxId);
+    const canvas = document.getElementById(canvasId);
+    if (!wrap || !box || !canvas) return;
+
+    // Group _revData by manager
+    const grouped = {};
+    _revData.forEach(r => {
+      const adv = _findAdv(r.name);
+      const mgr = (adv && adv[field]) ? adv[field].trim() : '—';
+      grouped[mgr] = (grouped[mgr] || 0) + (r.amount || 0);
+    });
+
+    const entries = Object.entries(grouped).sort(([, a], [, b]) => b - a);
+    if (!entries.length) { wrap.style.display = 'none'; return; }
+
+    const labels  = entries.map(([k]) => k);
+    const amounts = entries.map(([, v]) => v);
+    const accent  = type === 'tf' ? 'rgba(99,102,241,0.75)' : 'rgba(56,189,248,0.75)';
+    const accentB = type === 'tf' ? 'rgba(99,102,241,1)'    : 'rgba(56,189,248,1)';
+
+    const barH = Math.max(60, entries.length * 22);
+    box.style.height = barH + 'px';
+    wrap.style.display = 'block';
+
+    if (_revMgrChartInstances[type]) { _revMgrChartInstances[type].destroy(); delete _revMgrChartInstances[type]; }
+
+    const isDark    = !document.body.classList.contains('light-mode');
+    const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+    const tickColor = isDark ? '#7b6ea8' : '#6b5fa8';
+    const fmtTick   = v => '$' + (v >= 1000 ? (v/1000).toFixed(v%1000===0?0:1)+'k' : v.toLocaleString());
+
+    _revMgrChartInstances[type] = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{ data: amounts, backgroundColor: accent, borderColor: accentB, borderWidth: 0, borderRadius: 4, barThickness: 12 }],
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => ' $' + Number(ctx.raw).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) } },
+        },
+        scales: {
+          x: { grid: { color: gridColor }, ticks: { color: tickColor, font: { family: "'Space Mono', monospace", size: 9 }, callback: fmtTick } },
+          y: { grid: { display: false },   ticks: { color: tickColor, font: { family: "'Space Mono', monospace", size: 9 } } },
         },
       },
     });
@@ -9463,8 +9540,8 @@
     localStorage.setItem('tf_rev_data_by_period', JSON.stringify(_revDataByPeriod));
     localStorage.removeItem('tf_rev_lastFetch_' + pk);
     if (_revChartInstance) { _revChartInstance.destroy(); _revChartInstance = null; }
-    const wrap = document.getElementById('revChartWrap');
-    if (wrap) wrap.style.display = 'none';
+    ['tf','to2'].forEach(t => { if (_revMgrChartInstances[t]) { _revMgrChartInstances[t].destroy(); delete _revMgrChartInstances[t]; } });
+    ['revChartWrap','revChartTfWrap','revChartTo2Wrap'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
     renderRevSummary();
   }
 
