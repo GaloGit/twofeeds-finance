@@ -4958,10 +4958,10 @@
         if (c.refreshInterval)      appConfig.refreshInterval      = parseInt(c.refreshInterval) || 60;
         if (c.sessionTimeout)       appConfig.sessionTimeout       = parseInt(c.sessionTimeout)  || 0;
         if (c.extractionInstructions !== undefined) appConfig.extractionInstructions = c.extractionInstructions || '';
-        if (c.revSheetUrl !== undefined) appConfig.revSheetUrl = c.revSheetUrl || '';
-        if (c.revAdvCol   !== undefined) appConfig.revAdvCol   = c.revAdvCol   || '';
-        if (c.revAmtCol   !== undefined) appConfig.revAmtCol   = c.revAmtCol   || '';
-        if (c.revCostCol  !== undefined) appConfig.revCostCol  = c.revCostCol  || '';
+        if (c.revSheetUrls !== undefined) { try { appConfig.revSheetUrls = JSON.parse(c.revSheetUrls || '{}'); } catch { appConfig.revSheetUrls = {}; } }
+        if (c.revAdvCol    !== undefined) appConfig.revAdvCol  = c.revAdvCol   || '';
+        if (c.revAmtCol    !== undefined) appConfig.revAmtCol  = c.revAmtCol   || '';
+        if (c.revCostCol   !== undefined) appConfig.revCostCol = c.revCostCol  || '';
         secondsLeft = appConfig.refreshInterval;
       }
     } catch {}
@@ -8400,7 +8400,7 @@
     }
 
     const revFromInput   = inputEl ? (parseFloat(inputEl.value) || 0) : 0;
-    const revFromSummary = _revData.reduce((s, r) => s + (r.amount || 0), 0);
+    const revFromSummary = (_revDataByPeriod[pk] || []).reduce((s, r) => s + (r.amount || 0), 0);
     const revenue = revFromInput > 0 ? revFromInput : revFromSummary;
     // Update placeholder to show the Rev Summary total when no manual value is set
     if (inputEl && revFromSummary > 0 && revFromInput === 0) {
@@ -9100,7 +9100,9 @@
 
   // ── REV SUMMARY ──
 
-  let _revData = [];
+  let _revData = [];            // snapshot for the current period (set at render time)
+  let _revDataByPeriod = {};   // { '2026-05': [...] } — persisted per period
+  let _revSheetUrls = {};      // { '2026-05': 'https://...' } — one URL per period
   let _revenueByPeriod = {}; // { '2026-01': 50000, ... } — loaded from Revenue sheet
   let _commissions = [];    // [{ name, percentage, base }] — admin-only, per-period rules
   let _lastCommissionPeriod = null;
@@ -9108,11 +9110,18 @@
   let _ilsRate = parseFloat(localStorage.getItem('tf_ils_rate')) || 3.7;
 
   (function _revLoad() {
-    try { _revData = JSON.parse(localStorage.getItem('tf_rev_summary') || '[]'); } catch { _revData = []; }
+    try { _revDataByPeriod = JSON.parse(localStorage.getItem('tf_rev_data_by_period') || '{}'); } catch { _revDataByPeriod = {}; }
+    try { _revSheetUrls    = JSON.parse(localStorage.getItem('tf_rev_sheet_urls')     || '{}'); } catch { _revSheetUrls = {}; }
+    // Migrate old single-period data if present
+    const old = localStorage.getItem('tf_rev_summary');
+    if (old && !Object.keys(_revDataByPeriod).length) {
+      try { _revDataByPeriod['legacy'] = JSON.parse(old); } catch {}
+    }
   })();
 
   function _revSave() {
-    localStorage.setItem('tf_rev_summary', JSON.stringify(_revData));
+    _revDataByPeriod[periodKey()] = _revData;
+    localStorage.setItem('tf_rev_data_by_period', JSON.stringify(_revDataByPeriod));
   }
 
   function _findAdv(name) {
@@ -9150,16 +9159,20 @@
   }
 
   function renderRevSummary() {
-    // Restore saved URL and column names into inputs (prefer server config, fall back to localStorage)
-    const savedUrl     = appConfig.revSheetUrl || localStorage.getItem('tf_rev_sheetUrl') || '';
-    const savedAdvCol  = appConfig.revAdvCol   || localStorage.getItem('tf_rev_advCol')   || '';
-    const savedAmtCol  = appConfig.revAmtCol   || localStorage.getItem('tf_rev_amtCol')   || '';
-    const savedCostCol = appConfig.revCostCol  || localStorage.getItem('tf_rev_costCol')  || '';
+    // Load current-period data snapshot
+    const pk = periodKey();
+    _revData = _revDataByPeriod[pk] || [];
+
+    // URL is per-period; column names are global
+    const savedUrl     = _revSheetUrls[pk] || (appConfig.revSheetUrls || {})[pk] || '';
+    const savedAdvCol  = appConfig.revAdvCol  || localStorage.getItem('tf_rev_advCol')  || '';
+    const savedAmtCol  = appConfig.revAmtCol  || localStorage.getItem('tf_rev_amtCol')  || '';
+    const savedCostCol = appConfig.revCostCol || localStorage.getItem('tf_rev_costCol') || '';
     const urlInp  = document.getElementById('revSheetUrl');
     const advInp  = document.getElementById('revAdvCol');
     const amtInp  = document.getElementById('revAmtCol');
     const costInp = document.getElementById('revCostCol');
-    if (urlInp  && !urlInp.value)  urlInp.value  = savedUrl;
+    if (urlInp)  urlInp.value  = savedUrl;      // always update — period may have changed
     if (advInp  && !advInp.value)  advInp.value  = savedAdvCol;
     if (amtInp  && !amtInp.value)  amtInp.value  = savedAmtCol;
     if (costInp && !costInp.value) costInp.value = savedCostCol;
@@ -9179,8 +9192,8 @@
       if (configIcon) configIcon.style.transform = shouldExpand ? 'rotate(180deg)' : '';
     }
 
-    // Last fetch label (shown in the compact header)
-    const lastFetch = localStorage.getItem('tf_rev_lastFetch');
+    // Last fetch label — period-specific
+    const lastFetch = localStorage.getItem('tf_rev_lastFetch_' + pk);
     const lbl = document.getElementById('revLastFetchLabel');
     if (lbl) {
       if (lastFetch) {
@@ -9331,20 +9344,22 @@
     const amtCol  = (amtInp?.value  || '').trim() || 'Revenue';
     const costCol = (costInp?.value || '').trim();
 
-    localStorage.setItem('tf_rev_sheetUrl', url);
-    localStorage.setItem('tf_rev_advCol',   advCol);
-    localStorage.setItem('tf_rev_amtCol',   amtCol);
-    localStorage.setItem('tf_rev_costCol',  costCol);
+    const curPk = periodKey();
+    _revSheetUrls[curPk] = url;
+    localStorage.setItem('tf_rev_sheet_urls', JSON.stringify(_revSheetUrls));
+    localStorage.setItem('tf_rev_advCol',  advCol);
+    localStorage.setItem('tf_rev_amtCol',  amtCol);
+    localStorage.setItem('tf_rev_costCol', costCol);
 
-    // Also persist to server so config is available on all browsers/devices
-    appConfig.revSheetUrl = url;
-    appConfig.revAdvCol   = advCol;
-    appConfig.revAmtCol   = amtCol;
-    appConfig.revCostCol  = costCol;
+    // Persist to server (column names global, URLs per-period as JSON)
+    appConfig.revSheetUrls = { ...(appConfig.revSheetUrls || {}), [curPk]: url };
+    appConfig.revAdvCol    = advCol;
+    appConfig.revAmtCol    = amtCol;
+    appConfig.revCostCol   = costCol;
     fetch(FINANCE_API, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'saveConfig', config: { ...appConfig, revSheetUrl: url, revAdvCol: advCol, revAmtCol: amtCol, revCostCol: costCol } })
+      body: JSON.stringify({ action: 'saveConfig', config: { ...appConfig, revSheetUrls: JSON.stringify(appConfig.revSheetUrls), revAdvCol: advCol, revAmtCol: amtCol, revCostCol: costCol } })
     }).catch(() => {});
 
     const btn = document.getElementById('revFetchBtn');
@@ -9408,7 +9423,7 @@
         }));
 
       _revSave();
-      localStorage.setItem('tf_rev_lastFetch', new Date().toISOString());
+      localStorage.setItem('tf_rev_lastFetch_' + curPk, new Date().toISOString());
       renderRevSummary();
       showToast(`✓ Fetched ${_revData.length} advertisers`);
 
@@ -9442,9 +9457,11 @@
   }
 
   function revClear() {
+    const pk = periodKey();
     _revData = [];
-    _revSave();
-    localStorage.removeItem('tf_rev_lastFetch');
+    _revDataByPeriod[pk] = [];
+    localStorage.setItem('tf_rev_data_by_period', JSON.stringify(_revDataByPeriod));
+    localStorage.removeItem('tf_rev_lastFetch_' + pk);
     if (_revChartInstance) { _revChartInstance.destroy(); _revChartInstance = null; }
     const wrap = document.getElementById('revChartWrap');
     if (wrap) wrap.style.display = 'none';
