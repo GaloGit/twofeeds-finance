@@ -1909,6 +1909,8 @@
                   <th>ADV Name</th>
                   <th>Revenue</th>
                   <th>TO2 Cost</th>
+                  <th>YF MGR</th>
+                  <th>TO2 MGR</th>
                   <th>Status</th>
                 </tr>
               </thead>
@@ -9113,15 +9115,25 @@
     localStorage.setItem('tf_rev_summary', JSON.stringify(_revData));
   }
 
-  function _getAdvLogo(name, size = 28) {
-    if (!name || !advertisers || !advertisers.length) return '';
+  function _findAdv(name) {
+    if (!name || !advertisers || !advertisers.length) return null;
     const nl = name.trim().toLowerCase();
-    const adv = advertisers.find(a => a.name && a.name.trim().toLowerCase() === nl)
-             || advertisers.find(a => a.name && a.name.trim().toLowerCase().length >= 3 &&
-                  (nl.includes(a.name.trim().toLowerCase()) || a.name.trim().toLowerCase().includes(nl)));
+    return advertisers.find(a => a.name && a.name.trim().toLowerCase() === nl)
+        || advertisers.find(a => a.name && a.name.trim().toLowerCase().length >= 3 &&
+             (nl.includes(a.name.trim().toLowerCase()) || a.name.trim().toLowerCase().includes(nl)))
+        || null;
+  }
+
+  function _getAdvLogo(name, size = 28) {
+    const adv = _findAdv(name);
     if (!adv || !adv.logoUrl) return '';
     const url = resolvePhotoUrl(adv.logoUrl) || adv.logoUrl;
     return `<img src="${esc(url)}" style="width:${size}px;height:${size}px;border-radius:6px;object-fit:contain;background:var(--surface3);flex-shrink:0" onerror="this.style.display='none'">`;
+  }
+
+  function _mgrCell(val) {
+    if (!val) return '<span style="color:var(--muted);opacity:0.35">—</span>';
+    return `<span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${esc(val)}</span>`;
   }
 
   // Parse a single CSV line respecting quoted fields
@@ -9207,14 +9219,17 @@
 
     const tbody = document.getElementById('revBody');
     tbody.innerHTML = _revData.map((r, i) => {
+      const adv     = _findAdv(r.name);
       const logoHtml = _getAdvLogo(r.name);
-      const fmtAmt = '$' + Number(r.amount).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+      const fmtAmt   = '$' + Number(r.amount).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
       return `<tr style="animation-delay:${i*0.03}s">
         <td class="row-num">${i + 1}</td>
         <td style="width:36px;padding:6px 8px">${logoHtml}</td>
         <td style="font-family:var(--font-mono);font-size:12px">${esc(r.name)}</td>
         <td style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--green)">${fmtAmt}</td>
         <td style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--amber)">${r.cost > 0 ? '$' + Number(r.cost).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) : '<span style="color:var(--muted);opacity:0.4">—</span>'}</td>
+        <td>${_mgrCell(adv?.tfManager)}</td>
+        <td>${_mgrCell(adv?.to2Manager)}</td>
         <td><span class="inv-status-badge ${r.status==='paid'?'paid':'waiting'}" onclick="revToggleStatus(${i})" style="cursor:pointer">${r.status==='paid'?'✓ Paid':'⏳ Waiting'}</span></td>
       </tr>`;
     }).join('');
@@ -9225,7 +9240,7 @@
       <td colspan="3" style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);padding:10px 12px;text-transform:uppercase;letter-spacing:0.08em">Total</td>
       <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--green);padding:10px 12px">${fmt(total)}</td>
       <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--amber);padding:10px 12px">${totalCost > 0 ? fmt(totalCost) : '—'}</td>
-      <td></td>
+      <td colspan="3"></td>
     </tr>`;
 
     // Chart
