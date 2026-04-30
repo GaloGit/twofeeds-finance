@@ -4930,6 +4930,9 @@
         if (c.refreshInterval)      appConfig.refreshInterval      = parseInt(c.refreshInterval) || 60;
         if (c.sessionTimeout)       appConfig.sessionTimeout       = parseInt(c.sessionTimeout)  || 0;
         if (c.extractionInstructions !== undefined) appConfig.extractionInstructions = c.extractionInstructions || '';
+        if (c.revSheetUrl !== undefined) appConfig.revSheetUrl = c.revSheetUrl || '';
+        if (c.revAdvCol   !== undefined) appConfig.revAdvCol   = c.revAdvCol   || '';
+        if (c.revAmtCol   !== undefined) appConfig.revAmtCol   = c.revAmtCol   || '';
         secondsLeft = appConfig.refreshInterval;
       }
     } catch {}
@@ -9092,10 +9095,10 @@
   }
 
   function renderRevSummary() {
-    // Restore saved URL and column names into inputs
-    const savedUrl     = localStorage.getItem('tf_rev_sheetUrl') || '';
-    const savedAdvCol  = localStorage.getItem('tf_rev_advCol')   || '';
-    const savedAmtCol  = localStorage.getItem('tf_rev_amtCol')   || '';
+    // Restore saved URL and column names into inputs (prefer server config, fall back to localStorage)
+    const savedUrl     = appConfig.revSheetUrl || localStorage.getItem('tf_rev_sheetUrl') || '';
+    const savedAdvCol  = appConfig.revAdvCol   || localStorage.getItem('tf_rev_advCol')   || '';
+    const savedAmtCol  = appConfig.revAmtCol   || localStorage.getItem('tf_rev_amtCol')   || '';
     const urlInp = document.getElementById('revSheetUrl');
     const advInp = document.getElementById('revAdvCol');
     const amtInp = document.getElementById('revAmtCol');
@@ -9187,6 +9190,16 @@
     localStorage.setItem('tf_rev_sheetUrl', url);
     localStorage.setItem('tf_rev_advCol',   advCol);
     localStorage.setItem('tf_rev_amtCol',   amtCol);
+
+    // Also persist to server so config is available on all browsers/devices
+    appConfig.revSheetUrl = url;
+    appConfig.revAdvCol   = advCol;
+    appConfig.revAmtCol   = amtCol;
+    fetch(FINANCE_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'saveConfig', config: { ...appConfig, revSheetUrl: url, revAdvCol: advCol, revAmtCol: amtCol } })
+    }).catch(() => {});
 
     const btn = document.getElementById('revFetchBtn');
     if (btn) { btn.disabled = true; btn.textContent = '⏳ Fetching…'; }
