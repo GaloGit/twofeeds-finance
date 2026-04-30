@@ -9241,8 +9241,8 @@
     const colors  = _revData.map(r => r.status === 'paid' ? 'rgba(34,197,94,0.75)' : 'rgba(245,158,11,0.75)');
     const borders = _revData.map(r => r.status === 'paid' ? 'rgba(34,197,94,1)' : 'rgba(245,158,11,1)');
 
-    // Dynamic height: 36px per bar, min 160px
-    const barH = Math.max(160, _revData.length * 36);
+    // Dynamic height: 22px per bar, min 120px
+    const barH = Math.max(120, _revData.length * 22);
     canvas.style.height = barH + 'px';
     canvas.height = barH;
 
@@ -9283,11 +9283,11 @@
         scales: {
           x: {
             grid: { color: gridColor },
-            ticks: { color: tickColor, font: { family: "'Space Mono', monospace", size: 10 }, callback: fmtTick },
+            ticks: { color: tickColor, font: { family: "'Space Mono', monospace", size: 9 }, callback: fmtTick },
           },
           y: {
             grid: { display: false },
-            ticks: { color: tickColor, font: { family: "'Space Mono', monospace", size: 10 } },
+            ticks: { color: tickColor, font: { family: "'Space Mono', monospace", size: 9 } },
           },
         },
       },
