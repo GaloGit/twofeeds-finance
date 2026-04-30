@@ -5128,8 +5128,21 @@
     document.getElementById('themeBtn').textContent = isLight ? '🌑' : '🌙';
     localStorage.setItem('tf_theme', isLight ? 'light' : 'dark');
     _applyLogoTheme(isLight);
-    _applyChartDefaults();
-    _destroyAllCharts();
+    if (typeof _applyChartDefaults === 'function') _applyChartDefaults();
+    if (typeof _destroyAllCharts  === 'function') _destroyAllCharts();
+    // Re-render charts on the currently visible tab
+    const activeTab = document.querySelector('.page.active');
+    if (activeTab) {
+      switch (activeTab.id) {
+        case 'tab-overview':    if (typeof renderOverview     === 'function') renderOverview();    break;
+        case 'tab-profit':      if (typeof renderProfitSummary=== 'function') renderProfitSummary(); break;
+        case 'tab-costsummary': if (typeof renderCostSummary  === 'function') renderCostSummary();  break;
+        case 'tab-mediabuy':    if (typeof renderMediaBuying  === 'function') renderMediaBuying();  break;
+        case 'tab-publishers':  if (typeof renderPublishers   === 'function') renderPublishers();   break;
+        case 'tab-pubview':     if (typeof initPubView        === 'function') initPubView();        break;
+        case 'tab-revsummary':  if (typeof renderRevSummary   === 'function') renderRevSummary();   break;
+      }
+    }
   }
 
   // Apply saved theme on load, falling back to system preference
@@ -5143,6 +5156,11 @@
       if (btn) btn.textContent = '🌑';
     }
     _applyLogoTheme(isLight);
+    // Chart defaults are defined in the second script block (after Chart.js loads).
+    // Re-apply after DOM is ready to ensure light-mode class is already set.
+    window.addEventListener('DOMContentLoaded', () => {
+      if (typeof _applyChartDefaults === 'function') _applyChartDefaults();
+    });
   })();
 
   function showCurtain() {
