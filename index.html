@@ -9238,9 +9238,11 @@
         if (!line.trim()) continue;
         const cols = _parseCSVLine(line);
         const name = (cols[advIdx] || '').replace(/^"|"$/g, '').trim();
+        if (!name) continue;
+        // Skip summary/total rows
+        if (/^(grand\s*)?total$/i.test(name)) continue;
         const raw  = (cols[amtIdx] || '0').replace(/^"|"$/g, '').trim();
         const amt  = parseFloat(raw.replace(/[$,\s]/g, '')) || 0;
-        if (!name) continue;
         grouped[name] = (grouped[name] || 0) + amt;
       }
 
