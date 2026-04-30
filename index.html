@@ -8370,7 +8370,15 @@
       }
     }
 
-    const revenue = inputEl ? (parseFloat(inputEl.value) || 0) : 0;
+    const revFromInput   = inputEl ? (parseFloat(inputEl.value) || 0) : 0;
+    const revFromSummary = _revData.reduce((s, r) => s + (r.amount || 0), 0);
+    const revenue = revFromInput > 0 ? revFromInput : revFromSummary;
+    // Update placeholder to show the Rev Summary total when no manual value is set
+    if (inputEl && revFromSummary > 0 && revFromInput === 0) {
+      inputEl.placeholder = revFromSummary.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) + ' (from Rev Summary)';
+    } else if (inputEl) {
+      inputEl.placeholder = '0.00';
+    }
 
     // Costs from cache (or fetch if missing)
     const pKey = 'pub_' + pk;
