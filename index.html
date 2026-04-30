@@ -8405,6 +8405,7 @@
     const docEl  = document.getElementById('cedit_doc_'  + i);
     const rcEl   = document.getElementById('cedit_rc_'   + i);
     const rsEl   = document.getElementById('cedit_rs_'   + i);
+    const rnEl   = document.getElementById('cedit_rn_'   + i);
     if (nameEl) _commissions[i].name           = nameEl.value;
     if (pctEl)  _commissions[i].percentage     = parseFloat(pctEl.value) || 0;
     if (baseEl) _commissions[i].base           = baseEl.value;
@@ -8413,6 +8414,7 @@
     if (docEl)  _commissions[i].docUrl         = docEl.value.trim();
     if (rcEl)   _commissions[i].realCommission = parseFloat(rcEl.value.replace(/[^0-9.]/g,'')) || 0;
     if (rsEl)   _commissions[i].realSalary     = parseFloat(rsEl.value.replace(/[^0-9.]/g,'')) || 0;
+    if (rnEl)   _commissions[i].realNotes      = rnEl.value.trim();
     // Close immediately — don't wait for save/fetch
     const editRow = document.getElementById('commEdit_' + i);
     if (editRow) editRow.style.display = 'none';
@@ -8621,6 +8623,11 @@
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Actual Total Salary (₪)</div>
                 <input id="cedit_rs_${i}" type="text" value="${(c.realSalary||0) > 0 ? (c.realSalary||0).toLocaleString() : ''}" placeholder="e.g. 34,000"
                   style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 8px;color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;text-align:right;box-sizing:border-box"/>
+              </div>
+              <div style="grid-column:1/-1">
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Notes</div>
+                <textarea id="cedit_rn_${i}" placeholder="e.g. Salary slip reference, adjustments…" rows="2"
+                  style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;resize:vertical;box-sizing:border-box;line-height:1.5">${esc(c.realNotes||'')}</textarea>
               </div>
             </div>
             <div style="display:flex;justify-content:space-between;align-items:center">
