@@ -1862,6 +1862,12 @@
               style="width:110px;font-family:var(--font-mono);font-size:11px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);outline:none"
               onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
           </div>
+          <div style="display:flex;align-items:center;gap:7px">
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">TO2 Cost column</span>
+            <input id="revCostCol" placeholder="TO2 Cost"
+              style="width:110px;font-family:var(--font-mono);font-size:11px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);outline:none"
+              onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+          </div>
           <span id="revLastFetchLabel" style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-left:auto"></span>
         </div>
         <div id="revSheetHint" style="margin-top:10px;font-family:var(--font-mono);font-size:10px;color:var(--muted);display:none">
@@ -1891,6 +1897,7 @@
                   <th>Logo</th>
                   <th>ADV Name</th>
                   <th>Revenue</th>
+                  <th>TO2 Cost</th>
                   <th>Status</th>
                 </tr>
               </thead>
@@ -4939,6 +4946,7 @@
         if (c.revSheetUrl !== undefined) appConfig.revSheetUrl = c.revSheetUrl || '';
         if (c.revAdvCol   !== undefined) appConfig.revAdvCol   = c.revAdvCol   || '';
         if (c.revAmtCol   !== undefined) appConfig.revAmtCol   = c.revAmtCol   || '';
+        if (c.revCostCol  !== undefined) appConfig.revCostCol  = c.revCostCol  || '';
         secondsLeft = appConfig.refreshInterval;
       }
     } catch {}
@@ -9121,12 +9129,15 @@
     const savedUrl     = appConfig.revSheetUrl || localStorage.getItem('tf_rev_sheetUrl') || '';
     const savedAdvCol  = appConfig.revAdvCol   || localStorage.getItem('tf_rev_advCol')   || '';
     const savedAmtCol  = appConfig.revAmtCol   || localStorage.getItem('tf_rev_amtCol')   || '';
-    const urlInp = document.getElementById('revSheetUrl');
-    const advInp = document.getElementById('revAdvCol');
-    const amtInp = document.getElementById('revAmtCol');
-    if (urlInp && !urlInp.value) urlInp.value = savedUrl;
-    if (advInp && !advInp.value) advInp.value = savedAdvCol;
-    if (amtInp && !amtInp.value) amtInp.value = savedAmtCol;
+    const savedCostCol = appConfig.revCostCol  || localStorage.getItem('tf_rev_costCol')  || '';
+    const urlInp  = document.getElementById('revSheetUrl');
+    const advInp  = document.getElementById('revAdvCol');
+    const amtInp  = document.getElementById('revAmtCol');
+    const costInp = document.getElementById('revCostCol');
+    if (urlInp  && !urlInp.value)  urlInp.value  = savedUrl;
+    if (advInp  && !advInp.value)  advInp.value  = savedAdvCol;
+    if (amtInp  && !amtInp.value)  amtInp.value  = savedAmtCol;
+    if (costInp && !costInp.value) costInp.value = savedCostCol;
 
     // Show hint if no URL saved yet
     const hint = document.getElementById('revSheetHint');
@@ -9184,14 +9195,17 @@
         <td style="width:36px;padding:6px 8px">${logoHtml}</td>
         <td style="font-family:var(--font-mono);font-size:12px">${esc(r.name)}</td>
         <td style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--green)">${fmtAmt}</td>
+        <td style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--amber)">${r.cost > 0 ? '$' + Number(r.cost).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) : '<span style="color:var(--muted);opacity:0.4">—</span>'}</td>
         <td><span class="inv-status-badge ${r.status==='paid'?'paid':'waiting'}" onclick="revToggleStatus(${i})" style="cursor:pointer">${r.status==='paid'?'✓ Paid':'⏳ Waiting'}</span></td>
       </tr>`;
     }).join('');
 
+    const totalCost = _revData.reduce((s, r) => s + (r.cost || 0), 0);
     const foot = document.getElementById('revFoot');
     foot.innerHTML = `<tr style="border-top:2px solid var(--border)">
       <td colspan="3" style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);padding:10px 12px;text-transform:uppercase;letter-spacing:0.08em">Total</td>
       <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--green);padding:10px 12px">${fmt(total)}</td>
+      <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--amber);padding:10px 12px">${totalCost > 0 ? fmt(totalCost) : '—'}</td>
       <td></td>
     </tr>`;
 
@@ -9277,21 +9291,25 @@
     url = url.replace(/\/pubhtml(\?|$)/, '/pub$1');
     if (!url.includes('output=csv')) url += (url.includes('?') ? '&' : '?') + 'output=csv';
     if (urlInp) urlInp.value = url; // show corrected URL in field
-    const advCol = (advInp?.value || '').trim() || 'Advertiser';
-    const amtCol = (amtInp?.value || '').trim() || 'Revenue';
+    const costInp = document.getElementById('revCostCol');
+    const advCol  = (advInp?.value  || '').trim() || 'Advertiser';
+    const amtCol  = (amtInp?.value  || '').trim() || 'Revenue';
+    const costCol = (costInp?.value || '').trim();
 
     localStorage.setItem('tf_rev_sheetUrl', url);
     localStorage.setItem('tf_rev_advCol',   advCol);
     localStorage.setItem('tf_rev_amtCol',   amtCol);
+    localStorage.setItem('tf_rev_costCol',  costCol);
 
     // Also persist to server so config is available on all browsers/devices
     appConfig.revSheetUrl = url;
     appConfig.revAdvCol   = advCol;
     appConfig.revAmtCol   = amtCol;
+    appConfig.revCostCol  = costCol;
     fetch(FINANCE_API, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'saveConfig', config: { ...appConfig, revSheetUrl: url, revAdvCol: advCol, revAmtCol: amtCol } })
+      body: JSON.stringify({ action: 'saveConfig', config: { ...appConfig, revSheetUrl: url, revAdvCol: advCol, revAmtCol: amtCol, revCostCol: costCol } })
     }).catch(() => {});
 
     const btn = document.getElementById('revFetchBtn');
@@ -9315,14 +9333,17 @@
         return idx;
       };
 
-      const advIdx = findCol(advCol);
-      const amtIdx = findCol(amtCol);
+      const advIdx  = findCol(advCol);
+      const amtIdx  = findCol(amtCol);
+      const costIdx = costCol ? findCol(costCol) : -1;
 
       if (advIdx === -1) throw new Error(`Column "${advCol}" not found. Headers: ${headers.join(', ')}`);
       if (amtIdx === -1) throw new Error(`Column "${amtCol}" not found. Headers: ${headers.join(', ')}`);
+      if (costCol && costIdx === -1) throw new Error(`Column "${costCol}" not found. Headers: ${headers.join(', ')}`);
 
-      // Group rows by advertiser, summing amounts
+      // Group rows by advertiser, summing amounts and costs
       const grouped = {};
+      const groupedCost = {};
       for (const line of lines.slice(1)) {
         if (!line.trim()) continue;
         const cols = _parseCSVLine(line);
@@ -9330,9 +9351,12 @@
         if (!name) continue;
         // Skip summary/total rows
         if (/^(grand\s*)?total$/i.test(name)) continue;
-        const raw  = (cols[amtIdx] || '0').replace(/^"|"$/g, '').trim();
-        const amt  = parseFloat(raw.replace(/[$,\s]/g, '')) || 0;
-        grouped[name] = (grouped[name] || 0) + amt;
+        const raw  = (cols[amtIdx]  || '0').replace(/^"|"$/g, '').trim();
+        const rawC = costIdx >= 0 ? (cols[costIdx] || '0').replace(/^"|"$/g, '').trim() : '0';
+        const amt  = parseFloat(raw.replace(/[$,\s]/g, ''))  || 0;
+        const cost = parseFloat(rawC.replace(/[$,\s]/g, '')) || 0;
+        grouped[name]     = (grouped[name]     || 0) + amt;
+        groupedCost[name] = (groupedCost[name] || 0) + cost;
       }
 
       // Preserve existing payment statuses
@@ -9344,6 +9368,7 @@
         .map(([name, amount]) => ({
           name,
           amount,
+          cost: groupedCost[name] || 0,
           status: statusMap[name.toLowerCase()] || 'waiting',
         }));
 
