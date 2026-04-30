@@ -2543,6 +2543,7 @@
     { key:'tlTo2',      label:'TL TO2'     },
     { key:'geo',        label:'GEO'        },
     { key:'status',     label:'Status'     },
+    { key:'verticals',  label:'Verticals'  },
   ];
 
   function _cmColState()       { return _getColState('tf_cm_cols',  _CM_COL_DEFS); }
@@ -3670,7 +3671,11 @@
     if (btn) btn.style.color = open ? 'var(--muted)' : 'var(--accent-light)';
   }
 
-  const _ADV_PLATFORMS = ['Appsflyer','Adjust','Singular','Kochava','Impact','Network','Multiple Platforms'];
+  const _ADV_PLATFORMS  = ['Appsflyer','Adjust','Singular','Kochava','Impact','Network','Multiple Platforms'];
+  const _ADV_VERTICALS  = [
+    { key: 'Crypto',  bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.45)', color: '#f59e0b'       },
+    { key: 'Finance', bg: 'rgba(34,197,94,0.13)',  border: 'rgba(34,197,94,0.40)',  color: 'var(--green)'  },
+  ];
   function _advPlatformStyle(p) {
     const map = {
       'Appsflyer':        'rgba(56,189,248,0.13)|#38bdf8|rgba(56,189,248,0.45)',
@@ -3719,6 +3724,7 @@
           case 'tlTo2':      return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(a.tlTo2||'—')}</td>`;
           case 'geo':        return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:5px">${esc(a.geo||'—')}${a.geo&&a.geo.length===2?countryFlagImg(a.geo,'20x15'):''}</span></td>`;
           case 'status':     return `<td><span style="${_siStatusSelectStyle(a.status)};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700">${(a.status||'live')==='live'?'Live':'Paused'}</span></td>`;
+          case 'verticals':  return `<td><div style="display:flex;flex-wrap:wrap;gap:4px">${(a.verticals||[]).length?_advVerticalBadges(a.verticals):'<span style="color:var(--muted);font-family:var(--font-mono);font-size:10px">—</span>'}</div></td>`;
           default:           return '<td></td>';
         }
       }).join('');
@@ -3749,6 +3755,7 @@
                   ['TF ID',  `<span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text)">${esc(a.tfId||'—')}</span>`],
                   ['TO2 ID', `<span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text)">${esc(a.to2Id||'—')}</span>`],
                   ['GEO', `<span style="display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--text)">${esc(a.geo||'—')}${a.geo&&a.geo.length===2?countryFlagImg(a.geo,'20x15'):''}</span>`],
+                  ['Verticals', `<div style="display:flex;flex-wrap:wrap;gap:4px">${(a.verticals||[]).length?_advVerticalBadges(a.verticals):'<span style="color:var(--muted);font-family:var(--font-mono);font-size:11px">—</span>'}</div>`],
                 ].map(([lbl,val])=>`
                   <div>
                     <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">${lbl}</div>
@@ -3851,6 +3858,16 @@
                     <span id="advGeoFlag_${i}">${a.geo&&a.geo.length===2?countryFlagImg(a.geo,'20x15'):''}</span>
                   </div>
                 </div>
+                <div style="grid-column:1/-1">
+                  <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">Verticals</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:6px">
+                    ${_ADV_VERTICALS.map(v => {
+                      const active = (a.verticals||[]).includes(v.key);
+                      return `<button type="button" id="advVert_${i}_${esc(v.key)}" onclick="advToggleVertical(${i},'${esc(v.key)}')"
+                        style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;border:1px solid ${active?v.border:'var(--border)'};background:${active?v.bg:'transparent'};color:${active?v.color:'var(--muted)'};cursor:pointer;transition:all 0.15s">${esc(v.key)}</button>`;
+                    }).join('')}
+                  </div>
+                </div>
               </div>
               <div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px">
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Campaigns</div>
@@ -3897,6 +3914,32 @@
     edit.style.display = isEditing ? 'none'  : 'block';
   }
 
+  function _advVerticalBadges(verticals) {
+    return (verticals || []).map(v => {
+      const def = _ADV_VERTICALS.find(x => x.key === v);
+      if (!def) return `<span style="font-family:var(--font-mono);font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid var(--border);color:var(--muted)">${esc(v)}</span>`;
+      return `<span style="font-family:var(--font-mono);font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid ${def.border};background:${def.bg};color:${def.color}">${esc(v)}</span>`;
+    }).join('');
+  }
+
+  function advToggleVertical(i, v) {
+    if (!advertisers[i]) return;
+    if (!Array.isArray(advertisers[i].verticals)) advertisers[i].verticals = [];
+    const verts = advertisers[i].verticals;
+    const idx = verts.indexOf(v);
+    if (idx >= 0) verts.splice(idx, 1);
+    else verts.push(v);
+    // Update button appearance immediately
+    const def = _ADV_VERTICALS.find(x => x.key === v);
+    const btn = document.getElementById('advVert_' + i + '_' + v);
+    if (btn && def) {
+      const active = verts.includes(v);
+      btn.style.borderColor  = active ? def.border : 'var(--border)';
+      btn.style.background   = active ? def.bg     : 'transparent';
+      btn.style.color        = active ? def.color  : 'var(--muted)';
+    }
+  }
+
   async function _saveAdvertisers() {
     if (!advertisers.length) return true;
     _saveAdvOrder();
@@ -3933,6 +3976,7 @@
           type:       r['Type']         || 'Direct',
           status:     r['Status']       || 'live',
           campaigns:  (() => { try { return (JSON.parse(r['Campaigns'] || '[]')).map(c => typeof c === 'string' ? { name: c, to2Status: 'live', tfStatus: 'live', notes: '', url: '', iconUrl: '', big: false, ctv: false, inct: false } : { url: '', iconUrl: '', big: false, ctv: false, inct: false, ...c }); } catch { return []; } })(),
+          verticals:  (() => { try { return JSON.parse(r['Verticals'] || '[]'); } catch { return []; } })(),
         }))));
         if (raw.length > advertisers.length) _saveAdvertisers();
       } catch { advertisers = []; }
