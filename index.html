@@ -4190,6 +4190,12 @@
     const isEditing = edit.style.display !== 'none';
     view.style.display = isEditing ? 'block' : 'none';
     edit.style.display = isEditing ? 'none'  : 'block';
+    // When entering edit mode, always refresh the campaign list from live data
+    // (the panel may have been rendered before campaigns were fetched)
+    if (!isEditing && advertisers[i]) {
+      const list = document.getElementById('advCampList_' + i);
+      if (list) list.innerHTML = _advCampaignsHtml(advertisers[i].campaigns || [], i);
+    }
   }
 
   function _advVerticalBadges(verticals) {
