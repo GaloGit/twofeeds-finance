@@ -531,7 +531,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.9.3</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.9.4</div>
   </div>
 </div>
 
@@ -604,7 +604,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.9.3</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.9.4</div>
   </div>
 </div>
 
@@ -751,7 +751,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.9.3</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.9.4</span>
           </div>
         </div>
       </div>
@@ -1634,6 +1634,11 @@
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">GEO</div>
               <input type="text" id="siGeo" placeholder="US" maxlength="2"
                 style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;text-transform:uppercase"/>
+            </div>
+            <div style="flex:0 0 90px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">VAT %</div>
+              <input type="number" id="siVatInput" placeholder="0" min="0" max="100" step="0.1"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
             </div>
             <button onclick="addSourcesInfoEntry()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.05em;white-space:nowrap">+ ADD</button>
           </div>
@@ -3376,6 +3381,10 @@
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TF ID</div>
                 <input id="siTfId_${i}" class="editable" value="${esc(s.tfId||'')}" placeholder="ID..." style="width:100%"/>
               </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">VAT %</div>
+                <input id="siVat_${i}" class="editable" type="number" min="0" max="100" step="0.1" value="${s.vat != null ? s.vat : ''}" placeholder="0" style="width:100%"/>
+              </div>
             </div>
             <!-- Contacts -->
             <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px">
@@ -3578,6 +3587,8 @@
     sourcesInfo[i].tfId         = (document.getElementById('siTfId_' + i)?.value || '').trim();
     sourcesInfo[i].linkedinUrl  = (document.getElementById('siLinkedin_' + i)?.value || '').trim();
     sourcesInfo[i].websiteUrl   = (document.getElementById('siWebsite_' + i)?.value || '').trim();
+    const vatVal = document.getElementById('siVat_' + i)?.value;
+    sourcesInfo[i].vat = vatVal !== '' && vatVal != null ? parseFloat(vatVal) : null;
     // Flush any pending new-contact row if it's visible (user opened it but didn't click ✓)
     const newConRow = document.getElementById('siNewConRow_' + i);
     if (newConRow && newConRow.style.display !== 'none') {
@@ -3642,10 +3653,12 @@
     const to2Manager = document.getElementById('siTo2Manager').value.trim();
     const contact    = document.getElementById('siContact').value.trim();
     const country    = document.getElementById('siGeo').value.trim().toUpperCase();
+    const vatRaw     = document.getElementById('siVatInput')?.value;
+    const vat        = vatRaw !== '' && vatRaw != null ? parseFloat(vatRaw) : null;
     if (!name) { showToast('⚠ Source name is required', true); return; }
     const existing = sourcesInfo.find(s => s.name.toLowerCase() === name.toLowerCase());
-    if (existing) { existing.logoUrl = logoUrl; existing.type = type; existing.status = status; existing.tfManager = tfManager; existing.to2Manager = to2Manager; existing.contact = contact; existing.country = country; existing.to2Id = ''; existing.externalId = ''; existing.tfId = ''; }
-    else { sourcesInfo.push({ name, type, status, logoUrl, tfManager, to2Manager, contact, country, to2Id: '', externalId: '', tfId: '', contacts: [] }); }
+    if (existing) { existing.logoUrl = logoUrl; existing.type = type; existing.status = status; existing.tfManager = tfManager; existing.to2Manager = to2Manager; existing.contact = contact; existing.country = country; existing.vat = vat; existing.to2Id = ''; existing.externalId = ''; existing.tfId = ''; }
+    else { sourcesInfo.push({ name, type, status, logoUrl, tfManager, to2Manager, contact, country, vat, to2Id: '', externalId: '', tfId: '', contacts: [] }); }
     _buildSourcesMap();
     _renderSiTable();
     document.getElementById('siName').value = '';
@@ -3656,6 +3669,7 @@
     document.getElementById('siTo2Manager').value = '';
     document.getElementById('siContact').value = '';
     document.getElementById('siGeo').value = '';
+    const siVatInp = document.getElementById('siVatInput'); if (siVatInp) siVatInp.value = '';
     // Collapse form
     const fb = document.getElementById('siFormBody');
     const fa = document.getElementById('siFormArrow');
