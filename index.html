@@ -5715,9 +5715,10 @@
     const pk = periodKey();
 
     // Fire ALL requests at once so nothing waits in the queue
-    const pubPromise = fetchPeriodData('getPublishers').catch(() => []);
-    const invPromise = fetchPeriodData('getInvoices').catch(() => []);
-    const mbPromise  = fetchPeriodData('getMediaBuying').catch(() => []);
+    const pubPromise    = fetchPeriodData('getPublishers').catch(() => []);
+    const invPromise    = fetchPeriodData('getInvoices').catch(() => []);
+    const mbPromise     = fetchPeriodData('getMediaBuying').catch(() => []);
+    const allInvPromise = fetch(`${FINANCE_API}?action=getInvoices`).then(r => r.json()).catch(() => ({ data: [] }));
     const revPromise  = fetch(`${FINANCE_API}?action=getRevenue`).then(r => r.json()).catch(() => ({ data: [] }));
     const commPromise = fetch(`${FINANCE_API}?action=getCommissions&period=${encodeURIComponent(pk)}`).then(r => r.json()).catch(() => ({ data: [] }));
     const cmPromise  = fetch(`${FINANCE_API}?action=getCampaignMgrs`).then(r => r.json()).catch(() => ({ data: [] }));
@@ -5806,8 +5807,8 @@
 
     // ── Phase 2: background data (already in-flight — no extra wait cost) ──
     try {
-      const [cmRes, siRes, evRes, mtgRes, tskRes, tktRes, advRes, revRes, commRes, revDataRes] = await Promise.all([
-        cmPromise, siPromise, evPromise, mtgPromise, tskPromise, tktPromise, advPromise, revPromise, commPromise, revDataPromise
+      const [cmRes, siRes, evRes, mtgRes, tskRes, tktRes, advRes, revRes, commRes, revDataRes, allInvRes] = await Promise.all([
+        cmPromise, siPromise, evPromise, mtgPromise, tskPromise, tktPromise, advPromise, revPromise, commPromise, revDataPromise, allInvPromise
       ]);
 
       // Campaign Managers
@@ -5906,6 +5907,25 @@
       renderTasks();
       renderTickets();
       _renderCmTable();
+
+      // Populate rawCache for ALL invoice periods so overdue invoices from past periods show in notifications
+      const _allInvByPeriod = {};
+      (allInvRes.data || []).forEach(r => {
+        const p = (r['Period'] || '').trim();
+        if (p) { if (!_allInvByPeriod[p]) _allInvByPeriod[p] = []; _allInvByPeriod[p].push(r); }
+      });
+      Object.entries(_allInvByPeriod).forEach(([p, rows]) => {
+        const cacheKey = 'inv_' + p;
+        if (_rawCache[cacheKey]) return; // already loaded by current-period fetch — don't overwrite
+        _rawCache[cacheKey] = rows.map((r, idx) => ({
+          id: idx, vendor: r['Vendor'] || '', invoiceNum: r['Invoice #'] || '',
+          date: _normalizeDate(r['Date']), dueDate: _normalizeDate(r['Due Date']),
+          amount: parseFloat(r['Amount']) || 0, vat: parseFloat(r['Vat']) || 0,
+          status: r['Status'] || 'ok', filename: r['Filename'] || '',
+          popUrl: r['PopUrl'] || '', popLabel: r['PopLabel'] || '',
+        }));
+      });
+
       _updateNotifBadge();
       if (document.querySelector('.page.active')?.id === 'tab-profit') renderProfitSummary();
     } catch { /* background data — tabs will fetch on demand if needed */ }
