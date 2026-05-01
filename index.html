@@ -9489,7 +9489,7 @@
     const accent  = type === 'tf' ? 'rgba(99,102,241,0.75)' : 'rgba(56,189,248,0.75)';
     const accentB = type === 'tf' ? 'rgba(99,102,241,1)'    : 'rgba(56,189,248,1)';
 
-    const barH = Math.max(60, entries.length * 22);
+    const barH = Math.max(60, entries.length * 44);
     box.style.height = barH + 'px';
     wrap.style.display = 'block';
 
@@ -9510,13 +9510,14 @@
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
+        layout: { padding: { left: 0 } },
         plugins: {
           legend: { display: false },
           tooltip: { callbacks: { label: ctx => ' $' + Number(ctx.raw).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) } },
         },
         scales: {
           x: { grid: { color: gridColor }, ticks: { color: tickColor, font: { family: "'Space Mono', monospace", size: 9 }, callback: fmtTick } },
-          y: { grid: { display: false },   ticks: { color: tickColor, font: { family: "'Space Mono', monospace", size: 9 } } },
+          y: { grid: { display: false }, ticks: { color: tickColor, font: { family: "'Space Mono', monospace", size: 9 }, crossAlign: 'far' }, afterFit(axis) { axis.width = 120; } },
         },
       },
     });
