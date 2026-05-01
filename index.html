@@ -527,7 +527,7 @@
   }
   @keyframes loadPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.75;transform:scale(0.93)} }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .chart-log-toggle { position:absolute;top:6px;right:6px;font-family:var(--font-mono);font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;border:1px solid var(--border);background:var(--surface3);color:var(--muted);cursor:pointer;letter-spacing:0.05em;z-index:10;transition:color 0.15s,border-color 0.15s; }
+  .chart-log-toggle { position:absolute;top:10px;right:16px;font-family:var(--font-mono);font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;border:1px solid var(--border);background:var(--surface3);color:var(--muted);cursor:pointer;letter-spacing:0.05em;z-index:10;transition:color 0.15s,border-color 0.15s; }
   .chart-log-toggle:hover { color:var(--accent-light);border-color:var(--accent); }
   </style>
 </head>
@@ -539,7 +539,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.0.7</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.0.8</div>
   </div>
 </div>
 
@@ -612,7 +612,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.0.7</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.0.8</div>
   </div>
 </div>
 
@@ -751,7 +751,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.0.7</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.0.8</span>
           </div>
         </div>
       </div>
@@ -1949,8 +1949,8 @@
         </div>
       </div>
 
-      <!-- Bar charts: TF Manager + TO2 MGR side by side -->
-      <div style="display:flex;gap:14px;margin-top:14px">
+      <!-- Bar charts: TF Manager + TO2 MGR stacked -->
+      <div style="display:flex;flex-direction:column;gap:14px;margin-top:14px">
         <div id="revChartTfWrap" style="display:none;flex:1;min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
           <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Revenue by TF Manager</div>
           <div id="revChartTfBox" style="position:relative;width:100%">
@@ -6100,9 +6100,11 @@
   function _injectLogToggle(canvasId, isLogDefault) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
-    const container = canvas.parentElement;
-    if (!container) return;
-    const old = container.querySelector('.chart-log-toggle');
+    const box = canvas.parentElement;
+    if (!box) return;
+    // Inject into the card (two levels up) so the button sits in the title zone
+    const card = box.parentElement || box;
+    const old = card.querySelector('.chart-log-toggle');
     if (old) old.remove();
     const btn = document.createElement('button');
     btn.className = 'chart-log-toggle';
@@ -6110,8 +6112,8 @@
     btn.textContent = isLogDefault ? '~ Lin' : '~ Log';
     btn.title = 'Toggle linear / logarithmic scale';
     btn.onclick = () => _toggleChartLog(canvasId, btn);
-    if (!container.style.position || container.style.position === 'static') container.style.position = 'relative';
-    container.appendChild(btn);
+    if (!card.style.position || card.style.position === 'static') card.style.position = 'relative';
+    card.appendChild(btn);
   }
 
   function _updateNotifBadge() {
