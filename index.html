@@ -521,6 +521,8 @@
   }
   @keyframes loadPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.75;transform:scale(0.93)} }
   @keyframes spin { to { transform: rotate(360deg); } }
+  .chart-log-toggle { position:absolute;top:6px;right:6px;font-family:var(--font-mono);font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;border:1px solid var(--border);background:var(--surface3);color:var(--muted);cursor:pointer;letter-spacing:0.05em;z-index:10;transition:color 0.15s,border-color 0.15s; }
+  .chart-log-toggle:hover { color:var(--accent-light);border-color:var(--accent); }
   </style>
 </head>
 <body>
@@ -6062,6 +6064,34 @@
     return notifs.sort((a, b) => a.days - b.days);
   }
 
+  function _toggleChartLog(canvasId, btnEl) {
+    const chart = Chart.getChart(canvasId);
+    if (!chart) return;
+    const isLog = btnEl.dataset.log === '1';
+    const newType = isLog ? 'linear' : 'logarithmic';
+    const valueAxis = chart.options.indexAxis === 'y' ? 'x' : 'y';
+    if (chart.options.scales[valueAxis]) chart.options.scales[valueAxis].type = newType;
+    btnEl.dataset.log = isLog ? '0' : '1';
+    btnEl.textContent = isLog ? '~ Log' : '~ Lin';
+    chart.update('none');
+  }
+  function _injectLogToggle(canvasId, isLogDefault) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const container = canvas.parentElement;
+    if (!container) return;
+    const old = container.querySelector('.chart-log-toggle');
+    if (old) old.remove();
+    const btn = document.createElement('button');
+    btn.className = 'chart-log-toggle';
+    btn.dataset.log = isLogDefault ? '1' : '0';
+    btn.textContent = isLogDefault ? '~ Lin' : '~ Log';
+    btn.title = 'Toggle linear / logarithmic scale';
+    btn.onclick = () => _toggleChartLog(canvasId, btn);
+    if (!container.style.position || container.style.position === 'static') container.style.position = 'relative';
+    container.appendChild(btn);
+  }
+
   function _updateNotifBadge() {
     const notifs = _computeNotifications();
     const badge  = document.getElementById('notifBadge');
@@ -8692,6 +8722,7 @@
         }
       }
     });
+    _injectLogToggle('profChart', false);
     _renderTrendCharts(labels, revenues, costs, profits);
   }
 
@@ -8725,6 +8756,7 @@
           scales: scaleOpts
         }
       });
+      _injectLogToggle(id, false);
     };
 
     single('trendRevChart',  '_trendRevChart',  mkDs('Revenue', revenues, 'rgba(34,197,94,1)',  true));
@@ -8747,6 +8779,7 @@
           scales: scaleOpts
         }
       });
+      _injectLogToggle('trendAllChart', false);
     }
 
     wrap.style.display = 'block';
@@ -8830,6 +8863,7 @@
           }
         }
       });
+      _injectLogToggle('commPersonChart', false);
     }
 
     // Summary cards — total across all periods with revenue
@@ -9470,6 +9504,7 @@
         },
         scales: {
           x: {
+            type: 'logarithmic',
             grid: { color: gridColor },
             ticks: { color: tickColor, font: { family: "'Space Mono', monospace", size: 8 }, callback: fmtTick },
           },
@@ -9480,6 +9515,7 @@
         },
       },
     });
+    _injectLogToggle('revChart', true);
   }
 
   const _revMgrChartInstances = {};
@@ -9541,6 +9577,7 @@
         },
       },
     });
+    _injectLogToggle(canvasId, true);
   }
 
   async function revFetchSheet() {
@@ -10252,7 +10289,7 @@
           }
         }
       }
-    }); });
+    }); _injectLogToggle('csChart', false); });
   }
 
   function renderMbChart(rows) {
@@ -10359,7 +10396,7 @@
           }
         }
       }
-    }); });
+    }); _injectLogToggle('mbChart', false); });
   }
 
   function renderInvChart(invoices) {
@@ -10445,7 +10482,7 @@
           }
         }
       }
-    }); }); // end Chart + requestAnimationFrame
+    }); _injectLogToggle('invChart', false); }); // end Chart + requestAnimationFrame
   }
 
   function renderPvChart(entries) {
@@ -10532,6 +10569,7 @@
         }
       }
     });
+    _injectLogToggle('pvChart', false);
   }
 
   function renderPubChart(publishers) {
@@ -10630,6 +10668,7 @@
         }
       }
     });
+    _injectLogToggle('pubChart', false);
   }
 
   let pubPlatformChartInstance = null;
@@ -10682,6 +10721,7 @@
         }
       }
     });
+    _injectLogToggle(canvasId, false);
   }
 
   function renderPubPlatformPieChart(publishers) {
@@ -10774,6 +10814,7 @@
         }
       }
     });
+    _injectLogToggle('pubPlatformChart', false);
   }
 
   function _updateSearchClear(id) {
