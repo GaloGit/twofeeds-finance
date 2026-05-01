@@ -9516,7 +9516,7 @@
           tooltip: { callbacks: { label: ctx => ' $' + Number(ctx.raw).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) } },
         },
         scales: {
-          x: { grid: { color: gridColor }, ticks: { color: tickColor, font: { family: "'Space Mono', monospace", size: 9 }, callback: fmtTick } },
+          x: { type: 'logarithmic', grid: { color: gridColor }, ticks: { color: tickColor, font: { family: "'Space Mono', monospace", size: 9 }, callback: fmtTick } },
           y: { grid: { display: false }, ticks: { color: tickColor, font: { family: "'Space Mono', monospace", size: 9 }, crossAlign: 'far' }, afterFit(axis) { axis.width = 120; } },
         },
       },
