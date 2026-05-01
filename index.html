@@ -539,7 +539,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.0.13</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.0.14</div>
   </div>
 </div>
 
@@ -612,7 +612,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.0.13</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.0.14</div>
   </div>
 </div>
 
@@ -751,7 +751,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.0.13</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.0.14</span>
           </div>
         </div>
       </div>
@@ -1898,7 +1898,7 @@
                 style="width:100%;font-family:var(--font-mono);font-size:11px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 32px 7px 12px;color:var(--text);outline:none;transition:border-color 0.2s"
                 onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
                 onkeydown="if(event.key==='Enter')revFetchSheet()" oninput="document.getElementById('revUrlClear').style.display=this.value?'flex':'none'"/>
-              <button id="revUrlClear" onclick="document.getElementById('revSheetUrl').value='';this.style.display='none';document.getElementById('revSheetUrl').focus();"
+              <button id="revUrlClear" onclick="revClearUrl()"
                 style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px;line-height:1;padding:2px 4px;border-radius:4px"
                 onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'" title="Clear URL">✕</button>
             </div>
@@ -9777,6 +9777,19 @@
     } finally {
       if (btn) { btn.disabled = false; btn.textContent = '↻ Fetch'; }
     }
+  }
+
+  function revClearUrl() {
+    const pk = periodKey();
+    const inp = document.getElementById('revSheetUrl');
+    if (inp) inp.value = '';
+    const btn = document.getElementById('revUrlClear');
+    if (btn) btn.style.display = 'none';
+    // Remove from all persistence layers
+    _revSheetUrls[pk] = '';
+    localStorage.removeItem(_revUrlKey(pk));
+    if (appConfig.revSheetUrls) { delete appConfig.revSheetUrls[pk]; }
+    fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveConfig', config: { ...appConfig, revSheetUrls: JSON.stringify(appConfig.revSheetUrls || {}) } }) }).catch(() => {});
   }
 
   function toggleRevConfig() {
