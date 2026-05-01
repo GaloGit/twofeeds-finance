@@ -536,7 +536,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.9.9</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.10.0</div>
   </div>
 </div>
 
@@ -609,7 +609,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.9.9</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.10.0</div>
   </div>
 </div>
 
@@ -756,7 +756,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.9.9</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.10.0</span>
           </div>
         </div>
       </div>
@@ -5704,17 +5704,6 @@
       init();
       _configReady.then(() => {
         loadSettingsFromSheet().then(() => { applyRoleUI(); startSessionTimeout(); dismissCurtain(); });
-        // If Rev Summary tab is already open with no data, auto-fetch now that config (URL) is loaded
-        const pk = periodKey();
-        if (document.querySelector('.page.active')?.id === 'tab-revsummary' && !_revData.length) {
-          const url = (appConfig.revSheetUrls || {})[pk] || '';
-          if (url && !_revAutoFetched.has(pk)) {
-            _revAutoFetched.add(pk);
-            const inp = document.getElementById('revSheetUrl');
-            if (inp) inp.value = url;
-            revFetchSheet();
-          }
-        }
       });
     }
   })();
@@ -5736,7 +5725,8 @@
     const pubPromise = fetchPeriodData('getPublishers').catch(() => []);
     const invPromise = fetchPeriodData('getInvoices').catch(() => []);
     const mbPromise  = fetchPeriodData('getMediaBuying').catch(() => []);
-    const revPromise  = fetch(`${FINANCE_API}?action=getRevenue`).then(r => r.json()).catch(() => ({ data: [] }));
+    const revPromise     = fetch(`${FINANCE_API}?action=getRevenue`).then(r => r.json()).catch(() => ({ data: [] }));
+    const revDataPromise = fetch(`${FINANCE_API}?action=getRevData&period=${encodeURIComponent(pk)}`).then(r => r.json()).catch(() => ({ data: [] }));
     const commPromise = fetch(`${FINANCE_API}?action=getCommissions&period=${encodeURIComponent(pk)}`).then(r => r.json()).catch(() => ({ data: [] }));
     const cmPromise  = fetch(`${FINANCE_API}?action=getCampaignMgrs`).then(r => r.json()).catch(() => ({ data: [] }));
     const siPromise  = fetch(`${FINANCE_API}?action=getSourcesInfo`).then(r => r.json()).catch(() => ({ data: [] }));
@@ -5823,8 +5813,9 @@
 
     // ── Phase 2: background data (already in-flight — no extra wait cost) ──
     try {
-      const [cmRes, siRes, evRes, mtgRes, tskRes, tktRes, advRes, revRes, commRes] = await Promise.all([
-        cmPromise, siPromise, evPromise, mtgPromise, tskPromise, tktPromise, advPromise, revPromise, commPromise
+      const [cmRes, siRes, evRes, mtgRes, tskRes, tktRes, advRes, revRes, commRes, revDataRes] = await Promise.all([
+        cmPromise, siPromise, evPromise, mtgPromise, tskPromise, tktPromise, advPromise, revPromise, commPromise,
+        revDataPromise
       ]);
 
       // Campaign Managers
@@ -5885,6 +5876,20 @@
       // Revenue
       (revRes.data || []).forEach(r => { if (r.period) _revenueByPeriod[r.period] = r.amount || 0; });
       if (revRes.lastModified) { _tabMeta.prf = { ts: revRes.lastModified, by: revRes.lastModifiedBy || '' }; _renderLastUpdated('prf'); }
+      // Per-advertiser revenue rows — load from sheet, fall back to localStorage
+      const _sheetRevRows = revDataRes.data || [];
+      if (_sheetRevRows.length) {
+        _revData = _sheetRevRows.map(r => ({
+          name:       r.advertiser,
+          amount:     r.amount,
+          cost:       r.cost || 0,
+          status:     r.status || 'waiting',
+          tfManager:  '',
+          to2Manager: '',
+        }));
+        _revDataByPeriod[pk] = _revData;
+        _revSave();
+      }
       // Commissions (period-aware — already fetched for startup period)
       _commissions = (commRes.data || []);
       _lastCommissionPeriod = pk;
@@ -9253,6 +9258,19 @@
   function _revLoadPeriod(pk) { try { return JSON.parse(localStorage.getItem(_revDataKey(pk)) || 'null') || []; } catch { return []; } }
   function _revLoadUrl(pk)    { return localStorage.getItem(_revUrlKey(pk)) || ''; }
 
+  function _saveRevDataToSheet() {
+    const pk = periodKey();
+    fetch(FINANCE_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'saveRevData',
+        period: pk,
+        rows: _revData.map(r => ({ advertiser: r.name, amount: r.amount, cost: r.cost || 0, status: r.status || 'waiting' }))
+      })
+    }).catch(() => {});
+  }
+
   (function _revLoad() {
     // Pre-load current period immediately so data is ready before tab is clicked
     const pk = periodKey();
@@ -9670,6 +9688,7 @@
         });
 
       _revSave();
+      _saveRevDataToSheet();
       localStorage.setItem('tf_rev_lastFetch_' + curPk, new Date().toISOString());
       renderRevSummary();
       showToast(`✓ Fetched ${_revData.length} advertisers`);
@@ -9694,12 +9713,14 @@
     if (!_revData[i]) return;
     _revData[i].status = _revData[i].status === 'paid' ? 'waiting' : 'paid';
     _revSave();
+    _saveRevDataToSheet();
     renderRevSummary();
   }
 
   function revMarkAll(status) {
     _revData.forEach(r => r.status = status);
     _revSave();
+    _saveRevDataToSheet();
     renderRevSummary();
   }
 
@@ -9707,6 +9728,7 @@
     const pk = periodKey();
     _revData = [];
     _revSave();
+    _saveRevDataToSheet();
     localStorage.removeItem('tf_rev_lastFetch_' + pk);
     if (_revChartInstance) { _revChartInstance.destroy(); _revChartInstance = null; }
     ['tf','to2'].forEach(t => { if (_revMgrChartInstances[t]) { _revMgrChartInstances[t].destroy(); delete _revMgrChartInstances[t]; } });
