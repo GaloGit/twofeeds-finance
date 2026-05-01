@@ -7039,14 +7039,22 @@
       (canEdit ? `<tr class="add-row"><td colspan="11"><button class="add-btn" onclick="addPubRow()">+ Add Publisher Manually</button></td></tr>` : '');
 
     // ── Pinned total row in tfoot ──
+    const _pubTfootAmt = filtered.reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
+    const _pubTfootVat = filtered.reduce((s,p) => { const vat = getSourceVat(p.name); return s + (vat != null && p.amount ? p.amount * vat / 100 : 0); }, 0);
+    const _pubTfootIncl = _pubTfootAmt + _pubTfootVat;
     const pubTfoot = document.getElementById('publisherTfoot');
     if (pubTfoot) pubTfoot.innerHTML = `
       <tr>
-        <td colspan="4" style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.08em;padding:12px 18px;text-transform:uppercase">Total</td>
-        <td class="mono text-green" style="font-size:15px;font-weight:700;white-space:nowrap;padding:12px 18px">${fmt(filtered.reduce((s,p)=>s+(parseFloat(p.amount)||0),0))}</td>
-        <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--amber);white-space:nowrap;padding:12px 18px">${(() => { const t = filtered.reduce((s,p) => { const vat = getSourceVat(p.name); return s + (vat != null && p.amount ? p.amount * vat / 100 : 0); }, 0); return t > 0 ? fmt(t) : '<span style="color:var(--muted);opacity:0.4">—</span>'; })()}</td>
+        <td colspan="4" style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.08em;padding:12px 18px 4px;text-transform:uppercase">Total</td>
+        <td class="mono text-green" style="font-size:15px;font-weight:700;white-space:nowrap;padding:12px 18px 4px">${fmt(_pubTfootAmt)}</td>
+        <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--amber);white-space:nowrap;padding:12px 18px 4px">${_pubTfootVat > 0 ? fmt(_pubTfootVat) : '<span style="color:var(--muted);opacity:0.4">—</span>'}</td>
         <td colspan="6"></td>
-      </tr>`;
+      </tr>
+      ${_pubTfootVat > 0 ? `<tr>
+        <td colspan="4" style="font-family:var(--font-mono);font-size:9px;font-weight:700;color:var(--muted);letter-spacing:0.08em;padding:2px 18px 10px;text-transform:uppercase;opacity:0.6">Incl. VAT</td>
+        <td class="mono" colspan="2" style="font-size:12px;font-weight:700;color:var(--accent-light);white-space:nowrap;padding:2px 18px 10px">${fmt(_pubTfootIncl)}</td>
+        <td colspan="6"></td>
+      </tr>` : ''}`;
 
     setTimeout(() => {
       renderPubChart(all);
