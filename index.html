@@ -7968,15 +7968,34 @@
   function editInvVat(td, i, currentVal) {
     const input = document.createElement('input');
     input.type = 'number';
-    input.value = currentVal;
+    input.value = currentVal || '';
+    input.placeholder = '0.00';
     input.className = 'editable mono';
     input.style.cssText = 'width:100px;color:var(--amber);font-weight:700';
-    input.onblur = () => { updateInvoice(i, 'vat', input.value); };
+    input.onblur = () => {
+      if (!canEditTab('internal')) { renderInvoices(); return; }
+      const newVat = parseFloat(input.value) || 0;
+      const cacheKey = 'inv_' + periodKey();
+      const cached = _rawCache[cacheKey];
+      if (cached && cached[i]) cached[i].vat = newVat;
+      delete _cache[cacheKey];
+      renderInvoices();
+      // Save directly (bypasses updateInvoice which calls _invalidateCache wiping _rawCache)
+      (async () => {
+        try {
+          await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({
+            action: 'updateInvoice', period: periodKey(), index: i, field: 'vat', value: newVat
+          }) });
+          if (cached) { _rawCache[cacheKey] = cached; delete _cache[cacheKey]; }
+          logActivity('edit_invoice', `Updated vat on invoice #${i+1} in ${periodKey()}`);
+        } catch { showToast('⚠ Update failed'); }
+      })();
+    };
     input.onkeydown = e => { if (e.key === 'Enter') input.blur(); };
     td.innerHTML = '';
     td.appendChild(input);
     input.focus();
-    input.select();
+    if (currentVal) input.select();
   }
 
   function toggleInvStatus(i, badge) {
