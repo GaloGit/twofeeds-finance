@@ -539,7 +539,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.0.10</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.0.11</div>
   </div>
 </div>
 
@@ -612,7 +612,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.0.10</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.0.11</div>
   </div>
 </div>
 
@@ -751,7 +751,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.0.10</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.0.11</span>
           </div>
         </div>
       </div>
@@ -9425,8 +9425,22 @@
     document.getElementById('revTableWrap').style.display   = hasData ? 'block' : 'none';
     document.getElementById('revEmptyState').style.display  = hasData ? 'none'  : 'block';
 
+    // Always sync config panel visibility with data presence on period change
+    if (configBody) {
+      const shouldExpand = !savedUrl || !hasData;
+      configBody.style.display = shouldExpand ? 'block' : (configBody.style.display || 'none');
+      if (configIcon) configIcon.style.transform = configBody.style.display === 'block' ? 'rotate(180deg)' : '';
+    }
+
     const progressWrap = document.getElementById('revProgressWrap');
-    if (!hasData) { progressWrap.style.display = 'none'; if (revOverlay) revOverlay.style.display = 'none'; return; }
+    if (!hasData) {
+      progressWrap.style.display = 'none';
+      ['revChartWrap','revChartTfWrap','revChartTo2Wrap'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+      if (_revChartInstance) { _revChartInstance.destroy(); _revChartInstance = null; }
+      ['tf','to2'].forEach(t => { if (_revMgrChartInstances[t]) { _revMgrChartInstances[t].destroy(); delete _revMgrChartInstances[t]; } });
+      if (revOverlay) revOverlay.style.display = 'none';
+      return;
+    }
 
     const total   = _revData.reduce((s, r) => s + (r.amount || 0), 0);
     const paid    = _revData.filter(r => r.status === 'paid');
