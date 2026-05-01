@@ -5726,7 +5726,8 @@
     const mtgPromise = fetch(`${FINANCE_API}?action=getMeetings`).then(r => r.json()).catch(() => ({ data: [] }));
     const tskPromise = fetch(`${FINANCE_API}?action=getTasks`).then(r => r.json()).catch(() => ({ data: [] }));
     const tktPromise = fetch(`${FINANCE_API}?action=getTickets`).then(r => r.json()).catch(() => ({ data: [] }));
-    const advPromise = fetch(`${FINANCE_API}?action=getAdvertisers`).then(r => r.json()).catch(() => ({ data: [] }));
+    const advPromise    = fetch(`${FINANCE_API}?action=getAdvertisers`).then(r => r.json()).catch(() => ({ data: [] }));
+    const revDataPromise = fetch(`${FINANCE_API}?action=getRevData&period=${encodeURIComponent(pk)}`).then(r => r.json()).catch(() => ({ data: [] }));
 
     // ── Phase 1: render the visible Publishers tab as soon as its data arrives ──
     try {
@@ -5805,8 +5806,8 @@
 
     // ── Phase 2: background data (already in-flight — no extra wait cost) ──
     try {
-      const [cmRes, siRes, evRes, mtgRes, tskRes, tktRes, advRes, revRes, commRes] = await Promise.all([
-        cmPromise, siPromise, evPromise, mtgPromise, tskPromise, tktPromise, advPromise, revPromise, commPromise
+      const [cmRes, siRes, evRes, mtgRes, tskRes, tktRes, advRes, revRes, commRes, revDataRes] = await Promise.all([
+        cmPromise, siPromise, evPromise, mtgPromise, tskPromise, tktPromise, advPromise, revPromise, commPromise, revDataPromise
       ]);
 
       // Campaign Managers
@@ -5863,6 +5864,17 @@
       if (mtgRes.lastModified) { _tabMeta.mtg = { ts: mtgRes.lastModified, by: mtgRes.lastModifiedBy || '' }; _renderLastUpdated('mtg'); }
       if (tskRes.lastModified) { _tabMeta.tsk = { ts: tskRes.lastModified, by: tskRes.lastModifiedBy || '' }; _renderLastUpdated('tsk'); }
       if (tktRes.lastModified) { _tabMeta.tkt = { ts: tktRes.lastModified, by: tktRes.lastModifiedBy || '' }; _renderLastUpdated('tkt'); }
+
+      // RevData (per-advertiser revenue for current period)
+      const _sheetRevRows = revDataRes.data || [];
+      if (_sheetRevRows.length) {
+        _revData = _sheetRevRows.map(r => ({
+          name: r.advertiser, amount: r.amount, cost: r.cost || 0,
+          status: r.status || 'waiting', tfManager: '', to2Manager: '',
+        }));
+        _revDataByPeriod[pk] = _revData;
+        _revSave();
+      }
 
       // Revenue
       (revRes.data || []).forEach(r => { if (r.period) _revenueByPeriod[r.period] = r.amount || 0; });
@@ -9625,6 +9637,7 @@
         });
 
       _revSave();
+      _saveRevDataToSheet();
       localStorage.setItem('tf_rev_lastFetch_' + curPk, new Date().toISOString());
       renderRevSummary();
       showToast(`✓ Fetched ${_revData.length} advertisers`);
@@ -9645,16 +9658,30 @@
     if (icon) icon.style.transform = open ? '' : 'rotate(180deg)';
   }
 
+  function _saveRevDataToSheet() {
+    const pk = periodKey();
+    fetch(FINANCE_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'saveRevData', period: pk,
+        rows: _revData.map(r => ({ advertiser: r.name, amount: r.amount, cost: r.cost || 0, status: r.status || 'waiting' }))
+      })
+    }).catch(() => {});
+  }
+
   function revToggleStatus(i) {
     if (!_revData[i]) return;
     _revData[i].status = _revData[i].status === 'paid' ? 'waiting' : 'paid';
     _revSave();
+    _saveRevDataToSheet();
     renderRevSummary();
   }
 
   function revMarkAll(status) {
     _revData.forEach(r => r.status = status);
     _revSave();
+    _saveRevDataToSheet();
     renderRevSummary();
   }
 
@@ -9662,6 +9689,7 @@
     const pk = periodKey();
     _revData = [];
     _revSave();
+    _saveRevDataToSheet();
     localStorage.removeItem('tf_rev_lastFetch_' + pk);
     if (_revChartInstance) { _revChartInstance.destroy(); _revChartInstance = null; }
     ['tf','to2'].forEach(t => { if (_revMgrChartInstances[t]) { _revMgrChartInstances[t].destroy(); delete _revMgrChartInstances[t]; } });
