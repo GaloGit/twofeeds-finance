@@ -6048,6 +6048,7 @@
     if (!panel) return;
     const open = panel.style.display !== 'none';
     if (open) { panel.style.display = 'none'; return; }
+    _updateNotifBadge();
     panel.innerHTML = _buildNotifHtml();
     panel.style.display = 'block';
     // close on outside click
