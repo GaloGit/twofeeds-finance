@@ -786,6 +786,7 @@
           <button class="period-dd-btn" id="monthDdBtn" onclick="togglePeriodDd('month')"><span id="monthDdLabel">Month</span> ▾</button>
           <div class="period-dd-panel" id="monthDdPanel" style="display:none"></div>
         </div>
+        <span id="pageLabel" style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:0.05em;margin-left:6px;white-space:nowrap"></span>
       </div>
       <div style="display:flex;gap:6px;align-items:center;margin-left:auto">
         <div style="position:relative">
@@ -6364,6 +6365,7 @@
   }
 
   async function onPeriodChange() {
+    _updatePageLabel();
     _showLoader();
     // Clear both caches so data re-fetches on period switch
     Object.keys(_cache).forEach(k => delete _cache[k]);
@@ -6668,11 +6670,33 @@
     if (isOps) _loadOpsData();
   }
 
+  const _TAB_NAMES = {
+    sourcesinfo: 'Sources Info', publishers: 'Publishers Cost', pubview: 'Publisher View',
+    internal: 'Internal Sources', mediabuy: 'Media Buying', costsummary: 'Cost Summary',
+    advertisers: 'Advertisers Info', revsummary: 'Rev Summary', profit: 'Profit Summary',
+    overview: 'General Overview', settings: 'Settings', campaignmgr: 'Team Roles',
+    meetings: 'Meetings', tasks: 'Tasks', tickets: 'Tickets',
+  };
+
+  function _updatePageLabel(tabName) {
+    const el = document.getElementById('pageLabel');
+    if (!el) return;
+    const name = tabName || (() => {
+      const active = document.querySelector('.page.active');
+      if (!active) return '';
+      return active.id.replace(/^(tab-|ops-tab-)/, '');
+    })();
+    const label = _TAB_NAMES[name] || '';
+    const period = periodLabel();
+    el.textContent = label ? `${label} — ${period}` : '';
+  }
+
   function showOpsTab(name, btn) {
     document.querySelectorAll('#opsPages .page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('#opsNav .nav-tab').forEach(t => t.classList.remove('active'));
     document.getElementById('ops-tab-' + name).classList.add('active');
     btn.classList.add('active');
+    _updatePageLabel(name);
   }
 
   function showTab(name, btn) {
@@ -6681,6 +6705,7 @@
     _clearAdminBtnActive();
     document.getElementById('tab-' + name).classList.add('active');
     btn.classList.add('active');
+    _updatePageLabel(name);
   }
 
   function showAdminPanel(name, renderFn) {
@@ -6693,6 +6718,7 @@
     if (btn) { btn.style.color = 'var(--accent-light)'; btn.style.borderColor = 'var(--accent)'; }
     if (name === 'settings') { renderSettings(); populateConfigFields(); }
     if (renderFn) renderFn();
+    _updatePageLabel(name);
   }
 
   function _clearAdminBtnActive() {
