@@ -482,6 +482,11 @@
       .gate-title { font-size: 18px; }
     }
 
+    @media (max-width: 600px) {
+      .hide-mobile { display: none !important; }
+      #revSheetUrl { min-width: 0 !important; width: 100%; }
+    }
+
     /* ── SMALL PHONES (max 380px) ── */
     @media (max-width: 380px) {
       .container { padding: 0 10px; }
@@ -1862,10 +1867,10 @@
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:20px">
         <!-- Always-visible compact header with title inline -->
         <div onclick="toggleRevConfig()" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:12px 18px;user-select:none">
-          <div style="display:flex;align-items:center;gap:16px;min-width:0">
+          <div style="display:flex;align-items:center;gap:10px;min-width:0;flex-wrap:wrap">
             <div class="section-title" style="margin:0;white-space:nowrap">📊 Rev Summary</div>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap">Google Sheets Source</span>
-            <span id="revLastFetchLabel" style="font-family:var(--font-mono);font-size:9px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+            <span class="hide-mobile" style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap">Google Sheets Source</span>
+            <span id="revLastFetchLabel" style="font-family:var(--font-mono);font-size:9px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px"></span>
           </div>
           <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
             <button id="revFetchBtn" onclick="event.stopPropagation();revFetchSheet()"
@@ -5699,6 +5704,17 @@
       init();
       _configReady.then(() => {
         loadSettingsFromSheet().then(() => { applyRoleUI(); startSessionTimeout(); dismissCurtain(); });
+        // If Rev Summary tab is already open with no data, auto-fetch now that config (URL) is loaded
+        const pk = periodKey();
+        if (document.querySelector('.page.active')?.id === 'tab-revsummary' && !_revData.length) {
+          const url = (appConfig.revSheetUrls || {})[pk] || '';
+          if (url && !_revAutoFetched.has(pk)) {
+            _revAutoFetched.add(pk);
+            const inp = document.getElementById('revSheetUrl');
+            if (inp) inp.value = url;
+            revFetchSheet();
+          }
+        }
       });
     }
   })();
