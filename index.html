@@ -9224,6 +9224,7 @@
   let _revData = [];
   let _revDataByPeriod = {};
   let _revSheetUrls = {};
+  const _revAutoFetched = new Set(); // tracks periods already auto-fetched this session
   let _revenueByPeriod = {}; // { '2026-01': 50000, ... } — loaded from Revenue sheet
   let _commissions = [];    // [{ name, percentage, base }] — admin-only, per-period rules
   let _lastCommissionPeriod = null;
@@ -9328,7 +9329,16 @@
     document.getElementById('revEmptyState').style.display  = hasData ? 'none'  : 'block';
 
     const progressWrap = document.getElementById('revProgressWrap');
-    if (!hasData) { progressWrap.style.display = 'none'; if (revOverlay) revOverlay.style.display = 'none'; return; }
+    if (!hasData) {
+      progressWrap.style.display = 'none';
+      if (revOverlay) revOverlay.style.display = 'none';
+      // Auto-fetch if URL is known but data hasn't been fetched on this device yet
+      if (savedUrl && !_revAutoFetched.has(pk)) {
+        _revAutoFetched.add(pk);
+        fetchRevData();
+      }
+      return;
+    }
 
     const total   = _revData.reduce((s, r) => s + (r.amount || 0), 0);
     const paid    = _revData.filter(r => r.status === 'paid');
