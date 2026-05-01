@@ -531,7 +531,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.9.5</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.9.6</div>
   </div>
 </div>
 
@@ -604,7 +604,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.9.5</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.9.6</div>
   </div>
 </div>
 
@@ -751,7 +751,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.9.5</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.9.6</span>
           </div>
         </div>
       </div>
@@ -904,6 +904,7 @@
                 <th style="min-width:140px">Publisher Name</th>
                 <th>Platform</th>
                 <th>Amount</th>
+                <th>VAT</th>
                 <th>Status</th>
                 <th>Approval</th>
                 <th>Invoice</th>
@@ -3151,6 +3152,14 @@
     const type = getSourceType(name);
     if (!type) return '';
     return _siTypeBadge(type);
+  }
+
+  function getSourceVat(name) {
+    if (!name || !sourcesInfo.length) return null;
+    const nl = name.trim().toLowerCase();
+    let src = sourcesInfo.find(s => (s.name||'').trim().toLowerCase() === nl);
+    if (!src) src = sourcesInfo.find(s => { const k = (s.name||'').trim().toLowerCase(); return k.length >= 3 && (nl.includes(k) || k.includes(nl)); });
+    return (src && src.vat != null) ? src.vat : null;
   }
 
   function isInSourcesInfo(name) {
@@ -6950,6 +6959,7 @@
         <td><div style="display:flex;align-items:center;gap:8px">${getSourceLogo(p.name,26)}<input class="editable" value="${esc(shortName)}" onblur="updatePub('${p.id}','name',this.value)" placeholder="Publisher name" style="min-width:0;flex:1"/></div></td>
         <td>${getSourceTypeBadge(p.name)}</td>
         <td><input class="editable" value="${esc(fmtAmt)}" onfocus="this.value='${p.amount||0}';this.select()" onblur="pubAmtBlur('${p.id}',this)" style="width:90px;font-family:var(--font-mono);color:var(--green);font-weight:700;text-align:left"/></td>
+        ${(() => { const vat = getSourceVat(p.name); const vatAmt = vat != null && p.amount ? p.amount * vat / 100 : null; return `<td style="font-family:var(--font-mono);font-size:11px;white-space:nowrap">${vatAmt != null ? `<span style="color:var(--amber);font-weight:600">$${vatAmt.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</span><span style="color:var(--muted);font-size:9px;margin-left:4px">${vat}%</span>` : '<span style="color:var(--muted);opacity:0.35">—</span>'}</td>`; })()}
         <td><span class="inv-status-badge ${p.payStatus==='paid'?'paid':'waiting'}" onclick="${canEdit?`togglePubStatus('${p.id}',this)`:''}" style="${!canEdit?'cursor:default':''}">${p.payStatus==='paid'?'✓ Paid':'⏳ Waiting'}</span></td>
         <td style="min-width:120px">
           <div id="pubApprView_${p.id}" style="display:flex;align-items:center;gap:5px">
@@ -7017,6 +7027,7 @@
       <tr>
         <td colspan="4" style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.08em;padding:12px 18px;text-transform:uppercase">Total</td>
         <td class="mono text-green" style="font-size:15px;font-weight:700;white-space:nowrap;padding:12px 18px">${fmt(filtered.reduce((s,p)=>s+(parseFloat(p.amount)||0),0))}</td>
+        <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--amber);white-space:nowrap;padding:12px 18px">${(() => { const t = filtered.reduce((s,p) => { const vat = getSourceVat(p.name); return s + (vat != null && p.amount ? p.amount * vat / 100 : 0); }, 0); return t > 0 ? fmt(t) : '<span style="color:var(--muted);opacity:0.4">—</span>'; })()}</td>
         <td colspan="6"></td>
       </tr>`;
 
