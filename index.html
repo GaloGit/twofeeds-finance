@@ -189,6 +189,10 @@
     .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
     .section-title { font-size: 22px; font-weight: 800; letter-spacing: -0.3px; }
     .section-sub { font-family: var(--font-mono); font-size: 10px; color: var(--muted); margin-top: 4px; }
+    /* Page title is now shown in the period bar — hide it from tab content */
+    .page > .section-header:first-child > div:first-child { display: none; }
+    #tab-overview > .section-header:first-child,
+    #tab-settings > .section-header:first-child { display: none; }
 
     /* TABLE */
     .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 32px; }
@@ -533,7 +537,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.0.3</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.0.4</div>
   </div>
 </div>
 
@@ -606,7 +610,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.0.3</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.0.4</div>
   </div>
 </div>
 
@@ -745,7 +749,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.0.3</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.0.4</span>
           </div>
         </div>
       </div>
@@ -786,7 +790,7 @@
           <button class="period-dd-btn" id="monthDdBtn" onclick="togglePeriodDd('month')"><span id="monthDdLabel">Month</span> ▾</button>
           <div class="period-dd-panel" id="monthDdPanel" style="display:none"></div>
         </div>
-        <span id="pageLabel" style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:0.05em;margin-left:6px;white-space:nowrap"></span>
+        <span id="pageLabel" style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--text);letter-spacing:0.04em;margin-left:8px;white-space:nowrap"></span>
       </div>
       <div style="display:flex;gap:6px;align-items:center;margin-left:auto">
         <div style="position:relative">
