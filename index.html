@@ -1080,6 +1080,10 @@
           <div class="card-label">Total VAT · <span class="card-label-sub">sum of VAT</span></div>
           <div class="card-value" id="invTotalVat">$0</div>
         </div>
+        <div class="summary-card amber" style="animation-delay:0.15s">
+          <div class="card-label">Total Incl. VAT · <span class="card-label-sub">amount + VAT</span></div>
+          <div class="card-value" id="invTotalInclVat">$0</div>
+        </div>
         <div class="summary-card green" style="animation-delay:0.15s">
           <div class="card-label">Paid · <span class="card-label-sub">fully paid</span></div>
           <div class="card-value" id="invExtracted" style="font-family:Arial">0</div>
@@ -7717,6 +7721,7 @@
       document.getElementById('invCount').textContent = invoices.length;
       document.getElementById('invTotal').textContent = fmt(total);
       document.getElementById('invTotalVat').textContent = fmt(totalVat);
+      document.getElementById('invTotalInclVat').textContent = fmt(total + totalVat);
       document.getElementById('invExtracted').textContent = extracted;
       document.getElementById('invReview').textContent = review;
       document.getElementById('invPeriodLabel').textContent = periodLabel();
@@ -7848,14 +7853,21 @@
 
     // ── Pinned total row in tfoot ──
     const invTfoot = document.getElementById('invTfoot');
+    const _tfootAmt = invoices.reduce((s,inv)=>s+(parseFloat(inv.amount)||0),0);
     const _tfootVat = invoices.reduce((s,inv)=>s+(parseFloat(inv.vat)||0),0);
+    const _tfootIncl = _tfootAmt + _tfootVat;
     if (invTfoot) invTfoot.innerHTML = `
       <tr>
-        <td colspan="6" style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.08em;padding:12px 18px;text-transform:uppercase">Total</td>
-        <td class="mono text-green" style="font-size:15px;font-weight:700;white-space:nowrap;padding:12px 18px">${fmt(invoices.reduce((s,inv)=>s+(parseFloat(inv.amount)||0),0))}</td>
-        <td class="mono" style="font-size:13px;font-weight:700;color:var(--amber);white-space:nowrap;padding:12px 18px">${_tfootVat > 0 ? fmt(_tfootVat) : '<span style="color:var(--muted);opacity:0.35">—</span>'}</td>
+        <td colspan="6" style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.08em;padding:12px 18px 4px;text-transform:uppercase">Total</td>
+        <td class="mono text-green" style="font-size:15px;font-weight:700;white-space:nowrap;padding:12px 18px 4px">${fmt(_tfootAmt)}</td>
+        <td class="mono" style="font-size:13px;font-weight:700;color:var(--amber);white-space:nowrap;padding:12px 18px 4px">${_tfootVat > 0 ? fmt(_tfootVat) : '<span style="color:var(--muted);opacity:0.35">—</span>'}</td>
         <td colspan="3"></td>
-      </tr>`;
+      </tr>
+      ${_tfootVat > 0 ? `<tr>
+        <td colspan="6" style="font-family:var(--font-mono);font-size:9px;font-weight:700;color:var(--muted);letter-spacing:0.08em;padding:2px 18px 10px;text-transform:uppercase;opacity:0.6">Incl. VAT</td>
+        <td class="mono" colspan="2" style="font-size:12px;font-weight:700;color:var(--accent-light);white-space:nowrap;padding:2px 18px 10px">${fmt(_tfootIncl)}</td>
+        <td colspan="3"></td>
+      </tr>` : ''}`;
 
     // Set date input values programmatically — the value attribute in innerHTML
     // is not reliably reflected as .value for input[type="date"] in all browsers
