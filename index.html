@@ -482,11 +482,6 @@
       .gate-title { font-size: 18px; }
     }
 
-    @media (max-width: 600px) {
-      .hide-mobile { display: none !important; }
-      #revSheetUrl { min-width: 0 !important; width: 100%; }
-    }
-
     /* ── SMALL PHONES (max 380px) ── */
     @media (max-width: 380px) {
       .container { padding: 0 10px; }
@@ -536,7 +531,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.10.0</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v5.9.9</div>
   </div>
 </div>
 
@@ -609,7 +604,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.10.0</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v5.9.9</div>
   </div>
 </div>
 
@@ -756,7 +751,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode">🌙</button>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.10.0</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v5.9.9</span>
           </div>
         </div>
       </div>
@@ -1084,10 +1079,6 @@
         <div class="summary-card amber" style="animation-delay:0.125s">
           <div class="card-label">Total VAT · <span class="card-label-sub">sum of VAT</span></div>
           <div class="card-value" id="invTotalVat">$0</div>
-        </div>
-        <div class="summary-card amber" style="animation-delay:0.15s">
-          <div class="card-label">Total Incl. VAT · <span class="card-label-sub">amount + VAT</span></div>
-          <div class="card-value" id="invTotalInclVat">$0</div>
         </div>
         <div class="summary-card green" style="animation-delay:0.15s">
           <div class="card-label">Paid · <span class="card-label-sub">fully paid</span></div>
@@ -1867,10 +1858,10 @@
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:20px">
         <!-- Always-visible compact header with title inline -->
         <div onclick="toggleRevConfig()" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:12px 18px;user-select:none">
-          <div style="display:flex;align-items:center;gap:10px;min-width:0;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:16px;min-width:0">
             <div class="section-title" style="margin:0;white-space:nowrap">📊 Rev Summary</div>
-            <span class="hide-mobile" style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap">Google Sheets Source</span>
-            <span id="revLastFetchLabel" style="font-family:var(--font-mono);font-size:9px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px"></span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap">Google Sheets Source</span>
+            <span id="revLastFetchLabel" style="font-family:var(--font-mono);font-size:9px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
           </div>
           <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
             <button id="revFetchBtn" onclick="event.stopPropagation();revFetchSheet()"
@@ -2310,7 +2301,7 @@
 
   // ── Pre-load settings cache (populated after FINANCE_API is declared below) ──
   let _loginSettingsCache = null;
-  const FINANCE_API = "https://script.google.com/macros/s/AKfycbyuU82VxkgXNbfFPIvh1lh2UoWCJHPsKYK_CmTO3o4KEM5lMF782pVmU0lZOuAwJJ0p/exec";
+  const FINANCE_API = "https://script.google.com/macros/s/AKfycbzSLpt-s01FFQr2wORLJpW9nfNq4lhRtuL4mx1XzF-6nNHZnzKEj7upW1Bf18M175U/exec";
   const WORKER_URL = 'https://twofeeds-ai.galredwork.workers.dev';
   // Preload settings in background so login password check is instant
   (async () => { try { const r = await fetch(`${FINANCE_API}?action=getSettings`); const j = await r.json(); if (j.success) _loginSettingsCache = j.data || []; } catch {} })();
@@ -4118,10 +4109,12 @@
                       const flags = [c.big&&'BIG',c.ctv&&'CTV',c.inct&&'INCT'].filter(Boolean).map(f=>`<span style="font-family:var(--font-mono);font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;background:rgba(124,58,237,0.12);color:var(--accent-light)">${f}</span>`).join('');
                       return `<div style="display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:7px;background:var(--surface3);margin-bottom:5px;flex-wrap:wrap">
                         ${iconHtml}
-                        <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--text);flex:1;min-width:100px">${esc(c.name||'')}</span>
-                        <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
-                          <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">TO2</span>${stBadge(to2St)}
-                          <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-left:4px">TF</span>${stBadge(tfSt)}
+                        <div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:100px">
+                          <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--text)">${esc(c.name||'')}</span>
+                          <div style="display:flex;align-items:center;gap:5px">
+                            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">TO2</span>${stBadge(to2St)}
+                            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-left:4px">TF</span>${stBadge(tfSt)}
+                          </div>
                         </div>
                         ${flags ? `<div style="display:flex;gap:4px">${flags}</div>` : ''}
                         ${c.notes ? `<span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);font-style:italic">${esc(c.notes)}</span>` : ''}
@@ -5725,8 +5718,7 @@
     const pubPromise = fetchPeriodData('getPublishers').catch(() => []);
     const invPromise = fetchPeriodData('getInvoices').catch(() => []);
     const mbPromise  = fetchPeriodData('getMediaBuying').catch(() => []);
-    const revPromise     = fetch(`${FINANCE_API}?action=getRevenue`).then(r => r.json()).catch(() => ({ data: [] }));
-    const revDataPromise = fetch(`${FINANCE_API}?action=getRevData&period=${encodeURIComponent(pk)}`).then(r => r.json()).catch(() => ({ data: [] }));
+    const revPromise  = fetch(`${FINANCE_API}?action=getRevenue`).then(r => r.json()).catch(() => ({ data: [] }));
     const commPromise = fetch(`${FINANCE_API}?action=getCommissions&period=${encodeURIComponent(pk)}`).then(r => r.json()).catch(() => ({ data: [] }));
     const cmPromise  = fetch(`${FINANCE_API}?action=getCampaignMgrs`).then(r => r.json()).catch(() => ({ data: [] }));
     const siPromise  = fetch(`${FINANCE_API}?action=getSourcesInfo`).then(r => r.json()).catch(() => ({ data: [] }));
@@ -5813,9 +5805,8 @@
 
     // ── Phase 2: background data (already in-flight — no extra wait cost) ──
     try {
-      const [cmRes, siRes, evRes, mtgRes, tskRes, tktRes, advRes, revRes, commRes, revDataRes] = await Promise.all([
-        cmPromise, siPromise, evPromise, mtgPromise, tskPromise, tktPromise, advPromise, revPromise, commPromise,
-        revDataPromise
+      const [cmRes, siRes, evRes, mtgRes, tskRes, tktRes, advRes, revRes, commRes] = await Promise.all([
+        cmPromise, siPromise, evPromise, mtgPromise, tskPromise, tktPromise, advPromise, revPromise, commPromise
       ]);
 
       // Campaign Managers
@@ -5876,20 +5867,6 @@
       // Revenue
       (revRes.data || []).forEach(r => { if (r.period) _revenueByPeriod[r.period] = r.amount || 0; });
       if (revRes.lastModified) { _tabMeta.prf = { ts: revRes.lastModified, by: revRes.lastModifiedBy || '' }; _renderLastUpdated('prf'); }
-      // Per-advertiser revenue rows — load from sheet, fall back to localStorage
-      const _sheetRevRows = revDataRes.data || [];
-      if (_sheetRevRows.length) {
-        _revData = _sheetRevRows.map(r => ({
-          name:       r.advertiser,
-          amount:     r.amount,
-          cost:       r.cost || 0,
-          status:     r.status || 'waiting',
-          tfManager:  '',
-          to2Manager: '',
-        }));
-        _revDataByPeriod[pk] = _revData;
-        _revSave();
-      }
       // Commissions (period-aware — already fetched for startup period)
       _commissions = (commRes.data || []);
       _lastCommissionPeriod = pk;
@@ -6073,7 +6050,6 @@
     if (!panel) return;
     const open = panel.style.display !== 'none';
     if (open) { panel.style.display = 'none'; return; }
-    _updateNotifBadge();
     panel.innerHTML = _buildNotifHtml();
     panel.style.display = 'block';
     // close on outside click
@@ -7060,22 +7036,14 @@
       (canEdit ? `<tr class="add-row"><td colspan="11"><button class="add-btn" onclick="addPubRow()">+ Add Publisher Manually</button></td></tr>` : '');
 
     // ── Pinned total row in tfoot ──
-    const _pubTfootAmt = filtered.reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
-    const _pubTfootVat = filtered.reduce((s,p) => { const vat = getSourceVat(p.name); return s + (vat != null && p.amount ? p.amount * vat / 100 : 0); }, 0);
-    const _pubTfootIncl = _pubTfootAmt + _pubTfootVat;
     const pubTfoot = document.getElementById('publisherTfoot');
     if (pubTfoot) pubTfoot.innerHTML = `
       <tr>
-        <td colspan="4" style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.08em;padding:12px 18px 4px;text-transform:uppercase">Total</td>
-        <td class="mono text-green" style="font-size:15px;font-weight:700;white-space:nowrap;padding:12px 18px 4px">${fmt(_pubTfootAmt)}</td>
-        <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--amber);white-space:nowrap;padding:12px 18px 4px">${_pubTfootVat > 0 ? fmt(_pubTfootVat) : '<span style="color:var(--muted);opacity:0.4">—</span>'}</td>
+        <td colspan="4" style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.08em;padding:12px 18px;text-transform:uppercase">Total</td>
+        <td class="mono text-green" style="font-size:15px;font-weight:700;white-space:nowrap;padding:12px 18px">${fmt(filtered.reduce((s,p)=>s+(parseFloat(p.amount)||0),0))}</td>
+        <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--amber);white-space:nowrap;padding:12px 18px">${(() => { const t = filtered.reduce((s,p) => { const vat = getSourceVat(p.name); return s + (vat != null && p.amount ? p.amount * vat / 100 : 0); }, 0); return t > 0 ? fmt(t) : '<span style="color:var(--muted);opacity:0.4">—</span>'; })()}</td>
         <td colspan="6"></td>
-      </tr>
-      ${_pubTfootVat > 0 ? `<tr>
-        <td colspan="4" style="font-family:var(--font-mono);font-size:9px;font-weight:700;color:var(--muted);letter-spacing:0.08em;padding:2px 18px 10px;text-transform:uppercase;opacity:0.6">Incl. VAT</td>
-        <td class="mono" colspan="2" style="font-size:12px;font-weight:700;color:var(--accent-light);white-space:nowrap;padding:2px 18px 10px">${fmt(_pubTfootIncl)}</td>
-        <td colspan="6"></td>
-      </tr>` : ''}`;
+      </tr>`;
 
     setTimeout(() => {
       renderPubChart(all);
@@ -7750,7 +7718,6 @@
       document.getElementById('invCount').textContent = invoices.length;
       document.getElementById('invTotal').textContent = fmt(total);
       document.getElementById('invTotalVat').textContent = fmt(totalVat);
-      document.getElementById('invTotalInclVat').textContent = fmt(total + totalVat);
       document.getElementById('invExtracted').textContent = extracted;
       document.getElementById('invReview').textContent = review;
       document.getElementById('invPeriodLabel').textContent = periodLabel();
@@ -7882,21 +7849,14 @@
 
     // ── Pinned total row in tfoot ──
     const invTfoot = document.getElementById('invTfoot');
-    const _tfootAmt = invoices.reduce((s,inv)=>s+(parseFloat(inv.amount)||0),0);
     const _tfootVat = invoices.reduce((s,inv)=>s+(parseFloat(inv.vat)||0),0);
-    const _tfootIncl = _tfootAmt + _tfootVat;
     if (invTfoot) invTfoot.innerHTML = `
       <tr>
-        <td colspan="6" style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.08em;padding:12px 18px 4px;text-transform:uppercase">Total</td>
-        <td class="mono text-green" style="font-size:15px;font-weight:700;white-space:nowrap;padding:12px 18px 4px">${fmt(_tfootAmt)}</td>
-        <td class="mono" style="font-size:13px;font-weight:700;color:var(--amber);white-space:nowrap;padding:12px 18px 4px">${_tfootVat > 0 ? fmt(_tfootVat) : '<span style="color:var(--muted);opacity:0.35">—</span>'}</td>
+        <td colspan="6" style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.08em;padding:12px 18px;text-transform:uppercase">Total</td>
+        <td class="mono text-green" style="font-size:15px;font-weight:700;white-space:nowrap;padding:12px 18px">${fmt(invoices.reduce((s,inv)=>s+(parseFloat(inv.amount)||0),0))}</td>
+        <td class="mono" style="font-size:13px;font-weight:700;color:var(--amber);white-space:nowrap;padding:12px 18px">${_tfootVat > 0 ? fmt(_tfootVat) : '<span style="color:var(--muted);opacity:0.35">—</span>'}</td>
         <td colspan="3"></td>
-      </tr>
-      ${_tfootVat > 0 ? `<tr>
-        <td colspan="6" style="font-family:var(--font-mono);font-size:9px;font-weight:700;color:var(--muted);letter-spacing:0.08em;padding:2px 18px 10px;text-transform:uppercase;opacity:0.6">Incl. VAT</td>
-        <td class="mono" colspan="2" style="font-size:12px;font-weight:700;color:var(--accent-light);white-space:nowrap;padding:2px 18px 10px">${fmt(_tfootIncl)}</td>
-        <td colspan="3"></td>
-      </tr>` : ''}`;
+      </tr>`;
 
     // Set date input values programmatically — the value attribute in innerHTML
     // is not reliably reflected as .value for input[type="date"] in all browsers
@@ -9245,7 +9205,6 @@
   let _revData = [];
   let _revDataByPeriod = {};
   let _revSheetUrls = {};
-  const _revAutoFetched = new Set(); // tracks periods already auto-fetched this session
   let _revenueByPeriod = {}; // { '2026-01': 50000, ... } — loaded from Revenue sheet
   let _commissions = [];    // [{ name, percentage, base }] — admin-only, per-period rules
   let _lastCommissionPeriod = null;
@@ -9257,19 +9216,6 @@
   function _revUrlKey(pk)  { return 'tf_rev_u_' + pk; }
   function _revLoadPeriod(pk) { try { return JSON.parse(localStorage.getItem(_revDataKey(pk)) || 'null') || []; } catch { return []; } }
   function _revLoadUrl(pk)    { return localStorage.getItem(_revUrlKey(pk)) || ''; }
-
-  function _saveRevDataToSheet() {
-    const pk = periodKey();
-    fetch(FINANCE_API, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'saveRevData',
-        period: pk,
-        rows: _revData.map(r => ({ advertiser: r.name, amount: r.amount, cost: r.cost || 0, status: r.status || 'waiting' }))
-      })
-    }).catch(() => {});
-  }
 
   (function _revLoad() {
     // Pre-load current period immediately so data is ready before tab is clicked
@@ -9363,16 +9309,7 @@
     document.getElementById('revEmptyState').style.display  = hasData ? 'none'  : 'block';
 
     const progressWrap = document.getElementById('revProgressWrap');
-    if (!hasData) {
-      progressWrap.style.display = 'none';
-      if (revOverlay) revOverlay.style.display = 'none';
-      // Auto-fetch if URL is known but data hasn't been fetched on this device yet
-      if (savedUrl && !_revAutoFetched.has(pk)) {
-        _revAutoFetched.add(pk);
-        fetchRevData();
-      }
-      return;
-    }
+    if (!hasData) { progressWrap.style.display = 'none'; if (revOverlay) revOverlay.style.display = 'none'; return; }
 
     const total   = _revData.reduce((s, r) => s + (r.amount || 0), 0);
     const paid    = _revData.filter(r => r.status === 'paid');
@@ -9688,7 +9625,6 @@
         });
 
       _revSave();
-      _saveRevDataToSheet();
       localStorage.setItem('tf_rev_lastFetch_' + curPk, new Date().toISOString());
       renderRevSummary();
       showToast(`✓ Fetched ${_revData.length} advertisers`);
@@ -9713,14 +9649,12 @@
     if (!_revData[i]) return;
     _revData[i].status = _revData[i].status === 'paid' ? 'waiting' : 'paid';
     _revSave();
-    _saveRevDataToSheet();
     renderRevSummary();
   }
 
   function revMarkAll(status) {
     _revData.forEach(r => r.status = status);
     _revSave();
-    _saveRevDataToSheet();
     renderRevSummary();
   }
 
@@ -9728,7 +9662,6 @@
     const pk = periodKey();
     _revData = [];
     _revSave();
-    _saveRevDataToSheet();
     localStorage.removeItem('tf_rev_lastFetch_' + pk);
     if (_revChartInstance) { _revChartInstance.destroy(); _revChartInstance = null; }
     ['tf','to2'].forEach(t => { if (_revMgrChartInstances[t]) { _revMgrChartInstances[t].destroy(); delete _revMgrChartInstances[t]; } });
