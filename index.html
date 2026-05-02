@@ -276,7 +276,15 @@
       background: var(--surface); border: 1px solid var(--border);
       border-radius: 14px; padding: 24px 24px 16px; margin-bottom: 32px;
       animation: fadeUp 0.4s ease both;
+      transition: border-color 0.3s, box-shadow 0.3s;
     }
+    @keyframes chartPulse {
+      0%   { border-color: var(--border); box-shadow: none; }
+      25%  { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.25), 0 0 24px rgba(99,102,241,0.18); }
+      60%  { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.25), 0 0 24px rgba(99,102,241,0.18); }
+      100% { border-color: var(--border); box-shadow: none; }
+    }
+    .chart-highlight { animation: chartPulse 1.6s ease forwards !important; }
     .chart-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 20px; }
     .chart-title { font-size: 15px; font-weight: 800; }
     .chart-sub { font-family: var(--font-mono); font-size: 10px; color: var(--muted); }
@@ -539,7 +547,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.4.2</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.4.3</div>
   </div>
 </div>
 
@@ -612,7 +620,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.4.2</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.4.3</div>
   </div>
 </div>
 
@@ -751,7 +759,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.4.2</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.4.3</span>
           </div>
         </div>
       </div>
@@ -11700,6 +11708,13 @@
     } else {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+    const card = el.querySelector('.chart-wrap') || el;
+    card.classList.remove('chart-highlight');
+    void card.offsetWidth; // force reflow so re-triggering works
+    setTimeout(() => {
+      card.classList.add('chart-highlight');
+      card.addEventListener('animationend', () => card.classList.remove('chart-highlight'), { once: true });
+    }, 350); // slight delay to let scroll settle
   }
 
   // ── OPERATIONS ───────────────────────────────────────────────────────────────
