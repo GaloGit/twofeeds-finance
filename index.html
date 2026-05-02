@@ -539,7 +539,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.4.1</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.4.2</div>
   </div>
 </div>
 
@@ -612,7 +612,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.4.1</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.4.2</div>
   </div>
 </div>
 
@@ -751,7 +751,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.4.1</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.4.2</span>
           </div>
         </div>
       </div>
@@ -9119,8 +9119,16 @@
 
   function _pubTypeFromSi(name) {
     const nl = (name || '').trim().toLowerCase();
-    const si = (sourcesInfo || []).find(s => (s.name || '').trim().toLowerCase() === nl);
+    let si = (sourcesInfo || []).find(s => (s.name || '').trim().toLowerCase() === nl);
+    if (!si) {
+      const stripped = nl.replace(/\s*\((dsp|rw)\)\s*$/i, '').trim();
+      si = (sourcesInfo || []).find(s => (s.name || '').trim().toLowerCase() === stripped);
+    }
     return si ? (si.type || '').toUpperCase() : '';
+  }
+
+  function _cleanPubName(name) {
+    return (name || '').replace(/\s*\((DSP|RW)\)\s*$/i, '').trim();
   }
 
   function _renderRwPubCostChart(allPeriods, labels) {
@@ -9137,7 +9145,7 @@
         const t = _pubTypeFromSi(r.name) || (r.platform || '').toUpperCase();
         return t === 'RW';
       }).forEach(r => {
-        const name = r.name || 'Unknown';
+        const name = _cleanPubName(r.name) || 'Unknown';
         if (!pubData[name]) pubData[name] = new Array(allPeriods.length).fill(0);
         pubData[name][i] += (r.amount || 0);
       });
@@ -9186,7 +9194,7 @@
         const t = _pubTypeFromSi(r.name) || (r.platform || '').toUpperCase();
         return t === 'DSP';
       }).forEach(r => {
-        const name = r.name || 'Unknown';
+        const name = _cleanPubName(r.name) || 'Unknown';
         if (!pubData[name]) pubData[name] = new Array(allPeriods.length).fill(0);
         pubData[name][i] += (r.amount || 0);
       });
