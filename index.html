@@ -540,7 +540,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.5.2</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.5.3</div>
   </div>
 </div>
 
@@ -613,7 +613,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.5.2</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.5.3</div>
   </div>
 </div>
 
@@ -752,7 +752,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.5.2</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.5.3</span>
           </div>
         </div>
       </div>
@@ -1352,6 +1352,7 @@
       </div>
       <!-- Overview navigation buttons -->
       <div style="position:sticky;top:0;z-index:20;background:var(--bg);padding:10px 0 12px;margin-bottom:8px;display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--border)">
+        <button onclick="window.scrollTo({top:0,behavior:'smooth'})" style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid rgba(99,102,241,0.4);background:rgba(99,102,241,0.12);color:var(--accent-light);cursor:pointer;white-space:nowrap">↑ Top</button>
         <button onclick="scrollToChart('profChartWrap',60)"    style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">📊 Monthly Overview</button>
         <button onclick="scrollToChart('trendChartsWrap',60)"  style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">📈 Trends</button>
         <button onclick="scrollToChart('tfMgrRevWrap',60)"     style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">👤 TF Manager Rev</button>
