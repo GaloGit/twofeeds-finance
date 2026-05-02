@@ -539,7 +539,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.1.1</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.1.2</div>
   </div>
 </div>
 
@@ -612,7 +612,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.1.1</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.1.2</div>
   </div>
 </div>
 
@@ -751,7 +751,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.1.1</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.1.2</span>
           </div>
         </div>
       </div>
@@ -1394,6 +1394,10 @@
 
     <!-- PROFIT SUMMARY TAB -->
     <div class="page" id="tab-profit">
+      <div id="profLoadingOverlay" style="display:none;position:absolute;inset:0;background:var(--bg);z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px">
+        <div class="spinner" style="width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite"></div>
+        <div style="font-size:13px;color:var(--muted)">Loading…</div>
+      </div>
       <div class="section-header" style="margin-bottom:16px">
         <div>
           <div class="section-title">Profit Summary</div>
@@ -8600,6 +8604,9 @@
     const el = document.getElementById('profPeriodLabel');
     if (el) el.textContent = pl;
 
+    const profOverlay = document.getElementById('profLoadingOverlay');
+    if (!inputOnly && profOverlay) { profOverlay.style.display = 'flex'; }
+
     // Revenue: use input value if typing, otherwise stored value
     const inputEl = document.getElementById('profRevenueInput');
     const periods = [...getSelectedPeriods()].sort();
@@ -8611,6 +8618,27 @@
         if (inputEl && !inputEl.matches(':focus')) inputEl.value = stored > 0 ? stored : '';
       } else if (inputEl) {
         inputEl.value = '';
+      }
+    }
+
+    // Load RevData if not already in memory: try localStorage first, then fetch sheet
+    if (!inputOnly && !(_revDataByPeriod[pk] && _revDataByPeriod[pk].length > 0)) {
+      const fromStorage = _revLoadPeriod(pk);
+      if (fromStorage && fromStorage.length > 0) {
+        _revDataByPeriod[pk] = fromStorage;
+      } else {
+        try {
+          const res = await fetch(`${FINANCE_API}?action=getRevData&period=${encodeURIComponent(pk)}`).then(r => r.json());
+          if (res.success && res.data && res.data.length > 0) {
+            _revDataByPeriod[pk] = res.data.map(r => ({
+              name: r.Advertiser || r.advertiser || '',
+              amount: parseFloat(r.Amount || r.amount) || 0,
+              cost: parseFloat(r.Cost || r.cost) || 0,
+              status: r.Status || r.status || 'waiting',
+            }));
+            try { localStorage.setItem(_revDataKey(pk), JSON.stringify(_revDataByPeriod[pk])); } catch {}
+          }
+        } catch {}
       }
     }
 
@@ -8731,6 +8759,7 @@
     }
 
     if (needsFetch) _hideLoader();
+    if (profOverlay) profOverlay.style.display = 'none';
     // Commissions (admin only)
     _renderCommissions(profit, revenue);
     // Monthly chart — build from _revenueByPeriod and cached cost data
