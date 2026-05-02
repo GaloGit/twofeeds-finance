@@ -540,7 +540,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.4.6</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.4.7</div>
   </div>
 </div>
 
@@ -613,7 +613,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.4.6</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.4.7</div>
   </div>
 </div>
 
@@ -752,7 +752,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.4.6</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.4.7</span>
           </div>
         </div>
       </div>
@@ -1189,16 +1189,19 @@
         </div>
       </div>
 
-      <!-- Upload area -->
-      <div id="mbUploadArea" class="upload-area" onclick="document.getElementById('mbFileInput').click()"
-        ondragover="event.preventDefault();this.classList.add('drag')"
-        ondragleave="this.classList.remove('drag')"
-        ondrop="event.preventDefault();handleMediaCSV(event.dataTransfer.files[0])">
-        <div class="upload-icon">📺</div>
-        <div class="upload-title">Upload Media Buying CSV</div>
-        <div class="upload-sub">Drag & drop or <span onclick="event.stopPropagation();document.getElementById('mbFileInput').click()">browse file</span></div>
-        <div class="upload-sub" style="margin-top:8px">Expected columns: DSP, GEO, CPC</div>
-        <input type="file" id="mbFileInput" accept=".csv" onchange="handleMediaCSV(this.files[0])"/>
+      <!-- Drive URL import area (empty state) -->
+      <div id="mbUploadArea" class="upload-area" style="cursor:default">
+        <div class="upload-icon">🔗</div>
+        <div class="upload-title">Import Media Buying from Google Sheet</div>
+        <div class="upload-sub">Paste a Google Sheets link shared as "Anyone with the link"</div>
+        <div class="upload-sub" style="margin-top:4px">Expected columns: DSP, GEO, CPC</div>
+        <div onclick="event.stopPropagation()" style="margin-top:16px;display:flex;gap:8px;align-items:center;width:100%;max-width:480px">
+          <input id="mbUrlInput" type="text" placeholder="Paste Google Sheet or Drive link…"
+            style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:7px 12px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none"
+            onkeydown="if(event.key==='Enter')importMbFromUrl('mbUrlInput')"/>
+          <button onclick="importMbFromUrl('mbUrlInput')"
+            style="padding:7px 14px;border-radius:7px;border:1px solid var(--accent);background:transparent;color:var(--accent-light);font-family:var(--font-mono);font-size:11px;cursor:pointer;white-space:nowrap">↓ Import</button>
+        </div>
       </div>
 
       <!-- Table (shown when data loaded) -->
@@ -1217,8 +1220,15 @@
             <button onclick="scrollToChart('mbChartWrap')" style="font-family:var(--font-mono);font-size:10px;padding:5px 12px;border-radius:6px;border:1px solid rgba(124,58,237,0.4);background:rgba(124,58,237,0.12);color:#a78bfa;cursor:pointer;display:flex;align-items:center;gap:5px"><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" style="flex-shrink:0"><rect x="0" y="5" width="3" height="7" rx="1"/><rect x="4.5" y="2.5" width="3" height="9.5" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/></svg> Charts ↓</button>
             <button class="export-btn" onclick="exportMediaCSV()">↓ Export CSV</button>
             <button class="clear-btn" onclick="clearMediaBuying()">✕ Clear All</button>
-            <button class="add-btn" onclick="document.getElementById('mbFileInput').click()">↑ Re-upload CSV</button>
+            <button class="add-btn" onclick="document.getElementById('mbUrlImportBar').style.display=document.getElementById('mbUrlImportBar').style.display==='none'?'flex':'none'">🔗 From Drive URL</button>
           </div>
+        </div>
+        <div id="mbUrlImportBar" style="display:none;align-items:center;gap:8px;padding:10px 0 4px">
+          <input id="mbUrlInputBar" type="text" placeholder="Paste Google Sheet or Drive shared link…"
+            style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:7px 12px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none"
+            onkeydown="if(event.key==='Enter')importMbFromUrl('mbUrlInputBar')"/>
+          <button onclick="importMbFromUrl('mbUrlInputBar')"
+            style="padding:7px 14px;border-radius:7px;border:1px solid var(--accent);background:transparent;color:var(--accent-light);font-family:var(--font-mono);font-size:11px;cursor:pointer;white-space:nowrap">↓ Import</button>
         </div>
         <div class="table-wrap">
           <div class="table-scroll">
@@ -8521,7 +8531,56 @@
       } catch { showToast('⚠ Failed to save. Check connection.'); }
     };
     reader.readAsText(file);
-    document.getElementById('mbFileInput').value = '';
+  }
+
+  async function _parseSaveMbCSV(text) {
+    const lines = text.trim().split('\n');
+    if (lines.length < 2) { showToast('⚠ No data rows found'); return; }
+    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,'').toLowerCase());
+    const findCol = (...names) => { for (const n of names) { const i = headers.findIndex(h => h.includes(n)); if (i !== -1) return i; } return -1; };
+    const dspCol = findCol('dsp','platform','network','channel','campaign','name');
+    const geoCol = findCol('geo','region','country','location');
+    const cpcCol = findCol('cpc','amount','cost','spend','price','budget');
+    const rows = lines.slice(1).filter(l => l.trim()).map(line => {
+      const cols = parseCSVLine(line);
+      return {
+        dsp: dspCol >= 0 ? (cols[dspCol]||'').trim() : '',
+        geo: geoCol >= 0 ? (cols[geoCol]||'').trim() : '',
+        cpc: cpcCol >= 0 ? parseFloat((cols[cpcCol]||'0').replace(/[^0-9.]/g,'')) || 0 : 0,
+      };
+    }).filter(r => r.dsp);
+    const user = localStorage.getItem('tf_current_user') || '';
+    const res = await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveMediaBuying', period: periodKey(), rows, user }) });
+    const json = await res.json().catch(() => ({}));
+    if (!json.success) throw new Error('API returned success:false');
+    _tabMeta.mb = { ts: new Date().toISOString(), by: user };
+    _renderLastUpdated('mb');
+    logActivity('import_mediabuy', `Imported ${rows.length} media buying rows for ${periodKey()}`);
+    showToast('✓ Imported — ' + rows.length + ' entries');
+    renderMediaBuying();
+  }
+
+  async function importMbFromUrl(inputId) {
+    if (!canEditTab('mediabuy')) { showToast('⚠ No edit access to Media Buying'); return; }
+    if (!isSinglePeriod()) { showToast('⚠ Select a single month to import'); return; }
+    const input = document.getElementById(inputId);
+    const raw = (input ? input.value : '').trim();
+    if (!raw) { showToast('⚠ Paste a Google Sheet or Drive link first'); return; }
+    const fetchUrl = _gdriveToFetchUrl(raw);
+    if (!fetchUrl) { showToast('⚠ Unrecognized link — paste a Google Sheet or Drive URL'); return; }
+    _showLoader('Fetching from Drive…');
+    try {
+      const res = await fetch(fetchUrl);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const text = await res.text();
+      if (input) input.value = '';
+      document.getElementById('mbUrlImportBar') && (document.getElementById('mbUrlImportBar').style.display = 'none');
+      await _parseSaveMbCSV(text);
+    } catch {
+      showToast('⚠ Could not fetch — make sure it\'s shared as "Anyone with the link"', true);
+    } finally {
+      _hideLoader();
+    }
   }
 
   async function renderMediaBuying() {
