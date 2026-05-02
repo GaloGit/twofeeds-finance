@@ -540,7 +540,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.5.3</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.5.4</div>
   </div>
 </div>
 
@@ -613,7 +613,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.5.3</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.5.4</div>
   </div>
 </div>
 
@@ -752,7 +752,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.5.3</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.5.4</span>
           </div>
         </div>
       </div>
@@ -8854,11 +8854,24 @@
           <td class="mono text-muted">${pct(r.amount)}</td>
         </tr>`).join('') +
       `<tr style="border-top:2px solid var(--border)">
-        <td colspan="2" style="font-weight:800;color:var(--text)">Grand Total</td>
+        <td colspan="2" style="font-weight:800;color:var(--text)">Grand Total${totalVat>0?' <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);font-weight:400">(excl. VAT)</span>':''}</td>
         <td class="mono" style="font-weight:800;color:var(--accent-light);white-space:nowrap">${fmtAmt(grandTotal)}</td>
         <td class="mono" style="font-weight:800;white-space:nowrap;color:${totalVat>0?'var(--amber)':'var(--muted)'}">${totalVat>0?fmtAmt(totalVat):'—'}</td>
         <td class="mono" style="font-weight:800">100%</td>
-      </tr>`;
+      </tr>
+      ${totalVat>0?`
+      <tr style="background:rgba(245,158,11,0.04)">
+        <td colspan="2" style="color:var(--amber);font-size:11px;padding-left:24px">↳ VAT Costs</td>
+        <td class="mono" style="color:var(--amber);white-space:nowrap;font-size:11px">${fmtAmt(totalVat)}</td>
+        <td class="mono" style="color:var(--muted);opacity:0.4">—</td>
+        <td class="mono" style="color:var(--amber);font-size:11px">${grandTotal>0?((totalVat/grandTotal)*100).toFixed(1)+'%':'—'}</td>
+      </tr>
+      <tr style="background:rgba(245,158,11,0.07);border-top:1px solid rgba(245,158,11,0.2)">
+        <td colspan="2" style="font-weight:800;color:var(--amber)">Grand Total <span style="font-family:var(--font-mono);font-size:9px;font-weight:400">(incl. VAT)</span></td>
+        <td class="mono" style="font-weight:800;color:var(--amber);white-space:nowrap">${fmtAmt(grandTotal+totalVat)}</td>
+        <td class="mono" style="color:var(--muted);opacity:0.4">—</td>
+        <td class="mono" style="font-weight:800;color:var(--amber)">—</td>
+      </tr>`:''}`;
 
     const activeCats = allCats.filter(c => c.amount > 0);
     setTimeout(() => renderCsChart(activeCats, grandTotal), 50);
