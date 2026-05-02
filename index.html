@@ -539,7 +539,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.1.2</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.1.3</div>
   </div>
 </div>
 
@@ -612,7 +612,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.1.2</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.1.3</div>
   </div>
 </div>
 
@@ -751,7 +751,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.1.2</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.1.3</span>
           </div>
         </div>
       </div>
@@ -1871,6 +1871,9 @@
           </table>
         </div>
       </div>
+
+      <!-- Advertisers summary -->
+      <div id="advSummaryWrap" style="margin-top:24px"></div>
     </div>
 
     <!-- REV SUMMARY PAGE -->
@@ -4066,6 +4069,7 @@
     const canEdit = canEditTab('advertisers');
     if (!advertisers.length) {
       body.innerHTML = `<tr><td colspan="${totalCols}" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:40px">No advertisers yet — use the form above to add one</td></tr>`;
+      _renderAdvSummary();
       return;
     }
     body.innerHTML = advertisers.map((a, i) => {
@@ -4301,6 +4305,65 @@
         </td>
       </tr>`;
     }).join('');
+    _renderAdvSummary();
+  }
+
+  function _renderAdvSummary() {
+    const wrap = document.getElementById('advSummaryWrap');
+    if (!wrap) return;
+    if (!advertisers.length) { wrap.innerHTML = ''; return; }
+
+    const tally = (key, multi) => {
+      const map = {};
+      advertisers.forEach(a => {
+        if (multi) {
+          const vals = a[key] && a[key].length ? a[key] : ['Unassigned'];
+          vals.forEach(v => { map[v] = (map[v] || 0) + 1; });
+        } else {
+          const v = a[key] || 'Unassigned';
+          map[v] = (map[v] || 0) + 1;
+        }
+      });
+      return Object.entries(map).sort((a, b) => b[1] - a[1]);
+    };
+
+    const liveCount   = advertisers.filter(a => (a.status || 'live') === 'live').length;
+    const pausedCount = advertisers.length - liveCount;
+
+    const sections = [
+      { label: 'Verticals',   entries: tally('verticals',  true),  color: 'var(--accent-light)' },
+      { label: 'TO2 Manager', entries: tally('to2Manager', false), color: '#38bdf8' },
+      { label: 'TF Manager',  entries: tally('tfManager',  false), color: '#a78bfa' },
+      { label: 'GEO',         entries: tally('geo',        false), color: '#34d399' },
+    ];
+
+    const rowHtml = ([name, cnt]) => `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:3px 0;border-bottom:1px solid var(--border)">
+        <span style="font-family:var(--font-mono);font-size:11px;color:${name==='Unassigned'?'var(--muted)':'var(--text)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(name)}</span>
+        <span style="font-family:var(--font-mono);font-size:10px;font-weight:700;flex-shrink:0;min-width:22px;text-align:right;color:var(--text)">${cnt}</span>
+      </div>`;
+
+    wrap.innerHTML = `
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:8px">
+          <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em">Portfolio Summary</div>
+          <div style="display:flex;gap:12px;align-items:center">
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--green)">● ${liveCount} Live</span>
+            ${pausedCount ? `<span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">⏸ ${pausedCount} Paused</span>` : ''}
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${advertisers.length} Total</span>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:24px">
+          ${sections.map(s => `
+            <div>
+              <div style="font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:${s.color};margin-bottom:10px">${s.label}</div>
+              <div style="display:flex;flex-direction:column">
+                ${s.entries.slice(0, 12).map(rowHtml).join('')}
+                ${s.entries.length > 12 ? `<div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:6px">+${s.entries.length - 12} more</div>` : ''}
+              </div>
+            </div>`).join('')}
+        </div>
+      </div>`;
   }
 
   function toggleAdvRow(i) {
