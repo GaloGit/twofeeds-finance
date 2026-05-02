@@ -539,7 +539,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.0.16</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.0.17</div>
   </div>
 </div>
 
@@ -612,7 +612,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.0.16</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.0.17</div>
   </div>
 </div>
 
@@ -751,7 +751,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.0.16</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.0.17</span>
           </div>
         </div>
       </div>
@@ -1968,6 +1968,12 @@
           <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Revenue by TO2 MGR</div>
           <div id="revChartTo2Box" style="position:relative;width:100%">
             <canvas id="revChartTo2"></canvas>
+          </div>
+        </div>
+        <div id="revChartVertWrap" style="display:none;flex:1;min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
+          <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Revenue by Vertical</div>
+          <div id="revChartVertBox" style="position:relative;width:100%">
+            <canvas id="revChartVert"></canvas>
           </div>
         </div>
       </div>
@@ -9442,9 +9448,10 @@
     const progressWrap = document.getElementById('revProgressWrap');
     if (!hasData) {
       progressWrap.style.display = 'none';
-      ['revChartWrap','revChartTfWrap','revChartTo2Wrap'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+      ['revChartWrap','revChartTfWrap','revChartTo2Wrap','revChartVertWrap'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
       if (_revChartInstance) { _revChartInstance.destroy(); _revChartInstance = null; }
       ['tf','to2'].forEach(t => { if (_revMgrChartInstances[t]) { _revMgrChartInstances[t].destroy(); delete _revMgrChartInstances[t]; } });
+      if (_revVertChartInstance) { _revVertChartInstance.destroy(); _revVertChartInstance = null; }
       if (revOverlay) revOverlay.style.display = 'none';
       return;
     }
@@ -9520,6 +9527,7 @@
       }
       _renderRevMgrChart('tf');
       _renderRevMgrChart('to2');
+      _renderRevVertChart();
       if (revOverlay) revOverlay.style.display = 'none';
     }, 50);
   }
@@ -9651,6 +9659,72 @@
       },
     });
     _injectLogToggle(canvasId, true);
+  }
+
+  let _revVertChartInstance = null;
+  function _renderRevVertChart() {
+    const wrap   = document.getElementById('revChartVertWrap');
+    const box    = document.getElementById('revChartVertBox');
+    const canvas = document.getElementById('revChartVert');
+    if (!wrap || !box || !canvas) return;
+
+    // Group by vertical; an advertiser with multiple verticals counts toward each
+    const grouped = {};
+    _revData.forEach(r => {
+      const verts = _findAdv(r.name)?.verticals || [];
+      const targets = verts.length ? verts : ['—'];
+      targets.forEach(v => { grouped[v] = (grouped[v] || 0) + (r.amount || 0); });
+    });
+
+    const entries = Object.entries(grouped).sort(([, a], [, b]) => b - a);
+    if (!entries.length) { wrap.style.display = 'none'; return; }
+
+    const labels  = entries.map(([k]) => k);
+    const amounts = entries.map(([, v]) => v);
+
+    // Use each vertical's defined color, fall back to accent
+    const colors = labels.map(k => {
+      const def = _getAllVerticals().find(x => x.key === k);
+      return def ? def.color.replace('var(--green)', '#22c55e').replace('var(--amber)', '#f59e0b') : 'rgba(167,139,250,0.75)';
+    });
+    const bgColors = labels.map(k => {
+      const def = _getAllVerticals().find(x => x.key === k);
+      return def ? def.bg : 'rgba(167,139,250,0.15)';
+    });
+
+    const barH = Math.max(60, entries.length * 44);
+    box.style.height = barH + 'px';
+    wrap.style.display = 'block';
+
+    if (_revVertChartInstance) { _revVertChartInstance.destroy(); _revVertChartInstance = null; }
+
+    const isDark    = !document.body.classList.contains('light-mode');
+    const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+    const tickColor = isDark ? '#7b6ea8' : '#6b5fa8';
+    const fmtTick   = v => '$' + (v >= 1000 ? (v/1000).toFixed(v%1000===0?0:1)+'k' : v.toLocaleString());
+
+    _revVertChartInstance = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{ data: amounts, backgroundColor: bgColors, borderColor: colors, borderWidth: 1, borderRadius: 4, barThickness: 12 }],
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { left: 0 } },
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => ' $' + Number(ctx.raw).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) } },
+        },
+        scales: {
+          x: { type: 'logarithmic', grid: { color: gridColor }, ticks: { color: tickColor, font: { family: "'Space Mono', monospace", size: 9 }, callback: fmtTick } },
+          y: { grid: { display: false }, ticks: { color: tickColor, font: { family: "'Space Mono', monospace", size: 9 }, crossAlign: 'far' }, afterFit(axis) { axis.width = 120; } },
+        },
+      },
+    });
+    _injectLogToggle('revChartVert', true);
   }
 
   async function revFetchSheet() {
@@ -9838,7 +9912,8 @@
     localStorage.removeItem('tf_rev_lastFetch_' + pk);
     if (_revChartInstance) { _revChartInstance.destroy(); _revChartInstance = null; }
     ['tf','to2'].forEach(t => { if (_revMgrChartInstances[t]) { _revMgrChartInstances[t].destroy(); delete _revMgrChartInstances[t]; } });
-    ['revChartWrap','revChartTfWrap','revChartTo2Wrap'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+    if (_revVertChartInstance) { _revVertChartInstance.destroy(); _revVertChartInstance = null; }
+    ['revChartWrap','revChartTfWrap','revChartTo2Wrap','revChartVertWrap'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
     renderRevSummary();
   }
 
