@@ -539,7 +539,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.3.8</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.3.9</div>
   </div>
 </div>
 
@@ -612,7 +612,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.3.8</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.3.9</div>
   </div>
 </div>
 
@@ -751,7 +751,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.3.8</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.3.9</span>
           </div>
         </div>
       </div>
@@ -1346,9 +1346,9 @@
         <button onclick="scrollToChart('tfMgrRevWrap',60)"     style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">👤 TF Manager Rev</button>
         <button onclick="scrollToChart('tlTo2RevWrap',60)"     style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">👤 TL TO2 Rev</button>
         <button onclick="scrollToChart('to2MgrRevWrap',60)"    style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">👤 TO2 Manager Rev</button>
-        <button onclick="scrollToChart('intSrcCostWrap',60)"   style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">💸 Internal Sources</button>
         <button onclick="scrollToChart('dspPubCostWrap',60)"   style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">💸 DSP Publishers</button>
         <button onclick="scrollToChart('rwPubCostWrap',60)"    style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">💸 RW Publishers</button>
+        <button onclick="scrollToChart('intSrcCostWrap',60)"   style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">💸 Internal Sources</button>
         <button onclick="scrollToChart('advRevWrap',60)"       style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">📊 By Advertiser</button>
         <button onclick="scrollToChart('ovrvwCommWrap',60)"    style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">💰 Commissions</button>
       </div>
@@ -1432,15 +1432,6 @@
           <div class="chart-container" style="height:320px"><canvas id="dspPubCostChart"></canvas></div>
         </div>
       </div>
-      <div id="intSrcCostWrap" style="display:none;margin-top:24px">
-        <div class="chart-wrap">
-          <div class="chart-header">
-            <div class="chart-title">Internal Sources Cost</div>
-            <div class="chart-sub">Over Time</div>
-          </div>
-          <div class="chart-container" style="height:320px"><canvas id="intSrcCostChart"></canvas></div>
-        </div>
-      </div>
       <div id="rwPubCostWrap" style="display:none;margin-top:24px">
         <div class="chart-wrap">
           <div class="chart-header">
@@ -1448,6 +1439,15 @@
             <div class="chart-sub">Over Time</div>
           </div>
           <div class="chart-container" style="height:320px"><canvas id="rwPubCostChart"></canvas></div>
+        </div>
+      </div>
+      <div id="intSrcCostWrap" style="display:none;margin-top:24px">
+        <div class="chart-wrap">
+          <div class="chart-header">
+            <div class="chart-title">Internal Sources Cost</div>
+            <div class="chart-sub">Over Time</div>
+          </div>
+          <div class="chart-container" style="height:320px"><canvas id="intSrcCostChart"></canvas></div>
         </div>
       </div>
       <div id="advRevWrap" style="display:none;margin-top:24px">
