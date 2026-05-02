@@ -539,7 +539,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.2.6</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.2.7</div>
   </div>
 </div>
 
@@ -612,7 +612,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.2.6</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.2.7</div>
   </div>
 </div>
 
@@ -751,7 +751,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.2.6</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.2.7</span>
           </div>
         </div>
       </div>
@@ -1399,6 +1399,15 @@
             <div class="chart-sub">Over Time</div>
           </div>
           <div class="chart-container"><canvas id="to2MgrRevChart"></canvas></div>
+        </div>
+      </div>
+      <div id="advRevWrap" style="display:none;margin-top:24px">
+        <div class="chart-wrap">
+          <div class="chart-header">
+            <div class="chart-title">Revenue by Advertiser</div>
+            <div class="chart-sub">Over Time</div>
+          </div>
+          <div class="chart-container" style="height:320px"><canvas id="advRevChart"></canvas></div>
         </div>
       </div>
       <div id="ovrvwCommWrap" style="display:none;margin-top:24px">
@@ -8982,6 +8991,7 @@
     _renderTrendCharts(labels, revenues, costs, profits);
     _renderTfMgrRevChart(allPeriods, labels);
     _renderTo2MgrRevChart(allPeriods, labels);
+    _renderAdvRevChart(allPeriods, labels);
     const btn = document.getElementById('ovrvwVatToggle');
     if (btn) {
       btn.textContent = _ovrvwIncludeVat ? 'Costs: incl. VAT' : 'Costs: excl. VAT';
@@ -8994,6 +9004,50 @@
   function _toggleOvrvwVat() {
     _ovrvwIncludeVat = !_ovrvwIncludeVat;
     _renderProfitChart();
+  }
+
+  function _renderAdvRevChart(allPeriods, labels) {
+    const wrap   = document.getElementById('advRevWrap');
+    const canvas = document.getElementById('advRevChart');
+    if (!canvas || !wrap) return;
+
+    const advData = {};
+    allPeriods.forEach((p, i) => {
+      const rows = (_revDataByPeriod[p] && _revDataByPeriod[p].length) ? _revDataByPeriod[p] : _revLoadPeriod(p);
+      rows.forEach(r => {
+        const name = r.name || 'Unknown';
+        if (!advData[name]) advData[name] = new Array(allPeriods.length).fill(0);
+        advData[name][i] += (r.amount || 0);
+      });
+    });
+
+    const advs = Object.keys(advData);
+    if (!advs.length) { wrap.style.display = 'none'; return; }
+
+    const palette = ['rgba(99,102,241,1)','rgba(34,197,94,1)','rgba(251,191,36,1)','rgba(239,68,68,1)','rgba(56,189,248,1)','rgba(167,139,250,1)','rgba(52,211,153,1)','rgba(251,113,133,1)','rgba(251,146,60,1)','rgba(163,230,53,1)','rgba(232,121,249,1)','rgba(20,184,166,1)'];
+    const datasets = advs.map((name, idx) => {
+      const c = palette[idx % palette.length];
+      return { label: name, data: advData[name], borderColor: c, backgroundColor: c.replace(',1)', ',0.1)'), fill: false, tension: 0.3, pointRadius: 3, pointBackgroundColor: c, borderWidth: 2 };
+    });
+
+    wrap.style.display = 'block';
+    if (window._advRevChart) { window._advRevChart.destroy(); window._advRevChart = null; }
+    window._advRevChart = new Chart(canvas, {
+      type: 'line',
+      data: { labels, datasets },
+      options: {
+        responsive: true, maintainAspectRatio: true,
+        plugins: {
+          legend: { labels: { color: _chartC().legend, font: { family: 'JetBrains Mono', size: 10 } } },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}` } }
+        },
+        scales: {
+          x: { ticks: { color: _chartC().tick, font: { family: 'JetBrains Mono', size: 9 } }, grid: { color: _chartC().gridFaint } },
+          y: { ticks: { color: _chartC().tick, font: { family: 'JetBrains Mono', size: 9 }, callback: v => '$'+v.toLocaleString() }, grid: { color: _chartC().gridFaint } }
+        }
+      }
+    });
+    _injectLogToggle('advRevChart', false);
   }
 
   function _renderTo2MgrRevChart(allPeriods, labels) {
