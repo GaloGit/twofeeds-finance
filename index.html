@@ -539,7 +539,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.1.5</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.1.6</div>
   </div>
 </div>
 
@@ -612,7 +612,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.1.5</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.1.6</div>
   </div>
 </div>
 
@@ -751,7 +751,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.1.5</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.1.6</span>
           </div>
         </div>
       </div>
@@ -5121,8 +5121,8 @@
 
   // ── STATE ──
   let secondsLeft = 60;
-  let selectedYears  = new Set([new Date().getFullYear()]);
-  let selectedMonths = new Set([new Date().getMonth()]); // 0-indexed; empty = ALL months
+  let selectedYears  = (() => { try { const s = JSON.parse(localStorage.getItem('tf_period_years')); if (s && s.length) return new Set(s); } catch {} return new Set([new Date().getFullYear()]); })();
+  let selectedMonths = (() => { try { const s = JSON.parse(localStorage.getItem('tf_period_months')); if (s && s.length) return new Set(s); } catch {} return new Set([new Date().getMonth()]); })();
 
   // ── APP CONFIG (loaded from Config sheet) ──
   async function loadConfig() {
@@ -6503,6 +6503,8 @@
   }
 
   async function onPeriodChange() {
+    try { localStorage.setItem('tf_period_years',  JSON.stringify([...selectedYears]));  } catch {}
+    try { localStorage.setItem('tf_period_months', JSON.stringify([...selectedMonths])); } catch {}
     _updatePageLabel();
     _showLoader();
     // Clear both caches so data re-fetches on period switch
