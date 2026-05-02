@@ -539,7 +539,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.2.2</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.2.3</div>
   </div>
 </div>
 
@@ -612,7 +612,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.2.2</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.2.3</div>
   </div>
 </div>
 
@@ -751,7 +751,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.2.2</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.2.3</span>
           </div>
         </div>
       </div>
@@ -1345,7 +1345,7 @@
             <div class="chart-title">Monthly Overview</div>
             <div class="chart-sub" id="profChartSub">Revenue · Costs · Profit</div>
           </div>
-          <button id="ovrvwVatToggle" onclick="_toggleOvrvwVat()" style="font-family:var(--font-mono);font-size:10px;padding:5px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;transition:all 0.15s">Costs: excl. VAT</button>
+          <button id="ovrvwVatToggle" onclick="_toggleOvrvwVat()" style="font-family:var(--font-mono);font-size:10px;padding:5px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;transition:all 0.15s;margin-right:52px">Costs: excl. VAT</button>
         </div>
         <div class="chart-container">
           <canvas id="profChart"></canvas>
@@ -8704,7 +8704,7 @@
       _rawCache['inv_chart_all']
         ? Promise.resolve()
         : fetch(`${FINANCE_API}?action=getInvoices`).then(r => r.json()).then(j => {
-            _rawCache['inv_chart_all'] = (j.data || []).map(r => ({ period: r['Period']||'', amount: parseFloat(r['Amount'])||0 }));
+            _rawCache['inv_chart_all'] = (j.data || []).map(r => ({ period: r['Period']||'', amount: parseFloat(r['Amount'])||0, vat: parseFloat(r['Vat'])||0 }));
           }).catch(() => {}),
       _rawCache['comm_chart_all']
         ? Promise.resolve()
@@ -8928,12 +8928,12 @@
       if (_rawCache['pub_chart_all']) {
         const pub = (_rawCache['pub_chart_all']).filter(r => r.period === p).reduce((s,r) => s + r.amount, 0);
         const inv = (_rawCache['inv_chart_all'] || []).filter(r => r.period === p).reduce((s,r) => s + r.amount, 0);
-        const vat = _ovrvwIncludeVat ? (_rawCache['inv_chart_all'] || []).filter(r => r.period === p).reduce((s,r) => s + (parseFloat(r['Vat'] !== undefined ? r['Vat'] : (r.vat !== undefined ? r.vat : 0)) || 0), 0) : 0;
+        const vat = _ovrvwIncludeVat ? (_rawCache['inv_chart_all'] || []).filter(r => r.period === p).reduce((s,r) => s + (r.vat || 0), 0) : 0;
         return pub + inv + vat;
       }
       const pub = (_rawCache['pub_' + p] || []).reduce((s,r) => s + (r.amount||0), 0);
       const inv = (_rawCache['inv_' + p] || []).reduce((s,r) => s + (r.amount||0), 0);
-      const vat = _ovrvwIncludeVat ? (_rawCache['inv_' + p] || []).reduce((s,r) => s + (parseFloat(r['Vat'] !== undefined ? r['Vat'] : (r.vat !== undefined ? r.vat : 0)) || 0), 0) : 0;
+      const vat = _ovrvwIncludeVat ? (_rawCache['inv_' + p] || []).reduce((s,r) => s + (parseFloat(r['Vat'] !== undefined ? r['Vat'] : (r.vat||0)) || 0), 0) : 0;
       return pub + inv + vat;
     });
     const profits = revenues.map((r,i) => r - costs[i]);
