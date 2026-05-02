@@ -539,7 +539,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.2.3</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.2.4</div>
   </div>
 </div>
 
@@ -612,7 +612,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.2.3</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.2.4</div>
   </div>
 </div>
 
@@ -751,7 +751,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.2.3</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.2.4</span>
           </div>
         </div>
       </div>
@@ -1253,7 +1253,7 @@
     <div class="page" id="tab-costsummary" style="position:relative">
 
       <!-- Loading overlay -->
-      <div id="csLoadingOverlay" style="display:none;position:absolute;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px">
+      <div id="csLoadingOverlay" style="display:none;position:absolute;inset:0;z-index:50;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;gap:14px">
         <div class="spinner"></div>
         <span style="font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">Loading cost data…</span>
       </div>
@@ -8602,6 +8602,7 @@
     const pKey = 'pub_' + periodKey();
     const iKey = 'inv_' + periodKey();
     const overlay = document.getElementById('csLoadingOverlay');
+    if (overlay) overlay.style.display = 'none';
     // Use cached raw API rows if available; otherwise fetch both in parallel
     let pubRows, invRawRows;
     if (_rawCache[pKey + '_raw'] && _rawCache[iKey + '_raw']) {
