@@ -539,7 +539,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.0.15</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.0.16</div>
   </div>
 </div>
 
@@ -612,7 +612,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.0.15</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.0.16</div>
   </div>
 </div>
 
@@ -751,7 +751,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.0.15</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.0.16</span>
           </div>
         </div>
       </div>
@@ -1937,6 +1937,7 @@
                   <th>TO2 Cost %</th>
                   <th>TF Manager</th>
                   <th>TO2 MGR</th>
+                  <th>Vertical</th>
                   <th>Status</th>
                 </tr>
               </thead>
@@ -9481,6 +9482,7 @@
         <td style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--muted)">${r.cost > 0 && r.amount > 0 ? (r.cost / r.amount * 100).toFixed(1) + '%' : '<span style="opacity:0.4">—</span>'}</td>
         <td>${_mgrCell(r.tfManager || _findAdv(r.name)?.tfManager)}</td>
         <td>${_mgrCell(r.to2Manager || _findAdv(r.name)?.to2Manager)}</td>
+        <td><div style="display:flex;flex-wrap:wrap;gap:3px">${(()=>{const v=_findAdv(r.name)?.verticals||[];return v.length?_advVerticalBadges(v):'<span style="color:var(--muted);opacity:0.4;font-family:var(--font-mono);font-size:10px">—</span>';})()}</div></td>
         <td><span class="inv-status-badge ${r.status==='paid'?'paid':'waiting'}" onclick="revToggleStatus(${i})" style="cursor:pointer">${r.status==='paid'?'✓ Paid':'⏳ Waiting'}</span></td>
       </tr>`;
     }).join('');
@@ -9492,7 +9494,7 @@
       <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--green);padding:10px 12px">${fmt(total)}</td>
       <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--amber);padding:10px 12px">${totalCost > 0 ? fmt(totalCost) : '—'}</td>
       <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--muted);padding:10px 12px">${totalCost > 0 && total > 0 ? (totalCost / total * 100).toFixed(1) + '%' : '—'}</td>
-      <td colspan="3"></td>
+      <td colspan="4"></td>
     </tr>`;
 
     // Charts — manager info already embedded in _revData at fetch time
