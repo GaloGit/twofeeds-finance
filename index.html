@@ -539,7 +539,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.1.6</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.1.7</div>
   </div>
 </div>
 
@@ -612,7 +612,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.1.6</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.1.7</div>
   </div>
 </div>
 
@@ -751,7 +751,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.1.6</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.1.7</span>
           </div>
         </div>
       </div>
@@ -4101,9 +4101,9 @@
           case 'geo':        return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:5px">${esc(a.geo||'—')}${a.geo&&a.geo.length===2?countryFlagImg(a.geo,'20x15'):''}</span></td>`;
           case 'tfStatus':   return `<td><span style="${_siStatusSelectStyle(a.tfStatus)};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700">${(a.tfStatus||'live')==='live'?'Live':'Paused'}</span></td>`;
           case 'to2Status':  return `<td><span style="${_siStatusSelectStyle(a.to2Status)};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700">${(a.to2Status||'live')==='live'?'Live':'Paused'}</span></td>`;
-          case 'verticals':  return `<td><div style="display:flex;flex-wrap:wrap;gap:4px">${(a.verticals||[]).length?_advVerticalBadges(a.verticals):'<span style="color:var(--muted);font-family:var(--font-mono);font-size:10px">—</span>'}</div></td>`;
-          case 'fraudTools':       return `<td><div style="display:flex;flex-wrap:wrap;gap:4px">${(a.fraudTools||[]).length?_advFraudToolBadges(a.fraudTools):'<span style="color:var(--muted);font-family:var(--font-mono);font-size:10px">—</span>'}</div></td>`;
-          case 'operatingSystems': return `<td><div style="display:flex;flex-wrap:wrap;gap:4px">${(a.operatingSystems||[]).length?_advOSBadges(a.operatingSystems):'<span style="color:var(--muted);font-family:var(--font-mono);font-size:10px">—</span>'}</div></td>`;
+          case 'verticals':  return `<td><div style="display:flex;flex-wrap:wrap;gap:4px">${(a.verticals||[]).length?_advVerticalBadges(a.verticals):_advMissingChip('vertical')}</div></td>`;
+          case 'fraudTools':       return `<td><div style="display:flex;flex-wrap:wrap;gap:4px">${(a.fraudTools||[]).length?_advFraudToolBadges(a.fraudTools):_advMissingChip('fraud')}</div></td>`;
+          case 'operatingSystems': return `<td><div style="display:flex;flex-wrap:wrap;gap:4px">${(a.operatingSystems||[]).length?_advOSBadges(a.operatingSystems):_advMissingChip('os')}</div></td>`;
           default:           return '<td></td>';
         }
       }).join('');
@@ -4426,6 +4426,10 @@
     }
   }
 
+  function _advMissingChip(type) {
+    const labels = { vertical: 'No Vertical', fraud: 'No Fraud Tool', os: 'No OS' };
+    return `<span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:20px;border:1px dashed rgba(148,163,184,0.35);background:var(--surface3);color:var(--muted);opacity:0.65">${labels[type]||'—'}</span>`;
+  }
   function _advVerticalBadges(verticals) {
     return (verticals || []).map(v => {
       const def = _getAllVerticals().find(x => x.key === v);
