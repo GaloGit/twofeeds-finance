@@ -539,7 +539,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.0.18</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.1.0</div>
   </div>
 </div>
 
@@ -612,7 +612,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.0.18</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.1.0</div>
   </div>
 </div>
 
@@ -751,7 +751,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.0.18</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.1.0</span>
           </div>
         </div>
       </div>
@@ -1296,6 +1296,7 @@
               <th>Category</th>
               <th>Group</th>
               <th>Amount</th>
+              <th>VAT</th>
               <th>% of Total</th>
             </tr>
           </thead>
@@ -8495,11 +8496,13 @@
 
     // Group internal sources
     const groupTotals = {};
-    CS_GROUPS.forEach(g => { groupTotals[g] = 0; });
-    groupTotals['Other'] = 0;
+    const groupVats   = {};
+    CS_GROUPS.forEach(g => { groupTotals[g] = 0; groupVats[g] = 0; });
+    groupTotals['Other'] = 0; groupVats['Other'] = 0;
     invRows.forEach(r => {
       const g = csMatchGroup(r['Vendor'] || '');
       groupTotals[g] += parseFloat(r['Amount']) || 0;
+      groupVats[g]   += parseFloat(r['Vat'])    || 0;
     });
 
     const intTotal   = Object.values(groupTotals).reduce((s,v) => s+v, 0);
@@ -8527,11 +8530,13 @@
     document.getElementById('csSub').textContent =
       `${periodLabel()} · ${pubRows.length} publisher${pubRows.length!==1?'s':''} · ${invRows.length} invoice${invRows.length!==1?'s':''}`;
 
+    const totalVat = Object.values(groupVats).reduce((s, v) => s + v, 0);
+
     // Table rows
     const tableRows = [
-      { category: 'Publishers', group: '—', amount: pubTotal, isPub: true },
-      ...CS_GROUPS.map(g => ({ category: 'Internal Sources', group: g, amount: groupTotals[g] })),
-      ...(groupTotals['Other'] > 0 ? [{ category: 'Internal Sources', group: 'Other', amount: groupTotals['Other'] }] : []),
+      { category: 'Publishers', group: '—', amount: pubTotal, vat: 0, isPub: true },
+      ...CS_GROUPS.map(g => ({ category: 'Internal Sources', group: g, amount: groupTotals[g], vat: groupVats[g] })),
+      ...(groupTotals['Other'] > 0 ? [{ category: 'Internal Sources', group: 'Other', amount: groupTotals['Other'], vat: groupVats['Other'] }] : []),
     ];
 
     const fmtAmt = v => '$' + Number(v).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -8543,11 +8548,13 @@
           <td style="color:${r.isPub ? 'var(--accent-light)' : 'var(--muted)'}${r.isPub ? ';font-weight:700' : ''}">${r.category}</td>
           <td style="font-weight:${r.isPub?'700':'400'}">${r.group}</td>
           <td class="mono text-green" style="font-weight:700;white-space:nowrap">${fmtAmt(r.amount)}</td>
+          <td class="mono" style="white-space:nowrap;color:${r.vat>0?'var(--amber)':'var(--muted)'};opacity:${r.vat>0?'1':'0.4'}">${r.vat>0?fmtAmt(r.vat):'—'}</td>
           <td class="mono text-muted">${pct(r.amount)}</td>
         </tr>`).join('') +
       `<tr style="border-top:2px solid var(--border)">
         <td colspan="2" style="font-weight:800;color:var(--text)">Grand Total</td>
         <td class="mono" style="font-weight:800;color:var(--accent-light);white-space:nowrap">${fmtAmt(grandTotal)}</td>
+        <td class="mono" style="font-weight:800;white-space:nowrap;color:${totalVat>0?'var(--amber)':'var(--muted)'}">${totalVat>0?fmtAmt(totalVat):'—'}</td>
         <td class="mono" style="font-weight:800">100%</td>
       </tr>`;
 
