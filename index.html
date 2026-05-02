@@ -539,7 +539,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.1.7</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.1.8</div>
   </div>
 </div>
 
@@ -612,7 +612,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.1.7</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.1.8</div>
   </div>
 </div>
 
@@ -751,7 +751,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.1.7</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.1.8</span>
           </div>
         </div>
       </div>
@@ -1716,7 +1716,8 @@
             </div>
             <div style="flex:0 0 130px">
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Platform</div>
-              <select id="advPlatform" style="width:100%;background:rgba(56,189,248,0.13);color:#38bdf8;border:1px solid rgba(56,189,248,0.45);border-radius:8px;padding:10px 14px;font-family:var(--font-mono);font-size:13px;font-weight:700;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none">
+              <select id="advPlatform" onchange="_applyStatusSelectColor(this,'')" style="width:100%;background:var(--surface3);color:var(--muted);border:1px solid rgba(148,163,184,0.35);border-radius:8px;padding:10px 14px;font-family:var(--font-mono);font-size:13px;font-weight:700;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none">
+                <option value="">— Select —</option>
                 <option value="Appsflyer">Appsflyer</option>
                 <option value="Adjust">Adjust</option>
                 <option value="Singular">Singular</option>
@@ -1839,14 +1840,16 @@
             </div>
             <div style="flex:0 0 110px">
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">TF Status</div>
-              <select id="advTfStatus" onchange="_applyStatusSelectColor(this,this.value)" style="width:100%;background:rgba(34,197,94,0.13);color:#22c55e;border:1px solid rgba(34,197,94,0.45);border-radius:8px;padding:10px 14px;font-family:var(--font-mono);font-size:13px;font-weight:700;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none">
+              <select id="advTfStatus" onchange="_applyStatusSelectColor(this,this.value)" style="width:100%;background:var(--surface3);color:var(--muted);border:1px solid rgba(148,163,184,0.35);border-radius:8px;padding:10px 14px;font-family:var(--font-mono);font-size:13px;font-weight:700;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none">
+                <option value="">— Not Set —</option>
                 <option value="live">Live</option>
                 <option value="paused">Paused</option>
               </select>
             </div>
             <div style="flex:0 0 110px">
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">TO2 Status</div>
-              <select id="advTo2Status" onchange="_applyStatusSelectColor(this,this.value)" style="width:100%;background:rgba(34,197,94,0.13);color:#22c55e;border:1px solid rgba(34,197,94,0.45);border-radius:8px;padding:10px 14px;font-family:var(--font-mono);font-size:13px;font-weight:700;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none">
+              <select id="advTo2Status" onchange="_applyStatusSelectColor(this,this.value)" style="width:100%;background:var(--surface3);color:var(--muted);border:1px solid rgba(148,163,184,0.35);border-radius:8px;padding:10px 14px;font-family:var(--font-mono);font-size:13px;font-weight:700;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none">
+                <option value="">— Not Set —</option>
                 <option value="live">Live</option>
                 <option value="paused">Paused</option>
               </select>
@@ -3304,12 +3307,14 @@
   };
 
   function _siStatusSelectStyle(status) {
-    const c = _SI_STATUS_COLORS[status || 'live'];
+    if (!status) return 'background:var(--surface3);color:var(--muted);border-color:rgba(148,163,184,0.35)';
+    const c = _SI_STATUS_COLORS[status];
     return c ? `background:${c.bg};color:${c.color};border-color:${c.border}` : 'background:var(--surface2);color:var(--text);border-color:var(--border)';
   }
 
   function _applyStatusSelectColor(el, status) {
-    const c = _SI_STATUS_COLORS[status || 'live'];
+    if (!status) { el.style.background = 'var(--surface3)'; el.style.color = 'var(--muted)'; el.style.borderColor = 'rgba(148,163,184,0.35)'; return; }
+    const c = _SI_STATUS_COLORS[status];
     if (c) { el.style.background = c.bg; el.style.color = c.color; el.style.borderColor = c.border; }
     else   { el.style.background = 'var(--surface2)'; el.style.color = 'var(--text)'; el.style.borderColor = 'var(--border)'; }
   }
@@ -4087,20 +4092,20 @@
       const logoHtml = resolved
         ? `<img src="${esc(resolved)}" onclick="previewSourceLogo('${esc(resolved)}','${esc(a.name)}','${esc((a.platform||'Appsflyer')+' Advertiser')}')" style="width:36px;height:36px;border-radius:6px;object-fit:contain;background:var(--surface3);cursor:zoom-in${isPaused?';opacity:0.4':''}" onerror="${fallback ? `this.src='${esc(fallback)}';this.onerror=function(){this.style.display='none'};` : `this.style.display='none'`}">`
         : `<span onclick="previewSourceLogo('','${esc(a.name)}','${esc((a.platform||'Appsflyer')+' Advertiser')}')" style="width:36px;height:36px;border-radius:6px;background:var(--surface3);color:var(--muted);display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:16px;font-weight:700;cursor:zoom-in">${esc((a.name||'?')[0].toUpperCase())}</span>`;
-      const platStyle = _advPlatformStyle(a.platform || 'Appsflyer');
+      const platStyle = a.platform ? _advPlatformStyle(a.platform) : '';
       const dataCells = cols.map(c => {
         switch (c) {
           case 'idx':        return `<td class="row-num">${i+1}</td>`;
           case 'logo':       return `<td style="padding:6px 12px">${logoHtml}</td>`;
           case 'name':       return `<td style="min-width:140px;white-space:nowrap"><span style="font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--text)">${esc(a.name)}</span></td>`;
-          case 'platform':   return `<td><span style="${platStyle};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700">${esc(a.platform||'Appsflyer')}</span></td>`;
-          case 'type':       return `<td><span style="${(a.type||'Direct')==='Agency'?'background:rgba(245,158,11,0.15);color:#f59e0b;border-color:rgba(245,158,11,0.45)':'background:rgba(56,189,248,0.13);color:#38bdf8;border-color:rgba(56,189,248,0.45)'};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700">${esc(a.type||'Direct')}</span></td>`;
+          case 'platform':   return `<td>${a.platform ? `<span style="${platStyle};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700">${esc(a.platform)}</span>` : _advMissingChip('platform')}</td>`;
+          case 'type':       return `<td>${a.type ? `<span style="${a.type==='Agency'?'background:rgba(245,158,11,0.15);color:#f59e0b;border-color:rgba(245,158,11,0.45)':'background:rgba(56,189,248,0.13);color:#38bdf8;border-color:rgba(56,189,248,0.45)'};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700">${esc(a.type)}</span>` : _advMissingChip('type')}</td>`;
           case 'tfManager':  return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(a.tfManager||'—')}</td>`;
           case 'to2Manager': return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(a.to2Manager||'—')}</td>`;
           case 'tlTo2':      return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(a.tlTo2||'—')}</td>`;
           case 'geo':        return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:5px">${esc(a.geo||'—')}${a.geo&&a.geo.length===2?countryFlagImg(a.geo,'20x15'):''}</span></td>`;
-          case 'tfStatus':   return `<td><span style="${_siStatusSelectStyle(a.tfStatus)};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700">${(a.tfStatus||'live')==='live'?'Live':'Paused'}</span></td>`;
-          case 'to2Status':  return `<td><span style="${_siStatusSelectStyle(a.to2Status)};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700">${(a.to2Status||'live')==='live'?'Live':'Paused'}</span></td>`;
+          case 'tfStatus':   return `<td>${a.tfStatus ? `<span style="${_siStatusSelectStyle(a.tfStatus)};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700">${a.tfStatus==='live'?'Live':'Paused'}</span>` : _advMissingChip('tfStatus')}</td>`;
+          case 'to2Status':  return `<td>${a.to2Status ? `<span style="${_siStatusSelectStyle(a.to2Status)};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700">${a.to2Status==='live'?'Live':'Paused'}</span>` : _advMissingChip('to2Status')}</td>`;
           case 'verticals':  return `<td><div style="display:flex;flex-wrap:wrap;gap:4px">${(a.verticals||[]).length?_advVerticalBadges(a.verticals):_advMissingChip('vertical')}</div></td>`;
           case 'fraudTools':       return `<td><div style="display:flex;flex-wrap:wrap;gap:4px">${(a.fraudTools||[]).length?_advFraudToolBadges(a.fraudTools):_advMissingChip('fraud')}</div></td>`;
           case 'operatingSystems': return `<td><div style="display:flex;flex-wrap:wrap;gap:4px">${(a.operatingSystems||[]).length?_advOSBadges(a.operatingSystems):_advMissingChip('os')}</div></td>`;
@@ -4127,9 +4132,9 @@
               <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px 20px;margin-bottom:14px">
                 ${[
                   ['Logo URL', a.logoUrl ? `<span style="font-family:var(--font-mono);font-size:10px;color:var(--accent-light);word-break:break-all">${esc(a.logoUrl.length>60?a.logoUrl.slice(0,57)+'…':a.logoUrl)}</span>` : '<span style="color:var(--muted);font-family:var(--font-mono);font-size:11px">—</span>'],
-                  ['Type', `<span style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;${(a.type||'Direct')==='Agency'?'background:rgba(245,158,11,0.15);color:#f59e0b':'background:rgba(56,189,248,0.13);color:#38bdf8'}">${esc(a.type||'Direct')}</span>`],
-                  ['TF Status',  `<span style="${_siStatusSelectStyle(a.tfStatus)};border-width:1px;border-style:solid;border-radius:6px;padding:2px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700">${(a.tfStatus||'live')==='live'?'Live':'Paused'}</span>`],
-                  ['TO2 Status', `<span style="${_siStatusSelectStyle(a.to2Status)};border-width:1px;border-style:solid;border-radius:6px;padding:2px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700">${(a.to2Status||'live')==='live'?'Live':'Paused'}</span>`],
+                  ['Type', a.type ? `<span style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;${a.type==='Agency'?'background:rgba(245,158,11,0.15);color:#f59e0b':'background:rgba(56,189,248,0.13);color:#38bdf8'}">${esc(a.type)}</span>` : _advMissingChip('type')],
+                  ['TF Status',  a.tfStatus  ? `<span style="${_siStatusSelectStyle(a.tfStatus)};border-width:1px;border-style:solid;border-radius:6px;padding:2px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700">${a.tfStatus==='live'?'Live':'Paused'}</span>`  : _advMissingChip('tfStatus')],
+                  ['TO2 Status', a.to2Status ? `<span style="${_siStatusSelectStyle(a.to2Status)};border-width:1px;border-style:solid;border-radius:6px;padding:2px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700">${a.to2Status==='live'?'Live':'Paused'}</span>` : _advMissingChip('to2Status')],
                   ['TF Manager',  `<span style="font-family:var(--font-mono);font-size:11px;color:var(--text)">${esc(a.tfManager||'—')}</span>`],
                   ['TO2 Manager', `<span style="font-family:var(--font-mono);font-size:11px;color:var(--text)">${esc(a.to2Manager||'—')}</span>`],
                   ['TL TO2',      `<span style="font-family:var(--font-mono);font-size:11px;color:var(--text)">${esc(a.tlTo2||'—')}</span>`],
@@ -4194,20 +4199,23 @@
                 <div>
                   <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Platform</div>
                   <select id="advPlatform_${i}" class="editable" style="width:100%;cursor:pointer">
-                    ${_ADV_PLATFORMS.map(t=>`<option value="${t}" ${(a.platform||'Appsflyer')===t?'selected':''}>${t}</option>`).join('')}
+                    <option value="" ${!a.platform?'selected':''}>— Select —</option>
+                    ${_ADV_PLATFORMS.map(t=>`<option value="${t}" ${a.platform===t?'selected':''}>${t}</option>`).join('')}
                   </select>
                 </div>
                 <div>
                   <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TF Status</div>
                   <select id="advTfStatus_${i}" class="editable" style="width:100%;cursor:pointer">
-                    <option value="live"   ${(a.tfStatus||'live')==='live'  ?'selected':''}>Live</option>
+                    <option value=""       ${!a.tfStatus?'selected':''}>— Not Set —</option>
+                    <option value="live"   ${a.tfStatus==='live'  ?'selected':''}>Live</option>
                     <option value="paused" ${a.tfStatus==='paused'?'selected':''}>Paused</option>
                   </select>
                 </div>
                 <div>
                   <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TO2 Status</div>
                   <select id="advTo2Status_${i}" class="editable" style="width:100%;cursor:pointer">
-                    <option value="live"   ${(a.to2Status||'live')==='live'  ?'selected':''}>Live</option>
+                    <option value=""       ${!a.to2Status?'selected':''}>— Not Set —</option>
+                    <option value="live"   ${a.to2Status==='live'  ?'selected':''}>Live</option>
                     <option value="paused" ${a.to2Status==='paused'?'selected':''}>Paused</option>
                   </select>
                 </div>
@@ -4218,7 +4226,8 @@
                 <div>
                   <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Type</div>
                   <select id="advType_${i}" class="editable" style="width:100%;cursor:pointer">
-                    <option value="Direct" ${(a.type||'Direct')==='Direct'?'selected':''}>Direct</option>
+                    <option value=""       ${!a.type?'selected':''}>— Select —</option>
+                    <option value="Direct" ${a.type==='Direct'?'selected':''}>Direct</option>
                     <option value="Agency" ${a.type==='Agency'?'selected':''}>Agency</option>
                   </select>
                 </div>
@@ -4345,7 +4354,7 @@
       return Object.entries(map).sort((a, b) => b[1] - a[1]);
     };
 
-    const liveCount   = advertisers.filter(a => (a.tfStatus || 'live') === 'live' || (a.to2Status || 'live') === 'live').length;
+    const liveCount   = advertisers.filter(a => a.tfStatus === 'live' || a.to2Status === 'live').length;
     const pausedCount = advertisers.length - liveCount;
 
     const sections = [
@@ -4427,7 +4436,7 @@
   }
 
   function _advMissingChip(type) {
-    const labels = { vertical: 'No Vertical', fraud: 'No Fraud Tool', os: 'No OS' };
+    const labels = { vertical: 'No Vertical', fraud: 'No Fraud Tool', os: 'No OS', platform: 'No Platform', type: 'No Type', tfStatus: 'No TF Status', to2Status: 'No TO2 Status' };
     return `<span style="font-family:var(--font-mono);font-size:9px;font-weight:600;padding:2px 8px;border-radius:20px;border:1px dashed rgba(148,163,184,0.35);background:var(--surface3);color:var(--muted);opacity:0.65">${labels[type]||'—'}</span>`;
   }
   function _advVerticalBadges(verticals) {
@@ -4530,10 +4539,10 @@
           tlTo2:      r['TL TO2']       || '',
           tfManager:  r['TF Manager']   || '',
           geo:        r['GEO']          || '',
-          platform:   r['Platform']     || 'Appsflyer',
-          type:       r['Type']         || 'Direct',
-          tfStatus:   r['TF Status']   || r['Status'] || 'live',
-          to2Status:  r['TO2 Status']  || r['Status'] || 'live',
+          platform:   r['Platform']     || '',
+          type:       r['Type']         || '',
+          tfStatus:   r['TF Status']   || r['Status'] || '',
+          to2Status:  r['TO2 Status']  || r['Status'] || '',
           campaigns:  (() => { try { return (JSON.parse(r['Campaigns'] || '[]')).map(c => typeof c === 'string' ? { name: c, to2Status: 'live', tfStatus: 'live', notes: '', url: '', iconUrl: '', big: false, ctv: false, inct: false } : { url: '', iconUrl: '', big: false, ctv: false, inct: false, ...c }); } catch { return []; } })(),
           verticals:   (() => { try { return JSON.parse(r['Verticals']   || '[]'); } catch { return []; } })(),
           websiteUrl:  r['WebsiteUrl']  || '',
@@ -4576,11 +4585,11 @@
     if (!advertisers[i]) return;
     const nameVal = (document.getElementById('advName_'     + i)?.value || '').trim();
     if (nameVal) advertisers[i].name = nameVal;
-    advertisers[i].platform   = (document.getElementById('advPlatform_'+ i)?.value || 'Appsflyer').trim();
-    advertisers[i].tfStatus   = (document.getElementById('advTfStatus_'  + i)?.value || 'live').trim();
-    advertisers[i].to2Status  = (document.getElementById('advTo2Status_' + i)?.value || 'live').trim();
+    advertisers[i].platform   = (document.getElementById('advPlatform_'+ i)?.value || '').trim();
+    advertisers[i].tfStatus   = (document.getElementById('advTfStatus_'  + i)?.value || '').trim();
+    advertisers[i].to2Status  = (document.getElementById('advTo2Status_' + i)?.value || '').trim();
     advertisers[i].logoUrl    = (document.getElementById('advUrl_'     + i)?.value || '').trim();
-    advertisers[i].type       = (document.getElementById('advType_'    + i)?.value || 'Direct').trim();
+    advertisers[i].type       = (document.getElementById('advType_'    + i)?.value || '').trim();
     advertisers[i].tfManager  = (document.getElementById('advTfm_'     + i)?.value || '').trim();
     advertisers[i].to2Manager = (document.getElementById('advTo2m_'    + i)?.value || '').trim();
     advertisers[i].tlTo2      = (document.getElementById('advTlTo2_'   + i)?.value || '').trim();
@@ -4752,7 +4761,8 @@
       const el = document.getElementById(id);
       if (el) { el.value = 'live'; _applyStatusSelectColor(el, 'live'); }
     });
-    document.getElementById('advPlatform').value = 'Appsflyer';
+    document.getElementById('advPlatform').value = '';
+    _applyStatusSelectColor(document.getElementById('advPlatform'), '');
     const fw = document.getElementById('advFormWrap');
     if (fw) fw.style.display = 'none';
     const advToggleBtn = document.getElementById('advFormToggle');
@@ -5992,10 +6002,10 @@
         tlTo2:       r['TL TO2']      || '',
         tfManager:   r['TF Manager']  || '',
         geo:         r['GEO']         || '',
-        platform:    r['Platform']    || 'Appsflyer',
-        type:        r['Type']        || 'Direct',
-        tfStatus:    r['TF Status']  || r['Status'] || 'live',
-        to2Status:   r['TO2 Status'] || r['Status'] || 'live',
+        platform:    r['Platform']    || '',
+        type:        r['Type']        || '',
+        tfStatus:    r['TF Status']  || r['Status'] || '',
+        to2Status:   r['TO2 Status'] || r['Status'] || '',
         campaigns:   (() => { try { return (JSON.parse(r['Campaigns'] || '[]')).map(c => typeof c === 'string' ? { name: c, to2Status: 'live', tfStatus: 'live', notes: '', url: '', iconUrl: '', big: false, ctv: false, inct: false } : { url: '', iconUrl: '', big: false, ctv: false, inct: false, ...c }); } catch { return []; } })(),
         verticals:   (() => { try { return JSON.parse(r['Verticals']  || '[]'); } catch { return []; } })(),
         websiteUrl:  r['WebsiteUrl']  || '',
@@ -9655,8 +9665,8 @@
           if (raw.length) advertisers = _applyAdvOrder(_dedupeAdvertisers(raw.map(r => ({
             name: r['Name'] || '', logoUrl: r['LogoUrl'] || '', tfManager: r['TF Manager'] || '',
             to2Manager: r['TO2 Manager'] || '', tlTo2: r['TL TO2'] || '', tfId: r['TF ID'] || '',
-            to2Id: r['TO2 ID'] || '', geo: r['GEO'] || '', platform: r['Platform'] || 'Appsflyer',
-            type: r['Type'] || 'Direct', tfStatus: r['TF Status'] || r['Status'] || 'live', to2Status: r['TO2 Status'] || r['Status'] || 'live',
+            to2Id: r['TO2 ID'] || '', geo: r['GEO'] || '', platform: r['Platform'] || '',
+            type: r['Type'] || '', tfStatus: r['TF Status'] || r['Status'] || '', to2Status: r['TO2 Status'] || r['Status'] || '',
             campaigns: (() => { try { return JSON.parse(r['Campaigns'] || '[]').map(c => typeof c === 'string' ? { name: c, url: '', iconUrl: '' } : c); } catch { return []; } })(),
             verticals: (() => { try { return JSON.parse(r['Verticals'] || '[]'); } catch { return []; } })(),
             websiteUrl: r['WebsiteUrl'] || '', linkedinUrl: r['LinkedinUrl'] || '',
@@ -9952,8 +9962,8 @@
           if (raw.length) advertisers = _applyAdvOrder(_dedupeAdvertisers(raw.map(r => ({
             name: r['Name'] || '', logoUrl: r['LogoUrl'] || '', tfManager: r['TF Manager'] || '',
             to2Manager: r['TO2 Manager'] || '', tlTo2: r['TL TO2'] || '', tfId: r['TF ID'] || '',
-            to2Id: r['TO2 ID'] || '', geo: r['GEO'] || '', platform: r['Platform'] || 'Appsflyer',
-            type: r['Type'] || 'Direct', tfStatus: r['TF Status'] || r['Status'] || 'live', to2Status: r['TO2 Status'] || r['Status'] || 'live',
+            to2Id: r['TO2 ID'] || '', geo: r['GEO'] || '', platform: r['Platform'] || '',
+            type: r['Type'] || '', tfStatus: r['TF Status'] || r['Status'] || '', to2Status: r['TO2 Status'] || r['Status'] || '',
             campaigns: (() => { try { return JSON.parse(r['Campaigns'] || '[]').map(c => typeof c === 'string' ? { name: c, url: '', iconUrl: '' } : c); } catch { return []; } })(),
             verticals: (() => { try { return JSON.parse(r['Verticals'] || '[]'); } catch { return []; } })(),
             websiteUrl: r['WebsiteUrl'] || '', linkedinUrl: r['LinkedinUrl'] || '',
