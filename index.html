@@ -540,7 +540,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.4.4</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.4.5</div>
   </div>
 </div>
 
@@ -613,7 +613,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.4.4</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.4.5</div>
   </div>
 </div>
 
@@ -752,7 +752,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.4.4</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.4.5</span>
           </div>
         </div>
       </div>
@@ -9120,10 +9120,30 @@
 
   function _pubTypeFromSi(name) {
     const nl = (name || '').trim().toLowerCase();
-    let si = (sourcesInfo || []).find(s => (s.name || '').trim().toLowerCase() === nl);
+    const siList = sourcesInfo || [];
+    const exact = s => (s.name || '').trim().toLowerCase();
+    // 1. Exact match
+    let si = siList.find(s => exact(s) === nl);
     if (!si) {
-      const stripped = nl.replace(/\s*\((dsp|rw)\)\s*$/i, '').trim();
-      si = (sourcesInfo || []).find(s => (s.name || '').trim().toLowerCase() === stripped);
+      // 2. Strip trailing (DSP)/(RW) badge
+      const s1 = nl.replace(/\s*\((dsp|rw)\)\s*$/i, '').trim();
+      si = siList.find(s => exact(s) === s1);
+    }
+    if (!si) {
+      // 3. Strip trailing model-type suffixes e.g. " CPI", " - CPI", " DW", " Rev Share"
+      const s2 = nl
+        .replace(/\s*\((dsp|rw)\)\s*$/i, '')
+        .replace(/\s*[-–]\s*(cpi|cpc|cpm|cpv|cpa|cpe|rev\s*share|revshare)\s*$/i, '')
+        .replace(/\s+(cpi|cpc|cpm|cpv|cpa|cpe|dw)\s*$/i, '')
+        .trim();
+      si = siList.find(s => exact(s) === s2);
+    }
+    if (!si) {
+      // 4. Publisher name starts with a sourcesInfo name (handles "Adscend CPI" → "Adscend")
+      si = siList.find(s => {
+        const sn = exact(s);
+        return sn.length > 3 && (nl === sn || nl.startsWith(sn + ' ') || nl.startsWith(sn + '-'));
+      });
     }
     return si ? (si.type || '').toUpperCase() : '';
   }
