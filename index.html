@@ -539,7 +539,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.3.4</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.3.5</div>
   </div>
 </div>
 
@@ -612,7 +612,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.3.4</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.3.5</div>
   </div>
 </div>
 
@@ -751,7 +751,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.3.4</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.3.5</span>
           </div>
         </div>
       </div>
@@ -1338,6 +1338,19 @@
           <div class="section-title">Overview</div>
           <div class="section-sub">Monthly Revenue · Costs · Profit</div>
         </div>
+      </div>
+      <!-- Overview navigation buttons -->
+      <div style="position:sticky;top:0;z-index:20;background:var(--bg);padding:10px 0 12px;margin-bottom:8px;display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--border)">
+        <button onclick="scrollToChart('profChartWrap')"    style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">📊 Monthly Overview</button>
+        <button onclick="scrollToChart('trendChartsWrap')"  style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">📈 Trends</button>
+        <button onclick="scrollToChart('tfMgrRevWrap')"     style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">👤 TF Manager Rev</button>
+        <button onclick="scrollToChart('tlTo2RevWrap')"     style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">👤 TL TO2 Rev</button>
+        <button onclick="scrollToChart('to2MgrRevWrap')"    style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">👤 TO2 Manager Rev</button>
+        <button onclick="scrollToChart('intSrcCostWrap')"   style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">💸 Internal Sources</button>
+        <button onclick="scrollToChart('dspPubCostWrap')"   style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">💸 DSP Publishers</button>
+        <button onclick="scrollToChart('rwPubCostWrap')"    style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">💸 RW Publishers</button>
+        <button onclick="scrollToChart('advRevWrap')"       style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">📊 By Advertiser</button>
+        <button onclick="scrollToChart('ovrvwCommWrap')"    style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">💰 Commissions</button>
       </div>
       <div class="chart-wrap" id="profChartWrap" style="display:none;max-width:700px">
         <div class="chart-header">
