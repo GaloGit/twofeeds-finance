@@ -539,7 +539,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.3.2</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.3.3</div>
   </div>
 </div>
 
@@ -612,7 +612,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.3.2</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.3.3</div>
   </div>
 </div>
 
@@ -751,7 +751,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.3.2</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.3.3</span>
           </div>
         </div>
       </div>
@@ -1784,8 +1784,17 @@
                 <option value="Singular">Singular</option>
                 <option value="Kochava">Kochava</option>
                 <option value="Impact">Impact</option>
+                <option value="Branch">Branch</option>
                 <option value="Network">Network</option>
                 <option value="Multiple Platforms">Multiple Platforms</option>
+              </select>
+            </div>
+            <div style="flex:0 0 110px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Type</div>
+              <select id="advType" style="width:100%;background:var(--surface3);color:var(--muted);border:1px solid rgba(148,163,184,0.35);border-radius:8px;padding:10px 14px;font-family:var(--font-mono);font-size:13px;font-weight:700;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none">
+                <option value="">— Select —</option>
+                <option value="Direct">Direct</option>
+                <option value="Agency">Agency</option>
               </select>
             </div>
             <div style="flex:0 0 80px">
@@ -4797,6 +4806,7 @@
   async function addAdvertiserEntry() {
     const name       = document.getElementById('advName').value.trim();
     const platform   = document.getElementById('advPlatform').value;
+    const type       = document.getElementById('advType').value;
     const geo        = document.getElementById('advGeo').value.trim().toUpperCase();
     const logoUrl    = document.getElementById('advLogoUrl').value.trim();
     const tfManager  = document.getElementById('advTfManager').value.trim();
@@ -4814,9 +4824,9 @@
     const operatingSystems = [...(_newAdvOSSel   || [])];
     const existing = advertisers.find(a => a.name.toLowerCase() === name.toLowerCase());
     if (existing) {
-      Object.assign(existing, { logoUrl, platform, geo, tfManager, to2Manager, tlTo2, tfStatus, to2Status, tfId, to2Id, websiteUrl, linkedinUrl, verticals, fraudTools, operatingSystems });
+      Object.assign(existing, { logoUrl, platform, type, geo, tfManager, to2Manager, tlTo2, tfStatus, to2Status, tfId, to2Id, websiteUrl, linkedinUrl, verticals, fraudTools, operatingSystems });
     } else {
-      advertisers.push({ name, logoUrl, platform, geo, tfManager, to2Manager, tlTo2, tfStatus, to2Status, tfId, to2Id, websiteUrl, linkedinUrl, verticals, fraudTools, operatingSystems });
+      advertisers.push({ name, logoUrl, platform, type, geo, tfManager, to2Manager, tlTo2, tfStatus, to2Status, tfId, to2Id, websiteUrl, linkedinUrl, verticals, fraudTools, operatingSystems });
     }
     _renderAdvTable();
     ['advName','advLogoUrl','advTfId','advTo2Id','advGeo','advWebsiteUrl','advLinkedinUrl'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
@@ -4829,6 +4839,7 @@
     });
     document.getElementById('advPlatform').value = '';
     _applyStatusSelectColor(document.getElementById('advPlatform'), '');
+    document.getElementById('advType').value = '';
     const fw = document.getElementById('advFormWrap');
     if (fw) fw.style.display = 'none';
     const advToggleBtn = document.getElementById('advFormToggle');
