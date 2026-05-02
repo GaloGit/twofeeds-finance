@@ -539,7 +539,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.1.4</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.1.5</div>
   </div>
 </div>
 
@@ -612,7 +612,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.1.4</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.1.5</div>
   </div>
 </div>
 
@@ -751,7 +751,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.1.4</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.1.5</span>
           </div>
         </div>
       </div>
@@ -1838,8 +1838,15 @@
               </select>
             </div>
             <div style="flex:0 0 110px">
-              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Status</div>
-              <select id="advStatus" onchange="_applyStatusSelectColor(this,this.value)" style="width:100%;background:rgba(34,197,94,0.13);color:#22c55e;border:1px solid rgba(34,197,94,0.45);border-radius:8px;padding:10px 14px;font-family:var(--font-mono);font-size:13px;font-weight:700;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">TF Status</div>
+              <select id="advTfStatus" onchange="_applyStatusSelectColor(this,this.value)" style="width:100%;background:rgba(34,197,94,0.13);color:#22c55e;border:1px solid rgba(34,197,94,0.45);border-radius:8px;padding:10px 14px;font-family:var(--font-mono);font-size:13px;font-weight:700;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none">
+                <option value="live">Live</option>
+                <option value="paused">Paused</option>
+              </select>
+            </div>
+            <div style="flex:0 0 110px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">TO2 Status</div>
+              <select id="advTo2Status" onchange="_applyStatusSelectColor(this,this.value)" style="width:100%;background:rgba(34,197,94,0.13);color:#22c55e;border:1px solid rgba(34,197,94,0.45);border-radius:8px;padding:10px 14px;font-family:var(--font-mono);font-size:13px;font-weight:700;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none">
                 <option value="live">Live</option>
                 <option value="paused">Paused</option>
               </select>
@@ -2703,7 +2710,8 @@
     { key:'to2Manager', label:'TO2 Mgr'    },
     { key:'tlTo2',      label:'TL TO2'     },
     { key:'geo',        label:'GEO'        },
-    { key:'status',     label:'Status'     },
+    { key:'tfStatus',   label:'TF Status'  },
+    { key:'to2Status',  label:'TO2 Status' },
     { key:'verticals',  label:'Verticals'   },
     { key:'fraudTools',        label:'Fraud Tools' },
     { key:'operatingSystems',  label:'OS'          },
@@ -4073,7 +4081,7 @@
       return;
     }
     body.innerHTML = advertisers.map((a, i) => {
-      const isPaused = (a.status || 'live') === 'paused';
+      const isPaused = (a.tfStatus || 'live') === 'paused' && (a.to2Status || 'live') === 'paused';
       const resolved = a.logoUrl ? (resolvePhotoUrl(a.logoUrl) || a.logoUrl) : '';
       const fallback = a.logoUrl && _driveId(a.logoUrl) ? `https://drive.google.com/uc?export=view&id=${_driveId(a.logoUrl)}` : '';
       const logoHtml = resolved
@@ -4091,7 +4099,8 @@
           case 'to2Manager': return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(a.to2Manager||'—')}</td>`;
           case 'tlTo2':      return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(a.tlTo2||'—')}</td>`;
           case 'geo':        return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:5px">${esc(a.geo||'—')}${a.geo&&a.geo.length===2?countryFlagImg(a.geo,'20x15'):''}</span></td>`;
-          case 'status':     return `<td><span style="${_siStatusSelectStyle(a.status)};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700">${(a.status||'live')==='live'?'Live':'Paused'}</span></td>`;
+          case 'tfStatus':   return `<td><span style="${_siStatusSelectStyle(a.tfStatus)};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700">${(a.tfStatus||'live')==='live'?'Live':'Paused'}</span></td>`;
+          case 'to2Status':  return `<td><span style="${_siStatusSelectStyle(a.to2Status)};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700">${(a.to2Status||'live')==='live'?'Live':'Paused'}</span></td>`;
           case 'verticals':  return `<td><div style="display:flex;flex-wrap:wrap;gap:4px">${(a.verticals||[]).length?_advVerticalBadges(a.verticals):'<span style="color:var(--muted);font-family:var(--font-mono);font-size:10px">—</span>'}</div></td>`;
           case 'fraudTools':       return `<td><div style="display:flex;flex-wrap:wrap;gap:4px">${(a.fraudTools||[]).length?_advFraudToolBadges(a.fraudTools):'<span style="color:var(--muted);font-family:var(--font-mono);font-size:10px">—</span>'}</div></td>`;
           case 'operatingSystems': return `<td><div style="display:flex;flex-wrap:wrap;gap:4px">${(a.operatingSystems||[]).length?_advOSBadges(a.operatingSystems):'<span style="color:var(--muted);font-family:var(--font-mono);font-size:10px">—</span>'}</div></td>`;
@@ -4119,6 +4128,8 @@
                 ${[
                   ['Logo URL', a.logoUrl ? `<span style="font-family:var(--font-mono);font-size:10px;color:var(--accent-light);word-break:break-all">${esc(a.logoUrl.length>60?a.logoUrl.slice(0,57)+'…':a.logoUrl)}</span>` : '<span style="color:var(--muted);font-family:var(--font-mono);font-size:11px">—</span>'],
                   ['Type', `<span style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;${(a.type||'Direct')==='Agency'?'background:rgba(245,158,11,0.15);color:#f59e0b':'background:rgba(56,189,248,0.13);color:#38bdf8'}">${esc(a.type||'Direct')}</span>`],
+                  ['TF Status',  `<span style="${_siStatusSelectStyle(a.tfStatus)};border-width:1px;border-style:solid;border-radius:6px;padding:2px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700">${(a.tfStatus||'live')==='live'?'Live':'Paused'}</span>`],
+                  ['TO2 Status', `<span style="${_siStatusSelectStyle(a.to2Status)};border-width:1px;border-style:solid;border-radius:6px;padding:2px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700">${(a.to2Status||'live')==='live'?'Live':'Paused'}</span>`],
                   ['TF Manager',  `<span style="font-family:var(--font-mono);font-size:11px;color:var(--text)">${esc(a.tfManager||'—')}</span>`],
                   ['TO2 Manager', `<span style="font-family:var(--font-mono);font-size:11px;color:var(--text)">${esc(a.to2Manager||'—')}</span>`],
                   ['TL TO2',      `<span style="font-family:var(--font-mono);font-size:11px;color:var(--text)">${esc(a.tlTo2||'—')}</span>`],
@@ -4187,10 +4198,17 @@
                   </select>
                 </div>
                 <div>
-                  <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Status</div>
-                  <select id="advStatus_${i}" class="editable" style="width:100%;cursor:pointer">
-                    <option value="live"   ${(a.status||'live')==='live'  ?'selected':''}>Live</option>
-                    <option value="paused" ${a.status==='paused'?'selected':''}>Paused</option>
+                  <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TF Status</div>
+                  <select id="advTfStatus_${i}" class="editable" style="width:100%;cursor:pointer">
+                    <option value="live"   ${(a.tfStatus||'live')==='live'  ?'selected':''}>Live</option>
+                    <option value="paused" ${a.tfStatus==='paused'?'selected':''}>Paused</option>
+                  </select>
+                </div>
+                <div>
+                  <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TO2 Status</div>
+                  <select id="advTo2Status_${i}" class="editable" style="width:100%;cursor:pointer">
+                    <option value="live"   ${(a.to2Status||'live')==='live'  ?'selected':''}>Live</option>
+                    <option value="paused" ${a.to2Status==='paused'?'selected':''}>Paused</option>
                   </select>
                 </div>
                 <div>
@@ -4327,7 +4345,7 @@
       return Object.entries(map).sort((a, b) => b[1] - a[1]);
     };
 
-    const liveCount   = advertisers.filter(a => (a.status || 'live') === 'live').length;
+    const liveCount   = advertisers.filter(a => (a.tfStatus || 'live') === 'live' || (a.to2Status || 'live') === 'live').length;
     const pausedCount = advertisers.length - liveCount;
 
     const sections = [
@@ -4510,7 +4528,8 @@
           geo:        r['GEO']          || '',
           platform:   r['Platform']     || 'Appsflyer',
           type:       r['Type']         || 'Direct',
-          status:     r['Status']       || 'live',
+          tfStatus:   r['TF Status']   || r['Status'] || 'live',
+          to2Status:  r['TO2 Status']  || r['Status'] || 'live',
           campaigns:  (() => { try { return (JSON.parse(r['Campaigns'] || '[]')).map(c => typeof c === 'string' ? { name: c, to2Status: 'live', tfStatus: 'live', notes: '', url: '', iconUrl: '', big: false, ctv: false, inct: false } : { url: '', iconUrl: '', big: false, ctv: false, inct: false, ...c }); } catch { return []; } })(),
           verticals:   (() => { try { return JSON.parse(r['Verticals']   || '[]'); } catch { return []; } })(),
           websiteUrl:  r['WebsiteUrl']  || '',
@@ -4554,7 +4573,8 @@
     const nameVal = (document.getElementById('advName_'     + i)?.value || '').trim();
     if (nameVal) advertisers[i].name = nameVal;
     advertisers[i].platform   = (document.getElementById('advPlatform_'+ i)?.value || 'Appsflyer').trim();
-    advertisers[i].status     = (document.getElementById('advStatus_'  + i)?.value || 'live').trim();
+    advertisers[i].tfStatus   = (document.getElementById('advTfStatus_'  + i)?.value || 'live').trim();
+    advertisers[i].to2Status  = (document.getElementById('advTo2Status_' + i)?.value || 'live').trim();
     advertisers[i].logoUrl    = (document.getElementById('advUrl_'     + i)?.value || '').trim();
     advertisers[i].type       = (document.getElementById('advType_'    + i)?.value || 'Direct').trim();
     advertisers[i].tfManager  = (document.getElementById('advTfm_'     + i)?.value || '').trim();
@@ -4703,7 +4723,8 @@
     const tfManager  = document.getElementById('advTfManager').value.trim();
     const to2Manager = document.getElementById('advTo2Manager').value.trim();
     const tlTo2      = document.getElementById('advTlTo2').value.trim();
-    const status     = document.getElementById('advStatus').value || 'live';
+    const tfStatus   = document.getElementById('advTfStatus').value || 'live';
+    const to2Status  = document.getElementById('advTo2Status').value || 'live';
     const tfId       = document.getElementById('advTfId').value.trim();
     const to2Id      = document.getElementById('advTo2Id').value.trim();
     const websiteUrl = document.getElementById('advWebsiteUrl').value.trim();
@@ -4714,18 +4735,19 @@
     const operatingSystems = [...(_newAdvOSSel   || [])];
     const existing = advertisers.find(a => a.name.toLowerCase() === name.toLowerCase());
     if (existing) {
-      Object.assign(existing, { logoUrl, platform, geo, tfManager, to2Manager, tlTo2, status, tfId, to2Id, websiteUrl, linkedinUrl, verticals, fraudTools, operatingSystems });
+      Object.assign(existing, { logoUrl, platform, geo, tfManager, to2Manager, tlTo2, tfStatus, to2Status, tfId, to2Id, websiteUrl, linkedinUrl, verticals, fraudTools, operatingSystems });
     } else {
-      advertisers.push({ name, logoUrl, platform, geo, tfManager, to2Manager, tlTo2, status, tfId, to2Id, websiteUrl, linkedinUrl, verticals, fraudTools, operatingSystems });
+      advertisers.push({ name, logoUrl, platform, geo, tfManager, to2Manager, tlTo2, tfStatus, to2Status, tfId, to2Id, websiteUrl, linkedinUrl, verticals, fraudTools, operatingSystems });
     }
     _renderAdvTable();
     ['advName','advLogoUrl','advTfId','advTo2Id','advGeo','advWebsiteUrl','advLinkedinUrl'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
     document.getElementById('advTo2Manager').value = '';
     document.getElementById('advTfManager').value = '';
     document.getElementById('advTlTo2').value = '';
-    const advStatusEl = document.getElementById('advStatus');
-    advStatusEl.value = 'live';
-    _applyStatusSelectColor(advStatusEl, 'live');
+    ['advTfStatus','advTo2Status'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.value = 'live'; _applyStatusSelectColor(el, 'live'); }
+    });
     document.getElementById('advPlatform').value = 'Appsflyer';
     const fw = document.getElementById('advFormWrap');
     if (fw) fw.style.display = 'none';
@@ -5968,7 +5990,8 @@
         geo:         r['GEO']         || '',
         platform:    r['Platform']    || 'Appsflyer',
         type:        r['Type']        || 'Direct',
-        status:      r['Status']      || 'live',
+        tfStatus:    r['TF Status']  || r['Status'] || 'live',
+        to2Status:   r['TO2 Status'] || r['Status'] || 'live',
         campaigns:   (() => { try { return (JSON.parse(r['Campaigns'] || '[]')).map(c => typeof c === 'string' ? { name: c, to2Status: 'live', tfStatus: 'live', notes: '', url: '', iconUrl: '', big: false, ctv: false, inct: false } : { url: '', iconUrl: '', big: false, ctv: false, inct: false, ...c }); } catch { return []; } })(),
         verticals:   (() => { try { return JSON.parse(r['Verticals']  || '[]'); } catch { return []; } })(),
         websiteUrl:  r['WebsiteUrl']  || '',
@@ -9627,7 +9650,7 @@
             name: r['Name'] || '', logoUrl: r['LogoUrl'] || '', tfManager: r['TF Manager'] || '',
             to2Manager: r['TO2 Manager'] || '', tlTo2: r['TL TO2'] || '', tfId: r['TF ID'] || '',
             to2Id: r['TO2 ID'] || '', geo: r['GEO'] || '', platform: r['Platform'] || 'Appsflyer',
-            type: r['Type'] || 'Direct', status: r['Status'] || 'live',
+            type: r['Type'] || 'Direct', tfStatus: r['TF Status'] || r['Status'] || 'live', to2Status: r['TO2 Status'] || r['Status'] || 'live',
             campaigns: (() => { try { return JSON.parse(r['Campaigns'] || '[]').map(c => typeof c === 'string' ? { name: c, url: '', iconUrl: '' } : c); } catch { return []; } })(),
             verticals: (() => { try { return JSON.parse(r['Verticals'] || '[]'); } catch { return []; } })(),
             websiteUrl: r['WebsiteUrl'] || '', linkedinUrl: r['LinkedinUrl'] || '',
@@ -9924,7 +9947,7 @@
             name: r['Name'] || '', logoUrl: r['LogoUrl'] || '', tfManager: r['TF Manager'] || '',
             to2Manager: r['TO2 Manager'] || '', tlTo2: r['TL TO2'] || '', tfId: r['TF ID'] || '',
             to2Id: r['TO2 ID'] || '', geo: r['GEO'] || '', platform: r['Platform'] || 'Appsflyer',
-            type: r['Type'] || 'Direct', status: r['Status'] || 'live',
+            type: r['Type'] || 'Direct', tfStatus: r['TF Status'] || r['Status'] || 'live', to2Status: r['TO2 Status'] || r['Status'] || 'live',
             campaigns: (() => { try { return JSON.parse(r['Campaigns'] || '[]').map(c => typeof c === 'string' ? { name: c, url: '', iconUrl: '' } : c); } catch { return []; } })(),
             verticals: (() => { try { return JSON.parse(r['Verticals'] || '[]'); } catch { return []; } })(),
             websiteUrl: r['WebsiteUrl'] || '', linkedinUrl: r['LinkedinUrl'] || '',
