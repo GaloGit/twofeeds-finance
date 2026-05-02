@@ -539,7 +539,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.3.9</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.4.0</div>
   </div>
 </div>
 
@@ -612,7 +612,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.3.9</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.4.0</div>
   </div>
 </div>
 
@@ -751,7 +751,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.3.9</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.4.0</span>
           </div>
         </div>
       </div>
@@ -1344,8 +1344,8 @@
         <button onclick="scrollToChart('profChartWrap',60)"    style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">📊 Monthly Overview</button>
         <button onclick="scrollToChart('trendChartsWrap',60)"  style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">📈 Trends</button>
         <button onclick="scrollToChart('tfMgrRevWrap',60)"     style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">👤 TF Manager Rev</button>
-        <button onclick="scrollToChart('tlTo2RevWrap',60)"     style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">👤 TL TO2 Rev</button>
         <button onclick="scrollToChart('to2MgrRevWrap',60)"    style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">👤 TO2 Manager Rev</button>
+        <button onclick="scrollToChart('tlTo2RevWrap',60)"     style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">👤 TL TO2 Rev</button>
         <button onclick="scrollToChart('dspPubCostWrap',60)"   style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">💸 DSP Publishers</button>
         <button onclick="scrollToChart('rwPubCostWrap',60)"    style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">💸 RW Publishers</button>
         <button onclick="scrollToChart('intSrcCostWrap',60)"   style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">💸 Internal Sources</button>
@@ -1405,15 +1405,6 @@
           <div class="chart-container"><canvas id="tfMgrRevChart"></canvas></div>
         </div>
       </div>
-      <div id="tlTo2RevWrap" style="display:none;margin-top:24px">
-        <div class="chart-wrap">
-          <div class="chart-header">
-            <div class="chart-title">Revenue by TL TO2</div>
-            <div class="chart-sub">Over Time</div>
-          </div>
-          <div class="chart-container"><canvas id="tlTo2RevChart"></canvas></div>
-        </div>
-      </div>
       <div id="to2MgrRevWrap" style="display:none;margin-top:24px">
         <div class="chart-wrap">
           <div class="chart-header">
@@ -1421,6 +1412,15 @@
             <div class="chart-sub">Over Time</div>
           </div>
           <div class="chart-container"><canvas id="to2MgrRevChart"></canvas></div>
+        </div>
+      </div>
+      <div id="tlTo2RevWrap" style="display:none;margin-top:24px">
+        <div class="chart-wrap">
+          <div class="chart-header">
+            <div class="chart-title">Revenue by TL TO2</div>
+            <div class="chart-sub">Over Time</div>
+          </div>
+          <div class="chart-container"><canvas id="tlTo2RevChart"></canvas></div>
         </div>
       </div>
       <div id="dspPubCostWrap" style="display:none;margin-top:24px">
