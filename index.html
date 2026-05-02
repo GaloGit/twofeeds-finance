@@ -1338,12 +1338,14 @@
           <div class="section-title">Overview</div>
           <div class="section-sub">Monthly Revenue · Costs · Profit</div>
         </div>
-        <button id="ovrvwVatToggle" onclick="_toggleOvrvwVat()" style="font-family:var(--font-mono);font-size:10px;padding:5px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;transition:all 0.15s">Costs: excl. VAT</button>
       </div>
       <div class="chart-wrap" id="profChartWrap" style="display:none;max-width:700px">
         <div class="chart-header">
-          <div class="chart-title">Monthly Overview</div>
-          <div class="chart-sub" id="profChartSub">Revenue · Costs · Profit</div>
+          <div>
+            <div class="chart-title">Monthly Overview</div>
+            <div class="chart-sub" id="profChartSub">Revenue · Costs · Profit</div>
+          </div>
+          <button id="ovrvwVatToggle" onclick="_toggleOvrvwVat()" style="font-family:var(--font-mono);font-size:10px;padding:5px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;transition:all 0.15s">Costs: excl. VAT</button>
         </div>
         <div class="chart-container">
           <canvas id="profChart"></canvas>
