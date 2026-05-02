@@ -539,7 +539,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.2.0</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.2.1</div>
   </div>
 </div>
 
@@ -612,7 +612,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.2.0</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.2.1</div>
   </div>
 </div>
 
@@ -751,7 +751,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.2.0</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.2.1</span>
           </div>
         </div>
       </div>
@@ -8843,6 +8843,7 @@
         label: g, amount: intGroupTotals[g], highlight: false, color: 'var(--red)', bg: '', indent: true,
       })),
       { label: 'Total Costs',          amount: totalCost,   highlight: true,  color: 'var(--amber)', bg: '' },
+      ...(totalVat > 0 ? [{ label: 'VAT Costs', amount: totalVat, highlight: false, color: 'var(--amber)', bg: '', indent: true }] : []),
       { label: 'Profit (excl. VAT)',   amount: profit,      highlight: true,  color: profit>=0?'var(--green)':'var(--red)', bg: profit>=0?'rgba(34,197,94,0.08)':'rgba(239,68,68,0.08)' },
       { label: 'Profit (incl. VAT)',   amount: profitInVat, highlight: false, color: profitInVat>=0?'var(--green)':'var(--red)', bg: profitInVat>=0?'rgba(34,197,94,0.04)':'rgba(239,68,68,0.04)', indent: true },
     ];
