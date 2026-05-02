@@ -540,7 +540,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.4.8</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.4.9</div>
   </div>
 </div>
 
@@ -613,7 +613,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.4.8</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.4.9</div>
   </div>
 </div>
 
@@ -752,7 +752,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.4.8</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.4.9</span>
           </div>
         </div>
       </div>
@@ -3292,6 +3292,9 @@
   let sourcesMap  = {};      // lowercase name → logoUrl (all sources, fast lookup)
   let sourcesTypeMap = {};   // lowercase name → type
 
+  // Abbreviation → canonical source name (lowercase). Applied after sourcesInfo is loaded.
+  const _SRC_ALIASES = { 'kzn': 'kzn', 'kznu': 'kzn', 'kzne': 'kzn', 'gsm': 'geospot' };
+
   function _buildSourcesMap() {
     sourcesMap = {};
     sourcesTypeMap = {};
@@ -3300,6 +3303,15 @@
         const key = s.name.trim().toLowerCase();
         sourcesMap[key]     = s.logoUrl || '';
         sourcesTypeMap[key] = s.type    || '';
+      }
+    });
+    // Apply abbreviation aliases
+    Object.entries(_SRC_ALIASES).forEach(([alias, canonical]) => {
+      if (sourcesMap[alias]) return; // already has an exact entry
+      const match = Object.keys(sourcesMap).find(k => k === canonical || k.startsWith(canonical + ' ') || k.startsWith(canonical + '-'));
+      if (match) {
+        sourcesMap[alias]     = sourcesMap[match];
+        sourcesTypeMap[alias] = sourcesTypeMap[match];
       }
     });
   }
@@ -8591,6 +8603,7 @@
       all = _rawCache[cacheKey];
       if (_isSame(cacheKey, all)) return;
     } else {
+      _showLoader('Loading Media Buying…');
       try {
         const data = await fetchPeriodData('getMediaBuying');
         all = data.map((r, idx) => ({
@@ -8601,6 +8614,7 @@
         }));
         _rawCache[cacheKey] = all;
       } catch { showToast('⚠ Could not load media buying data.'); }
+      finally { _hideLoader(); }
     }
 
     const search = (document.getElementById('mbSearch')||{}).value || '';
