@@ -540,7 +540,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.5.0</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.5.1</div>
   </div>
 </div>
 
@@ -613,7 +613,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.5.0</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.5.1</div>
   </div>
 </div>
 
@@ -752,7 +752,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.5.0</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.5.1</span>
           </div>
         </div>
       </div>
@@ -9242,6 +9242,16 @@
     return (name || '').replace(/\s*\((DSP|RW)\)\s*$/i, '').trim();
   }
 
+  function _fmtCpc(v) {
+    if (v === 0) return '0';
+    const abs = Math.abs(v);
+    if (abs >= 1000) return (v / 1000).toFixed(2) + 'k';
+    if (abs >= 1)    return v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (abs >= 0.01) return v.toFixed(4);
+    if (abs >= 0.0001) return v.toFixed(6);
+    return v.toFixed(8);
+  }
+
   function _renderRwPubCostChart(allPeriods, labels) {
     const wrap   = document.getElementById('rwPubCostWrap');
     const canvas = document.getElementById('rwPubCostChart');
@@ -9326,11 +9336,11 @@
         responsive: true, maintainAspectRatio: true,
         plugins: {
           legend: { labels: { color: _chartC().legend, font: { family: 'JetBrains Mono', size: 10 } } },
-          tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}` } }
+          tooltip: { callbacks: { label: ctx => { const v = ctx.parsed.y; return ` ${ctx.dataset.label}: $${_fmtCpc(v)} (all GEOs)`; } } }
         },
         scales: {
           x: { ticks: { color: _chartC().tick, font: { family: 'JetBrains Mono', size: 9 } }, grid: { color: _chartC().gridFaint } },
-          y: { ticks: { color: _chartC().tick, font: { family: 'JetBrains Mono', size: 9 }, callback: v => '$'+v.toLocaleString() }, grid: { color: _chartC().gridFaint } }
+          y: { ticks: { color: _chartC().tick, font: { family: 'JetBrains Mono', size: 9 }, callback: v => '$' + _fmtCpc(v) }, grid: { color: _chartC().gridFaint } }
         }
       }
     });
