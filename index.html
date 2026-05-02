@@ -540,7 +540,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.5.1</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.5.2</div>
   </div>
 </div>
 
@@ -613,7 +613,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.5.1</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.5.2</div>
   </div>
 </div>
 
@@ -752,7 +752,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.5.1</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.5.2</span>
           </div>
         </div>
       </div>
@@ -8887,7 +8887,7 @@
       _rawCache['mb_chart_all']
         ? Promise.resolve()
         : fetch(`${FINANCE_API}?action=getMediaBuying`).then(r => r.json()).then(j => {
-            _rawCache['mb_chart_all'] = (j.data || []).map(r => ({ period: r['Period']||'', amount: parseFloat(r['CPC'])||0, name: r['DSP']||'' }));
+            _rawCache['mb_chart_all'] = (j.data || []).map(r => ({ period: r['Period']||'', amount: parseFloat(r['CPC'])||0, name: r['DSP']||'', geo: r['GEO']||'' }));
           }).catch(() => {}),
     ]);
     if (needsFetch) _hideLoader();
@@ -9310,11 +9310,13 @@
     allPeriods.forEach((p, i) => {
       const rows = _rawCache['mb_chart_all']
         ? _rawCache['mb_chart_all'].filter(r => r.period === p)
-        : (_rawCache['mb_' + p] || []).map(r => ({ name: r.dsp || r['DSP'] || '', amount: r.cpc || parseFloat(r['CPC']) || 0 }));
+        : (_rawCache['mb_' + p] || []).map(r => ({ name: r.dsp || r['DSP'] || '', geo: r.geo || r['GEO'] || '', amount: r.cpc || parseFloat(r['CPC']) || 0 }));
       rows.forEach(r => {
-        const name = _cleanPubName(r.name || r.dsp || '') || 'Unknown';
-        if (!mbData[name]) mbData[name] = new Array(allPeriods.length).fill(0);
-        mbData[name][i] += (r.amount || 0);
+        const src = _cleanPubName(r.name || r.dsp || '') || 'Unknown';
+        const geo = (r.geo || '').toUpperCase() || '??';
+        const key = `${src} - ${geo}`;
+        if (!mbData[key]) mbData[key] = new Array(allPeriods.length).fill(0);
+        mbData[key][i] += (r.amount || 0);
       });
     });
 
@@ -9336,7 +9338,7 @@
         responsive: true, maintainAspectRatio: true,
         plugins: {
           legend: { labels: { color: _chartC().legend, font: { family: 'JetBrains Mono', size: 10 } } },
-          tooltip: { callbacks: { label: ctx => { const v = ctx.parsed.y; return ` ${ctx.dataset.label}: $${_fmtCpc(v)} (all GEOs)`; } } }
+          tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: $${_fmtCpc(ctx.parsed.y)}` } }
         },
         scales: {
           x: { ticks: { color: _chartC().tick, font: { family: 'JetBrains Mono', size: 9 } }, grid: { color: _chartC().gridFaint } },
