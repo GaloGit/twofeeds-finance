@@ -539,7 +539,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.2.1</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.2.2</div>
   </div>
 </div>
 
@@ -612,7 +612,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.2.1</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.2.2</div>
   </div>
 </div>
 
@@ -751,7 +751,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.2.1</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.2.2</span>
           </div>
         </div>
       </div>
@@ -1338,6 +1338,7 @@
           <div class="section-title">Overview</div>
           <div class="section-sub">Monthly Revenue · Costs · Profit</div>
         </div>
+        <button id="ovrvwVatToggle" onclick="_toggleOvrvwVat()" style="font-family:var(--font-mono);font-size:10px;padding:5px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;transition:all 0.15s">Costs: excl. VAT</button>
       </div>
       <div class="chart-wrap" id="profChartWrap" style="display:none;max-width:700px">
         <div class="chart-header">
@@ -8925,11 +8926,13 @@
       if (_rawCache['pub_chart_all']) {
         const pub = (_rawCache['pub_chart_all']).filter(r => r.period === p).reduce((s,r) => s + r.amount, 0);
         const inv = (_rawCache['inv_chart_all'] || []).filter(r => r.period === p).reduce((s,r) => s + r.amount, 0);
-        return pub + inv;
+        const vat = _ovrvwIncludeVat ? (_rawCache['inv_chart_all'] || []).filter(r => r.period === p).reduce((s,r) => s + (parseFloat(r['Vat'] !== undefined ? r['Vat'] : (r.vat !== undefined ? r.vat : 0)) || 0), 0) : 0;
+        return pub + inv + vat;
       }
       const pub = (_rawCache['pub_' + p] || []).reduce((s,r) => s + (r.amount||0), 0);
       const inv = (_rawCache['inv_' + p] || []).reduce((s,r) => s + (r.amount||0), 0);
-      return pub + inv;
+      const vat = _ovrvwIncludeVat ? (_rawCache['inv_' + p] || []).reduce((s,r) => s + (parseFloat(r['Vat'] !== undefined ? r['Vat'] : (r.vat !== undefined ? r.vat : 0)) || 0), 0) : 0;
+      return pub + inv + vat;
     });
     const profits = revenues.map((r,i) => r - costs[i]);
 
@@ -8956,6 +8959,18 @@
     });
     _injectLogToggle('profChart', false);
     _renderTrendCharts(labels, revenues, costs, profits);
+    const btn = document.getElementById('ovrvwVatToggle');
+    if (btn) {
+      btn.textContent = _ovrvwIncludeVat ? 'Costs: incl. VAT' : 'Costs: excl. VAT';
+      btn.style.borderColor = _ovrvwIncludeVat ? 'var(--accent)' : 'var(--border)';
+      btn.style.background  = _ovrvwIncludeVat ? 'rgba(99,102,241,0.12)' : 'var(--surface2)';
+      btn.style.color       = _ovrvwIncludeVat ? 'var(--accent-light)' : 'var(--muted)';
+    }
+  }
+
+  function _toggleOvrvwVat() {
+    _ovrvwIncludeVat = !_ovrvwIncludeVat;
+    _renderProfitChart();
   }
 
   function _renderTrendCharts(labels, revenues, costs, profits) {
@@ -9508,6 +9523,7 @@
   let _lastCommissionPeriod = null;
   let _profRenderTimer = null;
   let _ilsRate = parseFloat(localStorage.getItem('tf_ils_rate')) || 3.7;
+  let _ovrvwIncludeVat = false;
 
   // Per-period localStorage helpers
   function _revDataKey(pk) { return 'tf_rev_d_' + pk; }
