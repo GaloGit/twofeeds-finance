@@ -539,7 +539,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.2.8</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.2.9</div>
   </div>
 </div>
 
@@ -612,7 +612,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.2.8</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.2.9</div>
   </div>
 </div>
 
@@ -751,7 +751,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.2.8</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.2.9</span>
           </div>
         </div>
       </div>
@@ -1408,6 +1408,15 @@
             <div class="chart-sub">Over Time</div>
           </div>
           <div class="chart-container" style="height:320px"><canvas id="dspPubCostChart"></canvas></div>
+        </div>
+      </div>
+      <div id="rwPubCostWrap" style="display:none;margin-top:24px">
+        <div class="chart-wrap">
+          <div class="chart-header">
+            <div class="chart-title">RW Publisher Costs</div>
+            <div class="chart-sub">Over Time</div>
+          </div>
+          <div class="chart-container" style="height:320px"><canvas id="rwPubCostChart"></canvas></div>
         </div>
       </div>
       <div id="advRevWrap" style="display:none;margin-top:24px">
@@ -9001,6 +9010,7 @@
     _renderTfMgrRevChart(allPeriods, labels);
     _renderTo2MgrRevChart(allPeriods, labels);
     _renderDspPubCostChart(allPeriods, labels);
+    _renderRwPubCostChart(allPeriods, labels);
     _renderAdvRevChart(allPeriods, labels);
     const btn = document.getElementById('ovrvwVatToggle');
     if (btn) {
@@ -9014,6 +9024,52 @@
   function _toggleOvrvwVat() {
     _ovrvwIncludeVat = !_ovrvwIncludeVat;
     _renderProfitChart();
+  }
+
+  function _renderRwPubCostChart(allPeriods, labels) {
+    const wrap   = document.getElementById('rwPubCostWrap');
+    const canvas = document.getElementById('rwPubCostChart');
+    if (!canvas || !wrap) return;
+
+    const pubData = {};
+    allPeriods.forEach((p, i) => {
+      const rows = _rawCache['pub_chart_all']
+        ? _rawCache['pub_chart_all'].filter(r => r.period === p && (r.platform || '').toUpperCase() === 'RW')
+        : (_rawCache['pub_' + p] || []).filter(r => (r.platform || '').toUpperCase() === 'RW');
+      rows.forEach(r => {
+        const name = r.name || 'Unknown';
+        if (!pubData[name]) pubData[name] = new Array(allPeriods.length).fill(0);
+        pubData[name][i] += (r.amount || 0);
+      });
+    });
+
+    const pubs = Object.keys(pubData);
+    if (!pubs.length) { wrap.style.display = 'none'; return; }
+
+    const palette = ['rgba(56,189,248,1)','rgba(52,211,153,1)','rgba(167,139,250,1)','rgba(251,191,36,1)','rgba(34,197,94,1)','rgba(99,102,241,1)','rgba(251,113,133,1)','rgba(239,68,68,1)','rgba(251,146,60,1)','rgba(163,230,53,1)','rgba(232,121,249,1)','rgba(20,184,166,1)'];
+    const datasets = pubs.map((name, idx) => {
+      const c = palette[idx % palette.length];
+      return { label: name, data: pubData[name], borderColor: c, backgroundColor: c.replace(',1)', ',0.1)'), fill: false, tension: 0.3, pointRadius: 3, pointBackgroundColor: c, borderWidth: 2 };
+    });
+
+    wrap.style.display = 'block';
+    if (window._rwPubCostChart) { window._rwPubCostChart.destroy(); window._rwPubCostChart = null; }
+    window._rwPubCostChart = new Chart(canvas, {
+      type: 'line',
+      data: { labels, datasets },
+      options: {
+        responsive: true, maintainAspectRatio: true,
+        plugins: {
+          legend: { labels: { color: _chartC().legend, font: { family: 'JetBrains Mono', size: 10 } } },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}` } }
+        },
+        scales: {
+          x: { ticks: { color: _chartC().tick, font: { family: 'JetBrains Mono', size: 9 } }, grid: { color: _chartC().gridFaint } },
+          y: { ticks: { color: _chartC().tick, font: { family: 'JetBrains Mono', size: 9 }, callback: v => '$'+v.toLocaleString() }, grid: { color: _chartC().gridFaint } }
+        }
+      }
+    });
+    _injectLogToggle('rwPubCostChart', false);
   }
 
   function _renderDspPubCostChart(allPeriods, labels) {
