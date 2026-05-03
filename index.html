@@ -540,7 +540,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.6.3</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.6.4</div>
   </div>
 </div>
 
@@ -613,7 +613,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.6.3</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.6.4</div>
   </div>
 </div>
 
@@ -752,7 +752,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.6.3</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.6.4</span>
           </div>
         </div>
       </div>
@@ -8846,10 +8846,19 @@
   }
 
   // ── TF COST ──
+  function _parseNum(v) {
+    const s = String(v || '').trim().replace(/[^\d.,\-]/g, '');
+    if (!s) return 0;
+    const lastDot   = s.lastIndexOf('.');
+    const lastComma = s.lastIndexOf(',');
+    if (lastComma > lastDot) return parseFloat(s.replace(/\./g, '').replace(',', '.')) || 0;
+    return parseFloat(s.replace(/,/g, '')) || 0;
+  }
+
   async function _parseSaveTfCostCSV(text) {
     const lines = text.trim().split('\n');
     if (lines.length < 2) { showToast('⚠ No data rows found'); return; }
-    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
+    const headers = parseCSVLine(lines[0]).map(h => h.trim().toLowerCase());
     const findCol = (...names) => { for (const n of names) { const i = headers.findIndex(h => h.includes(n)); if (i !== -1) return i; } return -1; };
     const advCol   = findCol('adv', 'advertiser', 'name', 'client');
     const mediaCol = findCol('media cost', 'media', 'cost');
@@ -8858,14 +8867,15 @@
       const cols = parseCSVLine(line);
       return {
         adv:       advCol   >= 0 ? (cols[advCol]   || '').trim() : '',
-        mediaCost: mediaCol >= 0 ? parseFloat((cols[mediaCol] || '0').replace(/[^0-9.]/g, '')) || 0 : 0,
-        extraCost: extraCol >= 0 ? parseFloat((cols[extraCol] || '0').replace(/[^0-9.]/g, '')) || 0 : 0,
+        mediaCost: mediaCol >= 0 ? _parseNum(cols[mediaCol]) : 0,
+        extraCost: extraCol >= 0 ? _parseNum(cols[extraCol]) : 0,
       };
     }).filter(r => r.adv || r.mediaCost || r.extraCost);
     const user = localStorage.getItem('tf_current_user') || '';
+    if (!rows.length) { showToast('⚠ No valid rows found — check column headers (ADV, Media Cost, Extra Cost)'); return; }
     const res  = await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveTfCost', period: periodKey(), rows, user }) });
     const json = await res.json().catch(() => ({}));
-    if (!json.success) throw new Error('API error');
+    if (!json.success) { showToast('⚠ Could not save — check the Apps Script deployment'); return; }
     _invalidateCache('tfc_');
     logActivity('import_tfcost', `Imported ${rows.length} TF Cost rows for ${periodKey()}`);
     showToast('✓ Imported — ' + rows.length + ' entries');
