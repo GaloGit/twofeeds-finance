@@ -541,7 +541,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.7.3</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.7.4</div>
   </div>
 </div>
 
@@ -614,7 +614,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.7.3</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.7.4</div>
   </div>
 </div>
 
@@ -753,7 +753,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.7.3</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.7.4</span>
           </div>
         </div>
       </div>
@@ -1342,6 +1342,22 @@
           </div>
         </div>
       </div>
+
+      <!-- TF Cost Charts -->
+      <div id="tfcChartWrap" style="display:none;margin-top:18px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
+        <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Total Cost by Advertiser</div>
+        <div id="tfcChartBox" style="position:relative;width:100%"><canvas id="tfcChart"></canvas></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;margin-top:14px">
+        <div id="tfcChartTfWrap" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
+          <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Cost by TF Manager</div>
+          <div id="tfcChartTfBox" style="position:relative;width:100%"><canvas id="tfcChartTf"></canvas></div>
+        </div>
+        <div id="tfcChartTo2Wrap" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
+          <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Cost by TO2 Mgr</div>
+          <div id="tfcChartTo2Box" style="position:relative;width:100%"><canvas id="tfcChartTo2"></canvas></div>
+        </div>
+      </div>
     </div>
 
     <!-- TF PROFIT TAB -->
@@ -1393,6 +1409,26 @@
               <tfoot id="tfpFoot"></tfoot>
             </table>
           </div>
+        </div>
+      </div>
+
+      <!-- TF Profit Charts -->
+      <div id="tfpChartWrap" style="display:none;margin-top:18px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
+        <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Profit by Advertiser</div>
+        <div id="tfpChartBox" style="position:relative;width:100%"><canvas id="tfpChart"></canvas></div>
+      </div>
+      <div id="tfpChartRevCostWrap" style="display:none;margin-top:14px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
+        <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Revenue vs TF Cost by Advertiser</div>
+        <div id="tfpChartRevCostBox" style="position:relative;width:100%"><canvas id="tfpChartRevCost"></canvas></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;margin-top:14px">
+        <div id="tfpChartTfWrap" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
+          <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Profit by TF Manager</div>
+          <div id="tfpChartTfBox" style="position:relative;width:100%"><canvas id="tfpChartTf"></canvas></div>
+        </div>
+        <div id="tfpChartTo2Wrap" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
+          <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Profit by TO2 Mgr</div>
+          <div id="tfpChartTo2Box" style="position:relative;width:100%"><canvas id="tfpChartTo2"></canvas></div>
         </div>
       </div>
     </div>
@@ -9033,6 +9069,8 @@
         <td style="text-align:right;font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--red)">${fmtAmt(totalRow.e)}</td>
         <td style="text-align:right;font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--green)">${fmtAmt(totalRow.m + totalRow.e)}</td>
       </tr>`;
+
+    setTimeout(() => _renderTfCostCharts(all), 50);
   }
 
   async function updateTfCost(idx, field, value) {
@@ -9183,6 +9221,163 @@
         <td style="text-align:right;font-family:var(--font-mono);font-size:13px;font-weight:700;color:${totProfColor};padding:10px 12px">${fmtAmt(totalProfit)}</td>
       </tr>`;
     }
+
+    setTimeout(() => _renderTfProfitCharts(rows), 50);
+  }
+
+  // ── TF COST CHARTS ──
+  const _tfcChartInstances = {};
+  function _renderTfCostCharts(rows) {
+    const isDark     = !document.body.classList.contains('light-mode');
+    const gridColor  = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+    const tickColor  = isDark ? '#7b6ea8' : '#6b5fa8';
+    const fmtTick    = v => '$' + (v >= 1000 ? (v/1000).toFixed(v%1000===0?0:1)+'k' : v.toLocaleString());
+    const fmtFull    = v => '$' + Number(v).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+    const baseOpts   = () => ({
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + fmtFull(ctx.raw) } } },
+      scales: {
+        x: { grid: { color: gridColor }, ticks: { color: tickColor, font: { family:"'Space Mono',monospace", size:11 }, callback: fmtTick } },
+        y: { grid: { display: false }, ticks: { color: tickColor, font: { family:"'Space Mono',monospace", size:11 }, crossAlign:'far' }, afterFit(a){a.width=140;} },
+      },
+    });
+
+    // Chart 1 — Total cost per ADV
+    const sorted = [...rows].sort((a,b) => ((b.mediaCost||0)+(b.extraCost||0)) - ((a.mediaCost||0)+(a.extraCost||0)));
+    const wrap1   = document.getElementById('tfcChartWrap');
+    const box1    = document.getElementById('tfcChartBox');
+    const canvas1 = document.getElementById('tfcChart');
+    if (wrap1 && box1 && canvas1 && sorted.length) {
+      box1.style.height = Math.max(80, sorted.length * 22) + 'px';
+      wrap1.style.display = 'block';
+      if (_tfcChartInstances.adv) { _tfcChartInstances.adv.destroy(); }
+      const opts = baseOpts();
+      opts.plugins.tooltip.callbacks.label = ctx => {
+        const r = sorted[ctx.dataIndex];
+        return [' Total: ' + fmtFull(ctx.raw), '  Media: ' + fmtFull(r.mediaCost||0), '  Extra: ' + fmtFull(r.extraCost||0)];
+      };
+      _tfcChartInstances.adv = new Chart(canvas1, {
+        type: 'bar',
+        data: { labels: sorted.map(r=>r.adv), datasets: [{
+          data: sorted.map(r=>(r.mediaCost||0)+(r.extraCost||0)),
+          backgroundColor:'rgba(245,158,11,0.7)', borderColor:'rgba(245,158,11,1)',
+          borderWidth:0, borderRadius:2, barThickness:8,
+        }]},
+        options: opts,
+      });
+      _injectLogToggle('tfcChart', false);
+    }
+
+    // Charts 2 & 3 — by manager
+    [['tf','tfManager','tfcChartTfWrap','tfcChartTfBox','tfcChartTf','rgba(99,102,241,0.7)','rgba(99,102,241,1)'],
+     ['to2','to2Manager','tfcChartTo2Wrap','tfcChartTo2Box','tfcChartTo2','rgba(56,189,248,0.7)','rgba(56,189,248,1)']
+    ].forEach(([key, field, wrapId, boxId, canvasId, bg, border]) => {
+      const grouped = {};
+      rows.forEach(r => {
+        const mgr = ((_findAdv(r.adv)||{})[field]||'').trim() || '—';
+        grouped[mgr] = (grouped[mgr]||0) + (r.mediaCost||0) + (r.extraCost||0);
+      });
+      const entries = Object.entries(grouped).sort(([,a],[,b])=>b-a);
+      const wrap = document.getElementById(wrapId), box = document.getElementById(boxId), canvas = document.getElementById(canvasId);
+      if (!wrap||!box||!canvas||!entries.length) { if(wrap) wrap.style.display='none'; return; }
+      box.style.height = Math.max(60, entries.length * 44) + 'px';
+      wrap.style.display = 'block';
+      if (_tfcChartInstances[key]) { _tfcChartInstances[key].destroy(); }
+      _tfcChartInstances[key] = new Chart(canvas, {
+        type:'bar',
+        data:{ labels:entries.map(([k])=>k), datasets:[{ data:entries.map(([,v])=>v), backgroundColor:bg, borderColor:border, borderWidth:0, borderRadius:4, barThickness:12 }]},
+        options: baseOpts(),
+      });
+      _injectLogToggle(canvasId, false);
+    });
+  }
+
+  // ── TF PROFIT CHARTS ──
+  const _tfpChartInstances = {};
+  function _renderTfProfitCharts(rows) {
+    if (!rows || !rows.length) return;
+    const isDark     = !document.body.classList.contains('light-mode');
+    const gridColor  = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+    const tickColor  = isDark ? '#7b6ea8' : '#6b5fa8';
+    const fmtTick    = v => '$' + (v >= 1000 ? (v/1000).toFixed(v%1000===0?0:1)+'k' : v.toLocaleString());
+    const fmtFull    = v => '$' + Number(v).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+    const baseScales = () => ({
+      x: { grid:{color:gridColor}, ticks:{color:tickColor, font:{family:"'Space Mono',monospace",size:11}, callback:fmtTick} },
+      y: { grid:{display:false}, ticks:{color:tickColor, font:{family:"'Space Mono',monospace",size:11}, crossAlign:'far'}, afterFit(a){a.width=140;} },
+    });
+
+    // Chart 1 — Profit per ADV
+    const wrap1 = document.getElementById('tfpChartWrap'), box1 = document.getElementById('tfpChartBox'), canvas1 = document.getElementById('tfpChart');
+    if (wrap1 && box1 && canvas1) {
+      box1.style.height = Math.max(80, rows.length * 22) + 'px';
+      wrap1.style.display = 'block';
+      if (_tfpChartInstances.adv) _tfpChartInstances.adv.destroy();
+      _tfpChartInstances.adv = new Chart(canvas1, {
+        type:'bar',
+        data:{ labels:rows.map(r=>r.name), datasets:[{
+          data:rows.map(r=>r.profit),
+          backgroundColor:rows.map(r=>r.profit>=0?'rgba(34,197,94,0.7)':'rgba(239,68,68,0.7)'),
+          borderColor:rows.map(r=>r.profit>=0?'rgba(34,197,94,1)':'rgba(239,68,68,1)'),
+          borderWidth:0, borderRadius:2, barThickness:8,
+        }]},
+        options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>' '+fmtFull(ctx.raw)}} },
+          scales: baseScales(),
+        },
+      });
+      _injectLogToggle('tfpChart', false);
+    }
+
+    // Chart 2 — Revenue vs TF Cost grouped per ADV
+    const wrap2 = document.getElementById('tfpChartRevCostWrap'), box2 = document.getElementById('tfpChartRevCostBox'), canvas2 = document.getElementById('tfpChartRevCost');
+    if (wrap2 && box2 && canvas2) {
+      box2.style.height = Math.max(80, rows.length * 36) + 'px';
+      wrap2.style.display = 'block';
+      if (_tfpChartInstances.revcost) _tfpChartInstances.revcost.destroy();
+      _tfpChartInstances.revcost = new Chart(canvas2, {
+        type:'bar',
+        data:{ labels:rows.map(r=>r.name), datasets:[
+          { label:'Revenue',  data:rows.map(r=>r.revenue), backgroundColor:'rgba(34,197,94,0.7)',  borderColor:'rgba(34,197,94,1)',  borderWidth:0, borderRadius:2, barThickness:7 },
+          { label:'TF Cost',  data:rows.map(r=>r.tfCost),  backgroundColor:'rgba(245,158,11,0.7)', borderColor:'rgba(245,158,11,1)', borderWidth:0, borderRadius:2, barThickness:7 },
+        ]},
+        options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{display:true, position:'top', labels:{color:tickColor, font:{family:"'Space Mono',monospace",size:10}}},
+            tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+fmtFull(ctx.raw)}} },
+          scales: baseScales(),
+        },
+      });
+    }
+
+    // Charts 3 & 4 — Profit by manager
+    [['tf','tfManager','tfpChartTfWrap','tfpChartTfBox','tfpChartTf','rgba(99,102,241,0.7)','rgba(99,102,241,1)'],
+     ['to2','to2Manager','tfpChartTo2Wrap','tfpChartTo2Box','tfpChartTo2','rgba(56,189,248,0.7)','rgba(56,189,248,1)']
+    ].forEach(([key, field, wrapId, boxId, canvasId, bg, border]) => {
+      const grouped = {};
+      rows.forEach(r => {
+        const mgr = (r[field]||'').trim() || '—';
+        grouped[mgr] = (grouped[mgr]||0) + r.profit;
+      });
+      const entries = Object.entries(grouped).sort(([,a],[,b])=>b-a);
+      const wrap = document.getElementById(wrapId), box = document.getElementById(boxId), canvas = document.getElementById(canvasId);
+      if (!wrap||!box||!canvas||!entries.length) { if(wrap) wrap.style.display='none'; return; }
+      box.style.height = Math.max(60, entries.length * 44) + 'px';
+      wrap.style.display = 'block';
+      if (_tfpChartInstances[key]) _tfpChartInstances[key].destroy();
+      _tfpChartInstances[key] = new Chart(canvas, {
+        type:'bar',
+        data:{ labels:entries.map(([k])=>k), datasets:[{
+          data:entries.map(([,v])=>v),
+          backgroundColor:entries.map(([,v])=>v>=0?bg:'rgba(239,68,68,0.7)'),
+          borderColor:entries.map(([,v])=>v>=0?border:'rgba(239,68,68,1)'),
+          borderWidth:0, borderRadius:4, barThickness:12,
+        }]},
+        options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>' '+fmtFull(ctx.raw)}} },
+          scales: baseScales(),
+        },
+      });
+      _injectLogToggle(canvasId, false);
+    });
   }
 
   // ── COST SUMMARY ──
