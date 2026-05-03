@@ -540,7 +540,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.6.2</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.6.3</div>
   </div>
 </div>
 
@@ -613,7 +613,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.6.2</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.6.3</div>
   </div>
 </div>
 
@@ -752,7 +752,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.6.2</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.6.3</span>
           </div>
         </div>
       </div>
@@ -8846,17 +8846,7 @@
   }
 
   // ── TF COST ──
-  function _tfcKey() { return 'tf_tfcost_' + periodKey(); }
-
-  function _tfcLoad() {
-    try { return JSON.parse(localStorage.getItem(_tfcKey()) || '[]'); } catch { return []; }
-  }
-
-  function _tfcSave(rows) {
-    localStorage.setItem(_tfcKey(), JSON.stringify(rows));
-  }
-
-  function _parseSaveTfCostCSV(text) {
+  async function _parseSaveTfCostCSV(text) {
     const lines = text.trim().split('\n');
     if (lines.length < 2) { showToast('⚠ No data rows found'); return; }
     const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
@@ -8866,18 +8856,20 @@
     const extraCol = findCol('extra cost', 'extra', 'additional', 'other');
     const rows = lines.slice(1).filter(l => l.trim()).map(line => {
       const cols = parseCSVLine(line);
-      const mediaCost = mediaCol >= 0 ? parseFloat((cols[mediaCol] || '0').replace(/[^0-9.]/g, '')) || 0 : 0;
-      const extraCost = extraCol >= 0 ? parseFloat((cols[extraCol] || '0').replace(/[^0-9.]/g, '')) || 0 : 0;
       return {
         adv:       advCol   >= 0 ? (cols[advCol]   || '').trim() : '',
-        mediaCost,
-        extraCost,
+        mediaCost: mediaCol >= 0 ? parseFloat((cols[mediaCol] || '0').replace(/[^0-9.]/g, '')) || 0 : 0,
+        extraCost: extraCol >= 0 ? parseFloat((cols[extraCol] || '0').replace(/[^0-9.]/g, '')) || 0 : 0,
       };
     }).filter(r => r.adv || r.mediaCost || r.extraCost);
-    _tfcSave(rows);
+    const user = localStorage.getItem('tf_current_user') || '';
+    const res  = await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveTfCost', period: periodKey(), rows, user }) });
+    const json = await res.json().catch(() => ({}));
+    if (!json.success) throw new Error('API error');
+    _invalidateCache('tfc_');
     logActivity('import_tfcost', `Imported ${rows.length} TF Cost rows for ${periodKey()}`);
     showToast('✓ Imported — ' + rows.length + ' entries');
-    renderTfCost();
+    await renderTfCost();
   }
 
   async function importTfCostFromUrl(inputId) {
@@ -8895,7 +8887,7 @@
       const text = await res.text();
       if (input) input.value = '';
       document.getElementById('tfcUrlImportBar') && (document.getElementById('tfcUrlImportBar').style.display = 'none');
-      _parseSaveTfCostCSV(text);
+      await _parseSaveTfCostCSV(text);
     } catch {
       showToast('⚠ Could not fetch — make sure it\'s shared as "Anyone with the link"', true);
     } finally {
@@ -8903,8 +8895,27 @@
     }
   }
 
-  function renderTfCost() {
-    const all = _tfcLoad();
+  async function renderTfCost() {
+    const cacheKey = 'tfc_' + periodKey();
+    let all = [];
+    if (_rawCache[cacheKey]) {
+      all = _rawCache[cacheKey];
+      if (_isSame(cacheKey, all)) return;
+    } else {
+      _showLoader('Loading TF Cost…');
+      try {
+        const data = await fetchPeriodData('getTfCost');
+        all = data.map(r => ({
+          id:        r['ID']         || '',
+          adv:       r['ADV']        || '',
+          mediaCost: parseFloat(r['Media Cost'])  || 0,
+          extraCost: parseFloat(r['Extra Cost'])  || 0,
+        }));
+        _rawCache[cacheKey] = all;
+      } catch { showToast('⚠ Could not load TF Cost data.'); }
+      finally { _hideLoader(); }
+    }
+
     const search = (document.getElementById('tfcSearch') || {}).value || '';
     const filtered = all.filter(r => !search || (r.adv || '').toLowerCase().includes(search.toLowerCase()));
 
@@ -8912,10 +8923,10 @@
     const totalExtra = all.reduce((s, r) => s + (r.extraCost || 0), 0);
     const grand      = totalMedia + totalExtra;
 
-    document.getElementById('tfcCount').textContent       = all.length;
-    document.getElementById('tfcMediaTotal').textContent  = fmtAmt(totalMedia);
-    document.getElementById('tfcExtraTotal').textContent  = fmtAmt(totalExtra);
-    document.getElementById('tfcGrandTotal').textContent  = fmtAmt(grand);
+    document.getElementById('tfcCount').textContent           = all.length;
+    document.getElementById('tfcMediaTotal').textContent      = fmtAmt(totalMedia);
+    document.getElementById('tfcExtraTotal').textContent      = fmtAmt(totalExtra);
+    document.getElementById('tfcGrandTotal').textContent      = fmtAmt(grand);
     document.getElementById('tfcPeriodLabel').textContent     = periodLabel();
     document.getElementById('tfcListPeriodLabel').textContent = periodLabel();
 
@@ -8924,7 +8935,8 @@
     document.getElementById('tfcTableWrap').style.display  = hasData ? 'block' : 'none';
     if (!hasData) return;
 
-    document.getElementById('tfcBody').innerHTML = filtered.map((r, i) => {
+    const body = document.getElementById('tfcBody');
+    body.innerHTML = filtered.map((r, i) => {
       const total = (r.mediaCost || 0) + (r.extraCost || 0);
       return `
       <tr style="animation-delay:${i * 0.03}s">
@@ -8939,9 +8951,8 @@
       </tr>`;
     }).join('');
 
-    // Totals footer row
     const totalRow = filtered.reduce((s, r) => ({ m: s.m + (r.mediaCost || 0), e: s.e + (r.extraCost || 0) }), { m: 0, e: 0 });
-    document.getElementById('tfcBody').innerHTML += `
+    body.innerHTML += `
       <tr style="border-top:2px solid var(--border)">
         <td></td>
         <td style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em">Total</td>
@@ -8952,42 +8963,54 @@
       </tr>`;
   }
 
-  function updateTfCost(idx, field, value) {
+  async function updateTfCost(idx, field, value) {
     if (!canEditTab('tfcost')) { showToast('⚠ No edit access to TF Cost'); return; }
-    const rows = _tfcLoad();
-    if (!rows[idx]) return;
-    if (field === 'mediaCost' || field === 'extraCost') {
-      rows[idx][field] = parseFloat(value.replace(/[^0-9.]/g, '')) || 0;
-    } else {
-      rows[idx][field] = value;
-    }
-    _tfcSave(rows);
-    renderTfCost();
+    _invalidateCache('tfc_');
+    const parsed = (field === 'mediaCost' || field === 'extraCost') ? parseFloat(value.replace(/[^0-9.]/g, '')) || 0 : value;
+    const user = localStorage.getItem('tf_current_user') || '';
+    try {
+      const all = _rawCache['tfc_' + periodKey()] || [];
+      const row = all[idx];
+      if (!row) return;
+      const updated = { ...row, [field]: parsed };
+      await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'updateTfCost', period: periodKey(), id: row.id, row: updated, user }) });
+    } catch {}
+    await renderTfCost();
   }
 
-  function deleteTfCost(idx) {
+  async function deleteTfCost(idx) {
     if (!canEditTab('tfcost')) { showToast('⚠ No edit access to TF Cost'); return; }
     if (!confirmDelete('Delete this row?')) return;
-    const rows = _tfcLoad();
-    rows.splice(idx, 1);
-    _tfcSave(rows);
-    renderTfCost();
+    _invalidateCache('tfc_');
+    const user = localStorage.getItem('tf_current_user') || '';
+    try {
+      const all = _rawCache['tfc_' + periodKey()] || [];
+      const row = all[idx];
+      if (!row) return;
+      await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'deleteTfCostRow', period: periodKey(), id: row.id, user }) });
+    } catch {}
+    await renderTfCost();
   }
 
-  function clearTfCost() {
+  async function clearTfCost() {
     if (!canEditTab('tfcost')) { showToast('⚠ No edit access to TF Cost'); return; }
     if (!isSinglePeriod()) { showToast('⚠ Select a single month to clear'); return; }
     if (!confirmDelete(`Clear ALL TF Cost data for ${periodLabel()}?`)) return;
-    localStorage.removeItem(_tfcKey());
-    renderTfCost();
-    showToast('✓ Cleared');
+    _showLoader();
+    _invalidateCache('tfc_');
+    const user = localStorage.getItem('tf_current_user') || '';
+    try {
+      await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'clearTfCost', period: periodKey(), user }) });
+    } catch { showToast('⚠ Clear failed'); }
+    await renderTfCost();
+    _hideLoader();
   }
 
   function exportTfCostCSV() {
-    const rows = _tfcLoad();
-    if (!rows.length) { showToast('No data to export'); return; }
+    const all = _rawCache['tfc_' + periodKey()] || [];
+    if (!all.length) { showToast('No data to export'); return; }
     const header = 'Period,ADV,Media Cost,Extra Cost,Total Cost';
-    const lines = rows.map(r => `"${periodKey()}","${r.adv || ''}","${r.mediaCost || 0}","${r.extraCost || 0}","${(r.mediaCost || 0) + (r.extraCost || 0)}"`);
+    const lines = all.map(r => `"${periodKey()}","${r.adv || ''}","${r.mediaCost || 0}","${r.extraCost || 0}","${(r.mediaCost || 0) + (r.extraCost || 0)}"`);
     const blob = new Blob([header + '\n' + lines.join('\n')], { type: 'text/csv' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
