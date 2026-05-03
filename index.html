@@ -540,7 +540,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.6.4</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.6.5</div>
   </div>
 </div>
 
@@ -613,7 +613,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.6.4</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.6.5</div>
   </div>
 </div>
 
@@ -752,7 +752,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.6.4</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.6.5</span>
           </div>
         </div>
       </div>
@@ -8888,21 +8888,20 @@
     const input = document.getElementById(inputId);
     const raw = (input ? input.value : '').trim();
     if (!raw) { showToast('⚠ Paste a Google Sheet or Drive link first'); return; }
-    const fetchUrl = _gdriveToFetchUrl(raw);
-    if (!fetchUrl) { showToast('⚠ Unrecognized link — paste a Google Sheet or Drive URL'); return; }
-    _showLoader('Fetching from Drive…');
+    _showLoader('Importing from sheet…');
+    const user = localStorage.getItem('tf_current_user') || '';
     try {
-      const res = await fetch(fetchUrl);
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const text = await res.text();
+      const res  = await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'importTfCostFromUrl', url: raw, period: periodKey(), user }) });
+      const data = await res.json().catch(() => ({}));
+      if (!data.success) { showToast('⚠ Import failed: ' + (data.error || 'check sheet is shared as "Anyone with the link"'), true); return; }
       if (input) input.value = '';
       document.getElementById('tfcUrlImportBar') && (document.getElementById('tfcUrlImportBar').style.display = 'none');
-      await _parseSaveTfCostCSV(text);
-    } catch {
-      showToast('⚠ Could not fetch — make sure it\'s shared as "Anyone with the link"', true);
-    } finally {
-      _hideLoader();
-    }
+      _invalidateCache('tfc_');
+      logActivity('import_tfcost', `Imported ${data.count} TF Cost rows for ${periodKey()}`);
+      showToast(`✓ Imported — ${data.count} entries`);
+      await renderTfCost();
+    } catch { showToast('⚠ Could not reach the API', true); }
+    finally { _hideLoader(); }
   }
 
   async function renderTfCost() {
