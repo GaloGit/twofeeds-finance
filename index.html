@@ -541,7 +541,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.7.5</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.7.6</div>
   </div>
 </div>
 
@@ -614,7 +614,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.7.5</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.7.6</div>
   </div>
 </div>
 
@@ -753,7 +753,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.7.5</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.7.6</span>
           </div>
         </div>
       </div>
@@ -10436,6 +10436,32 @@
 
   let _lastCommissionBase = { profit: 0, revenue: 0 };
 
+  function _getTfManagerProfit(managerName) {
+    const mgrLower = (managerName || '').trim().toLowerCase();
+    let total = 0;
+    getSelectedPeriods().forEach(pk => {
+      const revRows = _revLoadPeriod(pk);
+      const tfcRows = _rawCache['tfc_' + pk] || [];
+      const tfcMap = {};
+      tfcRows.forEach(r => {
+        const k = (r.adv || '').trim().toLowerCase();
+        if (k) tfcMap[k] = (tfcMap[k] || 0) + (r.mediaCost || 0) + (r.extraCost || 0);
+      });
+      const lookup = name => {
+        const nl = (name || '').trim().toLowerCase();
+        if (tfcMap[nl] !== undefined) return tfcMap[nl];
+        const m = Object.keys(tfcMap).find(k => k.length >= 3 && (nl.includes(k) || k.includes(nl)));
+        return m !== undefined ? tfcMap[m] : 0;
+      };
+      revRows.forEach(r => {
+        const adv = _findAdv(r.name);
+        const mgr = (r.tfManager || adv?.tfManager || '').trim().toLowerCase();
+        if (mgr === mgrLower) total += (r.amount || 0) - lookup(r.name);
+      });
+    });
+    return total;
+  }
+
   function _updateCommissionAmounts() {
     const { profit, revenue } = _lastCommissionBase;
     const fmtAmt = v => '$' + Number(v).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -10447,7 +10473,7 @@
       const i = parseInt(tr.dataset.commIdx);
       if (isNaN(i) || !_commissions[i]) return;
       const c = _commissions[i];
-      const base = c.base === 'revenue' ? revenue : profit;
+      const base = c.base === 'revenue' ? revenue : c.base === 'tf_manager_profit' ? _getTfManagerProfit(c.name) : profit;
       const amount = base * (c.percentage / 100);
       const baseSalaryUsd = (c.baseSalary || 0) / _ilsRate;
       const personTotal = amount + baseSalaryUsd;
@@ -10539,7 +10565,7 @@
       const fmtAmt = v => '$' + Number(v).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
       const fmtPct = v => profit ? (v/profit*100).toFixed(1)+'% of profit' : '';
       userView.innerHTML = userRows.map(c => {
-        const base = c.base === 'revenue' ? revenue : profit;
+        const base = c.base === 'revenue' ? revenue : c.base === 'tf_manager_profit' ? _getTfManagerProfit(c.name) : profit;
         const commission = base * (c.percentage / 100);
         const baseSalaryUsd = (c.baseSalary || 0) / _ilsRate;
         const total = commission + baseSalaryUsd;
@@ -10548,7 +10574,7 @@
           <div class="comm-card-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
             <div><div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Commission</div>
               <div style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--accent-light)">${fmtAmt(commission)}</div>
-              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${c.percentage}% of ${c.base}</div></div>
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${c.percentage}% of ${c.base==='tf_manager_profit'?'TF Mgr Profit':c.base}</div></div>
             <div><div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Base Salary</div>
               <div style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--text)">₪${(c.baseSalary||0).toLocaleString()}</div>
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${fmtAmt(baseSalaryUsd)}</div></div>
@@ -10585,7 +10611,7 @@
     if (rateEl && !rateEl.value) rateEl.value = _ilsRate;
     else if (rateEl && rateEl.value != _ilsRate) rateEl.value = _ilsRate;
     const amounts = _commissions.map(c => {
-      const base = c.base === 'revenue' ? revenue : profit;
+      const base = c.base === 'revenue' ? revenue : c.base === 'tf_manager_profit' ? _getTfManagerProfit(c.name) : profit;
       return base * (c.percentage / 100);
     });
     const totalComm   = amounts.reduce((s, a) => s + a, 0);
@@ -10610,7 +10636,7 @@
       <tr data-comm-idx="${i}" style="border-bottom:1px solid var(--border)">
         <td style="font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--text)"><div style="display:flex;align-items:center;gap:8px">${avatar}${esc(c.name)||'<span style="color:var(--muted)">—</span>'}</div></td>
         <td style="font-family:var(--font-mono);font-size:12px;color:var(--text);text-align:center">${c.percentage}%</td>
-        <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">${c.base==='revenue'?'Revenue':'Profit'}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">${c.base==='revenue'?'Revenue':c.base==='tf_manager_profit'?'TF Mgr Profit':'Profit'}</td>
         <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);text-align:right;white-space:nowrap">
           ${fmtAmt(amounts[i])}
           <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);font-weight:400;margin-top:2px">₪${Math.round(amounts[i]*_ilsRate).toLocaleString()} calc</div>
@@ -10671,8 +10697,9 @@
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Based On</div>
                 <select id="cedit_base_${i}"
                   style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;cursor:pointer">
-                  <option value="profit"  ${c.base==='profit'  ?'selected':''}>Profit</option>
-                  <option value="revenue" ${c.base==='revenue' ?'selected':''}>Revenue</option>
+                  <option value="profit"           ${c.base==='profit'           ?'selected':''}>Profit</option>
+                  <option value="revenue"          ${c.base==='revenue'          ?'selected':''}>Revenue</option>
+                  <option value="tf_manager_profit" ${c.base==='tf_manager_profit'?'selected':''}>TF Mgr Profit</option>
                 </select>
               </div>
               <div>
