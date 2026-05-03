@@ -281,7 +281,7 @@
     .chart-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 20px; }
     .chart-title { font-size: 15px; font-weight: 800; }
     .chart-sub { font-family: var(--font-mono); font-size: 10px; color: var(--muted); }
-    .chart-container { position: relative; height: 280px; width: 100%; }
+    .chart-container { position: relative; height: 360px; width: 100%; }
 
     /* PUBLISHER VIEW */
     .pubview-controls { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
@@ -383,7 +383,7 @@
       .summary-grid { flex-wrap: wrap; }
       .summary-card { flex: 1 1 40%; }
       .trend-charts-grid { grid-template-columns: repeat(2, 1fr) !important; }
-      .chart-container { height: 200px; }
+      .chart-container { height: 260px; }
       #profChartWrap, #ovrvwCommWrap .chart-wrap { max-width: 100% !important; }
     }
 
@@ -540,7 +540,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.6.0</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.6.1</div>
   </div>
 </div>
 
@@ -613,7 +613,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.6.0</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.6.1</div>
   </div>
 </div>
 
@@ -752,7 +752,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.6.0</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.6.1</span>
           </div>
         </div>
       </div>
@@ -1442,7 +1442,7 @@
             <div class="chart-title">DSP Publisher Costs</div>
             <div class="chart-sub">Over Time</div>
           </div>
-          <div class="chart-container" style="height:320px"><canvas id="dspPubCostChart"></canvas></div>
+          <div class="chart-container" style="height:440px"><canvas id="dspPubCostChart"></canvas></div>
         </div>
       </div>
       <div id="rwPubCostWrap" style="display:none;margin-top:24px">
@@ -1451,7 +1451,7 @@
             <div class="chart-title">RW Publisher Costs</div>
             <div class="chart-sub">Over Time</div>
           </div>
-          <div class="chart-container" style="height:320px"><canvas id="rwPubCostChart"></canvas></div>
+          <div class="chart-container" style="height:440px"><canvas id="rwPubCostChart"></canvas></div>
         </div>
       </div>
       <div id="mbCostWrap" style="display:none;margin-top:24px">
@@ -1460,7 +1460,7 @@
             <div class="chart-title">Media Buying Cost</div>
             <div class="chart-sub">Over Time</div>
           </div>
-          <div class="chart-container" style="height:320px"><canvas id="mbCostChart"></canvas></div>
+          <div class="chart-container" style="height:440px"><canvas id="mbCostChart"></canvas></div>
         </div>
       </div>
       <div id="intSrcCostWrap" style="display:none;margin-top:24px">
@@ -1469,7 +1469,7 @@
             <div class="chart-title">Internal Sources Cost</div>
             <div class="chart-sub">Over Time</div>
           </div>
-          <div class="chart-container" style="height:320px"><canvas id="intSrcCostChart"></canvas></div>
+          <div class="chart-container" style="height:440px"><canvas id="intSrcCostChart"></canvas></div>
         </div>
       </div>
       <div id="advRevWrap" style="display:none;margin-top:24px">
@@ -1478,7 +1478,7 @@
             <div class="chart-title">Revenue by Advertiser</div>
             <div class="chart-sub">Over Time</div>
           </div>
-          <div class="chart-container" style="height:320px"><canvas id="advRevChart"></canvas></div>
+          <div class="chart-container" style="height:440px"><canvas id="advRevChart"></canvas></div>
         </div>
       </div>
       <div id="ovrvwCommWrap" style="display:none;margin-top:24px">
@@ -9201,7 +9201,7 @@
     const palette = ['rgba(167,139,250,1)','rgba(99,102,241,1)','rgba(56,189,248,1)','rgba(52,211,153,1)','rgba(251,191,36,1)','rgba(251,146,60,1)','rgba(239,68,68,1)','rgba(232,121,249,1)'];
     const datasets = groups.map((group, idx) => {
       const c = palette[idx % palette.length];
-      return { label: group, data: groupData[group], borderColor: c, backgroundColor: c.replace(',1)', ',0.1)'), fill: false, tension: 0.3, pointRadius: 3, pointBackgroundColor: c, borderWidth: 2 };
+      return { label: group, data: groupData[group], borderColor: c, backgroundColor: c.replace(',1)', ',0.1)'), fill: false, tension: 0.3, pointRadius: 5, pointBackgroundColor: c, borderWidth: 3 };
     });
 
     wrap.style.display = 'block';
@@ -9294,7 +9294,7 @@
     const palette = ['rgba(56,189,248,1)','rgba(52,211,153,1)','rgba(167,139,250,1)','rgba(251,191,36,1)','rgba(34,197,94,1)','rgba(99,102,241,1)','rgba(251,113,133,1)','rgba(239,68,68,1)','rgba(251,146,60,1)','rgba(163,230,53,1)','rgba(232,121,249,1)','rgba(20,184,166,1)'];
     const datasets = pubs.map((name, idx) => {
       const c = palette[idx % palette.length];
-      return { label: name, data: pubData[name], borderColor: c, backgroundColor: c.replace(',1)', ',0.1)'), fill: false, tension: 0.3, pointRadius: 3, pointBackgroundColor: c, borderWidth: 2 };
+      return { label: name, data: pubData[name], borderColor: c, backgroundColor: c.replace(',1)', ',0.1)'), fill: false, tension: 0.3, pointRadius: 5, pointBackgroundColor: c, borderWidth: 3 };
     });
 
     wrap.style.display = 'block';
@@ -9342,7 +9342,7 @@
     const palette = ['rgba(56,189,248,1)','rgba(163,230,53,1)','rgba(251,191,36,1)','rgba(167,139,250,1)','rgba(52,211,153,1)','rgba(99,102,241,1)','rgba(251,146,60,1)','rgba(239,68,68,1)','rgba(232,121,249,1)','rgba(34,197,94,1)','rgba(20,184,166,1)','rgba(251,113,133,1)'];
     const datasets = sources.map((name, idx) => {
       const c = palette[idx % palette.length];
-      return { label: name, data: mbData[name], borderColor: c, backgroundColor: c.replace(',1)', ',0.1)'), fill: false, tension: 0.3, pointRadius: 3, pointBackgroundColor: c, borderWidth: 2 };
+      return { label: name, data: mbData[name], borderColor: c, backgroundColor: c.replace(',1)', ',0.1)'), fill: false, tension: 0.3, pointRadius: 5, pointBackgroundColor: c, borderWidth: 3 };
     });
 
     wrap.style.display = 'block';
@@ -9391,7 +9391,7 @@
     const palette = ['rgba(239,68,68,1)','rgba(251,146,60,1)','rgba(251,191,36,1)','rgba(163,230,53,1)','rgba(52,211,153,1)','rgba(56,189,248,1)','rgba(99,102,241,1)','rgba(167,139,250,1)','rgba(232,121,249,1)','rgba(251,113,133,1)','rgba(34,197,94,1)','rgba(20,184,166,1)'];
     const datasets = pubs.map((name, idx) => {
       const c = palette[idx % palette.length];
-      return { label: name, data: pubData[name], borderColor: c, backgroundColor: c.replace(',1)', ',0.1)'), fill: false, tension: 0.3, pointRadius: 3, pointBackgroundColor: c, borderWidth: 2 };
+      return { label: name, data: pubData[name], borderColor: c, backgroundColor: c.replace(',1)', ',0.1)'), fill: false, tension: 0.3, pointRadius: 5, pointBackgroundColor: c, borderWidth: 3 };
     });
 
     wrap.style.display = 'block';
@@ -9435,7 +9435,7 @@
     const palette = ['rgba(99,102,241,1)','rgba(34,197,94,1)','rgba(251,191,36,1)','rgba(239,68,68,1)','rgba(56,189,248,1)','rgba(167,139,250,1)','rgba(52,211,153,1)','rgba(251,113,133,1)','rgba(251,146,60,1)','rgba(163,230,53,1)','rgba(232,121,249,1)','rgba(20,184,166,1)'];
     const datasets = advs.map((name, idx) => {
       const c = palette[idx % palette.length];
-      return { label: name, data: advData[name], borderColor: c, backgroundColor: c.replace(',1)', ',0.1)'), fill: false, tension: 0.3, pointRadius: 3, pointBackgroundColor: c, borderWidth: 2 };
+      return { label: name, data: advData[name], borderColor: c, backgroundColor: c.replace(',1)', ',0.1)'), fill: false, tension: 0.3, pointRadius: 5, pointBackgroundColor: c, borderWidth: 3 };
     });
 
     wrap.style.display = 'block';
@@ -9482,7 +9482,7 @@
     const palette = ['rgba(251,191,36,1)','rgba(99,102,241,1)','rgba(52,211,153,1)','rgba(239,68,68,1)','rgba(56,189,248,1)','rgba(167,139,250,1)','rgba(34,197,94,1)','rgba(251,113,133,1)'];
     const datasets = tls.map((tl, idx) => {
       const c = palette[idx % palette.length];
-      return { label: tl, data: tlData[tl], borderColor: c, backgroundColor: c.replace(',1)', ',0.1)'), fill: false, tension: 0.3, pointRadius: 3, pointBackgroundColor: c, borderWidth: 2 };
+      return { label: tl, data: tlData[tl], borderColor: c, backgroundColor: c.replace(',1)', ',0.1)'), fill: false, tension: 0.3, pointRadius: 5, pointBackgroundColor: c, borderWidth: 3 };
     });
 
     wrap.style.display = 'block';
@@ -9529,7 +9529,7 @@
     const palette = ['rgba(56,189,248,1)','rgba(251,191,36,1)','rgba(167,139,250,1)','rgba(52,211,153,1)','rgba(99,102,241,1)','rgba(34,197,94,1)','rgba(251,113,133,1)','rgba(239,68,68,1)'];
     const datasets = mgrs.map((mgr, idx) => {
       const c = palette[idx % palette.length];
-      return { label: mgr, data: mgrData[mgr], borderColor: c, backgroundColor: c.replace(',1)', ',0.1)'), fill: false, tension: 0.3, pointRadius: 3, pointBackgroundColor: c, borderWidth: 2 };
+      return { label: mgr, data: mgrData[mgr], borderColor: c, backgroundColor: c.replace(',1)', ',0.1)'), fill: false, tension: 0.3, pointRadius: 5, pointBackgroundColor: c, borderWidth: 3 };
     });
 
     wrap.style.display = 'block';
@@ -9576,7 +9576,7 @@
     const palette = ['rgba(99,102,241,1)','rgba(34,197,94,1)','rgba(251,191,36,1)','rgba(239,68,68,1)','rgba(56,189,248,1)','rgba(167,139,250,1)','rgba(52,211,153,1)','rgba(251,113,133,1)'];
     const datasets = mgrs.map((mgr, idx) => {
       const c = palette[idx % palette.length];
-      return { label: mgr, data: mgrData[mgr], borderColor: c, backgroundColor: c.replace(',1)', ',0.1)'), fill: false, tension: 0.3, pointRadius: 3, pointBackgroundColor: c, borderWidth: 2 };
+      return { label: mgr, data: mgrData[mgr], borderColor: c, backgroundColor: c.replace(',1)', ',0.1)'), fill: false, tension: 0.3, pointRadius: 5, pointBackgroundColor: c, borderWidth: 3 };
     });
 
     wrap.style.display = 'block';
@@ -9613,7 +9613,7 @@
       label, data,
       borderColor: color,
       backgroundColor: fill ? color.replace(',1)', ',0.15)') : 'transparent',
-      fill, tension: 0.3, pointRadius: 3, pointBackgroundColor: color, borderWidth: 2
+      fill, tension: 0.3, pointRadius: 5, pointBackgroundColor: color, borderWidth: 3
     });
 
     const single = (id, key, ds) => {
