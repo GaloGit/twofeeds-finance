@@ -2554,7 +2554,7 @@
 
   // ── Pre-load settings cache (populated after FINANCE_API is declared below) ──
   let _loginSettingsCache = null;
-  const FINANCE_API = "https://script.google.com/macros/s/AKfycbxwg-vrFaULyNzgIVfYNgao-V3748Vy5L3n8tq2c-PpqDZnkEPHZKeGaUjl6uIyC2_5/exec";
+  const FINANCE_API = "https://script.google.com/macros/s/AKfycbwmDWrKQqB6ViiQdfXEckWhQHfsXwI0BnPXNcXlAY7PH8W0v28VN-AkYrDoUo7okVSN/exec";
   const WORKER_URL = 'https://twofeeds-ai.galredwork.workers.dev';
   // Preload settings in background so login password check is instant
   (async () => { try { const r = await fetch(`${FINANCE_API}?action=getSettings`); const j = await r.json(); if (j.success) _loginSettingsCache = j.data || []; } catch {} })();
