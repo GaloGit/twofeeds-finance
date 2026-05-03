@@ -541,7 +541,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.8.0</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.8.1</div>
   </div>
 </div>
 
@@ -614,7 +614,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.8.0</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.8.1</div>
   </div>
 </div>
 
@@ -753,7 +753,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.8.0</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.8.1</span>
           </div>
         </div>
       </div>
@@ -10651,12 +10651,11 @@
         <td style="text-align:right">
           <span style="font-family:var(--font-mono);font-size:12px;color:var(--text)">₪${(c.baseSalary||0).toLocaleString()}</span>
           <div class="usd-val" style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:2px">${fmtAmt((c.baseSalary||0)/_ilsRate)}</div>
-          ${(c.realCommission||0) > 0 && (c.baseSalary||0) > 0 ? (() => {
-            const actualILS = Math.round(c.realCommission * _ilsRate);
-            const diff = actualILS - (c.baseSalary||0);
+          ${(c.realSalary||0) > 0 ? (() => {
+            const diff = Math.round((c.realSalary||0) - (c.baseSalary||0));
             const pct  = (c.baseSalary||0) > 0 ? ((diff / (c.baseSalary||0))*100).toFixed(1) : '—';
             const col  = diff >= 0 ? 'var(--green)' : 'var(--red)';
-            return `<div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);font-weight:700;margin-top:6px;border-top:1px solid var(--border);padding-top:5px">₪${actualILS.toLocaleString()} actual ILS</div>
+            return `<div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);font-weight:700;margin-top:6px;border-top:1px solid var(--border);padding-top:5px">₪${(c.realSalary).toLocaleString()} actual</div>
                     <div style="font-family:var(--font-mono);font-size:11px;color:${col};font-weight:700">${diff>=0?'+':''}₪${diff.toLocaleString()} (${diff>=0?'+':''}${pct}%)</div>`;
           })() : ''}
         </td>
@@ -10664,12 +10663,13 @@
         <td style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--green);text-align:right;white-space:nowrap">
           ${fmtAmt(amounts[i]+(c.baseSalary||0)/_ilsRate)}
           <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);font-weight:400;margin-top:2px">₪${Math.round((amounts[i]+(c.baseSalary||0)/_ilsRate)*_ilsRate).toLocaleString()} calc</div>
-          ${(c.realSalary||0) > 0 ? (() => {
+          ${((c.realCommission||0) > 0 || (c.realSalary||0) > 0) ? (() => {
+            const actualTotalILS = Math.round((c.realCommission||0) * _ilsRate) + (c.realSalary||0);
             const calcILS = Math.round((amounts[i]+(c.baseSalary||0)/_ilsRate)*_ilsRate);
-            const diff = Math.round(c.realSalary - calcILS);
+            const diff = actualTotalILS - calcILS;
             const pct  = calcILS > 0 ? ((diff / calcILS)*100).toFixed(1) : '—';
             const col  = diff >= 0 ? 'var(--green)' : 'var(--red)';
-            return `<div style="font-family:var(--font-mono);font-size:12px;color:var(--muted);font-weight:700;margin-top:3px">₪${(c.realSalary).toLocaleString()} actual</div>
+            return `<div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);font-weight:700;margin-top:6px;border-top:1px solid var(--border);padding-top:5px">₪${actualTotalILS.toLocaleString()} actual</div>
                     <div style="font-family:var(--font-mono);font-size:11px;color:${col};font-weight:700">${diff>=0?'+':''}₪${diff.toLocaleString()} (${diff>=0?'+':''}${pct}%)</div>`;
           })() : ''}
         </td>
