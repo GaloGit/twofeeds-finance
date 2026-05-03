@@ -8906,6 +8906,7 @@
   }
 
   async function renderTfCost() {
+    const fmtAmt = v => '$' + Number(v).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
     const cacheKey = 'tfc_' + periodKey();
     let all = [];
     if (_rawCache[cacheKey]) {
