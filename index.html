@@ -84,7 +84,7 @@
       pointer-events: none; z-index: 0;
     }
 
-    .container { max-width: 1400px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+    .container { width: 100%; margin: 0 auto; padding: 0 32px; position: relative; z-index: 1; box-sizing: border-box; }
 
     /* GATE */
     #gate { min-height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; }
@@ -540,7 +540,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.5.9</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.6.0</div>
   </div>
 </div>
 
@@ -613,7 +613,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.5.9</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.6.0</div>
   </div>
 </div>
 
@@ -752,7 +752,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.5.9</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.6.0</span>
           </div>
         </div>
       </div>
@@ -1365,7 +1365,7 @@
         <button onclick="scrollToChart('advRevWrap',60)"       style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">📊 By Advertiser</button>
         <button onclick="scrollToChart('ovrvwCommWrap',60)"    style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">💰 Commissions</button>
       </div>
-      <div class="chart-wrap" id="profChartWrap" style="display:none;max-width:700px">
+      <div class="chart-wrap" id="profChartWrap" style="display:none">
         <div class="chart-header">
           <div>
             <div class="chart-title">Monthly Overview</div>
