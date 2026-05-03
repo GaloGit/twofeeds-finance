@@ -540,7 +540,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.5.6</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.5.7</div>
   </div>
 </div>
 
@@ -613,7 +613,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.5.6</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.5.7</div>
   </div>
 </div>
 
@@ -752,7 +752,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.5.6</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.5.7</span>
           </div>
         </div>
       </div>
@@ -9993,11 +9993,11 @@
           ${fmtAmt(amounts[i])}
           <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);font-weight:400;margin-top:2px">₪${Math.round(amounts[i]*_ilsRate).toLocaleString()} calc</div>
           ${(c.realCommission||0) > 0 ? (() => {
-            const diff = Math.round(c.realCommission - amounts[i]*_ilsRate);
-            const pct  = amounts[i] > 0 ? ((diff / (amounts[i]*_ilsRate))*100).toFixed(1) : '—';
+            const diff = c.realCommission - amounts[i];
+            const pct  = amounts[i] > 0 ? ((diff / amounts[i])*100).toFixed(1) : '—';
             const col  = diff >= 0 ? 'var(--green)' : 'var(--red)';
-            return `<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:3px">₪${(c.realCommission).toLocaleString()} actual</div>
-                    <div style="font-family:var(--font-mono);font-size:10px;color:${col};font-weight:600">${diff>=0?'+':''}₪${diff.toLocaleString()} (${diff>=0?'+':''}${pct}%)</div>`;
+            return `<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:3px">${fmtAmt(c.realCommission)} actual</div>
+                    <div style="font-family:var(--font-mono);font-size:10px;color:${col};font-weight:600">${diff>=0?'+':''}${fmtAmt(diff)} (${diff>=0?'+':''}${pct}%)</div>`;
           })() : ''}
         </td>
         <td style="text-align:right">
@@ -10070,14 +10070,14 @@
                 style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;box-sizing:border-box"/>
             </div>
             <div class="comm-real-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;padding:12px 14px;background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.2);border-radius:8px">
-              <div style="font-family:var(--font-mono);font-size:9px;color:var(--accent-light);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;grid-column:1/-1">📄 Actual amounts from document (₪ ILS)</div>
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--accent-light);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;grid-column:1/-1">📄 Actual amounts from document</div>
               <div>
-                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Actual Commission (₪)</div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Actual Commission ($)</div>
                 <input id="cedit_rc_${i}" type="text" value="${(c.realCommission||0) > 0 ? (c.realCommission||0).toLocaleString() : ''}" placeholder="e.g. 15,000"
                   style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 8px;color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;text-align:right;box-sizing:border-box"/>
               </div>
               <div>
-                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Actual Total Salary (₪)</div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Actual Base Salary (₪)</div>
                 <input id="cedit_rs_${i}" type="text" value="${(c.realSalary||0) > 0 ? (c.realSalary||0).toLocaleString() : ''}" placeholder="e.g. 34,000"
                   style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 8px;color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;text-align:right;box-sizing:border-box"/>
               </div>
