@@ -541,7 +541,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.7.1</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.7.2</div>
   </div>
 </div>
 
@@ -614,7 +614,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.7.1</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.7.2</div>
   </div>
 </div>
 
@@ -753,7 +753,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.7.1</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.7.2</span>
           </div>
         </div>
       </div>
@@ -1329,10 +1329,11 @@
                 <tr>
                   <th class="th-hash">#</th>
                   <th>ADV</th>
+                  <th>TF Manager</th>
+                  <th>TO2 Mgr</th>
                   <th style="text-align:right">Media Cost</th>
                   <th style="text-align:right">Extra Cost</th>
                   <th style="text-align:right">Total Cost</th>
-                  <th></th>
                 </tr>
               </thead>
               <tbody id="tfcBody"></tbody>
@@ -8955,12 +8956,11 @@
       <tr style="animation-delay:${i * 0.03}s">
         <td class="row-num">${i + 1}</td>
         <td><div style="display:flex;align-items:center;gap:8px">${logoHtml}<input class="editable" value="${esc(r.adv)}" onblur="updateTfCost(${i},'adv',this.value)" placeholder="Advertiser" style="min-width:160px;width:100%"/></div></td>
+        <td>${_mgrCell(((_findAdv(r.adv)||{}).tfManager)||'')}</td>
+        <td>${_mgrCell(((_findAdv(r.adv)||{}).to2Manager)||'')}</td>
         <td style="text-align:right;font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--amber);white-space:nowrap">${fmtAmt(r.mediaCost || 0)}</td>
         <td style="text-align:right;font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--red);white-space:nowrap">${fmtAmt(r.extraCost || 0)}</td>
         <td style="text-align:right;font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);white-space:nowrap">${fmtAmt(total)}</td>
-        <td style="text-align:center">
-          <button onclick="deleteTfCost(${i})" class="clear-btn" style="padding:3px 10px;font-size:10px">✕</button>
-        </td>
       </tr>`;
     }).join('');
 
@@ -8969,10 +8969,11 @@
       <tr style="border-top:2px solid var(--border)">
         <td></td>
         <td style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em">Total</td>
+        <td></td>
+        <td></td>
         <td style="text-align:right;font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--amber)">${fmtAmt(totalRow.m)}</td>
         <td style="text-align:right;font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--red)">${fmtAmt(totalRow.e)}</td>
         <td style="text-align:right;font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--green)">${fmtAmt(totalRow.m + totalRow.e)}</td>
-        <td></td>
       </tr>`;
   }
 
