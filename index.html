@@ -540,7 +540,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.6.7</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.6.8</div>
   </div>
 </div>
 
@@ -613,7 +613,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.6.7</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.6.8</div>
   </div>
 </div>
 
@@ -752,7 +752,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.6.7</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.6.8</span>
           </div>
         </div>
       </div>
@@ -2554,7 +2554,7 @@
 
   // ── Pre-load settings cache (populated after FINANCE_API is declared below) ──
   let _loginSettingsCache = null;
-  const FINANCE_API = "https://script.google.com/macros/s/AKfycbxLsH5zTIgjqNdZ1zwc95zw9a110vTo4Vr0XerAmqDW_Zf2Q_e2dh3n7DFWji1hc0tg/exec";
+  const FINANCE_API = "https://script.google.com/macros/s/AKfycbwpxZEOcVziDf7aSh5RExkWCkyqWZFBFSumOIyJwy30EBBSAxtLf7DsmSozqdTfzzHn/exec";
   const WORKER_URL = 'https://twofeeds-ai.galredwork.workers.dev';
   // Preload settings in background so login password check is instant
   (async () => { try { const r = await fetch(`${FINANCE_API}?action=getSettings`); const j = await r.json(); if (j.success) _loginSettingsCache = j.data || []; } catch {} })();
