@@ -8950,10 +8950,11 @@
     const body = document.getElementById('tfcBody');
     body.innerHTML = filtered.map((r, i) => {
       const total = (r.mediaCost || 0) + (r.extraCost || 0);
+      const logoHtml = _getAdvLogo(r.adv, 26);
       return `
       <tr style="animation-delay:${i * 0.03}s">
         <td class="row-num">${i + 1}</td>
-        <td><input class="editable" value="${esc(r.adv)}" onblur="updateTfCost(${i},'adv',this.value)" placeholder="Advertiser" style="min-width:160px;width:100%"/></td>
+        <td><div style="display:flex;align-items:center;gap:8px">${logoHtml}<input class="editable" value="${esc(r.adv)}" onblur="updateTfCost(${i},'adv',this.value)" placeholder="Advertiser" style="min-width:160px;width:100%"/></div></td>
         <td style="text-align:right"><input class="editable" value="${r.mediaCost || ''}" onblur="updateTfCost(${i},'mediaCost',this.value)" placeholder="0" style="text-align:right;width:110px"/></td>
         <td style="text-align:right"><input class="editable" value="${r.extraCost || ''}" onblur="updateTfCost(${i},'extraCost',this.value)" placeholder="0" style="text-align:right;width:110px"/></td>
         <td style="text-align:right;font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);white-space:nowrap">${fmtAmt(total)}</td>
