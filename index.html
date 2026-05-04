@@ -541,7 +541,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.8.2</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.8.3</div>
   </div>
 </div>
 
@@ -614,7 +614,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.8.2</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.8.3</div>
   </div>
 </div>
 
@@ -753,7 +753,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.8.2</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.8.3</span>
           </div>
         </div>
       </div>
@@ -4748,10 +4748,21 @@
           </div>`;
         }).join('');
         const isUnassigned = mgr === 'Unassigned';
+        // Look up manager photo by name
+        const mgrRecord = !isUnassigned && typeof campaignMgrs !== 'undefined'
+          ? campaignMgrs.find(m => m.name && m.name.trim().toLowerCase() === mgr.trim().toLowerCase())
+          : null;
+        const mgrPhotoUrl = mgrRecord?.photoUrl ? (resolvePhotoUrl(mgrRecord.photoUrl) || mgrRecord.photoUrl) : '';
+        const mgrAvatar = mgrPhotoUrl
+          ? `<img src="${esc(mgrPhotoUrl)}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:2px solid ${color};flex-shrink:0" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'">`
+            + `<span style="display:none;width:28px;height:28px;border-radius:50%;background:var(--surface3);border:2px solid ${color};align-items:center;justify-content:center;font-size:11px;font-weight:700;color:${color};flex-shrink:0">${mgr[0].toUpperCase()}</span>`
+          : isUnassigned
+            ? `<span style="width:28px;height:28px;border-radius:50%;background:var(--surface3);border:2px solid var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0">—</span>`
+            : `<span style="width:28px;height:28px;border-radius:50%;background:var(--surface3);border:2px solid ${color};display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:${color};flex-shrink:0">${mgr[0].toUpperCase()}</span>`;
         return `
           <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;min-width:220px;flex:1">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-              <span style="font-size:14px">${isUnassigned ? '—' : '👤'}</span>
+              ${mgrAvatar}
               <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:${isUnassigned?'var(--muted)':color};flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(mgr)}</span>
               <span style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:${color};background:${color}22;border-radius:10px;padding:2px 8px;flex-shrink:0">${advs.length}</span>
             </div>
