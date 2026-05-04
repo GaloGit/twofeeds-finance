@@ -541,7 +541,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.8.4</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.8.5</div>
   </div>
 </div>
 
@@ -614,7 +614,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.8.4</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.8.5</div>
   </div>
 </div>
 
@@ -753,7 +753,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.8.4</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.8.5</span>
           </div>
         </div>
       </div>
@@ -1830,6 +1830,26 @@
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Notes</div>
               <input type="text" id="cmNotes" placeholder="Optional"
                 style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+            </div>
+            <div style="flex:2;min-width:220px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Photo URL</div>
+              <input type="text" id="cmPhotoUrl" placeholder="https://… (Drive/Dropbox/direct link)"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none"/>
+            </div>
+            <div style="flex:0;min-width:90px;max-width:110px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Country</div>
+              <input type="text" id="cmCountry" placeholder="IL / US" maxlength="2"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;text-transform:uppercase"/>
+            </div>
+            <div style="flex:1;min-width:120px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Commission</div>
+              <input type="text" id="cmCommission" placeholder="e.g. $500 / 10%"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+            </div>
+            <div style="flex:0;min-width:120px;max-width:160px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Birthday</div>
+              <input type="date" id="cmBirthday"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none"/>
             </div>
             <button onclick="addCampaignMgr()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.05em;white-space:nowrap">+ ADD</button>
           </div>
@@ -3400,12 +3420,16 @@
     const status    = document.getElementById('cmStatus').value;
     const startDate = document.getElementById('cmStartDate').value;
     const endDate   = document.getElementById('cmEndDate').value;
-    const notes     = document.getElementById('cmNotes').value.trim();
+    const notes      = document.getElementById('cmNotes').value.trim();
+    const photoUrl   = document.getElementById('cmPhotoUrl').value.trim();
+    const country    = document.getElementById('cmCountry').value.trim().toUpperCase().slice(0, 2);
+    const commission = document.getElementById('cmCommission').value.trim();
+    const birthday   = document.getElementById('cmBirthday').value;
     if (!name) { showToast('⚠ Name is required'); return; }
-    campaignMgrs.push({ name, email, phone, campaigns, role, status, startDate, endDate, notes, commission: '', country: '', photoUrl: '', birthday: '', added: new Date().toISOString() });
+    campaignMgrs.push({ name, email, phone, campaigns, role, status, startDate, endDate, notes, commission, country, photoUrl, birthday, added: new Date().toISOString() });
     _saveCmOrder(); // include new member at end of saved order
     _renderCmTable();
-    ['cmName','cmEmail','cmPhone','cmCampaigns','cmNotes','cmStartDate','cmEndDate'].forEach(id => { document.getElementById(id).value = ''; });
+    ['cmName','cmEmail','cmPhone','cmCampaigns','cmNotes','cmStartDate','cmEndDate','cmPhotoUrl','cmCountry','cmCommission','cmBirthday'].forEach(id => { document.getElementById(id).value = ''; });
     document.getElementById('cmRole').value = 'Campaign Manager';
     document.getElementById('cmStatus').value = 'live';
     // Collapse the form after adding
