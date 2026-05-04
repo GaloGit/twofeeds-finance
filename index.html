@@ -541,7 +541,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.8.7</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.8.8</div>
   </div>
 </div>
 
@@ -614,7 +614,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.8.7</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.8.8</div>
   </div>
 </div>
 
@@ -753,7 +753,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.8.7</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.8.8</span>
           </div>
         </div>
       </div>
@@ -4807,10 +4807,102 @@
         </div>`;
     }
 
+    function buildTo2Section() {
+      const color = '#38bdf8';
+      const tlColor = '#7dd3fc';
+      // Group advertisers by TL, then by manager within each TL
+      const tlGroups = {};
+      advertisers.forEach(a => {
+        const tl  = (a.tlTo2  || '').trim() || 'Unassigned TL';
+        const mgr = (a.to2Manager || '').trim() || 'Unassigned';
+        if (!tlGroups[tl]) tlGroups[tl] = {};
+        if (!tlGroups[tl][mgr]) tlGroups[tl][mgr] = [];
+        tlGroups[tl][mgr].push(a);
+      });
+      const tlEntries = Object.entries(tlGroups).sort((a, b) => {
+        if (a[0] === 'Unassigned TL') return 1;
+        if (b[0] === 'Unassigned TL') return -1;
+        const cntA = Object.values(a[1]).reduce((s, v) => s + v.length, 0);
+        const cntB = Object.values(b[1]).reduce((s, v) => s + v.length, 0);
+        return cntB - cntA;
+      });
+
+      const tlBlocks = tlEntries.map(([tl, mgrMap]) => {
+        const isUnassignedTl = tl === 'Unassigned TL';
+        const tlRecord = !isUnassignedTl && typeof campaignMgrs !== 'undefined'
+          ? campaignMgrs.find(m => m.name && m.name.trim().toLowerCase() === tl.trim().toLowerCase())
+          : null;
+        const tlPhotoUrl = tlRecord?.photoUrl ? (resolvePhotoUrl(tlRecord.photoUrl) || tlRecord.photoUrl) : '';
+        const tlAvatar = tlPhotoUrl
+          ? `<img src="${esc(tlPhotoUrl)}" style="width:26px;height:26px;border-radius:50%;object-fit:cover;border:2px solid ${tlColor};flex-shrink:0" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'">`
+            + `<span style="display:none;width:26px;height:26px;border-radius:50%;background:var(--surface3);border:2px solid ${tlColor};align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${tlColor};flex-shrink:0">${tl[0].toUpperCase()}</span>`
+          : isUnassignedTl
+            ? `<span style="width:26px;height:26px;border-radius:50%;background:var(--surface3);border:2px solid var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">—</span>`
+            : `<span style="width:26px;height:26px;border-radius:50%;background:var(--surface3);border:2px solid ${tlColor};display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${tlColor};flex-shrink:0">${tl[0].toUpperCase()}</span>`;
+
+        const tlTotal = Object.values(mgrMap).reduce((s, v) => s + v.length, 0);
+        const mgrEntries = Object.entries(mgrMap).sort((a, b) => {
+          if (a[0] === 'Unassigned') return 1;
+          if (b[0] === 'Unassigned') return -1;
+          return b[1].length - a[1].length;
+        });
+        const mgrCards = mgrEntries.map(([mgr, advs]) => {
+          const advItems = advs.map(a => {
+            const logo = a.logoUrl
+              ? `<img src="${esc(resolvePhotoUrl(a.logoUrl)||a.logoUrl)}" style="width:22px;height:22px;border-radius:5px;object-fit:contain;background:var(--surface3);flex-shrink:0" onerror="this.style.display='none'">`
+              : `<span style="width:22px;height:22px;border-radius:5px;background:var(--surface3);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--muted);flex-shrink:0">${(a.name||'?')[0].toUpperCase()}</span>`;
+            const statusDot = (a.tfStatus==='live'||a.to2Status==='live')
+              ? `<span style="width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0;display:inline-block"></span>` : '';
+            return `<div style="display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:7px;background:var(--surface)">
+              ${logo}
+              <span style="font-family:var(--font-mono);font-size:11px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.name)}</span>
+              ${statusDot}
+            </div>`;
+          }).join('');
+          const isUnassigned = mgr === 'Unassigned';
+          const mgrRecord = !isUnassigned && typeof campaignMgrs !== 'undefined'
+            ? campaignMgrs.find(m => m.name && m.name.trim().toLowerCase() === mgr.trim().toLowerCase())
+            : null;
+          const mgrPhotoUrl = mgrRecord?.photoUrl ? (resolvePhotoUrl(mgrRecord.photoUrl) || mgrRecord.photoUrl) : '';
+          const mgrAvatar = mgrPhotoUrl
+            ? `<img src="${esc(mgrPhotoUrl)}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;border:2px solid ${color};flex-shrink:0" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'">`
+              + `<span style="display:none;width:24px;height:24px;border-radius:50%;background:var(--surface3);border:2px solid ${color};align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${color};flex-shrink:0">${mgr[0].toUpperCase()}</span>`
+            : isUnassigned
+              ? `<span style="width:24px;height:24px;border-radius:50%;background:var(--surface3);border:2px solid var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">—</span>`
+              : `<span style="width:24px;height:24px;border-radius:50%;background:var(--surface3);border:2px solid ${color};display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${color};flex-shrink:0">${mgr[0].toUpperCase()}</span>`;
+          return `
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;min-width:190px;flex:1">
+              <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px">
+                ${mgrAvatar}
+                <span style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:${isUnassigned?'var(--muted)':color};flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(mgr)}</span>
+                <span style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:${color};background:${color}22;border-radius:10px;padding:2px 7px;flex-shrink:0">${advs.length}</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:4px">${advItems}</div>
+            </div>`;
+        }).join('');
+
+        return `
+          <div style="margin-bottom:16px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:10px 14px;background:var(--surface2);border:1px solid ${isUnassignedTl?'var(--border)':tlColor+'44'};border-radius:10px">
+              ${tlAvatar}
+              <span style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:${isUnassignedTl?'var(--muted)':tlColor};flex:1">${esc(tl)}</span>
+              <span style="font-family:var(--font-mono);font-size:10px;color:${tlColor};background:${tlColor}22;border-radius:10px;padding:2px 8px;flex-shrink:0">${tlTotal} advs</span>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:10px;padding-left:16px">${mgrCards}</div>
+          </div>`;
+      }).join('');
+
+      return `
+        <div>
+          <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:${color};margin-bottom:12px">By TO2 Manager</div>
+          ${tlBlocks}
+        </div>`;
+    }
+
     wrap.innerHTML = `
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px">
         ${buildSection('tfManager',  'By TF Manager',  '#a78bfa')}
-        ${buildSection('to2Manager', 'By TO2 Manager', '#38bdf8')}
+        ${buildTo2Section()}
       </div>`;
   }
 
