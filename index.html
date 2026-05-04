@@ -541,7 +541,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.8.1</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.8.2</div>
   </div>
 </div>
 
@@ -614,7 +614,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.8.1</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.8.2</div>
   </div>
 </div>
 
@@ -753,7 +753,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.8.1</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.8.2</span>
           </div>
         </div>
       </div>
@@ -2175,6 +2175,8 @@
 
       <!-- Advertisers summary -->
       <div id="advSummaryWrap" style="margin-top:24px"></div>
+      <!-- Manager groups -->
+      <div id="advMgrGroupsWrap" style="margin-top:24px"></div>
     </div>
 
     <!-- REV SUMMARY PAGE -->
@@ -4710,6 +4712,64 @@
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px">
           ${sections.map(sectionHtml).join('')}
         </div>
+      </div>`;
+    _renderAdvManagerGroups();
+  }
+
+  function _renderAdvManagerGroups() {
+    const wrap = document.getElementById('advMgrGroupsWrap');
+    if (!wrap) return;
+    if (!advertisers.length) { wrap.innerHTML = ''; return; }
+
+    function buildSection(field, title, color) {
+      const grouped = {};
+      advertisers.forEach(a => {
+        const mgr = (a[field] || '').trim() || 'Unassigned';
+        if (!grouped[mgr]) grouped[mgr] = [];
+        grouped[mgr].push(a);
+      });
+      const entries = Object.entries(grouped).sort((a, b) => {
+        if (a[0] === 'Unassigned') return 1;
+        if (b[0] === 'Unassigned') return -1;
+        return b[1].length - a[1].length;
+      });
+      const cards = entries.map(([mgr, advs]) => {
+        const advItems = advs.map(a => {
+          const logo = a.logoUrl
+            ? `<img src="${esc(resolvePhotoUrl(a.logoUrl)||a.logoUrl)}" style="width:22px;height:22px;border-radius:5px;object-fit:contain;background:var(--surface3);flex-shrink:0" onerror="this.style.display='none'">`
+            : `<span style="width:22px;height:22px;border-radius:5px;background:var(--surface3);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--muted);flex-shrink:0">${(a.name||'?')[0].toUpperCase()}</span>`;
+          const statusDot = (a.tfStatus==='live'||a.to2Status==='live')
+            ? `<span style="width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0;display:inline-block"></span>`
+            : '';
+          return `<div style="display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:7px;background:var(--surface3)">
+            ${logo}
+            <span style="font-family:var(--font-mono);font-size:11px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.name)}</span>
+            ${statusDot}
+          </div>`;
+        }).join('');
+        const isUnassigned = mgr === 'Unassigned';
+        return `
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;min-width:220px;flex:1">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+              <span style="font-size:14px">${isUnassigned ? '—' : '👤'}</span>
+              <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:${isUnassigned?'var(--muted)':color};flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(mgr)}</span>
+              <span style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:${color};background:${color}22;border-radius:10px;padding:2px 8px;flex-shrink:0">${advs.length}</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px">${advItems}</div>
+          </div>`;
+      }).join('');
+
+      return `
+        <div style="margin-bottom:24px">
+          <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:${color};margin-bottom:12px">${title}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:12px">${cards}</div>
+        </div>`;
+    }
+
+    wrap.innerHTML = `
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px">
+        ${buildSection('tfManager',  'By TF Manager',  '#a78bfa')}
+        ${buildSection('to2Manager', 'By TO2 Manager', '#38bdf8')}
       </div>`;
   }
 
