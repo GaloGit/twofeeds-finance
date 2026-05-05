@@ -559,7 +559,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.1.6</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.1.7</div>
   </div>
 </div>
 
@@ -632,7 +632,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.1.6</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.1.7</div>
   </div>
 </div>
 
@@ -771,7 +771,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.1.6</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.1.7</span>
           </div>
         </div>
       </div>
@@ -2924,11 +2924,16 @@
   let _cmOrderEditMode = false;
 
   // Render a flag image from flagcdn.com (works on all browsers including Windows)
+  const _GEO_FLAG_MAP = { UK: 'GB' };
+  function _geoFlagCode(code) {
+    if (!code) return code;
+    return _GEO_FLAG_MAP[code.toUpperCase()] || code;
+  }
   function countryFlagImg(code, size = '20x15') {
     if (!code) return '';
     if (code.toUpperCase() === 'GLOBAL') return `<span style="font-size:14px;vertical-align:middle;line-height:1" title="Global">🌍</span>`;
     if (code.length !== 2) return '';
-    const c = code.toLowerCase();
+    const c = _geoFlagCode(code).toLowerCase();
     return `<img src="https://flagcdn.com/${size}/${c}.png" alt="${code.toUpperCase()}" style="vertical-align:middle;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,0.3)" onerror="this.style.display='none'">`;
   }
 
