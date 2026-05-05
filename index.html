@@ -556,7 +556,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.0.4</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.0.5</div>
   </div>
 </div>
 
@@ -629,7 +629,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.0.4</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.0.5</div>
   </div>
 </div>
 
@@ -768,7 +768,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.0.4</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.0.5</span>
           </div>
         </div>
       </div>
@@ -4760,21 +4760,38 @@
     const liveCount   = advertisers.filter(a => a.tfStatus === 'live' || a.to2Status === 'live').length;
     const pausedCount = advertisers.length - liveCount;
 
+    // Build name→photoUrl map from campaignMgrs for manager sections
+    const _mgrPhotoMap = {};
+    if (typeof campaignMgrs !== 'undefined') {
+      campaignMgrs.forEach(m => {
+        if (m.name && m.photoUrl) _mgrPhotoMap[m.name.trim().toLowerCase()] = resolvePhotoUrl(m.photoUrl) || m.photoUrl;
+      });
+    }
+
     const sections = [
       { label: 'Verticals',   entries: tally('verticals',  true),  color: 'var(--accent-light)' },
-      { label: 'TO2 Manager', entries: tally('to2Manager', false), color: '#38bdf8' },
-      { label: 'TF Manager',  entries: tally('tfManager',  false), color: '#a78bfa' },
+      { label: 'TO2 Manager', entries: tally('to2Manager', false), color: '#38bdf8', photoMap: _mgrPhotoMap },
+      { label: 'TF Manager',  entries: tally('tfManager',  false), color: '#a78bfa', photoMap: _mgrPhotoMap },
       { label: 'GEO',         entries: tally('geo',        false), color: '#34d399' },
     ];
 
-    const sectionHtml = ({ label, entries, color }) => {
+    const sectionHtml = ({ label, entries, color, photoMap }) => {
       const max = entries[0] ? entries[0][1] : 1;
       const rows = entries.slice(0, 12).map(([name, cnt]) => {
         const pct = Math.round((cnt / max) * 100);
+        const photoUrl = photoMap && name !== 'Unassigned' ? photoMap[name.trim().toLowerCase()] : '';
+        const avatar = photoUrl
+          ? `<img src="${esc(photoUrl)}" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid ${color}44" onerror="this.style.display='none'">`
+          : photoMap && name !== 'Unassigned'
+            ? `<span style="width:18px;height:18px;border-radius:50%;background:${color}22;border:1px solid ${color}44;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:${color};flex-shrink:0">${(name[0]||'?').toUpperCase()}</span>`
+            : '';
         return `
           <div style="margin-bottom:7px">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:3px">
-              <span style="font-family:var(--font-mono);font-size:10px;color:${name==='Unassigned'?'var(--muted)':'var(--text)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${esc(name)}</span>
+              <div style="display:flex;align-items:center;gap:5px;overflow:hidden;flex:1;min-width:0">
+                ${avatar}
+                <span style="font-family:var(--font-mono);font-size:10px;color:${name==='Unassigned'?'var(--muted)':'var(--text)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(name)}</span>
+              </div>
               <span style="font-family:var(--font-mono);font-size:10px;font-weight:700;flex-shrink:0;color:${color}">${cnt}</span>
             </div>
             <div style="height:5px;border-radius:3px;background:var(--surface3);overflow:hidden">
