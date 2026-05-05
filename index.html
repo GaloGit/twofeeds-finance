@@ -541,7 +541,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.9.2</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.9.3</div>
   </div>
 </div>
 
@@ -614,7 +614,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.9.2</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.9.3</div>
   </div>
 </div>
 
@@ -753,7 +753,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.9.2</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.9.3</span>
           </div>
         </div>
       </div>
@@ -2134,20 +2134,28 @@
               <select id="advTo2Manager"
                 style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;cursor:pointer">
                 <option value="">— Select —</option>
-                <option value="Bar Riklin">Bar Riklin</option>
-                <option value="Moriah Hacmun">Moriah Hacmun</option>
-                <option value="Or Rubin">Or Rubin</option>
-                <option value="Daniel Ahituv">Daniel Ahituv</option>
-                <option value="Liel Cohen">Liel Cohen</option>
-                <option value="Shely Bar-Ad">Shely Bar-Ad</option>
-                <option value="Elad Vidal">Elad Vidal</option>
-                <option value="Roie Mann">Roie Mann</option>
-                <option value="Keila Amadini">Keila Amadini</option>
-                <option value="Maria Fe Carnero">Maria Fe Carnero</option>
-                <option value="Carla Pons">Carla Pons</option>
-                <option value="Sia">Sia</option>
-                <option value="Lyndsey Zhao">Lyndsey Zhao</option>
-                <option value="Jackson Kim">Jackson Kim</option>
+                <optgroup label="── Team Leaders ──">
+                  <option value="Daniel Ozel">Daniel Ozel</option>
+                  <option value="Yoav Wertheym">Yoav Wertheym</option>
+                  <option value="Pablo Castro">Pablo Castro</option>
+                  <option value="Carlos Oscariz">Carlos Oscariz</option>
+                </optgroup>
+                <optgroup label="── Account Managers ──">
+                  <option value="Bar Riklin">Bar Riklin</option>
+                  <option value="Moriah Hacmun">Moriah Hacmun</option>
+                  <option value="Or Rubin">Or Rubin</option>
+                  <option value="Daniel Ahituv">Daniel Ahituv</option>
+                  <option value="Liel Cohen">Liel Cohen</option>
+                  <option value="Shely Bar-Ad">Shely Bar-Ad</option>
+                  <option value="Elad Vidal">Elad Vidal</option>
+                  <option value="Roie Mann">Roie Mann</option>
+                  <option value="Keila Amadini">Keila Amadini</option>
+                  <option value="Maria Fe Carnero">Maria Fe Carnero</option>
+                  <option value="Carla Pons">Carla Pons</option>
+                  <option value="Sia">Sia</option>
+                  <option value="Lyndsey Zhao">Lyndsey Zhao</option>
+                  <option value="Jackson Kim">Jackson Kim</option>
+                </optgroup>
               </select>
             </div>
             <div style="flex:1;min-width:140px">
@@ -4605,7 +4613,8 @@
                   <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TO2 Manager</div>
                   <select id="advTo2m_${i}" class="editable" style="width:100%;cursor:pointer">
                     <option value="" ${!a.to2Manager?'selected':''}>— Select —</option>
-                    ${['Bar Riklin','Moriah Hacmun','Or Rubin','Daniel Ahituv','Liel Cohen','Shely Bar-Ad','Elad Vidal','Roie Mann','Keila Amadini','Maria Fe Carnero','Carla Pons','Sia','Lyndsey Zhao','Jackson Kim'].map(n=>`<option value="${n}" ${a.to2Manager===n?'selected':''}>${n}</option>`).join('')}
+                    <optgroup label="── Team Leaders ──">${['Daniel Ozel','Yoav Wertheym','Pablo Castro','Carlos Oscariz'].map(n=>`<option value="${n}" ${a.to2Manager===n?'selected':''}>${n}</option>`).join('')}</optgroup>
+                    <optgroup label="── Account Managers ──">${['Bar Riklin','Moriah Hacmun','Or Rubin','Daniel Ahituv','Liel Cohen','Shely Bar-Ad','Elad Vidal','Roie Mann','Keila Amadini','Maria Fe Carnero','Carla Pons','Sia','Lyndsey Zhao','Jackson Kim'].map(n=>`<option value="${n}" ${a.to2Manager===n?'selected':''}>${n}</option>`).join('')}</optgroup>
                   </select>
                 </div>
                 <div>
