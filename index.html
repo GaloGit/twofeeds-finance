@@ -531,6 +531,21 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   .chart-log-toggle { position:absolute;top:10px;right:16px;font-family:var(--font-mono);font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;border:1px solid var(--border);background:var(--surface3);color:var(--muted);cursor:pointer;letter-spacing:0.05em;z-index:10;transition:color 0.15s,border-color 0.15s; }
   .chart-log-toggle:hover { color:var(--accent-light);border-color:var(--accent); }
+  /* Searchable select */
+  .sdrop-btn { display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;cursor:pointer;width:100%;box-sizing:border-box;min-height:42px;transition:border-color 0.2s }
+  .sdrop-btn:hover,.sdrop-btn:focus { border-color:var(--accent);outline:none }
+  .sdrop-btn .sdrop-label { flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap }
+  .sdrop-btn .sdrop-arrow { color:var(--muted);font-size:10px;flex-shrink:0;transition:transform 0.2s }
+  .sdrop-btn.open .sdrop-arrow { transform:rotate(180deg) }
+  #_sdropWrap { display:none;position:fixed;z-index:10001;background:var(--surface2);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,0.55);overflow:hidden }
+  #_sdropInput { width:100%;background:var(--surface3);border:none;border-bottom:1px solid var(--border);padding:9px 12px;color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;box-sizing:border-box }
+  #_sdropList { max-height:260px;overflow-y:auto }
+  .sdrop-item { padding:8px 12px;font-family:var(--font-mono);font-size:12px;color:var(--text);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis }
+  .sdrop-item:hover { background:var(--surface3) }
+  .sdrop-item.active { color:var(--accent-light);background:rgba(124,58,237,0.12) }
+  .sdrop-item.sdrop-empty { color:var(--muted);cursor:default;font-style:italic }
+  .sdrop-group { padding:5px 12px 3px;font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);background:var(--surface2) }
+  .sdrop-no-results { padding:12px;font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:center }
   </style>
 </head>
 <body>
@@ -541,7 +556,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.9.3</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.9.4</div>
   </div>
 </div>
 
@@ -614,7 +629,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.9.3</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.9.4</div>
   </div>
 </div>
 
@@ -753,7 +768,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.9.3</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.9.4</span>
           </div>
         </div>
       </div>
@@ -2121,7 +2136,7 @@
           <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-top:12px">
             <div style="flex:1;min-width:140px">
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">TF Manager</div>
-              <select id="advTfManager"
+              <select id="advTfManager" data-searchable
                 style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;cursor:pointer">
                 <option value="">— Select —</option>
                 <option value="Talya Blumner">Talya Blumner</option>
@@ -2131,7 +2146,7 @@
             </div>
             <div style="flex:1;min-width:140px">
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">TO2 Manager</div>
-              <select id="advTo2Manager"
+              <select id="advTo2Manager" data-searchable
                 style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;cursor:pointer">
                 <option value="">— Select —</option>
                 <optgroup label="── Team Leaders ──">
@@ -2160,7 +2175,7 @@
             </div>
             <div style="flex:1;min-width:140px">
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">TL TO2</div>
-              <select id="advTlTo2"
+              <select id="advTlTo2" data-searchable
                 style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;cursor:pointer">
                 <option value="">— Select —</option>
                 <option value="Daniel Ozel">Daniel Ozel</option>
@@ -4604,14 +4619,14 @@
                 </div>
                 <div>
                   <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TF Manager</div>
-                  <select id="advTfm_${i}" class="editable" style="width:100%;cursor:pointer">
+                  <select id="advTfm_${i}" class="editable" data-searchable style="width:100%;cursor:pointer">
                     <option value="" ${!a.tfManager?'selected':''}>— Select —</option>
                     ${['Talya Blumner','Matan Levin','Max Park'].map(n=>`<option value="${n}" ${a.tfManager===n?'selected':''}>${n}</option>`).join('')}
                   </select>
                 </div>
                 <div>
                   <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TO2 Manager</div>
-                  <select id="advTo2m_${i}" class="editable" style="width:100%;cursor:pointer">
+                  <select id="advTo2m_${i}" class="editable" data-searchable style="width:100%;cursor:pointer">
                     <option value="" ${!a.to2Manager?'selected':''}>— Select —</option>
                     <optgroup label="── Team Leaders ──">${['Daniel Ozel','Yoav Wertheym','Pablo Castro','Carlos Oscariz'].map(n=>`<option value="${n}" ${a.to2Manager===n?'selected':''}>${n}</option>`).join('')}</optgroup>
                     <optgroup label="── Account Managers ──">${['Bar Riklin','Moriah Hacmun','Or Rubin','Daniel Ahituv','Liel Cohen','Shely Bar-Ad','Elad Vidal','Roie Mann','Keila Amadini','Maria Fe Carnero','Carla Pons','Sia','Lyndsey Zhao','Jackson Kim'].map(n=>`<option value="${n}" ${a.to2Manager===n?'selected':''}>${n}</option>`).join('')}</optgroup>
@@ -4619,7 +4634,7 @@
                 </div>
                 <div>
                   <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">TL TO2</div>
-                  <select id="advTlTo2_${i}" class="editable" style="width:100%;cursor:pointer">
+                  <select id="advTlTo2_${i}" class="editable" data-searchable style="width:100%;cursor:pointer">
                     <option value="" ${!a.tlTo2?'selected':''}>— Select —</option>
                     ${['Daniel Ozel','Yoav Wertheym','Pablo Castro','Carlos Oscariz'].map(n=>`<option value="${n}" ${a.tlTo2===n?'selected':''}>${n}</option>`).join('')}
                   </select>
@@ -4705,6 +4720,7 @@
       </tr>`;
     }).join('');
     _renderAdvSummary();
+    setTimeout(() => _initSearchableSelects(document.getElementById('advBody')), 0);
   }
 
   function _renderAdvSummary() {
@@ -5057,6 +5073,7 @@
   async function renderAdvertisers() {
     const body = document.getElementById('advBody');
     if (!body) return;
+    setTimeout(() => _initSearchableSelects(document.getElementById('advFormBody')), 0);
     if (!advertisers.length) {
       body.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>`;
       try {
@@ -13213,5 +13230,119 @@
 
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4.4.1/dist/email.min.js" integrity="sha512-IBPHmNWySlzT5RaPmlKa8qWkIYgIT+sbpDOm2DiYtWI/GKzv5BKrrCSikC9U//cIJBFdvrP60t9Z0GNUFzCkqQ==" crossorigin="anonymous"></script>
+
+<!-- Searchable select overlay -->
+<div id="_sdropWrap">
+  <input id="_sdropInput" placeholder="Search…" autocomplete="off" spellcheck="false"/>
+  <div id="_sdropList"></div>
+</div>
+
+<script>
+(function(){
+  let _target = null, _btn = null;
+
+  function _closeSdrop() {
+    document.getElementById('_sdropWrap').style.display = 'none';
+    if (_btn) _btn.classList.remove('open');
+    _target = null; _btn = null;
+  }
+
+  function _openSdrop(sel, btn) {
+    const wrap = document.getElementById('_sdropWrap');
+    const input = document.getElementById('_sdropInput');
+    const list  = document.getElementById('_sdropList');
+    _target = sel; _btn = btn;
+    btn.classList.add('open');
+
+    // Collect options preserving optgroup structure
+    const groups = [];
+    let currentGroup = null;
+    Array.from(sel.children).forEach(el => {
+      if (el.tagName === 'OPTGROUP') {
+        currentGroup = { label: el.label, items: Array.from(el.children).map(o => ({ value: o.value, text: o.textContent.trim() })) };
+        groups.push(currentGroup);
+      } else if (el.tagName === 'OPTION') {
+        if (!currentGroup || currentGroup.label === '__root__') {
+          if (!groups.length || groups[0].label !== '__root__') groups.unshift({ label: '__root__', items: [] });
+          groups[0].items.push({ value: el.value, text: el.textContent.trim() });
+        }
+      }
+    });
+
+    function render(q) {
+      const ql = q.toLowerCase();
+      let html = '';
+      let anyResult = false;
+      groups.forEach(g => {
+        const items = g.items.filter(o => !ql || o.text.toLowerCase().includes(ql) || o.value.toLowerCase().includes(ql));
+        if (!items.length) return;
+        anyResult = true;
+        if (g.label !== '__root__') html += `<div class="sdrop-group">${g.label.replace(/^[─\s]+|[─\s]+$/g,'').trim()}</div>`;
+        items.forEach(o => {
+          if (!o.value) { html += `<div class="sdrop-item sdrop-empty">${o.text}</div>`; return; }
+          html += `<div class="sdrop-item${o.value === sel.value ? ' active' : ''}" data-val="${o.value.replace(/"/g,'&quot;')}">${o.text}</div>`;
+        });
+      });
+      list.innerHTML = anyResult ? html : '<div class="sdrop-no-results">No results</div>';
+    }
+
+    input.value = ''; render('');
+    input.oninput = () => render(input.value);
+
+    list.onclick = e => {
+      const item = e.target.closest('.sdrop-item:not(.sdrop-empty)');
+      if (!item) return;
+      sel.value = item.dataset.val;
+      sel.dispatchEvent(new Event('change', { bubbles: true }));
+      btn.querySelector('.sdrop-label').textContent = item.textContent;
+      _closeSdrop();
+    };
+
+    // Position below button
+    const rect = btn.getBoundingClientRect();
+    const w = Math.max(rect.width, 230);
+    let left = rect.left, top = rect.bottom + 4;
+    if (left + w > window.innerWidth - 8) left = window.innerWidth - w - 8;
+    wrap.style.cssText = `display:block;left:${left}px;top:${top}px;width:${w}px`;
+    requestAnimationFrame(() => input.focus());
+  }
+
+  window._initSearchableSelects = function(root) {
+    (root || document).querySelectorAll('select[data-searchable]').forEach(sel => {
+      if (sel._sdropDone) return;
+      sel._sdropDone = true;
+      sel.style.display = 'none';
+
+      const label = sel.selectedIndex >= 0 ? sel.options[sel.selectedIndex].text : '— Select —';
+      const btn = document.createElement('div');
+      btn.className = 'sdrop-btn';
+      btn.tabIndex = 0;
+      btn.innerHTML = `<span class="sdrop-label">${label}</span><span class="sdrop-arrow">▾</span>`;
+      btn.onclick = e => { e.stopPropagation(); _target === sel ? _closeSdrop() : _openSdrop(sel, btn); };
+      btn.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); btn.click(); } };
+
+      // Keep button label in sync with programmatic changes to sel.value
+      const obs = new MutationObserver(() => {
+        const opt = sel.options[sel.selectedIndex];
+        if (opt) btn.querySelector('.sdrop-label').textContent = opt.text;
+      });
+      obs.observe(sel, { attributes: true, childList: true, subtree: true });
+      sel.addEventListener('change', () => {
+        const opt = sel.options[sel.selectedIndex];
+        if (opt) btn.querySelector('.sdrop-label').textContent = opt.text;
+      });
+
+      sel.parentNode.insertBefore(btn, sel.nextSibling);
+    });
+  };
+
+  // Close on outside click or Escape
+  document.addEventListener('click', e => {
+    const wrap = document.getElementById('_sdropWrap');
+    if (wrap && wrap.style.display !== 'none' && !wrap.contains(e.target) && e.target !== _btn) _closeSdrop();
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') _closeSdrop(); });
+})();
+</script>
 </body>
 </html>
