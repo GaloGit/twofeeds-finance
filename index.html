@@ -556,7 +556,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.1.0</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.1.1</div>
   </div>
 </div>
 
@@ -629,7 +629,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.1.0</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.1.1</div>
   </div>
 </div>
 
@@ -768,7 +768,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.1.0</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.1.1</span>
           </div>
         </div>
       </div>
@@ -4686,6 +4686,7 @@
                   <div style="display:flex;align-items:center;gap:8px">
                     <input id="advGeo_${i}" class="editable mono" value="${esc(a.geo||'')}" placeholder="US" maxlength="10" oninput="const f=document.getElementById('advGeoFlag_${i}');if(f)f.innerHTML=countryFlagImg(this.value.toUpperCase(),'20x15')" style="width:80px;text-transform:uppercase"/>
                     <span id="advGeoFlag_${i}">${a.geo?countryFlagImg(a.geo.toUpperCase(),'20x15'):''}</span>
+                    <button onclick="const el=document.getElementById('advGeo_${i}');if(el){el.value='GLOBAL';const f=document.getElementById('advGeoFlag_${i}');if(f)f.innerHTML=countryFlagImg('GLOBAL','20x15')}" style="background:none;border:1px solid var(--border);border-radius:6px;padding:2px 7px;font-family:var(--font-mono);font-size:9px;color:var(--muted);cursor:pointer;white-space:nowrap">🌍 Global</button>
                   </div>
                 </div>
                 <div style="grid-column:1/-1">
