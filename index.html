@@ -556,7 +556,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.0.0</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.0.1</div>
   </div>
 </div>
 
@@ -629,7 +629,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.0.0</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.0.1</div>
   </div>
 </div>
 
@@ -768,7 +768,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.0.0</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.0.1</span>
           </div>
         </div>
       </div>
@@ -1698,19 +1698,13 @@
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
           <div id="prfLastUpdated" style="font-family:var(--font-mono);font-size:9px;color:var(--muted);white-space:nowrap;line-height:1.6"></div>
-          <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap">Revenue $</span>
-          <input id="profRevenueInput" type="number" min="0" step="0.01" placeholder="0.00"
-            style="width:130px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;color:var(--text);font-family:var(--font-mono);font-size:13px;font-weight:700;outline:none"
-            oninput="renderProfitSummary(true)"/>
-          <button onclick="saveRevenueForPeriod()" style="font-family:var(--font-mono);font-size:10px;padding:5px 12px;border-radius:8px;border:1px solid var(--accent);background:rgba(99,102,241,0.1);color:var(--accent-light);cursor:pointer;white-space:nowrap">Save Revenue</button>
-          <div id="profRevSaved" style="font-family:var(--font-mono);font-size:10px;color:var(--green);display:none">✓ Saved</div>
         </div>
       </div>
 
       <!-- Summary cards -->
       <div class="summary-grid">
         <div class="summary-card green" style="animation-delay:0.05s">
-          <div class="card-label">Revenue · <span id="profRevSub" class="card-label-sub">manual entry</span></div>
+          <div class="card-label">Revenue · <span id="profRevSub" class="card-label-sub">from Rev Summary</span></div>
           <div class="card-value" id="profRevCard">$0</div>
         </div>
         <div class="summary-card red" style="animation-delay:0.1s">
@@ -9811,20 +9805,6 @@
 
     const profOverlay = document.getElementById('profLoadingOverlay');
 
-    // Revenue: use input value if typing, otherwise stored value
-    const inputEl = document.getElementById('profRevenueInput');
-    const periods = [...getSelectedPeriods()].sort();
-
-    if (!inputOnly) {
-      // Populate input with stored revenue for this period (single period only)
-      if (isSinglePeriod() && periods.length === 1) {
-        const stored = _revenueByPeriod[periods[0]] || 0;
-        if (inputEl && !inputEl.matches(':focus')) inputEl.value = stored > 0 ? stored : '';
-      } else if (inputEl) {
-        inputEl.value = '';
-      }
-    }
-
     // Load RevData if not already in memory: try localStorage first, then fetch sheet
     if (!inputOnly && !(_revDataByPeriod[pk] && _revDataByPeriod[pk].length > 0)) {
       const fromStorage = _revLoadPeriod(pk);
@@ -9846,15 +9826,7 @@
       }
     }
 
-    const revFromInput   = inputEl ? (parseFloat(inputEl.value) || 0) : 0;
-    const revFromSummary = (_revDataByPeriod[pk] || []).reduce((s, r) => s + (r.amount || 0), 0);
-    const revenue = revFromInput > 0 ? revFromInput : revFromSummary;
-    // Update placeholder to show the Rev Summary total when no manual value is set
-    if (inputEl && revFromSummary > 0 && revFromInput === 0) {
-      inputEl.placeholder = revFromSummary.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) + ' (from Rev Summary)';
-    } else if (inputEl) {
-      inputEl.placeholder = '0.00';
-    }
+    const revenue = (_revDataByPeriod[pk] || []).reduce((s, r) => s + (r.amount || 0), 0);
 
     // Costs from cache (or fetch if missing)
     const pKey = 'pub_' + pk;
@@ -10675,27 +10647,6 @@
         </div>`;
       }).join('');
     }
-  }
-
-  async function saveRevenueForPeriod() {
-    if (!isSinglePeriod()) { showToast('⚠ Select a single month to save revenue'); return; }
-    const period = [...getSelectedPeriods()][0];
-    const inputEl = document.getElementById('profRevenueInput');
-    const amount = parseFloat(inputEl?.value) || 0;
-    const user = localStorage.getItem('tf_current_user') || '';
-    try {
-      const res = await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveRevenue', period, amount, user }) });
-      const json = await res.json().catch(() => ({}));
-      if (!json.success) throw new Error('API returned success:false');
-      _revenueByPeriod[period] = amount;
-      _tabMeta.prf = { ts: new Date().toISOString(), by: user };
-      _renderLastUpdated('prf');
-      logActivity('edit_revenue', `Set revenue for ${period} to $${amount}`);
-      showToast('✓ Revenue saved');
-      const savedEl = document.getElementById('profRevSaved');
-      if (savedEl) { savedEl.style.display = 'inline'; setTimeout(() => savedEl.style.display = 'none', 2500); }
-      renderProfitSummary();
-    } catch { showToast('⚠ Failed to save revenue'); }
   }
 
   let _lastCommissionBase = { profit: 0, revenue: 0 };
