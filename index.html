@@ -556,7 +556,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.1.1</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.1.2</div>
   </div>
 </div>
 
@@ -629,7 +629,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.1.1</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.1.2</div>
   </div>
 </div>
 
@@ -768,7 +768,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.1.1</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.1.2</span>
           </div>
         </div>
       </div>
@@ -4522,7 +4522,7 @@
           case 'tfManager':  return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(a.tfManager||'—')}</td>`;
           case 'to2Manager': return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(a.to2Manager||'—')}</td>`;
           case 'tlTo2':      return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(a.tlTo2||'—')}</td>`;
-          case 'geo':        return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:5px">${esc(a.geo||'—')}${a.geo&&a.geo.length===2?countryFlagImg(a.geo,'20x15'):''}</span></td>`;
+          case 'geo':        { const _geoDisplay = a.geo ? (a.geo.toUpperCase()==='GLOBAL' ? 'GO' : a.geo.toUpperCase()) : '—'; const _geoFlag = a.geo ? (a.geo.toUpperCase()==='GLOBAL' ? '<span style="font-size:13px;line-height:1">🌍</span>' : (a.geo.length===2 ? countryFlagImg(a.geo,'20x15') : '')) : ''; return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:5px">${esc(_geoDisplay)}${_geoFlag}</span></td>`; }
           case 'tfStatus':   return `<td>${a.tfStatus ? `<span style="${_siStatusSelectStyle(a.tfStatus)};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700">${a.tfStatus==='live'?'Live':'Paused'}</span>` : _advMissingChip('tfStatus')}</td>`;
           case 'to2Status':  return `<td>${a.to2Status ? `<span style="${_siStatusSelectStyle(a.to2Status)};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700">${a.to2Status==='live'?'Live':'Paused'}</span>` : _advMissingChip('to2Status')}</td>`;
           case 'verticals':  return `<td><div style="display:flex;flex-wrap:wrap;gap:4px">${(a.verticals||[]).length?_advVerticalBadges(a.verticals):_advMissingChip('vertical')}</div></td>`;
