@@ -253,7 +253,8 @@
     .pub-search:focus { border-color: var(--accent); }
     .pub-search-wrap { position: relative; }
     .adv-exp-label { font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:5px; }
-    .adv-edit-wrap div[style*="font-size:9px"] { font-size:11px !important; letter-spacing:0.05em !important; margin-bottom:6px !important; }
+    .adv-edit-wrap div[style*="font-size:9px"],
+    .adv-view-wrap div[style*="font-size:9px"] { font-size:11px !important; letter-spacing:0.05em !important; margin-bottom:6px !important; }
     .pub-search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 13px; }
     .search-clear-btn { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--muted); cursor: pointer; font-size: 15px; padding: 0; line-height: 1; display: none; }
     .search-clear-btn:hover { color: var(--text); }
@@ -558,7 +559,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.1.4</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.1.5</div>
   </div>
 </div>
 
@@ -631,7 +632,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.1.4</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.1.5</div>
   </div>
 </div>
 
@@ -770,7 +771,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.1.4</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.1.5</span>
           </div>
         </div>
       </div>
@@ -4549,7 +4550,7 @@
           <div style="background:var(--surface2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:16px 20px">
 
             <!-- ── VIEW MODE (default) ─────────────────────────── -->
-            <div id="advView_${i}">
+            <div id="advView_${i}" class="adv-view-wrap">
               <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px 20px;margin-bottom:14px">
                 ${[
                   ['Logo URL', a.logoUrl ? `<span style="font-family:var(--font-mono);font-size:10px;color:var(--accent-light);word-break:break-all">${esc(a.logoUrl.length>60?a.logoUrl.slice(0,57)+'…':a.logoUrl)}</span>` : '<span style="color:var(--muted);font-family:var(--font-mono);font-size:11px">—</span>'],
