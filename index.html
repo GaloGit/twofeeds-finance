@@ -559,7 +559,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.1.7</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.1.8</div>
   </div>
 </div>
 
@@ -632,7 +632,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.1.7</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.1.8</div>
   </div>
 </div>
 
@@ -771,7 +771,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.1.7</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.1.8</span>
           </div>
         </div>
       </div>
@@ -2924,10 +2924,15 @@
   let _cmOrderEditMode = false;
 
   // Render a flag image from flagcdn.com (works on all browsers including Windows)
-  const _GEO_FLAG_MAP = { UK: 'GB' };
+  const _GEO_FLAG_MAP    = { UK: 'GB' };
+  const _GEO_DISPLAY_MAP = { GB: 'UK' };
   function _geoFlagCode(code) {
     if (!code) return code;
     return _GEO_FLAG_MAP[code.toUpperCase()] || code;
+  }
+  function _geoDisplayCode(code) {
+    if (!code) return code;
+    return _GEO_DISPLAY_MAP[code.toUpperCase()] || code;
   }
   function countryFlagImg(code, size = '20x15') {
     if (!code) return '';
@@ -4580,7 +4585,7 @@
           case 'tfManager':  return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(a.tfManager||'—')}</td>`;
           case 'to2Manager': return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(a.to2Manager||'—')}</td>`;
           case 'tlTo2':      return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:nowrap">${esc(a.tlTo2||'—')}</td>`;
-          case 'geo':        { const _geoDisplay = a.geo ? (a.geo.toUpperCase()==='GLOBAL' ? 'GO' : a.geo.toUpperCase()) : '—'; const _geoFlag = a.geo ? (a.geo.toUpperCase()==='GLOBAL' ? '<span style="font-size:13px;line-height:1">🌍</span>' : (a.geo.length===2 ? countryFlagImg(a.geo,'20x15') : '')) : ''; return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:5px">${esc(_geoDisplay)}${_geoFlag}</span></td>`; }
+          case 'geo':        { const _geoDisplay = a.geo ? (a.geo.toUpperCase()==='GLOBAL' ? 'GO' : _geoDisplayCode(a.geo.toUpperCase())) : '—'; const _geoFlag = a.geo ? (a.geo.toUpperCase()==='GLOBAL' ? '<span style="font-size:13px;line-height:1">🌍</span>' : (a.geo.length===2 ? countryFlagImg(a.geo,'20x15') : '')) : ''; return `<td style="font-family:var(--font-mono);font-size:11px;color:var(--muted);white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:5px">${esc(_geoDisplay)}${_geoFlag}</span></td>`; }
           case 'tfStatus':   return `<td>${a.tfStatus ? `<span style="${_siStatusSelectStyle(a.tfStatus)};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700">${a.tfStatus==='live'?'Live':'Paused'}</span>` : _advMissingChip('tfStatus')}</td>`;
           case 'to2Status':  return `<td>${a.to2Status ? `<span style="${_siStatusSelectStyle(a.to2Status)};border-width:1px;border-style:solid;border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700">${a.to2Status==='live'?'Live':'Paused'}</span>` : _advMissingChip('to2Status')}</td>`;
           case 'verticals':  return `<td><div style="display:flex;flex-wrap:wrap;gap:4px">${(a.verticals||[]).length?_advVerticalBadges(a.verticals):_advMissingChip('vertical')}</div></td>`;
@@ -4617,7 +4622,7 @@
                   ['TL TO2',      `<span style="font-family:var(--font-mono);font-size:11px;color:var(--text)">${esc(a.tlTo2||'—')}</span>`],
                   ['TF ID',  `<span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text)">${esc(a.tfId||'—')}</span>`],
                   ['TO2 ID', `<span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text)">${esc(a.to2Id||'—')}</span>`],
-                  ['GEO', `<span style="display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--text)">${esc(a.geo||'—')}${a.geo&&a.geo.length===2?countryFlagImg(a.geo,'20x15'):''}</span>`],
+                  ['GEO', `<span style="display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--text)">${esc(a.geo?_geoDisplayCode(a.geo.toUpperCase()):'—')}${a.geo&&a.geo.toUpperCase()==='GLOBAL'?'<span style="font-size:13px;line-height:1">🌍</span>':a.geo&&a.geo.length===2?countryFlagImg(a.geo,'20x15'):''}</span>`],
                   ['Verticals', `<div style="display:flex;flex-wrap:wrap;gap:4px">${(a.verticals||[]).length?_advVerticalBadges(a.verticals):'<span style="color:var(--muted);font-family:var(--font-mono);font-size:11px">—</span>'}</div>`],
                   ['Fraud Tools', `<div style="display:flex;flex-wrap:wrap;gap:4px">${(a.fraudTools||[]).length?_advFraudToolBadges(a.fraudTools):'<span style="color:var(--muted);font-family:var(--font-mono);font-size:11px">—</span>'}</div>`],
                   ['OS', `<div style="display:flex;flex-wrap:wrap;gap:4px">${(a.operatingSystems||[]).length?_advOSBadges(a.operatingSystems):'<span style="color:var(--muted);font-family:var(--font-mono);font-size:11px">—</span>'}</div>`],
