@@ -556,7 +556,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.0.7</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.0.8</div>
   </div>
 </div>
 
@@ -629,7 +629,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.0.7</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.0.8</div>
   </div>
 </div>
 
@@ -768,7 +768,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.0.7</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.0.8</span>
           </div>
         </div>
       </div>
@@ -2065,6 +2065,7 @@
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">GEO</div>
               <input type="text" id="advGeo" placeholder="US" maxlength="10"
                 style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;text-transform:uppercase"/>
+              <button onclick="document.getElementById('advGeo').value='GLOBAL'" style="margin-top:5px;width:100%;background:none;border:1px solid var(--border);border-radius:6px;padding:3px 0;font-family:var(--font-mono);font-size:9px;color:var(--muted);cursor:pointer;letter-spacing:0.05em">🌍 Global</button>
             </div>
             <div style="flex:2;min-width:240px">
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Logo URL</div>
@@ -2916,7 +2917,9 @@
 
   // Render a flag image from flagcdn.com (works on all browsers including Windows)
   function countryFlagImg(code, size = '20x15') {
-    if (!code || code.length !== 2) return '';
+    if (!code) return '';
+    if (code.toUpperCase() === 'GLOBAL') return `<span style="font-size:14px;vertical-align:middle;line-height:1" title="Global">🌍</span>`;
+    if (code.length !== 2) return '';
     const c = code.toLowerCase();
     return `<img src="https://flagcdn.com/${size}/${c}.png" alt="${code.toUpperCase()}" style="vertical-align:middle;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,0.3)" onerror="this.style.display='none'">`;
   }
@@ -4665,8 +4668,8 @@
                 <div>
                   <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">GEO</div>
                   <div style="display:flex;align-items:center;gap:8px">
-                    <input id="advGeo_${i}" class="editable mono" value="${esc(a.geo||'')}" placeholder="US" maxlength="2" oninput="const f=document.getElementById('advGeoFlag_${i}');if(f)f.innerHTML=this.value.length===2?countryFlagImg(this.value.toUpperCase(),'20x15'):''" style="width:80px;text-transform:uppercase"/>
-                    <span id="advGeoFlag_${i}">${a.geo&&a.geo.length===2?countryFlagImg(a.geo,'20x15'):''}</span>
+                    <input id="advGeo_${i}" class="editable mono" value="${esc(a.geo||'')}" placeholder="US" maxlength="10" oninput="const f=document.getElementById('advGeoFlag_${i}');if(f)f.innerHTML=countryFlagImg(this.value.toUpperCase(),'20x15')" style="width:80px;text-transform:uppercase"/>
+                    <span id="advGeoFlag_${i}">${a.geo?countryFlagImg(a.geo.toUpperCase(),'20x15'):''}</span>
                   </div>
                 </div>
                 <div style="grid-column:1/-1">
@@ -4784,7 +4787,9 @@
           const code = name.trim().toLowerCase();
           avatar = name === 'Unassigned'
             ? `<img src="TwoFeeds_3D.png" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0;opacity:0.5" onerror="this.style.display='none'">`
-            : `<img src="https://flagcdn.com/20x15/${code}.png" style="width:20px;height:15px;border-radius:2px;object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">`;
+            : name.toUpperCase() === 'GLOBAL'
+              ? `<span style="font-size:14px;line-height:1;flex-shrink:0">🌍</span>`
+              : `<img src="https://flagcdn.com/20x15/${code}.png" style="width:20px;height:15px;border-radius:2px;object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">`;
         } else if (photoMap) {
           const photoUrl = name !== 'Unassigned' ? photoMap[name.trim().toLowerCase()] : '';
           avatar = name === 'Unassigned'
