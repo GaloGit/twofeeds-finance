@@ -556,7 +556,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v6.9.9</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.0.0</div>
   </div>
 </div>
 
@@ -629,7 +629,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v6.9.9</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.0.0</div>
   </div>
 </div>
 
@@ -768,7 +768,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v6.9.9</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.0.0</span>
           </div>
         </div>
       </div>
@@ -9007,17 +9007,21 @@
     if (lines.length < 2) { showToast('⚠ No data rows found'); return; }
     const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,'').toLowerCase());
     const findCol = (...names) => { for (const n of names) { const i = headers.findIndex(h => h.includes(n)); if (i !== -1) return i; } return -1; };
-    const dspCol = findCol('dsp','platform','network','channel','campaign','name');
-    const geoCol = findCol('geo','region','country','location');
-    const cpcCol = findCol('cpc','amount','cost','spend','price','budget');
+    const periodCol = findCol('period','month','date');
+    const dspCol    = findCol('dsp','platform','network','channel','campaign','name');
+    const geoCol    = findCol('geo','region','country','location');
+    const cpcCol    = findCol('cpc','amount','cost','spend','price','budget');
+    const curPeriod = periodKey(); // e.g. "2026-01"
     const rows = lines.slice(1).filter(l => l.trim()).map(line => {
       const cols = parseCSVLine(line);
       return {
+        _period: periodCol >= 0 ? (cols[periodCol]||'').trim() : '',
         dsp: dspCol >= 0 ? (cols[dspCol]||'').trim() : '',
         geo: geoCol >= 0 ? (cols[geoCol]||'').trim() : '',
         cpc: cpcCol >= 0 ? parseFloat((cols[cpcCol]||'0').replace(/[^0-9.]/g,'')) || 0 : 0,
       };
-    }).filter(r => r.dsp);
+    }).filter(r => r.dsp && (periodCol < 0 || r._period === curPeriod))
+      .map(({ _period, ...r }) => r);
     const user = localStorage.getItem('tf_current_user') || '';
     const res = await fetch(FINANCE_API, { method: 'POST', body: JSON.stringify({ action: 'saveMediaBuying', period: periodKey(), rows, user }) });
     const json = await res.json().catch(() => ({}));
