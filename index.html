@@ -556,7 +556,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.0.2</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.0.3</div>
   </div>
 </div>
 
@@ -629,7 +629,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.0.2</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.0.3</div>
   </div>
 </div>
 
@@ -768,7 +768,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.0.2</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.0.3</span>
           </div>
         </div>
       </div>
@@ -6442,7 +6442,6 @@
     const invPromise    = fetchPeriodData('getInvoices').catch(() => []);
     const mbPromise     = fetchPeriodData('getMediaBuying').catch(() => []);
     const allInvPromise = fetch(`${FINANCE_API}?action=getInvoices`).then(r => r.json()).catch(() => ({ data: [] }));
-    const revPromise  = fetch(`${FINANCE_API}?action=getRevenue`).then(r => r.json()).catch(() => ({ data: [] }));
     const commPromise = fetch(`${FINANCE_API}?action=getCommissions&period=${encodeURIComponent(pk)}`).then(r => r.json()).catch(() => ({ data: [] }));
     const cmPromise  = fetch(`${FINANCE_API}?action=getCampaignMgrs`).then(r => r.json()).catch(() => ({ data: [] }));
     const siPromise  = fetch(`${FINANCE_API}?action=getSourcesInfo`).then(r => r.json()).catch(() => ({ data: [] }));
@@ -6528,8 +6527,8 @@
 
     // ── Phase 2: background data (already in-flight — no extra wait cost) ──
     try {
-      const [cmRes, siRes, evRes, mtgRes, tskRes, tktRes, advRes, revRes, commRes, revDataRes, allInvRes] = await Promise.all([
-        cmPromise, siPromise, evPromise, mtgPromise, tskPromise, tktPromise, advPromise, revPromise, commPromise, revDataPromise, allInvPromise
+      const [cmRes, siRes, evRes, mtgRes, tskRes, tktRes, advRes, commRes, revDataRes, allInvRes] = await Promise.all([
+        cmPromise, siPromise, evPromise, mtgPromise, tskPromise, tktPromise, advPromise, commPromise, revDataPromise, allInvPromise
       ]);
 
       // Campaign Managers
@@ -6601,9 +6600,6 @@
         _revSave();
       }
 
-      // Revenue
-      (revRes.data || []).forEach(r => { if (r.period) _revenueByPeriod[r.period] = r.amount || 0; });
-      if (revRes.lastModified) { _tabMeta.prf = { ts: revRes.lastModified, by: revRes.lastModifiedBy || '' }; _renderLastUpdated('prf'); }
       // Commissions (period-aware — already fetched for startup period)
       _commissions = (commRes.data || []);
       _lastCommissionPeriod = pk;
@@ -10599,7 +10595,7 @@
     const cardsEl = document.getElementById('ovrvwCommCards');
     if (cardsEl) {
       const fmtAmt = v => '$' + Number(v).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
-      const periodsWithRevenue = allPeriods.filter(p => (_revenueByPeriod[p] || 0) > 0);
+      const periodsWithRevenue = allPeriods.filter(p => (effectiveRevComm[p] || 0) > 0);
 
       cardsEl.innerHTML = personOrder.map((name, pi) => {
         const rows = allComms.filter(c => normName(c.name) === name);
@@ -10609,7 +10605,7 @@
         let totalComm = 0;
         let totalBaseSalary = 0;
         periodsWithRevenue.forEach(period => {
-          const revenue = _revenueByPeriod[period] || 0;
+          const revenue = effectiveRevComm[period] || 0;
           const pubCost = (_rawCache['pub_chart_all'] || []).filter(r => r.period === period).reduce((s, r) => s + r.amount, 0);
           const invCost = (_rawCache['inv_chart_all'] || []).filter(r => r.period === period).reduce((s, r) => s + r.amount, 0);
           const profit  = revenue - pubCost - invCost;
