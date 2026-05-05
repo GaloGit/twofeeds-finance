@@ -556,7 +556,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.0.6</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.0.7</div>
   </div>
 </div>
 
@@ -629,7 +629,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.0.6</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.0.7</div>
   </div>
 </div>
 
@@ -768,7 +768,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.0.6</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.0.7</span>
           </div>
         </div>
       </div>
@@ -4772,20 +4772,27 @@
       { label: 'Verticals',   entries: tally('verticals',  true),  color: 'var(--accent-light)' },
       { label: 'TO2 Manager', entries: tally('to2Manager', false), color: '#38bdf8', photoMap: _mgrPhotoMap },
       { label: 'TF Manager',  entries: tally('tfManager',  false), color: '#a78bfa', photoMap: _mgrPhotoMap },
-      { label: 'GEO',         entries: tally('geo',        false), color: '#34d399' },
+      { label: 'GEO',         entries: tally('geo',        false), color: '#34d399', flags: true },
     ];
 
-    const sectionHtml = ({ label, entries, color, photoMap }) => {
+    const sectionHtml = ({ label, entries, color, photoMap, flags }) => {
       const max = entries[0] ? entries[0][1] : 1;
       const rows = entries.slice(0, 12).map(([name, cnt]) => {
         const pct = Math.round((cnt / max) * 100);
-        const photoUrl = photoMap && name !== 'Unassigned' ? photoMap[name.trim().toLowerCase()] : '';
-        const avatar = !photoMap ? ''
-          : name === 'Unassigned'
+        let avatar = '';
+        if (flags) {
+          const code = name.trim().toLowerCase();
+          avatar = name === 'Unassigned'
+            ? `<img src="TwoFeeds_3D.png" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0;opacity:0.5" onerror="this.style.display='none'">`
+            : `<img src="https://flagcdn.com/20x15/${code}.png" style="width:20px;height:15px;border-radius:2px;object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">`;
+        } else if (photoMap) {
+          const photoUrl = name !== 'Unassigned' ? photoMap[name.trim().toLowerCase()] : '';
+          avatar = name === 'Unassigned'
             ? `<img src="TwoFeeds_3D.png" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0;opacity:0.5" onerror="this.style.display='none'">`
             : photoUrl
               ? `<img src="${esc(photoUrl)}" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid ${color}44" onerror="this.style.display='none'">`
               : `<span style="width:18px;height:18px;border-radius:50%;background:${color}22;border:1px solid ${color}44;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:${color};flex-shrink:0">${(name[0]||'?').toUpperCase()}</span>`;
+        }
         return `
           <div style="margin-bottom:7px">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:3px">
