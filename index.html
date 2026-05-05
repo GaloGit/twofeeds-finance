@@ -559,7 +559,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.1.5</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.1.6</div>
   </div>
 </div>
 
@@ -632,7 +632,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.1.5</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.1.6</div>
   </div>
 </div>
 
@@ -771,7 +771,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.1.5</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.1.6</span>
           </div>
         </div>
       </div>
@@ -4467,6 +4467,56 @@
     _renderNewAdvVertChips();
     advNewVertToggle(key);
   }
+  // ── Edit-mode custom vertical / fraud tool helpers ──────────────────────────
+  function advEditVertAddPrompt(i) {
+    document.getElementById('advEditVertInput_'+i).style.display = 'flex';
+    document.getElementById('advEditVertAddBtn_'+i).style.display = 'none';
+    const t = document.getElementById('advEditVertText_'+i); t.value = ''; t.focus();
+  }
+  function advEditVertCancelInput(i) {
+    document.getElementById('advEditVertInput_'+i).style.display = 'none';
+    document.getElementById('advEditVertAddBtn_'+i).style.display = '';
+  }
+  function advEditAddCustomVertical(i) {
+    const key = (document.getElementById('advEditVertText_'+i).value || '').trim();
+    if (!key) return;
+    if (_getAllVerticals().find(v => v.key.toLowerCase() === key.toLowerCase())) { showToast('⚠ Vertical already exists', true); return; }
+    const custom = _getCustomVerticals();
+    custom.push({ key, ..._VERT_PALETTE[custom.length % _VERT_PALETTE.length] });
+    localStorage.setItem('_advCustomVerticals', JSON.stringify(custom));
+    advEditVertCancelInput(i);
+    const a = advertisers[i]; if (!a) return;
+    if (!a.verticals) a.verticals = [];
+    if (!a.verticals.includes(key)) a.verticals.push(key);
+    const wrap = document.getElementById('advEditVertBtns_'+i);
+    if (wrap) wrap.innerHTML = _getAllVerticals().map(v => { const active=(a.verticals||[]).includes(v.key); return `<button type="button" id="advVert_${i}_${v.key}" onclick="advToggleVertical(${i},'${v.key}')" style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;border:1px solid ${active?v.border:'var(--border)'};background:${active?v.bg:'transparent'};color:${active?v.color:'var(--muted)'};cursor:pointer;transition:all 0.15s">${v.key}</button>`; }).join('');
+    _renderNewAdvVertChips();
+  }
+  function advEditFraudAddPrompt(i) {
+    document.getElementById('advEditFraudInput_'+i).style.display = 'flex';
+    document.getElementById('advEditFraudAddBtn_'+i).style.display = 'none';
+    const t = document.getElementById('advEditFraudText_'+i); t.value = ''; t.focus();
+  }
+  function advEditFraudCancelInput(i) {
+    document.getElementById('advEditFraudInput_'+i).style.display = 'none';
+    document.getElementById('advEditFraudAddBtn_'+i).style.display = '';
+  }
+  function advEditAddCustomFraudTool(i) {
+    const key = (document.getElementById('advEditFraudText_'+i).value || '').trim();
+    if (!key) return;
+    if (_getAllFraudTools().find(v => v.key.toLowerCase() === key.toLowerCase())) { showToast('⚠ Tool already exists', true); return; }
+    const custom = _getCustomFraudTools();
+    custom.push({ key, ..._FRAUD_PALETTE[custom.length % _FRAUD_PALETTE.length] });
+    localStorage.setItem('_advCustomFraudTools', JSON.stringify(custom));
+    advEditFraudCancelInput(i);
+    const a = advertisers[i]; if (!a) return;
+    if (!a.fraudTools) a.fraudTools = [];
+    if (!a.fraudTools.includes(key)) a.fraudTools.push(key);
+    const wrap = document.getElementById('advEditFraudBtns_'+i);
+    if (wrap) wrap.innerHTML = _getAllFraudTools().map(v => { const active=(a.fraudTools||[]).includes(v.key); return `<button type="button" id="advFraud_${i}_${v.key}" onclick="advToggleFraudTool(${i},'${v.key}')" style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;border:1px solid ${active?v.border:'var(--border)'};background:${active?v.bg:'transparent'};color:${active?v.color:'var(--muted)'};cursor:pointer;transition:all 0.15s">${v.key}</button>`; }).join('');
+    _renderNewAdvFraudChips();
+  }
+
   function _advPlatformStyle(p) {
     const map = {
       'Appsflyer':        'rgba(56,189,248,0.13)|#38bdf8|rgba(56,189,248,0.45)',
@@ -4694,22 +4744,42 @@
                 </div>
                 <div style="grid-column:1/-1">
                   <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">Verticals</div>
-                  <div style="display:flex;flex-wrap:wrap;gap:6px">
-                    ${_getAllVerticals().map(v => {
-                      const active = (a.verticals||[]).includes(v.key);
-                      return `<button type="button" id="advVert_${i}_${esc(v.key)}" onclick="advToggleVertical(${i},'${esc(v.key)}')"
-                        style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;border:1px solid ${active?v.border:'var(--border)'};background:${active?v.bg:'transparent'};color:${active?v.color:'var(--muted)'};cursor:pointer;transition:all 0.15s">${esc(v.key)}</button>`;
-                    }).join('')}
+                  <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+                    <span id="advEditVertBtns_${i}" style="display:contents">
+                      ${_getAllVerticals().map(v => {
+                        const active = (a.verticals||[]).includes(v.key);
+                        return `<button type="button" id="advVert_${i}_${esc(v.key)}" onclick="advToggleVertical(${i},'${esc(v.key)}')"
+                          style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;border:1px solid ${active?v.border:'var(--border)'};background:${active?v.bg:'transparent'};color:${active?v.color:'var(--muted)'};cursor:pointer;transition:all 0.15s">${esc(v.key)}</button>`;
+                      }).join('')}
+                    </span>
+                    <button type="button" id="advEditVertAddBtn_${i}" onclick="advEditVertAddPrompt(${i})" style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;border:1px dashed var(--border);background:transparent;color:var(--muted);cursor:pointer;line-height:1.4">+ New</button>
+                    <div id="advEditVertInput_${i}" style="display:none;align-items:center;gap:6px">
+                      <input id="advEditVertText_${i}" placeholder="Vertical name…"
+                        onkeydown="if(event.key==='Enter')advEditAddCustomVertical(${i});else if(event.key==='Escape')advEditVertCancelInput(${i});"
+                        style="font-family:var(--font-mono);font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid var(--accent);background:var(--surface2);color:var(--text);outline:none;width:130px"/>
+                      <button type="button" onclick="advEditAddCustomVertical(${i})" style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;border:none;background:var(--accent);color:#fff;cursor:pointer">Add</button>
+                      <button type="button" onclick="advEditVertCancelInput(${i})" style="font-family:var(--font-mono);font-size:10px;padding:4px 8px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer">✕</button>
+                    </div>
                   </div>
                 </div>
                 <div style="grid-column:1/-1">
                   <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">Fraud Tools</div>
-                  <div style="display:flex;flex-wrap:wrap;gap:6px">
-                    ${_getAllFraudTools().map(v => {
-                      const active = (a.fraudTools||[]).includes(v.key);
-                      return `<button type="button" id="advFraud_${i}_${esc(v.key)}" onclick="advToggleFraudTool(${i},'${esc(v.key)}')"
-                        style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;border:1px solid ${active?v.border:'var(--border)'};background:${active?v.bg:'transparent'};color:${active?v.color:'var(--muted)'};cursor:pointer;transition:all 0.15s">${esc(v.key)}</button>`;
-                    }).join('')}
+                  <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+                    <span id="advEditFraudBtns_${i}" style="display:contents">
+                      ${_getAllFraudTools().map(v => {
+                        const active = (a.fraudTools||[]).includes(v.key);
+                        return `<button type="button" id="advFraud_${i}_${esc(v.key)}" onclick="advToggleFraudTool(${i},'${esc(v.key)}')"
+                          style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;border:1px solid ${active?v.border:'var(--border)'};background:${active?v.bg:'transparent'};color:${active?v.color:'var(--muted)'};cursor:pointer;transition:all 0.15s">${esc(v.key)}</button>`;
+                      }).join('')}
+                    </span>
+                    <button type="button" id="advEditFraudAddBtn_${i}" onclick="advEditFraudAddPrompt(${i})" style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;border:1px dashed var(--border);background:transparent;color:var(--muted);cursor:pointer;line-height:1.4">+ New</button>
+                    <div id="advEditFraudInput_${i}" style="display:none;align-items:center;gap:6px">
+                      <input id="advEditFraudText_${i}" placeholder="Tool name…"
+                        onkeydown="if(event.key==='Enter')advEditAddCustomFraudTool(${i});else if(event.key==='Escape')advEditFraudCancelInput(${i});"
+                        style="font-family:var(--font-mono);font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid var(--accent);background:var(--surface2);color:var(--text);outline:none;width:130px"/>
+                      <button type="button" onclick="advEditAddCustomFraudTool(${i})" style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;border:none;background:var(--accent);color:#fff;cursor:pointer">Add</button>
+                      <button type="button" onclick="advEditFraudCancelInput(${i})" style="font-family:var(--font-mono);font-size:10px;padding:4px 8px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer">✕</button>
+                    </div>
                   </div>
                 </div>
                 <div style="grid-column:1/-1">
