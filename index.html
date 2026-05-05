@@ -556,7 +556,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.0.9</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.1.0</div>
   </div>
 </div>
 
@@ -629,7 +629,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.0.9</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.1.0</div>
   </div>
 </div>
 
@@ -768,7 +768,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.0.9</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.1.0</span>
           </div>
         </div>
       </div>
@@ -4787,19 +4787,31 @@
       });
     }
 
+    const _vertIcons = {
+      finance: '💰', sportsbetting: '⚽', crypto: '🪙', gambling: '🎰',
+      surveys: '📋', surverys: '📋', insurance: '🛡️', education: '📚',
+      shopping: '🛍️', entertainment: '🎬', dating: '❤️', utility: '⚙️',
+      gaming: '🎮', health: '🏥', travel: '✈️', food: '🍔', beauty: '💄',
+      software: '💻', ecommerce: '🛒', saas: '☁️', fintech: '📈',
+    };
     const sections = [
-      { label: 'Verticals',   entries: tally('verticals',  true),  color: 'var(--accent-light)' },
+      { label: 'Verticals',   entries: tally('verticals',  true),  color: 'var(--accent-light)', vertIcons: _vertIcons },
       { label: 'TO2 Manager', entries: tally('to2Manager', false), color: '#38bdf8', photoMap: _mgrPhotoMap },
       { label: 'TF Manager',  entries: tally('tfManager',  false), color: '#a78bfa', photoMap: _mgrPhotoMap },
       { label: 'GEO',         entries: tally('geo',        false), color: '#34d399', flags: true },
     ];
 
-    const sectionHtml = ({ label, entries, color, photoMap, flags }) => {
+    const sectionHtml = ({ label, entries, color, photoMap, flags, vertIcons }) => {
       const max = entries[0] ? entries[0][1] : 1;
       const rows = entries.slice(0, 12).map(([name, cnt]) => {
         const pct = Math.round((cnt / max) * 100);
         let avatar = '';
-        if (flags) {
+        if (vertIcons) {
+          const icon = name === 'Unassigned' ? null : (vertIcons[name.trim().toLowerCase()] || '🏷️');
+          avatar = name === 'Unassigned'
+            ? `<img src="TwoFeeds_3D.png" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0;opacity:0.5" onerror="this.style.display='none'">`
+            : `<span style="font-size:13px;line-height:1;flex-shrink:0">${icon}</span>`;
+        } else if (flags) {
           const code = name.trim().toLowerCase();
           avatar = name === 'Unassigned'
             ? `<img src="TwoFeeds_3D.png" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0;opacity:0.5" onerror="this.style.display='none'">`
