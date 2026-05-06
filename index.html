@@ -559,7 +559,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.2.2</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.2.3</div>
   </div>
 </div>
 
@@ -632,7 +632,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.2.2</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.2.3</div>
   </div>
 </div>
 
@@ -771,7 +771,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.2.2</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.2.3</span>
           </div>
         </div>
       </div>
@@ -983,12 +983,6 @@
             <canvas id="pubRwChart"></canvas>
           </div>
         </div>
-
-        <!-- Publisher Summary (lists) -->
-        <div id="pubSummaryWrap" style="margin-top:24px"></div>
-
-        <!-- By Platform Groups -->
-        <div id="pubPlatGroupsWrap" style="margin-top:24px"></div>
 
         <!-- Platform Pie Chart -->
         <div class="chart-wrap" id="pubPlatformChartWrap" style="margin-top:16px">
@@ -8188,8 +8182,7 @@
       _renderPubTypeChart(all, 'DSP', 'pubDspChart', 'pubDspChartWrap', 'pubDspChartTitle', 'pubDspChartSub', 'rgba(124,58,237,0.8)', 'pubDspChartInstance');
       _renderPubTypeChart(all, 'RW',  'pubRwChart',  'pubRwChartWrap',  'pubRwChartTitle',  'pubRwChartSub',  'rgba(56,189,248,0.8)',  'pubRwChartInstance');
       renderPubPlatformPieChart(all);
-      _renderPubSummary(all);
-      _renderPubPlatGroups(all);
+
     }, 50);
   }
 
@@ -12861,121 +12854,6 @@
     _injectLogToggle('pvChart', false);
   }
 
-  function _renderPubSummary(pubs) {
-    const wrap = document.getElementById('pubSummaryWrap');
-    if (!wrap) return;
-    if (!pubs || !pubs.length) { wrap.innerHTML = ''; return; }
-
-    const tally = key => {
-      const map = {};
-      pubs.forEach(p => { const v = p[key] || 'No Platform'; map[v] = (map[v]||0)+1; });
-      return Object.entries(map).sort((a,b) => b[1]-a[1]);
-    };
-
-    const paidCount    = pubs.filter(p => p.payStatus === 'paid').length;
-    const waitingCount = pubs.length - paidCount;
-    const statusEntries = [['✓ Paid', paidCount], ['⏳ Waiting', waitingCount]].filter(([,v]) => v > 0);
-    const platEntries  = tally('platform');
-    const topByAmt = [...pubs].filter(p => p.amount > 0).sort((a,b) => b.amount - a.amount)
-      .slice(0, 12).map(p => [p.name, p.amount]);
-
-    const _platColor = plat => ({ Appsflyer:'#38bdf8', Adjust:'#22c55e', Singular:'#a855f7', Kochava:'#fb923c', Impact:'#f59e0b', Network:'#6366f1', 'Multiple Platforms':'#ec4899' })[plat] || '#94a3b8';
-
-    const sectionHtml = ({ label, entries, color, fmtVal, logos }) => {
-      const max = entries[0] ? entries[0][1] : 1;
-      const rows = entries.slice(0, 12).map(([name, val]) => {
-        const pct = Math.round((val / max) * 100);
-        const display = fmtVal ? fmt(val) : val;
-        const avatar = logos
-          ? `<span style="flex-shrink:0">${getSourceLogo(name, 18)}</span>`
-          : `<span style="width:18px;height:18px;border-radius:50%;background:${color}22;border:1px solid ${color}44;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:${color};flex-shrink:0">${(name.replace(/[^a-zA-Z]/g,'')||'?')[0].toUpperCase()}</span>`;
-        return `
-          <div style="margin-bottom:7px">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:3px">
-              <div style="display:flex;align-items:center;gap:5px;overflow:hidden;flex:1;min-width:0">
-                ${avatar}
-                <span style="font-family:var(--font-mono);font-size:10px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(name)}</span>
-              </div>
-              <span style="font-family:var(--font-mono);font-size:10px;font-weight:700;flex-shrink:0;color:${color}">${display}</span>
-            </div>
-            <div style="height:5px;border-radius:3px;background:var(--surface3);overflow:hidden">
-              <div style="height:100%;width:${pct}%;border-radius:3px;background:${color};opacity:0.75;transition:width 0.3s"></div>
-            </div>
-          </div>`;
-      }).join('');
-      const more = entries.length > 12 ? `<div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:4px">+${entries.length-12} more</div>` : '';
-      return `
-        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
-          <div style="font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:${color};margin-bottom:12px">${label}</div>
-          ${rows}${more}
-        </div>`;
-    };
-
-    wrap.innerHTML = `
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:8px">
-          <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em">Publisher Summary</div>
-          <div style="display:flex;gap:12px;align-items:center">
-            <span style="font-family:var(--font-mono);font-size:10px;color:var(--green)">✓ ${paidCount} Paid</span>
-            ${waitingCount ? `<span style="font-family:var(--font-mono);font-size:10px;color:var(--amber)">⏳ ${waitingCount} Waiting</span>` : ''}
-            <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${pubs.length} Total</span>
-          </div>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px">
-          ${sectionHtml({ label: 'Platform', entries: platEntries, color: '#38bdf8' })}
-          ${sectionHtml({ label: 'Pay Status', entries: statusEntries, color: '#22c55e' })}
-          ${sectionHtml({ label: 'Top Publishers · Amount', entries: topByAmt, color: '#a78bfa', fmtVal: true, logos: true })}
-        </div>
-      </div>`;
-  }
-
-  function _renderPubPlatGroups(pubs) {
-    const wrap = document.getElementById('pubPlatGroupsWrap');
-    if (!wrap) return;
-    if (!pubs || !pubs.length) { wrap.innerHTML = ''; return; }
-
-    const _platColor = plat => ({ Appsflyer:'#38bdf8', Adjust:'#22c55e', Singular:'#a855f7', Kochava:'#fb923c', Impact:'#f59e0b', Network:'#6366f1', 'Multiple Platforms':'#ec4899' })[plat] || '#94a3b8';
-    const grouped = {};
-    pubs.forEach(p => {
-      const plat = p.platform || 'No Platform';
-      if (!grouped[plat]) grouped[plat] = [];
-      grouped[plat].push(p);
-    });
-    const sorted = Object.entries(grouped).sort((a,b) => b[1].length - a[1].length);
-
-    wrap.innerHTML = `
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px">
-        <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:18px">By Platform</div>
-        <div style="display:flex;flex-direction:column;gap:20px">
-          ${sorted.map(([plat, platPubs]) => {
-            const color = _platColor(plat);
-            const platTotal = platPubs.reduce((s,p) => s+(p.amount||0), 0);
-            const platPaid  = platPubs.filter(p => p.payStatus === 'paid').length;
-            const items = [...platPubs].sort((a,b) => (b.amount||0)-(a.amount||0)).map(p => {
-              const isPaid = p.payStatus === 'paid';
-              return `<div style="display:flex;align-items:center;gap:10px;padding:7px 12px;border-radius:8px;background:var(--surface3);margin-bottom:5px">
-                ${getSourceLogo(p.name, 24)}
-                <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.name)}</span>
-                <span style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--green);flex-shrink:0">${fmt(p.amount||0)}</span>
-                <span style="font-family:var(--font-mono);font-size:9px;font-weight:700;padding:2px 7px;border-radius:5px;flex-shrink:0;${isPaid?'background:rgba(34,197,94,0.13);color:var(--green);border:1px solid rgba(34,197,94,0.3)':'background:rgba(245,158,11,0.1);color:var(--amber);border:1px solid rgba(245,158,11,0.3)'}">${isPaid?'✓ Paid':'⏳ Waiting'}</span>
-              </div>`;
-            }).join('');
-            return `
-              <div>
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)">
-                  <div style="display:flex;align-items:center;gap:8px">
-                    <span style="font-family:var(--font-mono);font-size:11px;font-weight:700;padding:3px 10px;border-radius:6px;background:${color}18;color:${color};border:1px solid ${color}44">${esc(plat)}</span>
-                    <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${platPubs.length} publisher${platPubs.length!==1?'s':''}</span>
-                    <span style="font-family:var(--font-mono);font-size:10px;color:var(--green)">✓ ${platPaid} paid</span>
-                  </div>
-                  <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:${color}">${fmt(platTotal)}</span>
-                </div>
-                ${items}
-              </div>`;
-          }).join('')}
-        </div>
-      </div>`;
-  }
 
   function renderPubChart(publishers) {
     const canvas = document.getElementById('pubChart');
