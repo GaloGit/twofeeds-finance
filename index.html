@@ -559,7 +559,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.2.4</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.2.5</div>
   </div>
 </div>
 
@@ -632,7 +632,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.2.4</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.2.5</div>
   </div>
 </div>
 
@@ -771,7 +771,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.2.4</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.2.5</span>
           </div>
         </div>
       </div>
@@ -1824,6 +1824,7 @@
                 <option value="" style="color:var(--muted)">— Role —</option>
                 <option value="Campaign Manager">Campaign Manager</option>
                 <option value="TO2 Manager">TO2 Manager</option>
+                <option value="TO2 PM">TO2 PM</option>
                 <option value="TO2 TL">TO2 TL</option>
                 <option value="Finance">Finance</option>
                 <option value="Team Leader">Team Leader</option>
@@ -3204,6 +3205,7 @@
     'Finance':          { bg:'rgba(236,72,153,0.13)',  color:'#ec4899', border:'rgba(236,72,153,0.45)' },
     'Team Leader':      { bg:'rgba(245,158,11,0.13)',  color:'#f59e0b', border:'rgba(245,158,11,0.45)' },
     'TO2 Manager':      { bg:'rgba(74,222,128,0.13)',  color:'#4ade80', border:'rgba(74,222,128,0.45)' },
+    'TO2 PM':           { bg:'rgba(167,139,250,0.13)', color:'#a78bfa', border:'rgba(167,139,250,0.45)' },
     'TO2 TL':           { bg:'rgba(45,212,191,0.13)',  color:'#2dd4bf', border:'rgba(45,212,191,0.45)' },
   };
   function _cmRoleBadge(role) {
@@ -3297,7 +3299,7 @@
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Role</div>
                 <select onchange="updateCampaignMgr(${i},'role',this.value)"
                   style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:var(--font-mono);font-size:11px;font-weight:700;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none">
-                  ${['Campaign Manager','TO2 Manager','TO2 TL','Finance','Team Leader'].map(r => `<option value="${r}" ${(m.role||'')=== r?'selected':''}>${r}</option>`).join('')}
+                  ${['Campaign Manager','TO2 Manager','TO2 PM','TO2 TL','Finance','Team Leader'].map(r => `<option value="${r}" ${(m.role||'')=== r?'selected':''}>${r}</option>`).join('')}
                 </select>
               </div>
               <div>
