@@ -559,7 +559,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.2.0</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.2.1</div>
   </div>
 </div>
 
@@ -632,7 +632,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.2.0</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.2.1</div>
   </div>
 </div>
 
@@ -771,7 +771,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.2.0</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.2.1</span>
           </div>
         </div>
       </div>
@@ -1930,6 +1930,8 @@
             <input type="text" class="pub-search" id="siSearch" placeholder="Search..." oninput="_renderSiTable();_updateSearchClear('siSearch')" style="width:100%"/>
             <button class="search-clear-btn" id="siSearchClear" onclick="_clearSearch('siSearch',_renderSiTable)">×</button>
           </div>
+          <button onclick="scrollToChart('siSummaryWrap',60)" style="font-family:var(--font-mono);font-size:10px;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:5px"><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" style="flex-shrink:0"><rect x="0" y="5" width="3" height="7" rx="1"/><rect x="4.5" y="2.5" width="3" height="9.5" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/></svg> Summary ↓</button>
+          <button onclick="scrollToChart('siGroupsWrap',60)" style="font-family:var(--font-mono);font-size:10px;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:5px"><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" style="flex-shrink:0"><path d="M2 3h8M2 6h5M2 9h7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg> By Groups ↓</button>
           <button id="siOrderBtn" onclick="toggleSiOrderEdit()" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">↕ Edit Order</button>
           <button onclick="openColPanel('si', this)" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">⊞ Columns</button>
           <button id="siFormToggle" onclick="toggleSiForm()" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px dashed var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">+ Add Source</button>
@@ -1997,6 +1999,10 @@
           </div>
         </div>
       </div>
+
+      <!-- Summary & Groups (filled by JS) -->
+      <div id="siSummaryWrap" style="margin-bottom:24px"></div>
+      <div id="siGroupsWrap" style="margin-bottom:24px"></div>
 
       <!-- Sources table -->
       <div class="table-wrap">
@@ -3924,6 +3930,172 @@
         if (stSel) _applyStatusSelectColor(stSel, s.status || 'live');
       });
     });
+    _renderSiSummary();
+  }
+
+  // ── Sources Info — Portfolio Summary ─────────────────────────────────────────
+  function _siTypeColor(type) {
+    return ({ DSP:'#38bdf8', RW:'#a78bfa', MB:'#f59e0b', Platform:'#22c55e' })[type] || '#94a3b8';
+  }
+  function _renderSiSummary() {
+    const wrap = document.getElementById('siSummaryWrap');
+    if (!wrap) return;
+    if (!sourcesInfo.length) { wrap.innerHTML = ''; document.getElementById('siGroupsWrap') && (document.getElementById('siGroupsWrap').innerHTML=''); return; }
+
+    const tally = key => {
+      const map = {};
+      sourcesInfo.forEach(s => { const v = s[key] || 'Unassigned'; map[v] = (map[v]||0)+1; });
+      return Object.entries(map).sort((a,b) => b[1]-a[1]);
+    };
+
+    const liveCount   = sourcesInfo.filter(s => (s.status||'live') === 'live').length;
+    const pausedCount = sourcesInfo.length - liveCount;
+
+    const _mgrPhotoMap = {};
+    if (typeof campaignMgrs !== 'undefined') {
+      campaignMgrs.forEach(m => { if (m.name && m.photoUrl) _mgrPhotoMap[m.name.trim().toLowerCase()] = resolvePhotoUrl(m.photoUrl) || m.photoUrl; });
+    }
+
+    const sections = [
+      { label: 'TF Manager',  entries: tally('tfManager'),  color: '#a78bfa', photoMap: _mgrPhotoMap },
+      { label: 'TO2 Manager', entries: tally('to2Manager'), color: '#38bdf8', photoMap: _mgrPhotoMap },
+      { label: 'GEO',         entries: tally('country'),    color: '#34d399', flags: true },
+      { label: 'Type',        entries: tally('type'),       color: '#f59e0b', typeColors: true },
+    ];
+
+    const sectionHtml = ({ label, entries, color, photoMap, flags, typeColors }) => {
+      const max = entries[0] ? entries[0][1] : 1;
+      const rows = entries.slice(0, 12).map(([name, cnt]) => {
+        const pct = Math.round((cnt / max) * 100);
+        const rowColor = typeColors ? _siTypeColor(name) : color;
+        let avatar = '';
+        if (typeColors) {
+          avatar = `<span style="width:18px;height:18px;border-radius:4px;background:${rowColor}22;border:1px solid ${rowColor}44;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:${rowColor};flex-shrink:0">${(name[0]||'?').toUpperCase()}</span>`;
+        } else if (flags) {
+          const code = _geoFlagCode(name.trim()).toLowerCase();
+          avatar = name === 'Unassigned'
+            ? `<img src="TwoFeeds_3D.png" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0;opacity:0.5" onerror="this.style.display='none'">`
+            : `<img src="https://flagcdn.com/20x15/${code}.png" style="width:20px;height:15px;border-radius:2px;object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">`;
+        } else if (photoMap) {
+          const photoUrl = name !== 'Unassigned' ? photoMap[name.trim().toLowerCase()] : '';
+          avatar = name === 'Unassigned'
+            ? `<img src="TwoFeeds_3D.png" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0;opacity:0.5" onerror="this.style.display='none'">`
+            : photoUrl
+              ? `<img src="${esc(photoUrl)}" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid ${color}44" onerror="this.style.display='none'">`
+              : `<span style="width:18px;height:18px;border-radius:50%;background:${color}22;border:1px solid ${color}44;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:${color};flex-shrink:0">${(name[0]||'?').toUpperCase()}</span>`;
+        }
+        return `
+          <div style="margin-bottom:7px">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:3px">
+              <div style="display:flex;align-items:center;gap:5px;overflow:hidden;flex:1;min-width:0">
+                ${avatar}
+                <span style="font-family:var(--font-mono);font-size:10px;color:${name==='Unassigned'?'var(--muted)':'var(--text)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(name)}</span>
+              </div>
+              <span style="font-family:var(--font-mono);font-size:10px;font-weight:700;flex-shrink:0;color:${rowColor}">${cnt}</span>
+            </div>
+            <div style="height:5px;border-radius:3px;background:var(--surface3);overflow:hidden">
+              <div style="height:100%;width:${pct}%;border-radius:3px;background:${rowColor};opacity:0.75;transition:width 0.3s"></div>
+            </div>
+          </div>`;
+      }).join('');
+      const more = entries.length > 12 ? `<div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:4px">+${entries.length-12} more</div>` : '';
+      return `
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
+          <div style="font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:${color};margin-bottom:12px">${label}</div>
+          ${rows}${more}
+        </div>`;
+    };
+
+    wrap.innerHTML = `
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:8px">
+          <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em">Portfolio Summary</div>
+          <div style="display:flex;gap:12px;align-items:center">
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--green)">● ${liveCount} Live</span>
+            ${pausedCount ? `<span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">⏸ ${pausedCount} Paused</span>` : ''}
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${sourcesInfo.length} Total</span>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px">
+          ${sections.map(sectionHtml).join('')}
+        </div>
+      </div>`;
+    _renderSiGroups();
+  }
+
+  function _renderSiGroups() {
+    const wrap = document.getElementById('siGroupsWrap');
+    if (!wrap || !sourcesInfo.length) { if(wrap) wrap.innerHTML=''; return; }
+
+    const _mgrPhotoMap = {};
+    if (typeof campaignMgrs !== 'undefined') {
+      campaignMgrs.forEach(m => { if (m.name && m.photoUrl) _mgrPhotoMap[m.name.trim().toLowerCase()] = resolvePhotoUrl(m.photoUrl) || m.photoUrl; });
+    }
+
+    function buildGroupSection(title, groupKey, color, usePhoto, useFlag, useType) {
+      const grouped = {};
+      sourcesInfo.forEach(s => { const k = s[groupKey] || 'Unassigned'; if (!grouped[k]) grouped[k] = []; grouped[k].push(s); });
+      const sorted = Object.entries(grouped).sort((a,b) => b[1].length - a[1].length);
+
+      const cards = sorted.map(([grpName, items]) => {
+        const liveN = items.filter(s => (s.status||'live')==='live').length;
+        let headerAvatar = '';
+        if (usePhoto) {
+          const photoUrl = grpName !== 'Unassigned' ? _mgrPhotoMap[grpName.trim().toLowerCase()] : '';
+          headerAvatar = grpName === 'Unassigned'
+            ? `<img src="TwoFeeds_3D.png" style="width:28px;height:28px;border-radius:50%;object-fit:cover;opacity:0.5" onerror="this.style.display='none'">`
+            : photoUrl
+              ? `<img src="${esc(photoUrl)}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid ${color}44" onerror="this.style.display='none'">`
+              : `<span style="width:28px;height:28px;border-radius:50%;background:${color}22;border:1px solid ${color}44;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:${color}">${(grpName[0]||'?').toUpperCase()}</span>`;
+        } else if (useFlag) {
+          const code = _geoFlagCode(grpName.trim()).toLowerCase();
+          headerAvatar = `<img src="https://flagcdn.com/20x15/${code}.png" style="width:24px;height:18px;border-radius:3px;object-fit:cover" onerror="this.style.display='none'">`;
+        } else if (useType) {
+          const tc = _siTypeColor(grpName);
+          headerAvatar = `<span style="width:28px;height:28px;border-radius:6px;background:${tc}22;border:1px solid ${tc}44;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${tc}">${(grpName[0]||'?').toUpperCase()}</span>`;
+        }
+        const srcItems = items.map(s => {
+          const resolved = s.logoUrl ? (resolvePhotoUrl(s.logoUrl) || s.logoUrl) : '';
+          const logoHtml = resolved
+            ? `<img src="${esc(resolved)}" style="width:22px;height:22px;border-radius:4px;object-fit:contain;background:var(--surface3);flex-shrink:0" onerror="this.style.display='none'">`
+            : `<span style="width:22px;height:22px;border-radius:4px;background:var(--surface3);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--muted);flex-shrink:0">${(s.name||'?')[0].toUpperCase()}</span>`;
+          const isLive = (s.status||'live') === 'live';
+          const typC = _siTypeColor(s.type||'DSP');
+          return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0">
+            ${logoHtml}
+            <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.name||'')}</span>
+            <span style="font-family:var(--font-mono);font-size:9px;font-weight:700;padding:1px 6px;border-radius:4px;background:${typC}18;color:${typC};border:1px solid ${typC}33;flex-shrink:0">${esc(s.type||'DSP')}</span>
+            <span style="font-size:8px;flex-shrink:0;color:${isLive?'var(--green)':'var(--muted)'}">●</span>
+          </div>`;
+        }).join('');
+        return `
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;min-width:0">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)">
+              <div style="display:flex;align-items:center;gap:8px">
+                ${headerAvatar}
+                <span style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--text)">${esc(grpName)}</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-family:var(--font-mono);font-size:10px;color:var(--green)">● ${liveN}</span>
+                <span style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:${color}">${items.length}</span>
+              </div>
+            </div>
+            ${srcItems}
+          </div>`;
+      }).join('');
+
+      return `
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-top:20px">
+          <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px">By ${title}</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px">${cards}</div>
+        </div>`;
+    }
+
+    wrap.innerHTML =
+      buildGroupSection('TF Manager',  'tfManager',  '#a78bfa', true,  false, false) +
+      buildGroupSection('TO2 Manager', 'to2Manager', '#38bdf8', true,  false, false) +
+      buildGroupSection('GEO',         'country',    '#34d399', false, true,  false) +
+      buildGroupSection('Type',        'type',       '#f59e0b', false, false, true);
   }
 
   async function siTypeChange(i, value) {
