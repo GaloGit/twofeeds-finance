@@ -559,7 +559,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.3.4</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.3.5</div>
   </div>
 </div>
 
@@ -632,7 +632,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.3.4</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.3.5</div>
   </div>
 </div>
 
@@ -814,7 +814,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.3.4</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.3.5</span>
           </div>
         </div>
       </div>
@@ -1833,13 +1833,9 @@
         <div id="cmLastUpdated" style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-align:right;white-space:nowrap;line-height:1.6"></div>
       </div>
 
-      <!-- Add manager form (collapsible) -->
+      <!-- Add manager form (collapsible body only) -->
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:24px;overflow:hidden">
-        <button onclick="toggleCmForm()" id="cmFormToggle" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:none;border:none;cursor:pointer;text-align:left">
-          <span style="font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase">+ Add Team Member</span>
-          <span id="cmFormArrow" style="font-size:16px;color:var(--muted);transition:transform 0.25s">▼</span>
-        </button>
-        <div id="cmFormBody" style="display:none;padding:0 20px 20px">
+        <div id="cmFormBody" style="display:none;padding:20px">
           <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
             <div style="flex:1;min-width:160px">
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Full Name</div>
@@ -1943,7 +1939,11 @@
           <button onclick="_setCmRoleFilter('Team Leader')" id="cmRF_Team_Leader" data-role="Team Leader" data-color="#f59e0b"
             style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;border:1px solid rgba(245,158,11,0.33);background:rgba(245,158,11,0.1);color:#f59e0b;cursor:pointer;transition:all 0.15s">Team Leader</button>
         </div>
-        <div style="display:flex;gap:8px;flex-shrink:0">
+        <div style="display:flex;gap:8px;flex-shrink:0;align-items:center">
+          <button onclick="toggleCmForm()" id="cmFormToggle"
+            style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:0.06em;padding:5px 14px;border-radius:6px;border:1px solid var(--accent);background:rgba(99,102,241,0.12);color:var(--accent-light);cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap">
+            + Add Member <span id="cmFormArrow" style="font-size:11px;transition:transform 0.25s;display:inline-block">▼</span>
+          </button>
           <button id="cmOrderBtn" onclick="toggleCmOrderEdit()" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">↕ Edit Order</button>
           <button onclick="openColPanel('cm', this)" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">⊞ Columns</button>
         </div>
