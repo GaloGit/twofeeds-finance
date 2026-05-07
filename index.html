@@ -559,7 +559,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.4.6</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.4.7</div>
   </div>
 </div>
 
@@ -632,7 +632,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.4.6</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.4.7</div>
   </div>
 </div>
 
@@ -814,7 +814,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.4.6</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.4.7</span>
           </div>
         </div>
       </div>
@@ -3571,9 +3571,9 @@
     if (!detail) return;
     const isOpen = detail.style.display !== 'none';
     detail.style.display = isOpen ? 'none' : '';
-    // flip the toggle button arrow
     const btn = detail.previousElementSibling?.querySelector('button');
     if (btn) btn.textContent = isOpen ? '▾' : '▴';
+    if (!isOpen) setTimeout(() => detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
   }
 
   function toggleCmStatus(i, badge) {
@@ -4404,6 +4404,7 @@
     const open = detail.style.display !== 'none';
     detail.style.display = open ? 'none' : 'table-row';
     if (btn) btn.textContent = open ? '▾' : '▴';
+    if (!open) setTimeout(() => detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
   }
 
   // Deduplicates sourcesInfo in-place by name (case-insensitive), keeps first occurrence
@@ -5492,12 +5493,12 @@
     const open = detail.style.display !== 'none';
     detail.style.display = open ? 'none' : 'table-row';
     if (btn) btn.textContent = open ? '▾' : '▴';
-    // Always reset to view mode when closing/reopening
     if (!open) {
       const view = document.getElementById('advView_' + i);
       const edit = document.getElementById('advEdit_' + i);
       if (view) view.style.display = 'block';
       if (edit) edit.style.display = 'none';
+      setTimeout(() => detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
     }
   }
 
