@@ -559,7 +559,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.2.7</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.2.8</div>
   </div>
 </div>
 
@@ -632,7 +632,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.2.7</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.2.8</div>
   </div>
 </div>
 
@@ -771,7 +771,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.2.7</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.2.8</span>
           </div>
         </div>
       </div>
@@ -9484,14 +9484,12 @@
                 <td id="mbCalcTotal" style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--green);padding:12px 18px">—</td>
               </tr>
               <tr style="border-top:1px solid var(--border);background:var(--surface2)">
-                <td colspan="5" style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.08em;padding:10px 18px;text-transform:uppercase;text-align:right">Additional Cost</td>
-                <td style="padding:8px 18px">
-                  <div style="display:flex;align-items:center;gap:6px">
-                    <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--muted)">$</span>
-                    <input type="text" id="mbCalcAdditional" placeholder="0.00"
-                      style="width:130px;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:5px 10px;color:var(--text);font-family:var(--font-mono);font-size:12px;font-weight:700;outline:none;transition:border-color 0.2s"
-                      onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
-                      oninput="_mbCalcUpdateGrandTotal()"/>
+                <td colspan="6" style="padding:0">
+                  <div id="mbCalcAdditionalRows" style="display:flex;flex-direction:column;gap:0"></div>
+                  <div style="padding:8px 18px 10px">
+                    <button type="button" onclick="_mbCalcAddExtraRow()"
+                      style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 12px;border-radius:6px;border:1px dashed rgba(56,189,248,0.4);background:rgba(56,189,248,0.06);color:var(--accent-light);cursor:pointer;letter-spacing:0.05em;transition:background 0.2s"
+                      onmouseover="this.style.background='rgba(56,189,248,0.12)'" onmouseout="this.style.background='rgba(56,189,248,0.06)'">+ Add Cost</button>
                   </div>
                 </td>
               </tr>
@@ -9532,6 +9530,39 @@
     _mbCalcUpdateGrandTotal();
   }
 
+  let _mbExtraRowCount = 0;
+
+  function _mbCalcAddExtraRow() {
+    const wrap = document.getElementById('mbCalcAdditionalRows');
+    if (!wrap) return;
+    const idx = _mbExtraRowCount++;
+    const row = document.createElement('div');
+    row.id = 'mbCalcExtraRow_' + idx;
+    row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:8px 18px;border-top:1px solid var(--border)';
+    row.innerHTML = `
+      <span style="font-family:var(--font-mono);font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;flex:1;text-align:right">Additional Cost</span>
+      <input type="text" id="mbCalcExtraLabel_${idx}" placeholder="Label (optional)"
+        style="width:160px;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:5px 10px;color:var(--muted);font-family:var(--font-mono);font-size:11px;outline:none;transition:border-color 0.2s"
+        onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+      <div style="display:flex;align-items:center;gap:5px">
+        <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--muted)">$</span>
+        <input type="text" id="mbCalcExtraAmt_${idx}" placeholder="0.00"
+          style="width:130px;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:5px 10px;color:var(--text);font-family:var(--font-mono);font-size:12px;font-weight:700;outline:none;transition:border-color 0.2s"
+          onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
+          oninput="_mbCalcUpdateGrandTotal()"/>
+      </div>
+      <button type="button" onclick="_mbCalcRemoveExtraRow(${idx})"
+        style="font-family:var(--font-mono);font-size:12px;font-weight:700;padding:3px 8px;border-radius:5px;border:1px solid rgba(239,68,68,0.35);background:rgba(239,68,68,0.08);color:#f87171;cursor:pointer;line-height:1;flex-shrink:0"
+        onmouseover="this.style.background='rgba(239,68,68,0.18)'" onmouseout="this.style.background='rgba(239,68,68,0.08)'">✕</button>`;
+    wrap.appendChild(row);
+  }
+
+  function _mbCalcRemoveExtraRow(idx) {
+    const row = document.getElementById('mbCalcExtraRow_' + idx);
+    if (row) row.remove();
+    _mbCalcUpdateGrandTotal();
+  }
+
   function _mbCalcUpdateGrandTotal() {
     let cpcTotal = 0;
     document.querySelectorAll('[id^="mbCalcClicks_"]').forEach(inp => {
@@ -9539,11 +9570,13 @@
       const cpc = parseFloat(inp.dataset.cpc) || 0;
       if (c > 0) cpcTotal += c * cpc;
     });
-    const addInp = document.getElementById('mbCalcAdditional');
-    const additional = parseFloat((addInp?.value||'').replace(/,/g,'')) || 0;
+    let extraTotal = 0;
+    document.querySelectorAll('[id^="mbCalcExtraAmt_"]').forEach(inp => {
+      extraTotal += parseFloat((inp.value||'').replace(/,/g,'')) || 0;
+    });
     const grandEl = document.getElementById('mbCalcGrandTotal');
     if (!grandEl) return;
-    const grand = cpcTotal + additional;
+    const grand = cpcTotal + extraTotal;
     grandEl.textContent = grand > 0 ? '$' + grand.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
   }
 
