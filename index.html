@@ -559,7 +559,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.2.8</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.2.9</div>
   </div>
 </div>
 
@@ -632,7 +632,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.2.8</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.2.9</div>
   </div>
 </div>
 
@@ -771,7 +771,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.2.8</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.2.9</span>
           </div>
         </div>
       </div>
@@ -9449,8 +9449,16 @@
             <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">clicks</span>
           </div>
         </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px">
+          <span style="font-size:13px;line-height:1;flex-shrink:0">🔍</span>
+          <input type="text" id="mbCalcSearch" placeholder="Search DSP or GEO…"
+            style="flex:1;background:transparent;border:none;outline:none;font-family:var(--font-mono);font-size:12px;color:var(--text)"
+            oninput="_mbCalcFilterRows(this.value)"/>
+          <button id="mbCalcSearchClear" onclick="_mbCalcFilterRows('');document.getElementById('mbCalcSearch').value='';this.style.display='none'"
+            style="display:none;background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;line-height:1;padding:0">×</button>
+        </div>
         <div class="table-wrap"><div class="table-scroll">
-          <table>
+          <table id="mbCalcTable">
             <thead><tr>
               <th class="th-hash">#</th>
               <th style="min-width:160px">DSP</th>
@@ -9461,7 +9469,7 @@
             </tr></thead>
             <tbody>
               ${rows.map((r, i) => `
-                <tr>
+                <tr data-dsp="${esc((r.dsp||'').toLowerCase())}" data-geo="${esc((r.geo||'').toLowerCase())}">
                   <td class="row-num">${i+1}</td>
                   <td><div style="display:flex;align-items:center;gap:8px">${getSourceLogo(r.dsp,22)}${getSourceTypeBadge(r.dsp)}<span style="font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--text)">${esc(r.dsp||'—')}</span></div></td>
                   <td><span style="display:inline-flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:11px;color:var(--muted)">${esc(_geoDisplayCode((r.geo||'').toUpperCase()))||'—'} ${r.geo&&r.geo.length===2?countryFlagImg(r.geo,'20x15'):''}</span></td>
@@ -9501,6 +9509,20 @@
           </table>
         </div></div>
       </div>`;
+  }
+
+  function _mbCalcFilterRows(q) {
+    const term = (q||'').trim().toLowerCase();
+    const clearBtn = document.getElementById('mbCalcSearchClear');
+    if (clearBtn) clearBtn.style.display = term ? 'block' : 'none';
+    const table = document.getElementById('mbCalcTable');
+    if (!table) return;
+    table.querySelectorAll('tbody tr').forEach(tr => {
+      const dsp = tr.dataset.dsp || '';
+      const geo = tr.dataset.geo || '';
+      const match = !term || dsp.includes(term) || geo.includes(term);
+      tr.style.display = match ? '' : 'none';
+    });
   }
 
   function _mbParseClicks(v) { return parseFloat((v||'').toString().replace(/,/g,'')) || 0; }
