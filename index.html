@@ -559,7 +559,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.3.2</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.3.3</div>
   </div>
 </div>
 
@@ -632,7 +632,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.3.2</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.3.3</div>
   </div>
 </div>
 
@@ -814,7 +814,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.3.2</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.3.3</span>
           </div>
         </div>
       </div>
@@ -1936,15 +1936,18 @@
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px" id="cmRoleFilters">
         <button onclick="_setCmRoleFilter('')" id="cmRF_all"
           style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;transition:all 0.15s">All</button>
-        ${['Campaign Manager','TO2 Manager','TO2 PM','TO2 TL','Finance','Team Leader'].map(r => {
-          const c = ({
-            'Campaign Manager':'#38bdf8','TO2 Manager':'#4ade80','TO2 PM':'#a78bfa',
-            'TO2 TL':'#2dd4bf','Finance':'#ec4899','Team Leader':'#f59e0b'
-          })[r] || '#94a3b8';
-          return `<button onclick="_setCmRoleFilter('${r}')" id="cmRF_${r.replace(/\s/g,'_')}"
-            data-role="${r}" data-color="${c}"
-            style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;border:1px solid ${c}55;background:${c}18;color:${c};cursor:pointer;transition:all 0.15s">${r}</button>`;
-        }).join('')}
+        <button onclick="_setCmRoleFilter('Campaign Manager')" id="cmRF_Campaign_Manager" data-role="Campaign Manager" data-color="#38bdf8"
+          style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;border:1px solid rgba(56,189,248,0.33);background:rgba(56,189,248,0.1);color:#38bdf8;cursor:pointer;transition:all 0.15s">Campaign Manager</button>
+        <button onclick="_setCmRoleFilter('TO2 Manager')" id="cmRF_TO2_Manager" data-role="TO2 Manager" data-color="#4ade80"
+          style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;border:1px solid rgba(74,222,128,0.33);background:rgba(74,222,128,0.1);color:#4ade80;cursor:pointer;transition:all 0.15s">TO2 Manager</button>
+        <button onclick="_setCmRoleFilter('TO2 PM')" id="cmRF_TO2_PM" data-role="TO2 PM" data-color="#a78bfa"
+          style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;border:1px solid rgba(167,139,250,0.33);background:rgba(167,139,250,0.1);color:#a78bfa;cursor:pointer;transition:all 0.15s">TO2 PM</button>
+        <button onclick="_setCmRoleFilter('TO2 TL')" id="cmRF_TO2_TL" data-role="TO2 TL" data-color="#2dd4bf"
+          style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;border:1px solid rgba(45,212,191,0.33);background:rgba(45,212,191,0.1);color:#2dd4bf;cursor:pointer;transition:all 0.15s">TO2 TL</button>
+        <button onclick="_setCmRoleFilter('Finance')" id="cmRF_Finance" data-role="Finance" data-color="#ec4899"
+          style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;border:1px solid rgba(236,72,153,0.33);background:rgba(236,72,153,0.1);color:#ec4899;cursor:pointer;transition:all 0.15s">Finance</button>
+        <button onclick="_setCmRoleFilter('Team Leader')" id="cmRF_Team_Leader" data-role="Team Leader" data-color="#f59e0b"
+          style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;border:1px solid rgba(245,158,11,0.33);background:rgba(245,158,11,0.1);color:#f59e0b;cursor:pointer;transition:all 0.15s">Team Leader</button>
       </div>
 
       <!-- Managers table -->
