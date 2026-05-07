@@ -559,7 +559,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.4.0</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.4.1</div>
   </div>
 </div>
 
@@ -632,7 +632,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.4.0</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.4.1</div>
   </div>
 </div>
 
@@ -814,7 +814,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.4.0</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.4.1</span>
           </div>
         </div>
       </div>
@@ -3113,12 +3113,13 @@
 
   // ── COLUMN CONFIG ──
   const _CM_COL_DEFS = [
-    { key:'idx',       label:'#'          },
-    { key:'name',      label:'Name'       },
-    { key:'email',     label:'Email'      },
-    { key:'role',      label:'Role'       },
-    { key:'status',    label:'Status'     },
-    { key:'duration',  label:'Duration'   },
+    { key:'idx',        label:'#'           },
+    { key:'name',       label:'Name'        },
+    { key:'email',      label:'Email'       },
+    { key:'role',       label:'Role'        },
+    { key:'teamLeader', label:'Team Leader' },
+    { key:'status',     label:'Status'      },
+    { key:'duration',   label:'Duration'    },
   ];
   const _SI_COL_DEFS = [
     { key:'idx',        label:'#'          },
@@ -3439,7 +3440,8 @@
           case 'idx':      return `<td class="row-num">${fi+1}</td>`;
           case 'name':     return `<td style="white-space:nowrap;font-weight:600;min-width:140px"><div style="display:flex;align-items:center;gap:6px">${avatar}<span>${esc(m.name||'—')}</span>${flag?`<span style="margin-left:2px">${flag}</span>`:''}</div></td>`;
           case 'email':    return `<td style="font-family:var(--font-mono);font-size:11px">${esc(m.email||'—')}</td>`;
-          case 'role':     return `<td style="white-space:nowrap">${_cmRoleBadge(m.role||'')}</td>`;
+          case 'role':       return `<td style="white-space:nowrap">${_cmRoleBadge(m.role||'')}</td>`;
+          case 'teamLeader': return `<td style="font-family:var(--font-mono);font-size:11px;white-space:nowrap;color:var(--muted)">${esc(m.teamLeader||'—')}</td>`;
           case 'status':   return `<td style="white-space:nowrap"><span class="cm-status ${isLive?'cm-live':'cm-paused'}" onclick="toggleCmStatus(${i},this);event.stopPropagation()"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${isLive?'var(--green)':'var(--red)'};margin-right:5px;vertical-align:middle"></span>${isLive?'Live':'Ended'}</span></td>`;
           case 'duration': return `<td class="mono" style="font-size:11px;white-space:nowrap;color:var(--muted)">${duration}</td>`;
           default: return '';
