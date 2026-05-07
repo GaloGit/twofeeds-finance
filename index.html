@@ -559,7 +559,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.3.1</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.3.2</div>
   </div>
 </div>
 
@@ -632,7 +632,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.3.1</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.3.2</div>
   </div>
 </div>
 
@@ -814,7 +814,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.3.1</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.3.2</span>
           </div>
         </div>
       </div>
@@ -1930,6 +1930,21 @@
           <button id="cmOrderBtn" onclick="toggleCmOrderEdit()" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">↕ Edit Order</button>
           <button onclick="openColPanel('cm', this)" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">⊞ Columns</button>
         </div>
+      </div>
+
+      <!-- Role filter pills -->
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px" id="cmRoleFilters">
+        <button onclick="_setCmRoleFilter('')" id="cmRF_all"
+          style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;transition:all 0.15s">All</button>
+        ${['Campaign Manager','TO2 Manager','TO2 PM','TO2 TL','Finance','Team Leader'].map(r => {
+          const c = ({
+            'Campaign Manager':'#38bdf8','TO2 Manager':'#4ade80','TO2 PM':'#a78bfa',
+            'TO2 TL':'#2dd4bf','Finance':'#ec4899','Team Leader':'#f59e0b'
+          })[r] || '#94a3b8';
+          return `<button onclick="_setCmRoleFilter('${r}')" id="cmRF_${r.replace(/\s/g,'_')}"
+            data-role="${r}" data-color="${c}"
+            style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;border:1px solid ${c}55;background:${c}18;color:${c};cursor:pointer;transition:all 0.15s">${r}</button>`;
+        }).join('')}
       </div>
 
       <!-- Managers table -->
@@ -3257,6 +3272,28 @@
     return `<span style="font-family:var(--font-mono);font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;border:1px solid;white-space:nowrap;${s}">${esc(role||'—')}</span>`;
   }
 
+  let _cmRoleFilter = '';
+
+  function _setCmRoleFilter(role) {
+    _cmRoleFilter = role;
+    // Update "All" button
+    const allBtn = document.getElementById('cmRF_all');
+    if (allBtn) {
+      allBtn.style.background = role === '' ? 'var(--accent)' : 'transparent';
+      allBtn.style.color = role === '' ? '#fff' : 'var(--muted)';
+      allBtn.style.borderColor = role === '' ? 'var(--accent)' : 'var(--border)';
+    }
+    // Update role buttons
+    document.querySelectorAll('#cmRoleFilters button[data-role]').forEach(btn => {
+      const c = btn.dataset.color;
+      const active = btn.dataset.role === role;
+      btn.style.background = active ? c : c + '18';
+      btn.style.color = active ? '#fff' : c;
+      btn.style.borderColor = active ? c : c + '55';
+    });
+    _renderCmTable();
+  }
+
   function _renderCmTable() {
     // Note: _isSame check omitted so template changes (e.g. dimming) always re-render
     const state = _cmColState(); const cols = _activeCols(state); const totalCols = cols.length + 2;
@@ -3268,15 +3305,18 @@
       return;
     }
     const cmQ = ((document.getElementById('cmSearch')||{}).value || '').trim().toLowerCase();
-    const filtered = cmQ ? campaignMgrs.filter(m =>
-      (m.name||'').toLowerCase().includes(cmQ) ||
-      (m.email||'').toLowerCase().includes(cmQ) ||
-      (m.role||'').toLowerCase().includes(cmQ) ||
-      (m.phone||'').toLowerCase().includes(cmQ) ||
-      (m.notes||'').toLowerCase().includes(cmQ)
-    ) : campaignMgrs;
+    const filtered = campaignMgrs.filter(m => {
+      const textMatch = !cmQ ||
+        (m.name||'').toLowerCase().includes(cmQ) ||
+        (m.email||'').toLowerCase().includes(cmQ) ||
+        (m.role||'').toLowerCase().includes(cmQ) ||
+        (m.phone||'').toLowerCase().includes(cmQ) ||
+        (m.notes||'').toLowerCase().includes(cmQ);
+      const roleMatch = !_cmRoleFilter || (m.role||'') === _cmRoleFilter;
+      return textMatch && roleMatch;
+    });
     if (!filtered.length) {
-      body.innerHTML = `<tr><td colspan="${totalCols}" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No results for "${esc(cmQ)}"</td></tr>`;
+      body.innerHTML = `<tr><td colspan="${totalCols}" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No results${cmQ ? ` for "${esc(cmQ)}"` : _cmRoleFilter ? ` for role "${esc(_cmRoleFilter)}"` : ''}</td></tr>`;
       return;
     }
     const btnBase = 'font-family:var(--font-mono);font-size:9px;border-radius:6px;cursor:pointer;padding:4px 10px;border:1px solid';
