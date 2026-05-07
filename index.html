@@ -559,7 +559,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.2.6</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.2.7</div>
   </div>
 </div>
 
@@ -632,7 +632,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.2.6</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.2.7</div>
   </div>
 </div>
 
@@ -771,7 +771,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.2.6</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.2.7</span>
           </div>
         </div>
       </div>
@@ -9478,10 +9478,28 @@
                   <td id="mbCalcCost_${i}" style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--accent-light)">—</td>
                 </tr>`).join('')}
             </tbody>
-            <tfoot><tr style="border-top:2px solid var(--border)">
-              <td colspan="5" style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.08em;padding:12px 18px;text-transform:uppercase;text-align:right">Total Projected Cost</td>
-              <td id="mbCalcTotal" style="font-family:var(--font-mono);font-size:15px;font-weight:700;color:var(--green);padding:12px 18px">—</td>
-            </tr></tfoot>
+            <tfoot>
+              <tr style="border-top:2px solid var(--border)">
+                <td colspan="5" style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.08em;padding:12px 18px;text-transform:uppercase;text-align:right">CPC Total</td>
+                <td id="mbCalcTotal" style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--green);padding:12px 18px">—</td>
+              </tr>
+              <tr style="border-top:1px solid var(--border);background:var(--surface2)">
+                <td colspan="5" style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.08em;padding:10px 18px;text-transform:uppercase;text-align:right">Additional Cost</td>
+                <td style="padding:8px 18px">
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--muted)">$</span>
+                    <input type="text" id="mbCalcAdditional" placeholder="0.00"
+                      style="width:130px;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:5px 10px;color:var(--text);font-family:var(--font-mono);font-size:12px;font-weight:700;outline:none;transition:border-color 0.2s"
+                      onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
+                      oninput="_mbCalcUpdateGrandTotal()"/>
+                  </div>
+                </td>
+              </tr>
+              <tr style="border-top:2px solid var(--accent);background:rgba(56,189,248,0.04)">
+                <td colspan="5" style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--accent-light);letter-spacing:0.08em;padding:14px 18px;text-transform:uppercase;text-align:right">Grand Total</td>
+                <td id="mbCalcGrandTotal" style="font-family:var(--font-mono);font-size:16px;font-weight:700;color:var(--accent-light);padding:14px 18px">—</td>
+              </tr>
+            </tfoot>
           </table>
         </div></div>
       </div>`;
@@ -9511,6 +9529,22 @@
     });
     const el = document.getElementById('mbCalcTotal');
     if (el) el.textContent = hasAny ? '$' + total.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
+    _mbCalcUpdateGrandTotal();
+  }
+
+  function _mbCalcUpdateGrandTotal() {
+    let cpcTotal = 0;
+    document.querySelectorAll('[id^="mbCalcClicks_"]').forEach(inp => {
+      const c = _mbParseClicks(inp.value);
+      const cpc = parseFloat(inp.dataset.cpc) || 0;
+      if (c > 0) cpcTotal += c * cpc;
+    });
+    const addInp = document.getElementById('mbCalcAdditional');
+    const additional = parseFloat((addInp?.value||'').replace(/,/g,'')) || 0;
+    const grandEl = document.getElementById('mbCalcGrandTotal');
+    if (!grandEl) return;
+    const grand = cpcTotal + additional;
+    grandEl.textContent = grand > 0 ? '$' + grand.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
   }
 
   function _mbCalcApplyGlobal(clicks) {
