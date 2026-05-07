@@ -559,7 +559,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.4.1</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.4.2</div>
   </div>
 </div>
 
@@ -632,7 +632,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.4.1</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.4.2</div>
   </div>
 </div>
 
@@ -814,7 +814,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.4.1</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.4.2</span>
           </div>
         </div>
       </div>
@@ -1861,7 +1861,7 @@
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Role</div>
               <select id="cmRole" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none">
                 <option value="" style="color:var(--muted)">— Role —</option>
-                <option value="Campaign Manager">Campaign Manager</option>
+                <option value="TF Manager">TF Manager</option>
                 <option value="TO2 Manager">TO2 Manager</option>
                 <option value="TO2 PM">TO2 PM</option>
                 <option value="TO2 TL">TO2 TL</option>
@@ -1926,8 +1926,8 @@
         <div style="display:flex;flex-wrap:wrap;gap:6px;flex:1" id="cmRoleFilters">
           <button onclick="_setCmRoleFilter('')" id="cmRF_all"
             style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;transition:all 0.15s">All</button>
-          <button onclick="_setCmRoleFilter('Campaign Manager')" id="cmRF_Campaign_Manager" data-role="Campaign Manager" data-color="#38bdf8"
-            style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;border:1px solid rgba(56,189,248,0.33);background:rgba(56,189,248,0.1);color:#38bdf8;cursor:pointer;transition:all 0.15s">Campaign Manager</button>
+          <button onclick="_setCmRoleFilter('TF Manager')" id="cmRF_Campaign_Manager" data-role="TF Manager" data-color="#38bdf8"
+            style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;border:1px solid rgba(56,189,248,0.33);background:rgba(56,189,248,0.1);color:#38bdf8;cursor:pointer;transition:all 0.15s">TF Manager</button>
           <button onclick="_setCmRoleFilter('TO2 Manager')" id="cmRF_TO2_Manager" data-role="TO2 Manager" data-color="#4ade80"
             style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;border:1px solid rgba(74,222,128,0.33);background:rgba(74,222,128,0.1);color:#4ade80;cursor:pointer;transition:all 0.15s">TO2 Manager</button>
           <button onclick="_setCmRoleFilter('TO2 PM')" id="cmRF_TO2_PM" data-role="TO2 PM" data-color="#a78bfa"
@@ -3265,7 +3265,7 @@
   }
 
   const _CM_ROLE_COLORS = {
-    'Campaign Manager': { bg:'rgba(56,189,248,0.13)',  color:'#38bdf8', border:'rgba(56,189,248,0.45)' },
+    'TF Manager': { bg:'rgba(56,189,248,0.13)',  color:'#38bdf8', border:'rgba(56,189,248,0.45)' },
     'Finance':          { bg:'rgba(236,72,153,0.13)',  color:'#ec4899', border:'rgba(236,72,153,0.45)' },
     'Team Leader':      { bg:'rgba(245,158,11,0.13)',  color:'#f59e0b', border:'rgba(245,158,11,0.45)' },
     'TO2 Manager':      { bg:'rgba(74,222,128,0.13)',  color:'#4ade80', border:'rgba(74,222,128,0.45)' },
@@ -3284,7 +3284,7 @@
     if (!campaignMgrs.length) { wrap.innerHTML = ''; return; }
 
     const roleColors = {
-      'Campaign Manager':'#38bdf8','TO2 Manager':'#4ade80','TO2 PM':'#a78bfa',
+      'TF Manager':'#38bdf8','TO2 Manager':'#4ade80','TO2 PM':'#a78bfa',
       'TO2 TL':'#2dd4bf','Finance':'#ec4899','Team Leader':'#f59e0b'
     };
     const liveAll  = campaignMgrs.filter(m => (m.status||'live') === 'live');
@@ -3485,7 +3485,7 @@
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Role</div>
                 <select onchange="updateCampaignMgr(${i},'role',this.value)"
                   style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:var(--font-mono);font-size:11px;font-weight:700;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none">
-                  ${['Campaign Manager','TO2 Manager','TO2 PM','TO2 TL','Finance','Team Leader'].map(r => `<option value="${r}" ${(m.role||'')=== r?'selected':''}>${r}</option>`).join('')}
+                  ${['TF Manager','TO2 Manager','TO2 PM','TO2 TL','Finance','Team Leader'].map(r => `<option value="${r}" ${(m.role||'')=== r?'selected':''}>${r}</option>`).join('')}
                 </select>
               </div>
               <div>
@@ -7048,7 +7048,7 @@
         cmPromise, siPromise, evPromise, mtgPromise, tskPromise, tktPromise, advPromise, commPromise, revDataPromise, allInvPromise
       ]);
 
-      // Campaign Managers
+      // TF Managers
       campaignMgrs = _applyCmOrder(_dedupeCampaignMgrs(cmRes.data || []));
       if (campaignMgrs.length > 0) _rawCache['cm'] = campaignMgrs;
       if (cmRes.lastModified) { _tabMeta.cm = { ts: cmRes.lastModified, by: cmRes.lastModifiedBy || '' }; _renderLastUpdated('cm'); }
