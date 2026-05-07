@@ -559,7 +559,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.2.9</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.3.0</div>
   </div>
 </div>
 
@@ -632,7 +632,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.2.9</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.3.0</div>
   </div>
 </div>
 
@@ -771,7 +771,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.2.9</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.3.0</span>
           </div>
         </div>
       </div>
@@ -9512,15 +9512,15 @@
   }
 
   function _mbCalcFilterRows(q) {
-    const term = (q||'').trim().toLowerCase();
+    const tokens = (q||'').trim().toLowerCase().split(/\s+/).filter(Boolean);
     const clearBtn = document.getElementById('mbCalcSearchClear');
-    if (clearBtn) clearBtn.style.display = term ? 'block' : 'none';
+    if (clearBtn) clearBtn.style.display = tokens.length ? 'block' : 'none';
     const table = document.getElementById('mbCalcTable');
     if (!table) return;
     table.querySelectorAll('tbody tr').forEach(tr => {
       const dsp = tr.dataset.dsp || '';
       const geo = tr.dataset.geo || '';
-      const match = !term || dsp.includes(term) || geo.includes(term);
+      const match = !tokens.length || tokens.every(t => dsp.includes(t) || geo.includes(t));
       tr.style.display = match ? '' : 'none';
     });
   }
