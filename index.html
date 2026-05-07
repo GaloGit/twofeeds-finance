@@ -559,7 +559,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.3.8</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.3.9</div>
   </div>
 </div>
 
@@ -632,7 +632,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.3.8</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.3.9</div>
   </div>
 </div>
 
@@ -814,7 +814,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.3.8</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.3.9</span>
           </div>
         </div>
       </div>
@@ -3282,63 +3282,94 @@
     if (!wrap) return;
     if (!campaignMgrs.length) { wrap.innerHTML = ''; return; }
 
-    const roleOrder = ['Campaign Manager','TO2 Manager','TO2 PM','TO2 TL','Finance','Team Leader'];
     const roleColors = {
       'Campaign Manager':'#38bdf8','TO2 Manager':'#4ade80','TO2 PM':'#a78bfa',
       'TO2 TL':'#2dd4bf','Finance':'#ec4899','Team Leader':'#f59e0b'
     };
+    const liveAll  = campaignMgrs.filter(m => (m.status||'live') === 'live');
+    const endedAll = campaignMgrs.filter(m => (m.status||'live') !== 'live');
 
-    const liveAll   = campaignMgrs.filter(m => (m.status||'live') === 'live');
-    const endedAll  = campaignMgrs.filter(m => (m.status||'live') !== 'live');
+    const _avatar = (m, size=32) => {
+      const c = roleColors[m.role] || '#94a3b8';
+      const photoSrc = resolvePhotoUrl(m.photoUrl);
+      const fallback = (m.photoUrl && _driveId(m.photoUrl))
+        ? `https://drive.google.com/uc?export=view&id=${_driveId(m.photoUrl)}` : '';
+      return photoSrc
+        ? `<img src="${esc(photoSrc)}" title="${esc(m.name)}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;border:2px solid var(--border);flex-shrink:0" onerror="if('${esc(fallback)}'){this.src='${esc(fallback)}';this.onerror=null;}else{this.style.display='none'}">`
+        : `<span style="width:${size}px;height:${size}px;border-radius:50%;background:${c}22;border:2px solid ${c}44;display:inline-flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.4)}px;font-weight:700;color:${c};flex-shrink:0">${esc((m.name||'?')[0].toUpperCase())}</span>`;
+    };
 
-    // Group live members by role
-    const grouped = {};
-    roleOrder.forEach(r => grouped[r] = []);
-    liveAll.forEach(m => {
-      const r = m.role || '';
-      if (!grouped[r]) grouped[r] = [];
-      grouped[r].push(m);
-    });
-
-    const roleCards = roleOrder.filter(r => grouped[r].length).map(r => {
-      const members = grouped[r];
-      const color = roleColors[r] || '#94a3b8';
-      const avatars = members.slice(0,8).map(m => {
-        const photoSrc = resolvePhotoUrl(m.photoUrl);
-        const fallback = (m.photoUrl && _driveId(m.photoUrl))
-          ? `https://drive.google.com/uc?export=view&id=${_driveId(m.photoUrl)}` : '';
-        return photoSrc
-          ? `<img src="${esc(photoSrc)}" title="${esc(m.name)}"
-               style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:2px solid var(--surface);margin-left:-6px;flex-shrink:0"
-               onerror="if('${esc(fallback)}'){this.src='${esc(fallback)}';this.onerror=null;}else{this.style.display='none'}">`
-          : `<span title="${esc(m.name)}"
-               style="width:28px;height:28px;border-radius:50%;background:${color}22;border:2px solid var(--surface);display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${color};margin-left:-6px;flex-shrink:0">${esc((m.name||'?')[0].toUpperCase())}</span>`;
-      }).join('');
-      const more = members.length > 8
-        ? `<span style="width:28px;height:28px;border-radius:50%;background:var(--surface3);border:2px solid var(--surface);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--muted);margin-left:-6px;flex-shrink:0">+${members.length-8}</span>` : '';
-      const nameList = members.map(m => esc(m.name||'?')).join(', ');
+    const _memberRow = (m, isLast) => {
+      const c = roleColors[m.role] || '#94a3b8';
+      const isLive = (m.status||'live') === 'live';
       return `
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;flex:1;min-width:200px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-            <span style="font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;padding:3px 10px;border-radius:20px;background:${color}18;color:${color};border:1px solid ${color}44">${r}</span>
-            <span style="font-family:var(--font-mono);font-size:18px;font-weight:700;color:${color}">${members.length}</span>
+        <div style="display:flex;align-items:center;gap:10px;padding:7px 12px;border-radius:8px;background:var(--surface3);${!isLive?'opacity:0.45;':''}">
+          ${_avatar(m, 28)}
+          <div style="flex:1;min-width:0">
+            <div style="font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(m.name||'—')}</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
+              <span style="font-family:var(--font-mono);font-size:9px;font-weight:700;padding:1px 7px;border-radius:10px;background:${c}18;color:${c};border:1px solid ${c}33">${esc(m.role||'—')}</span>
+              ${!isLive ? `<span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">Ended</span>` : ''}
+            </div>
           </div>
-          <div style="display:flex;align-items:center;margin-left:6px;margin-bottom:10px">${avatars}${more}</div>
-          <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);line-height:1.6">${nameList}</div>
+          ${countryFlagImg(m.country||'','16x12')}
+        </div>`;
+    };
+
+    // Team Leaders = members with role 'Team Leader' or 'TO2 TL'
+    const tls = campaignMgrs.filter(m => m.role === 'Team Leader' || m.role === 'TO2 TL');
+    // Members under each TL
+    const tlCards = tls.map(tl => {
+      const tlColor = roleColors[tl.role] || '#f59e0b';
+      const tlLive  = (tl.status||'live') === 'live';
+      const reports = campaignMgrs.filter(m => (m.teamLeader||'') === tl.name && m.name !== tl.name);
+      const liveCount = reports.filter(m => (m.status||'live') === 'live').length;
+      return `
+        <div style="background:var(--surface);border:1px solid ${tlColor}44;border-radius:14px;padding:0;overflow:hidden;flex:1;min-width:260px;max-width:420px">
+          <!-- TL header -->
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:${tlColor}0d;border-bottom:1px solid ${tlColor}33">
+            ${_avatar(tl, 40)}
+            <div style="flex:1;min-width:0">
+              <div style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(tl.name||'—')}</div>
+              <div style="display:flex;align-items:center;gap:6px;margin-top:3px">
+                <span style="font-family:var(--font-mono);font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;background:${tlColor}22;color:${tlColor};border:1px solid ${tlColor}44">${esc(tl.role)}</span>
+                ${!tlLive ? `<span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">Ended</span>` : ''}
+              </div>
+            </div>
+            <span style="font-family:var(--font-mono);font-size:20px;font-weight:700;color:${tlColor};flex-shrink:0">${reports.length}</span>
+          </div>
+          <!-- Reports -->
+          ${reports.length
+            ? `<div style="padding:10px 12px;display:flex;flex-direction:column;gap:6px">${reports.map((m,idx) => _memberRow(m, idx===reports.length-1)).join('')}</div>`
+            : `<div style="padding:16px;font-family:var(--font-mono);font-size:10px;color:var(--muted);text-align:center">No members assigned</div>`}
         </div>`;
     }).join('');
+
+    // Unassigned: live members not assigned to any TL and not a TL themselves
+    const unassigned = campaignMgrs.filter(m =>
+      m.role !== 'Team Leader' && m.role !== 'TO2 TL' &&
+      (!m.teamLeader || !tls.find(tl => tl.name === m.teamLeader))
+    );
+    const unassignedBlock = unassigned.length ? `
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;flex:1;min-width:260px;max-width:420px">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--surface2);border-bottom:1px solid var(--border)">
+          <span style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em">Unassigned</span>
+          <span style="font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--muted)">${unassigned.length}</span>
+        </div>
+        <div style="padding:10px 12px;display:flex;flex-direction:column;gap:6px">${unassigned.map((m,idx) => _memberRow(m, idx===unassigned.length-1)).join('')}</div>
+      </div>` : '';
 
     wrap.innerHTML = `
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:8px">
-          <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em">Team Summary</div>
+          <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em">🌳 Team Structure</div>
           <div style="display:flex;gap:16px;align-items:center">
             <span style="font-family:var(--font-mono);font-size:10px;color:var(--green)">● ${liveAll.length} Active</span>
             ${endedAll.length ? `<span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">○ ${endedAll.length} Ended</span>` : ''}
             <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${campaignMgrs.length} Total</span>
           </div>
         </div>
-        <div style="display:flex;flex-wrap:wrap;gap:12px">${roleCards}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:14px">${tlCards || ''}${unassignedBlock}</div>
       </div>`;
   }
 
