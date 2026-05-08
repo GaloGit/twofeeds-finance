@@ -560,7 +560,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.7.9</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.0</div>
   </div>
 </div>
 
@@ -633,7 +633,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.7.9</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.0</div>
   </div>
 </div>
 
@@ -893,7 +893,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.7.9</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.0</span>
           </div>
         </div>
       </div>
@@ -1232,10 +1232,6 @@
           <div class="summary-card green" style="animation-delay:0.15s">
             <div class="card-label">Paid · <span class="card-label-sub">fully paid</span></div>
             <div class="card-value" id="invExtracted" style="font-family:Arial">0</div>
-          </div>
-          <div class="summary-card red" style="animation-delay:0.2s">
-            <div class="card-label">Waiting · <span class="card-label-sub">pending payment</span></div>
-            <div class="card-value" id="invReview" style="font-family:Arial">0</div>
           </div>
         </div>
         <!-- Invoice payment progress bar -->
@@ -9143,7 +9139,6 @@
       document.getElementById('invTotal').textContent = fmt(total);
       document.getElementById('invTotalVat').textContent = fmt(totalVat);
       document.getElementById('invExtracted').textContent = extracted;
-      document.getElementById('invReview').textContent = review;
       document.getElementById('invPeriodLabel').textContent = periodLabel();
       document.getElementById('invPeriodSub').textContent = periodLabel();
     }
