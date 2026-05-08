@@ -559,7 +559,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.5.7</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.5.8</div>
   </div>
 </div>
 
@@ -632,7 +632,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.5.7</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.5.8</div>
   </div>
 </div>
 
@@ -814,7 +814,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.5.7</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.5.8</span>
           </div>
         </div>
       </div>
@@ -893,13 +893,9 @@
       <!-- Stats + payment bar on same row -->
       <div style="display:flex;gap:12px;align-items:stretch;margin-bottom:18px;flex-wrap:wrap">
         <div class="summary-grid" style="flex:3;min-width:320px;margin-bottom:0">
-          <div class="summary-card blue" style="animation-delay:0.05s">
-            <div class="card-label">Publishers · <span id="pubPeriodLabel" class="card-label-sub"></span></div>
-            <div class="card-value" id="pubCount">0</div>
-          </div>
-          <div class="summary-card amber" style="animation-delay:0.1s">
-            <div class="card-label">Total Payable</div>
-            <div class="card-value" id="pubTotal">$0</div>
+          <div class="summary-card amber" style="animation-delay:0.05s">
+            <div class="card-label">Total Payable · <span id="pubPeriodLabel" class="card-label-sub"></span></div>
+            <div class="card-value" id="pubTotal" style="font-size:16px;line-height:1.3"><span id="pubCount" style="display:none">0</span>$0</div>
           </div>
           <div class="summary-card red" style="animation-delay:0.2s">
             <div class="card-label">Top Publisher · <span id="pubTopAmt" class="card-label-sub"></span></div>
@@ -8216,7 +8212,8 @@
     const top = all.length > 0 ? all.reduce((a,b) => (b.amount||0) > (a.amount||0) ? b : a, all[0]) : null;
 
     document.getElementById('pubCount').textContent = all.length;
-    document.getElementById('pubTotal').textContent = fmt(total);
+    document.getElementById('pubTotal').textContent = all.length + ' × ' + fmt(total);
+    document.getElementById('pubTotal').style.fontSize = '14px';
     document.getElementById('pubPeriodLabel').textContent = periodLabel();
     document.getElementById('pubListPeriodLabel').textContent = periodLabel();
     document.getElementById('pubTop').textContent = top ? top.name : '—';
