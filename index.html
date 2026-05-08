@@ -560,7 +560,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.7.5</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.7.6</div>
   </div>
 </div>
 
@@ -633,7 +633,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.7.5</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.7.6</div>
   </div>
 </div>
 
@@ -893,7 +893,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.7.5</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.7.6</span>
           </div>
         </div>
       </div>
@@ -1310,24 +1310,6 @@
 
     <!-- MEDIA BUYING TAB -->
     <div class="page" id="tab-mediabuy">
-      <div class="summary-grid">
-        <div class="summary-card blue" style="animation-delay:0.05s">
-          <div class="card-label">Entries · <span id="mbPeriodLabel" class="card-label-sub"></span></div>
-          <div class="card-value" id="mbCount">0</div>
-        </div>
-        <div class="summary-card amber" style="animation-delay:0.1s">
-          <div class="card-label">Total CPC</div>
-          <div class="card-value" id="mbTotal">$0</div>
-        </div>
-        <div class="summary-card green" style="animation-delay:0.15s">
-          <div class="card-label">Avg CPC · <span class="card-label-sub">mean per entry</span></div>
-          <div class="card-value" id="mbAvg">$0</div>
-        </div>
-        <div class="summary-card red" style="animation-delay:0.2s">
-          <div class="card-label">Top DSP · <span id="mbTopAmt" class="card-label-sub"></span></div>
-          <div class="card-value" id="mbTop" style="font-size:16px;line-height:1.3">—</div>
-        </div>
-      </div>
 
       <!-- Drive URL import area (empty state) -->
       <div id="mbUploadArea" class="upload-area" style="cursor:default">
@@ -9705,13 +9687,7 @@
     const avg   = all.length > 0 ? total / all.length : 0;
     const top   = all.length > 0 ? all.reduce((a,b) => (b.cpc||0)>(a.cpc||0)?b:a, all[0]) : null;
 
-    document.getElementById('mbCount').textContent = all.length;
-    document.getElementById('mbTotal').textContent = fmt(total);
-    document.getElementById('mbAvg').textContent   = fmt(avg);
-    document.getElementById('mbPeriodLabel').textContent = periodLabel();
     document.getElementById('mbListPeriodLabel').textContent = periodLabel();
-    document.getElementById('mbTop').textContent    = top ? top.dsp : '—';
-    document.getElementById('mbTopAmt').textContent = top ? fmt(top.cpc) : '—';
 
     const hasData = all.length > 0;
     document.getElementById('mbUploadArea').style.display = hasData ? 'none' : 'block';
