@@ -560,7 +560,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.7.6</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.7.8</div>
   </div>
 </div>
 
@@ -633,7 +633,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.7.6</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.7.8</div>
   </div>
 </div>
 
@@ -893,7 +893,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.7.6</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.7.8</span>
           </div>
         </div>
       </div>
@@ -9201,9 +9201,6 @@
               <span style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:#ef4444">${overdueInvs.length} invoice${overdueInvs.length > 1 ? 's' : ''} past due date</span>
               <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-left:10px">oldest is ${worst} day${worst !== 1 ? 's' : ''} overdue</span>
             </div>
-            <div style="display:flex;flex-wrap:wrap;gap:6px">
-              ${overdueInvs.map(inv => `<span style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:#ef4444;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.25);border-radius:6px;padding:2px 8px">${inv.vendor || 'Unknown'}</span>`).join('')}
-            </div>
           </div>`;
       } else {
         overdueBanner.style.display = 'none';
@@ -9697,8 +9694,8 @@
     document.getElementById('mbBody').innerHTML = filtered.map((r, i) => `
       <tr style="animation-delay:${i*0.03}s">
         <td class="row-num">${i+1}</td>
-        <td><div style="display:flex;align-items:center;gap:8px">${getSourceLogo(r.dsp,24)}${getSourceTypeBadge(r.dsp)}<input class="editable" value="${esc(r.dsp)}" onblur="updateMedia(${r.id},'dsp',this.value)" placeholder="DSP name" style="min-width:0;flex:1"/></div></td>
-        <td><input class="editable" value="${esc(r.geo)}" onblur="updateMedia(${r.id},'geo',this.value)" placeholder="GEO" style="width:120px"/></td>
+        <td><div style="display:flex;align-items:center;gap:8px">${getSourceLogo(r.dsp,24)}${getSourceTypeBadge(r.dsp)}<span style="font-family:var(--font-mono);font-size:12px;color:var(--text)">${esc(r.dsp)}</span></div></td>
+        <td><span style="font-family:var(--font-mono);font-size:12px;color:var(--text)">${esc(r.geo)}</span></td>
         <td class="mono text-green" style="white-space:nowrap;font-weight:700">$${Number(r.cpc||0).toLocaleString(undefined,{minimumFractionDigits:10,maximumFractionDigits:10})}</td>
         <td style="text-align:center">
           ${isAdmin()||isEditor() ? `<button class="add-btn" style="padding:2px 8px;font-size:9px" onclick="deleteMedia(${r.id})">✕</button>` : ''}
