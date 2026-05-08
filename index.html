@@ -560,7 +560,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.6.7</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.6.8</div>
   </div>
 </div>
 
@@ -633,7 +633,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.6.7</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.6.8</div>
   </div>
 </div>
 
@@ -815,7 +815,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.6.7</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.6.8</span>
           </div>
         </div>
       </div>
@@ -2462,11 +2462,15 @@
       </div>
 
       <!-- Users table -->
+      <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+        <button id="settingsOrderBtn" onclick="toggleSettingsOrderEdit()" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">↕ Edit Order</button>
+      </div>
       <div class="table-wrap">
         <div class="table-scroll">
           <table>
             <thead>
               <tr>
+                <th style="width:24px"></th>
                 <th class="th-hash">#</th>
                 <th>Email</th>
                 <th>Role</th>
@@ -2477,7 +2481,7 @@
               </tr>
             </thead>
             <tbody id="settingsBody">
-              <tr><td colspan="6" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>
+              <tr><td colspan="8" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">Loading...</td></tr>
             </tbody>
             <!-- permission sub-rows injected by renderSettings() -->
           </table>
@@ -4579,6 +4583,168 @@
     _renderSiTable();
   }
 
+  // ── SETTINGS USER ORDER ──
+  let _settingsDragFrom = null;
+  let _settingsOrderEditMode = false;
+
+  async function toggleSettingsOrderEdit() {
+    _settingsOrderEditMode = !_settingsOrderEditMode;
+    const btn = document.getElementById('settingsOrderBtn');
+    if (_settingsOrderEditMode) {
+      btn.textContent = '✓ Save Order';
+      btn.style.background = 'var(--accent)';
+      btn.style.color = '#fff';
+      btn.style.borderColor = 'var(--accent)';
+    } else {
+      _showLoader('Saving order…');
+      const ok = await saveSettings();
+      _hideLoader();
+      if (ok) showToast('✓ User order saved');
+      btn.textContent = '↕ Edit Order';
+      btn.style.background = 'var(--surface2)';
+      btn.style.color = 'var(--muted)';
+      btn.style.borderColor = 'var(--border)';
+    }
+    renderSettingsTable();
+  }
+
+  function renderSettingsTable() {
+    const body = document.getElementById('settingsBody');
+    if (!body) return;
+    const btnBase = 'font-family:var(--font-mono);font-size:9px;border-radius:6px;cursor:pointer;padding:4px 10px;border:1px solid';
+    if (!settingsUsers.length) {
+      body.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No users configured yet.</td></tr>`;
+      return;
+    }
+    body.innerHTML = settingsUsers.map((u, i) => {
+      const tabs = u.tabs || defaultTabs();
+      const permsHtml = TAB_DEFS.map(d => {
+        const viewOn = tabs[d.key]?.view !== false;
+        const editOn = d.hasEdit ? tabs[d.key]?.edit === true : null;
+        const viewStyle = viewOn ? `background:rgba(56,189,248,0.15);color:var(--blue);border-color:var(--blue)` : `background:var(--surface3);color:var(--muted);border-color:var(--border)`;
+        const editStyle = editOn ? `background:rgba(34,197,94,0.15);color:var(--green);border-color:var(--green)` : `background:var(--surface3);color:var(--muted);border-color:var(--border)`;
+        return `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)">
+          <span style="flex:1;font-family:var(--font-mono);font-size:11px;color:var(--text)">${d.label}</span>
+          <button onclick="toggleTabPerm(${i},'${d.key}','view',this)" style="${btnBase} var(--border);${viewStyle};min-width:64px">👁 ${viewOn?'ON':'OFF'}</button>
+          ${d.hasEdit ? `<button onclick="toggleTabPerm(${i},'${d.key}','edit',this)" style="${btnBase} var(--border);${editStyle};min-width:72px">✏️ ${editOn?'ON':'OFF'}</button>` : `<span style="min-width:72px;display:inline-block"></span>`}
+        </div>`;
+      }).join('');
+      const lastLoginStr = u.lastLogin ? (() => { const d = new Date(u.lastLogin); return isNaN(d) ? '—' : `${d.toLocaleDateString()} ${d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`; })() : '—';
+      return `
+      <tr id="settingsUserRow_${i}" draggable="false"
+          ondragstart="settingsDragStart(event,${i})" ondragover="settingsDragOver(event,${i})"
+          ondrop="settingsDrop(event,${i})" ondragleave="settingsDragLeave(event)" ondragend="settingsDragEnd(event)">
+        <td onmousedown="settingsGripDown(event,${i})" onmouseup="settingsGripUp()"
+            style="${_settingsOrderEditMode?'cursor:grab;color:var(--muted);user-select:none;padding:0 4px;font-size:15px;text-align:center':'width:0;padding:0;font-size:0;overflow:hidden'}">${_settingsOrderEditMode?'⠿':''}</td>
+        <td class="row-num">${i+1}</td>
+        <td style="font-family:var(--font-mono);font-size:12px;min-width:180px">
+          <div style="display:flex;align-items:center;gap:6px">
+            <input id="settingsEmailInput_${i}" value="${esc(u.email)}"
+              oninput="document.getElementById('settingsEmailSave_${i}').style.display='inline-flex'"
+              onfocus="this.style.borderBottomColor='var(--accent)';document.getElementById('settingsEmailSave_${i}').style.display='inline-flex'"
+              onkeydown="if(event.key==='Enter'){document.getElementById('settingsEmailSave_${i}').click();}"
+              style="flex:1;min-width:0;background:transparent;border:none;border-bottom:1px solid transparent;border-radius:0;padding:2px 4px;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none;transition:border-color 0.15s" title="Click to edit email"/>
+            <button id="settingsEmailSave_${i}" onclick="settingsEmailConfirm(${i})"
+              style="display:none;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;line-height:1">✓</button>
+          </div>
+        </td>
+        <td style="white-space:nowrap">
+          <select onchange="updateSettingsUser(${i},'role',this.value)"
+            style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;color:${u.role==='admin'?'var(--blue)':u.role==='editor'?'var(--accent-light)':'var(--amber)'}">
+            <option value="viewer" ${u.role==='viewer'?'selected':''}>👁 Viewer</option>
+            <option value="editor" ${u.role==='editor'?'selected':''}>✏️ Editor</option>
+            <option value="admin"  ${u.role==='admin' ?'selected':''}>⚡ Admin</option>
+          </select>
+        </td>
+        <td class="mono text-muted" style="font-size:10px;white-space:nowrap">${u.added ? new Date(u.added).toLocaleDateString() : '—'}</td>
+        <td class="mono text-muted" style="font-size:10px;white-space:nowrap">${lastLoginStr}</td>
+        <td style="white-space:nowrap">
+          <div id="pwCell_${i}">
+            ${u.passwordHash ? `<span style="font-family:var(--font-mono);font-size:10px;color:var(--green)">🔒 Set</span>` : `<span style="font-family:var(--font-mono);font-size:10px;color:var(--amber)">⚠ Not set</span>`}
+            <button onclick="showSetPasswordRow(${i})" style="margin-left:6px;${btnBase} var(--border);background:transparent;color:var(--muted);font-size:9px;padding:3px 8px">${u.passwordHash ? 'Reset' : 'Set'}</button>
+          </div>
+          <div id="pwRow_${i}" style="display:none;margin-top:6px">
+            <input id="pwInput_${i}" type="password" placeholder="New password" class="editable" style="width:140px;font-size:11px;margin-right:6px"
+              onkeydown="if(event.key==='Enter')confirmSetPassword(${i});if(event.key==='Escape')cancelSetPassword(${i})"/>
+            <button onclick="confirmSetPassword(${i})" style="${btnBase} var(--accent);background:rgba(124,58,237,0.15);color:var(--accent-light);font-size:9px;padding:3px 8px">✓</button>
+            <button onclick="cancelSetPassword(${i})" style="margin-left:4px;${btnBase} var(--border);background:transparent;color:var(--muted);font-size:9px;padding:3px 8px">✕</button>
+          </div>
+        </td>
+        <td>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button onclick="togglePermsRow(${i})" style="${btnBase} var(--accent);background:rgba(124,58,237,0.15);color:var(--accent-light)">⚡ Access</button>
+            <button id="skip2faBtn_${i}" onclick="toggleSkip2fa(${i})"
+              style="${btnBase} ${tabs.skip2fa ? 'rgba(245,158,11,0.4)' : 'var(--border)'};background:${tabs.skip2fa ? 'rgba(245,158,11,0.08)' : 'transparent'};color:${tabs.skip2fa ? 'var(--amber)' : 'var(--muted)'}">
+              ${tabs.skip2fa ? '🔓 Skip 2FA: ON' : '🔒 Skip 2FA: OFF'}
+            </button>
+            <button onclick="removeSettingsUser(${i})" style="${btnBase} var(--border);background:transparent;color:var(--red)">✕</button>
+          </div>
+        </td>
+      </tr>
+      <tr id="permsRow_${i}" style="display:none">
+        <td colspan="8" style="padding:0">
+          <div style="background:var(--surface2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:12px 20px">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+              <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;flex:1">
+                Tab Permissions — ${esc(u.email)} &nbsp;·&nbsp; <span style="color:var(--blue)">👁 View</span> = show tab &nbsp;·&nbsp; <span style="color:var(--green)">✏️ Edit</span> = allow changes
+              </span>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <button onclick="setAllPerms(${i},'view',true)"  style="${btnBase} var(--blue);background:rgba(56,189,248,0.1);color:var(--blue);font-size:9px">👁 View All ON</button>
+                <button onclick="setAllPerms(${i},'view',false)" style="${btnBase} var(--border);background:transparent;color:var(--muted);font-size:9px">👁 View All OFF</button>
+                <button onclick="setAllPerms(${i},'edit',true)"  style="${btnBase} var(--green);background:rgba(34,197,94,0.1);color:var(--green);font-size:9px">✏️ Edit All ON</button>
+                <button onclick="setAllPerms(${i},'edit',false)" style="${btnBase} var(--border);background:transparent;color:var(--muted);font-size:9px">✏️ Edit All OFF</button>
+                <button onclick="saveSettings().then(ok=>{if(ok){togglePermsRow(${i});showToast('✓ Permissions saved');}})"
+                  style="${btnBase} var(--accent);background:rgba(124,58,237,0.2);color:var(--accent-light);font-size:9px;font-weight:700">✓ Save & Close</button>
+              </div>
+            </div>
+            <div id="permsGrid_${i}">${permsHtml}</div>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function settingsGripDown(e, i) {
+    if (!_settingsOrderEditMode) return;
+    const row = document.getElementById('settingsUserRow_' + i);
+    if (row) row.draggable = true;
+  }
+  function settingsGripUp() {
+    document.querySelectorAll('#settingsBody tr').forEach(r => r.draggable = false);
+  }
+  function settingsDragStart(e, i) {
+    if (!e.currentTarget.draggable) { e.preventDefault(); return; }
+    _settingsDragFrom = i;
+    e.dataTransfer.effectAllowed = 'move';
+    setTimeout(() => { if (e.currentTarget) e.currentTarget.style.opacity = '0.45'; }, 0);
+  }
+  function settingsDragEnd(e) {
+    e.currentTarget.draggable = false;
+    e.currentTarget.style.opacity = '';
+    document.querySelectorAll('#settingsBody tr[id^="settingsUserRow_"]').forEach(r => r.style.outline = '');
+  }
+  function settingsDragOver(e, i) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    document.querySelectorAll('#settingsBody tr[id^="settingsUserRow_"]').forEach((r, j) => {
+      r.style.outline = j === i && j !== _settingsDragFrom ? '1px dashed var(--accent)' : '';
+    });
+  }
+  function settingsDragLeave(e) {
+    if (!e.currentTarget.contains(e.relatedTarget)) {
+      document.querySelectorAll('#settingsBody tr[id^="settingsUserRow_"]').forEach(r => r.style.outline = '');
+    }
+  }
+  function settingsDrop(e, toI) {
+    e.preventDefault();
+    document.querySelectorAll('#settingsBody tr[id^="settingsUserRow_"]').forEach(r => { r.draggable = false; r.style.outline = ''; r.style.opacity = ''; });
+    if (_settingsDragFrom === null || _settingsDragFrom === toI) { _settingsDragFrom = null; return; }
+    const moved = settingsUsers.splice(_settingsDragFrom, 1)[0];
+    settingsUsers.splice(toI, 0, moved);
+    _settingsDragFrom = null;
+    renderSettingsTable();
+  }
+
   // ── ADVERTISERS ──
   let advertisers = [];
   let _advDragFrom = null;
@@ -5906,120 +6072,7 @@
     EDITORS = settingsUsers.filter(u => u.role === 'editor').map(u => u.email);
     applyRoleUI();
 
-    if (!settingsUsers.length) {
-      body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:32px">No users configured yet. Add users above.</td></tr>';
-      return;
-    }
-
-    const btnBase = 'font-family:var(--font-mono);font-size:9px;border-radius:6px;cursor:pointer;padding:4px 10px;border:1px solid';
-
-    body.innerHTML = settingsUsers.map((u, i) => {
-      const tabs = u.tabs || defaultTabs();
-
-      // Build permission grid for this user
-      const permsHtml = TAB_DEFS.map(d => {
-        const viewOn = tabs[d.key]?.view === true;
-        const editOn = d.hasEdit ? tabs[d.key]?.edit === true : null;
-        const viewStyle = viewOn
-          ? `background:rgba(56,189,248,0.15);color:var(--blue);border-color:var(--blue)`
-          : `background:var(--surface3);color:var(--muted);border-color:var(--border)`;
-        const editStyle = editOn
-          ? `background:rgba(34,197,94,0.15);color:var(--green);border-color:var(--green)`
-          : `background:var(--surface3);color:var(--muted);border-color:var(--border)`;
-        return `
-          <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)">
-            <span style="flex:1;font-family:var(--font-mono);font-size:11px;color:var(--text)">${d.label}</span>
-            <button onclick="toggleTabPerm(${i},'${d.key}','view',this)"
-              style="${btnBase} var(--border);${viewStyle};min-width:64px">
-              👁 ${viewOn ? 'ON' : 'OFF'}
-            </button>
-            ${d.hasEdit ? `<button onclick="toggleTabPerm(${i},'${d.key}','edit',this)"
-              style="${btnBase} var(--border);${editStyle};min-width:72px">
-              ✏️ ${editOn ? 'ON' : 'OFF'}
-            </button>` : `<span style="min-width:72px;display:inline-block"></span>`}
-          </div>`;
-      }).join('');
-
-      const lastLoginStr = u.lastLogin ? (() => {
-        const d = new Date(u.lastLogin);
-        return isNaN(d) ? '—' : `${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}`;
-      })() : '—';
-      return `
-      <tr>
-        <td class="row-num">${i+1}</td>
-        <td style="font-family:var(--font-mono);font-size:12px;min-width:180px">
-          <div style="display:flex;align-items:center;gap:6px">
-            <input id="settingsEmailInput_${i}" value="${esc(u.email)}"
-              oninput="document.getElementById('settingsEmailSave_${i}').style.display='inline-flex'"
-              onfocus="this.style.borderBottomColor='var(--accent)';document.getElementById('settingsEmailSave_${i}').style.display='inline-flex'"
-              onkeydown="if(event.key==='Enter'){document.getElementById('settingsEmailSave_${i}').click();}"
-              onkeydown="if(event.key==='Escape'){this.value='${esc(u.email)}';settingsEmailReset(${i});}"
-              style="flex:1;min-width:0;background:transparent;border:none;border-bottom:1px solid transparent;border-radius:0;padding:2px 4px;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none;transition:border-color 0.15s"
-              title="Click to edit email"/>
-            <button id="settingsEmailSave_${i}"
-              onclick="settingsEmailConfirm(${i})"
-              style="display:none;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;line-height:1">✓</button>
-          </div>
-        </td>
-        <td style="white-space:nowrap">
-          <select onchange="updateSettingsUser(${i},'role',this.value)"
-            style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;outline:none;color:${u.role==='admin'?'var(--blue)':u.role==='editor'?'var(--accent-light)':'var(--amber)'}">
-            <option value="viewer" ${u.role==='viewer'?'selected':''}>👁 Viewer</option>
-            <option value="editor" ${u.role==='editor'?'selected':''}>✏️ Editor</option>
-            <option value="admin"  ${u.role==='admin' ?'selected':''}>⚡ Admin</option>
-          </select>
-        </td>
-        <td class="mono text-muted" style="font-size:10px;white-space:nowrap">${u.added ? new Date(u.added).toLocaleDateString() : '—'}</td>
-        <td class="mono text-muted" style="font-size:10px;white-space:nowrap">${lastLoginStr}</td>
-        <td style="white-space:nowrap">
-          <div id="pwCell_${i}">
-            ${u.passwordHash
-              ? `<span style="font-family:var(--font-mono);font-size:10px;color:var(--green)">🔒 Set</span>`
-              : `<span style="font-family:var(--font-mono);font-size:10px;color:var(--amber)">⚠ Not set</span>`}
-            <button onclick="showSetPasswordRow(${i})" style="margin-left:6px;${btnBase} var(--border);background:transparent;color:var(--muted);font-size:9px;padding:3px 8px">
-              ${u.passwordHash ? 'Reset' : 'Set'}
-            </button>
-          </div>
-          <div id="pwRow_${i}" style="display:none;margin-top:6px">
-            <input id="pwInput_${i}" type="password" placeholder="New password" class="editable" style="width:140px;font-size:11px;margin-right:6px"
-              onkeydown="if(event.key==='Enter')confirmSetPassword(${i});if(event.key==='Escape')cancelSetPassword(${i})"/>
-            <button onclick="confirmSetPassword(${i})" style="${btnBase} var(--accent);background:rgba(124,58,237,0.15);color:var(--accent-light);font-size:9px;padding:3px 8px">✓</button>
-            <button onclick="cancelSetPassword(${i})" style="margin-left:4px;${btnBase} var(--border);background:transparent;color:var(--muted);font-size:9px;padding:3px 8px">✕</button>
-          </div>
-        </td>
-        <td>
-          <div style="display:flex;gap:6px;flex-wrap:wrap">
-            <button onclick="togglePermsRow(${i})" style="${btnBase} var(--accent);background:rgba(124,58,237,0.15);color:var(--accent-light)">⚡ Access</button>
-            <button id="skip2faBtn_${i}" onclick="toggleSkip2fa(${i})"
-              style="${btnBase} ${tabs.skip2fa ? 'rgba(245,158,11,0.4)' : 'var(--border)'};background:${tabs.skip2fa ? 'rgba(245,158,11,0.08)' : 'transparent'};color:${tabs.skip2fa ? 'var(--amber)' : 'var(--muted)'}">
-              ${tabs.skip2fa ? '🔓 Skip 2FA: ON' : '🔒 Skip 2FA: OFF'}
-            </button>
-            <button onclick="removeSettingsUser(${i})" style="${btnBase} var(--border);background:transparent;color:var(--red)">✕</button>
-          </div>
-        </td>
-      </tr>
-      <tr id="permsRow_${i}" style="display:none">
-        <td colspan="7" style="padding:0">
-          <div style="background:var(--surface2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:12px 20px">
-            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
-              <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;flex:1">
-                Tab Permissions — ${esc(u.email)}
-                &nbsp;·&nbsp; <span style="color:var(--blue)">👁 View</span> = show tab &nbsp;·&nbsp; <span style="color:var(--green)">✏️ Edit</span> = allow changes
-              </span>
-              <div style="display:flex;gap:6px;flex-wrap:wrap">
-                <button onclick="setAllPerms(${i},'view',true)"  style="${btnBase} var(--blue);background:rgba(56,189,248,0.1);color:var(--blue);font-size:9px">👁 View All ON</button>
-                <button onclick="setAllPerms(${i},'view',false)" style="${btnBase} var(--border);background:transparent;color:var(--muted);font-size:9px">👁 View All OFF</button>
-                <button onclick="setAllPerms(${i},'edit',true)"  style="${btnBase} var(--green);background:rgba(34,197,94,0.1);color:var(--green);font-size:9px">✏️ Edit All ON</button>
-                <button onclick="setAllPerms(${i},'edit',false)" style="${btnBase} var(--border);background:transparent;color:var(--muted);font-size:9px">✏️ Edit All OFF</button>
-                <button onclick="saveSettings().then(ok=>{if(ok){togglePermsRow(${i});showToast('✓ Permissions saved');}})"
-                  style="${btnBase} var(--accent);background:rgba(124,58,237,0.2);color:var(--accent-light);font-size:9px;font-weight:700">✓ Save & Close</button>
-              </div>
-            </div>
-            <div id="permsGrid_${i}">${permsHtml}</div>
-          </div>
-        </td>
-      </tr>`;
-    }).join('');
+    renderSettingsTable();
   }
 
   async function addSettingsUser() {
