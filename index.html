@@ -560,7 +560,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.7.8</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.7.9</div>
   </div>
 </div>
 
@@ -633,7 +633,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.7.8</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.7.9</div>
   </div>
 </div>
 
@@ -893,7 +893,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.7.8</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.7.9</span>
           </div>
         </div>
       </div>
@@ -1265,8 +1265,6 @@
         <button onclick="toggleDriveUrlInput()" style="background:transparent;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:11px;color:var(--muted);cursor:pointer">✕</button>
       </div>
 
-      <!-- Overdue notification banner -->
-      <div id="invOverdueBanner" style="display:none;margin-bottom:18px"></div>
 
       <!-- Invoice table -->
       <div class="table-wrap" id="invTableWrap" style="display:none">
@@ -9182,30 +9180,6 @@
       }
     }
 
-    // ── Overdue banner ──
-    const overdueBanner = document.getElementById('invOverdueBanner');
-    if (overdueBanner) {
-      const now2 = Date.now();
-      const overdueInvs = invoices.filter(inv => {
-        if (inv.status === 'paid' || !inv.dueDate) return false;
-        const d = new Date(inv.dueDate);
-        return !isNaN(d) && now2 > d.getTime();
-      });
-      if (overdueInvs.length > 0) {
-        const worst = Math.max(...overdueInvs.map(inv => Math.floor((now2 - new Date(inv.dueDate).getTime()) / 86400000)));
-        overdueBanner.style.display = 'block';
-        overdueBanner.innerHTML = `
-          <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.35);border-radius:12px;padding:12px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-            <span style="font-size:16px">🔴</span>
-            <div style="flex:1">
-              <span style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:#ef4444">${overdueInvs.length} invoice${overdueInvs.length > 1 ? 's' : ''} past due date</span>
-              <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-left:10px">oldest is ${worst} day${worst !== 1 ? 's' : ''} overdue</span>
-            </div>
-          </div>`;
-      } else {
-        overdueBanner.style.display = 'none';
-      }
-    }
 
     const reminderDays = appConfig.invoiceReminderDays || 7;
     const now = Date.now();
