@@ -560,7 +560,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.6.9</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.7.0</div>
   </div>
 </div>
 
@@ -633,7 +633,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.6.9</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.7.0</div>
   </div>
 </div>
 
@@ -694,56 +694,134 @@
     <!-- Scrollable body -->
     <div id="helpContent" style="overflow-y:auto;padding:24px 28px;font-family:var(--font-mono);font-size:12px;color:var(--text);line-height:1.8">
 
-      <div style="margin-bottom:24px">
-        <div style="font-family:var(--font-syne);font-size:13px;font-weight:800;color:#a78bfa;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.08em">Overview</div>
-        <p style="color:var(--muted);margin:0">This is the TwoFeeds Finance dashboard — a single tool for tracking publisher costs, invoices, media buying, and revenue across months and years.</p>
+      <!-- Intro -->
+      <div style="background:rgba(124,58,237,0.07);border:1px solid rgba(124,58,237,0.18);border-radius:12px;padding:14px 18px;margin-bottom:24px;color:var(--muted);font-size:12px;line-height:1.7">
+        Welcome to <strong style="color:var(--text)">TwoFeeds Finance</strong> — your all-in-one dashboard for managing publisher costs, invoices, team, and revenue. Everything is organized by <strong style="color:var(--text)">Year → Month</strong>, so the first thing to do on any page is make sure the right period is selected at the top.
       </div>
 
-      <div style="margin-bottom:24px">
-        <div style="font-family:var(--font-syne);font-size:13px;font-weight:800;color:#a78bfa;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.08em">Tabs</div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <div><span style="color:#38bdf8;font-weight:700">Sources Info</span> — Master list of all publishers and vendors. Add logos, types (DSP/RW/MB), managers, and contacts here. All other tabs pull data from this list.</div>
-          <div><span style="color:#38bdf8;font-weight:700">Publishers</span> — Upload your monthly publisher cost sheet (CSV or Google Sheet link). Rows highlighted red = publisher not found in Sources Info.</div>
-          <div><span style="color:#38bdf8;font-weight:700">Publisher View</span> — Search any publisher to see their full cost history across all periods with a trend chart.</div>
-          <div><span style="color:#38bdf8;font-weight:700">Internal Sources</span> — Upload and manage invoices with AI-powered data extraction. Track issue date, due date, amount, status, file attachment, and POP link per invoice.</div>
-          <div><span style="color:#38bdf8;font-weight:700">Media Buying</span> — Track CPC rates by DSP and GEO. Upload via CSV.</div>
-          <div><span style="color:#38bdf8;font-weight:700">Cost Summary</span> — Auto-calculated breakdown of all costs by category for the selected period.</div>
-          <div><span style="color:#38bdf8;font-weight:700">Profit Summary</span> — Revenue vs. cost view showing net profit per period.</div>
+      <!-- Start here -->
+      <div style="margin-bottom:26px">
+        <div style="font-family:var(--font-syne);font-size:12px;font-weight:800;color:#a78bfa;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.1em;display:flex;align-items:center;gap:8px">
+          <span style="background:rgba(167,139,250,0.15);border:1px solid rgba(167,139,250,0.3);border-radius:20px;padding:2px 10px">🚀 Start of Each Month</span>
         </div>
-      </div>
-
-      <div style="margin-bottom:24px">
-        <div style="font-family:var(--font-syne);font-size:13px;font-weight:800;color:#a78bfa;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.08em">Monthly Workflow</div>
-        <ol style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;color:var(--muted)">
-          <li>Select the correct <strong style="color:var(--text)">Year</strong> and <strong style="color:var(--text)">Month</strong> from the dropdowns — data loads when you close the dropdown.</li>
-          <li>Go to <strong style="color:var(--text)">Publishers</strong> and upload your monthly CSV (or paste a Google Sheet link).</li>
-          <li>Any publishers not in Sources Info will be flagged in red — add them in Sources Info first.</li>
-          <li>Upload invoices in <strong style="color:var(--text)">Internal Sources</strong> — the AI will extract the details automatically. Review in the preview popup before confirming.</li>
-          <li>Mark invoices as paid as payments clear. Overdue invoices trigger a bell notification.</li>
-          <li>Check <strong style="color:var(--text)">Cost Summary</strong> for a full breakdown of the month.</li>
+        <ol style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:7px;color:var(--muted)">
+          <li>Pick the right <strong style="color:var(--text)">Year &amp; Month</strong> from the dropdowns at the top.</li>
+          <li>Go to <strong style="color:var(--text)">Publishers Cost</strong> → upload the monthly cost CSV (or paste a Google Sheet link).</li>
+          <li>Any publisher flagged in <strong style="color:#f87171">red</strong> isn't in Sources Info yet — add it there first, then re-upload.</li>
+          <li>Go to <strong style="color:var(--text)">Internal Sources</strong> → upload invoices. The AI fills in the details automatically.</li>
+          <li>Review the extracted invoice data in the popup, fix anything needed, then hit <strong style="color:var(--text)">Confirm</strong>.</li>
+          <li>As invoices get paid, mark them — the payment progress bar in Publishers Cost updates live.</li>
+          <li>Check <strong style="color:var(--text)">Cost Summary</strong> for the full monthly breakdown.</li>
         </ol>
       </div>
 
-      <div style="margin-bottom:24px">
-        <div style="font-family:var(--font-syne);font-size:13px;font-weight:800;color:#a78bfa;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.08em">Internal Sources — AI Invoice Extraction</div>
-        <div style="display:flex;flex-direction:column;gap:8px;color:var(--muted)">
-          <div>Upload a <strong style="color:var(--text)">PDF or image</strong> of an invoice, or paste a <strong style="color:var(--text)">Google Drive URL</strong> — the AI reads it and fills in vendor, invoice #, date, due date, and amount automatically.</div>
-          <div>A <strong style="color:var(--text)">preview popup</strong> appears before anything is saved. All fields are editable — correct any mistakes, then click <strong style="color:var(--text)">Confirm</strong> to save or <strong style="color:var(--text)">Cancel</strong> to abort.</div>
-          <div>Use the <strong style="color:var(--text)">AI Extraction Instructions</strong> field to give the AI hints specific to a vendor's invoice layout (e.g. "due date is labeled Net 30 from issue date").</div>
-          <div>Fields the AI couldn't find are shown as a warning after extraction so you know what to fill in manually.</div>
-          <div>Each invoice row has a <strong style="color:var(--text)">POP</strong> column where you can attach a proof-of-payment link with a custom label — click ✏ to edit, ✓ to save.</div>
-          <div>Invoices past their due date appear in the <strong style="color:var(--text)">bell notification panel</strong> as overdue alerts.</div>
+      <!-- Tabs reference -->
+      <div style="margin-bottom:26px">
+        <div style="font-family:var(--font-syne);font-size:12px;font-weight:800;color:#a78bfa;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.1em;display:flex;align-items:center;gap:8px">
+          <span style="background:rgba(167,139,250,0.15);border:1px solid rgba(167,139,250,0.3);border-radius:20px;padding:2px 10px">📂 What Each Tab Does</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 14px;display:flex;gap:12px;align-items:flex-start">
+            <span style="font-size:16px;flex-shrink:0;margin-top:1px">🔗</span>
+            <div><strong style="color:#38bdf8">Sources Info</strong> <span style="color:var(--muted);font-size:11px">— the master list</span><br><span style="color:var(--muted)">Every publisher and vendor lives here. Set their type (DSP / RW / MB), logo, manager, and contact. All other tabs reference this list — if a publisher isn't here, it won't be recognized anywhere else.</span></div>
+          </div>
+
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 14px;display:flex;gap:12px;align-items:flex-start">
+            <span style="font-size:16px;flex-shrink:0;margin-top:1px">💸</span>
+            <div><strong style="color:#38bdf8">Publishers Cost</strong><br><span style="color:var(--muted)">Upload your monthly cost file here. Shows total payable, payment progress, and lets you mark each publisher as paid. Red rows = publisher not found in Sources Info.</span></div>
+          </div>
+
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 14px;display:flex;gap:12px;align-items:flex-start">
+            <span style="font-size:16px;flex-shrink:0;margin-top:1px">👁️</span>
+            <div><strong style="color:#38bdf8">Publisher View</strong><br><span style="color:var(--muted)">Search for any publisher to see their full cost history across all months with a trend chart. Great for spotting patterns or verifying past payments.</span></div>
+          </div>
+
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 14px;display:flex;gap:12px;align-items:flex-start">
+            <span style="font-size:16px;flex-shrink:0;margin-top:1px">🏦</span>
+            <div><strong style="color:#38bdf8">Internal Sources</strong> <span style="color:var(--muted);font-size:11px">— invoices</span><br><span style="color:var(--muted)">Upload PDF / image invoices or paste a Google Drive URL. The AI extracts vendor, number, dates, and amount automatically. Mark invoices as paid, attach a Proof of Payment (POP) link, and get alerted when invoices are overdue.</span></div>
+          </div>
+
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 14px;display:flex;gap:12px;align-items:flex-start">
+            <span style="font-size:16px;flex-shrink:0;margin-top:1px">📺</span>
+            <div><strong style="color:#38bdf8">Media Buying</strong><br><span style="color:var(--muted)">Track CPC rates by DSP and GEO. Upload data via CSV. Used to calculate media spend separate from publisher costs.</span></div>
+          </div>
+
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 14px;display:flex;gap:12px;align-items:flex-start">
+            <span style="font-size:16px;flex-shrink:0;margin-top:1px">💵</span>
+            <div><strong style="color:#38bdf8">TF Cost</strong><br><span style="color:var(--muted)">Internal cost breakdown for TwoFeeds — separate from publisher costs. Enter and track your own expenses per period.</span></div>
+          </div>
+
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 14px;display:flex;gap:12px;align-items:flex-start">
+            <span style="font-size:16px;flex-shrink:0;margin-top:1px">💰</span>
+            <div><strong style="color:#38bdf8">Cost Summary</strong><br><span style="color:var(--muted)">Auto-calculated. Shows the full cost breakdown for the selected month by category — publishers, media buying, TF costs, and more. No manual input needed.</span></div>
+          </div>
+
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 14px;display:flex;gap:12px;align-items:flex-start">
+            <span style="font-size:16px;flex-shrink:0;margin-top:1px">🏢</span>
+            <div><strong style="color:#38bdf8">Advertisers Info</strong><br><span style="color:var(--muted)">Manage advertiser accounts — contacts, status, and notes. Referenced in revenue and profit calculations.</span></div>
+          </div>
+
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 14px;display:flex;gap:12px;align-items:flex-start">
+            <span style="font-size:16px;flex-shrink:0;margin-top:1px">📈</span>
+            <div><strong style="color:#38bdf8">TF Profit</strong> &amp; <strong style="color:#38bdf8">Profit Summary</strong> &amp; <strong style="color:#38bdf8">Rev Summary</strong><br><span style="color:var(--muted)">Revenue-side views. Enter revenue figures and the system calculates net profit, margins, and trends. Rev Summary gives a high-level overview across periods.</span></div>
+          </div>
+
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 14px;display:flex;gap:12px;align-items:flex-start">
+            <span style="font-size:16px;flex-shrink:0;margin-top:1px">🌐</span>
+            <div><strong style="color:#38bdf8">General Overview</strong><br><span style="color:var(--muted)">Top-level summary of the business — key numbers, trends, and charts across all periods in one place.</span></div>
+          </div>
+
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 14px;display:flex;gap:12px;align-items:flex-start">
+            <span style="font-size:16px;flex-shrink:0;margin-top:1px">👥</span>
+            <div><strong style="color:#38bdf8">Team Roles</strong> <span style="color:var(--muted);font-size:11px">— admin only</span><br><span style="color:var(--muted)">Add and manage team members — name, email, role, campaigns, status, and photo. Expand any row to see the full profile.</span></div>
+          </div>
+
         </div>
       </div>
 
-      <div style="margin-bottom:24px">
-        <div style="font-family:var(--font-syne);font-size:13px;font-weight:800;color:#a78bfa;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.08em">CSV Upload Format — Publishers</div>
-        <div style="color:var(--muted)">Required columns: <strong style="color:var(--text)">Publisher, Amount</strong><br>
-        Optional columns: <strong style="color:var(--text)">Type, Approval Label, Approval URL, Invoice Label, Invoice URL, POP Label, POP URL, Notes</strong></div>
+      <!-- AI Invoice section -->
+      <div style="margin-bottom:26px">
+        <div style="font-family:var(--font-syne);font-size:12px;font-weight:800;color:#a78bfa;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.1em;display:flex;align-items:center;gap:8px">
+          <span style="background:rgba(167,139,250,0.15);border:1px solid rgba(167,139,250,0.3);border-radius:20px;padding:2px 10px">🤖 AI Invoice Extraction</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px;color:var(--muted)">
+          <div>Drop a <strong style="color:var(--text)">PDF or image</strong> onto the upload area in Internal Sources, or paste a <strong style="color:var(--text)">Google Drive link</strong>. The AI reads the document and fills in vendor, invoice number, issue date, due date, and amount.</div>
+          <div>A <strong style="color:var(--text)">preview popup</strong> always appears first — nothing is saved until you click <strong style="color:var(--text)">Confirm</strong>. All fields are editable in that popup, so you can fix anything the AI got wrong.</div>
+          <div>If the AI struggles with a particular vendor's format, fill in the <strong style="color:var(--text)">AI Instructions</strong> field on that vendor's Sources Info row — e.g. <em style="color:var(--text)">"due date is Net 30 from issue date"</em>.</div>
+          <div>Any fields the AI couldn't confidently extract are flagged with a warning after the scan, so you know exactly what to check.</div>
+        </div>
       </div>
 
-      <div style="background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.2);border-radius:8px;padding:12px 16px;color:var(--muted);font-size:11px">
-        💡 This page will be updated as the system evolves. Last updated: April 2026.
+      <!-- CSV format -->
+      <div style="margin-bottom:26px">
+        <div style="font-family:var(--font-syne);font-size:12px;font-weight:800;color:#a78bfa;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.1em;display:flex;align-items:center;gap:8px">
+          <span style="background:rgba(167,139,250,0.15);border:1px solid rgba(167,139,250,0.3);border-radius:20px;padding:2px 10px">📋 CSV Upload — Publishers Cost</span>
+        </div>
+        <div style="color:var(--muted)">
+          <div style="margin-bottom:6px"><strong style="color:var(--text)">Required columns:</strong> <span style="color:#38bdf8">Publisher</span>, <span style="color:#38bdf8">Amount</span></div>
+          <div><strong style="color:var(--text)">Optional columns:</strong> Type, Approval Label, Approval URL, Invoice Label, Invoice URL, POP Label, POP URL, Notes</div>
+          <div style="margin-top:8px;font-size:11px;color:var(--muted)">Column names are case-insensitive. Extra columns are ignored. You can also paste a Google Sheet share URL instead of uploading a file.</div>
+        </div>
+      </div>
+
+      <!-- Tips -->
+      <div style="margin-bottom:20px">
+        <div style="font-family:var(--font-syne);font-size:12px;font-weight:800;color:#a78bfa;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.1em;display:flex;align-items:center;gap:8px">
+          <span style="background:rgba(167,139,250,0.15);border:1px solid rgba(167,139,250,0.3);border-radius:20px;padding:2px 10px">💡 Tips</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px;color:var(--muted)">
+          <div>🔔 The <strong style="color:var(--text)">bell icon</strong> in the top bar shows overdue invoices. Click it to see what's outstanding.</div>
+          <div>▾ <strong style="color:var(--text)">Expand any row</strong> in Sources Info, Team, or Internal Sources by clicking the arrow — a detail panel opens with full info and editable fields.</div>
+          <div>↕ Use <strong style="color:var(--text)">Edit Order</strong> in Sources Info, Team, or Settings to drag and reorder items in the list.</div>
+          <div>⊞ Use <strong style="color:var(--text)">Columns</strong> to show or hide columns in any table — your preferences are saved per-device.</div>
+          <div>🔍 Every list has a <strong style="color:var(--text)">search bar</strong> — start typing to filter rows instantly.</div>
+          <div>🗓️ Changes auto-save when you leave a field — no Save button needed for most inline edits.</div>
+        </div>
+      </div>
+
+      <div style="background:rgba(124,58,237,0.07);border:1px solid rgba(124,58,237,0.18);border-radius:8px;padding:11px 16px;color:var(--muted);font-size:11px;line-height:1.6">
+        This guide is updated as the system grows. Last updated: <strong style="color:var(--text)">May 2026</strong>.
       </div>
 
     </div>
@@ -815,7 +893,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.6.9</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.7.0</span>
           </div>
         </div>
       </div>
