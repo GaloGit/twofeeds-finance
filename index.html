@@ -559,7 +559,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.5.2</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.5.3</div>
   </div>
 </div>
 
@@ -632,7 +632,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.5.2</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.5.3</div>
   </div>
 </div>
 
@@ -814,7 +814,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.5.2</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.5.3</span>
           </div>
         </div>
       </div>
@@ -8242,17 +8242,10 @@
         const barColor  = pct === 100 ? 'var(--green)' : pct >= 50 ? 'var(--accent)' : 'var(--amber)';
         progressWrap.style.display = 'flex';
         progressWrap.innerHTML = `
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 16px;display:flex;flex-direction:column;justify-content:center;width:100%">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:12px;flex-wrap:wrap">
-              <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-                <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em">Payment Progress · ${periodLabel()}</span>
-                <span style="font-family:var(--font-mono);font-size:10px;color:var(--green)">✓ ${paidPubs.length} paid (${fmt(paidAmt)})</span>
-                <span style="font-family:var(--font-mono);font-size:10px;color:var(--amber)">⏳ ${all.length - paidPubs.length} waiting (${fmt(waitAmt)})</span>
-              </div>
-              <div style="display:flex;align-items:baseline;gap:8px">
-                <span style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:${barColor}">${pct}%</span>
-                <span style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:${barColor}">${fmt(paidAmt)} <span style="color:var(--muted);font-size:10px;font-weight:400">/ ${fmt(total)}</span></span>
-              </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 16px;display:flex;flex-direction:column;justify-content:center;width:100%;gap:8px">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+              <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em">Payment Progress · ${periodLabel()}</span>
+              <span style="font-family:var(--font-mono);font-size:11px;color:${barColor};font-weight:700;white-space:nowrap">${paidPubs.length}/${all.length} paid (${fmt(paidAmt)}/${fmt(total)}) <span style="color:var(--muted);font-weight:400">${pct}%</span></span>
             </div>
             <div style="background:var(--surface2);border-radius:99px;height:6px;overflow:hidden">
               <div style="width:${pct}%;background:${barColor};height:100%;border-radius:99px;transition:width 0.6s ease"></div>
