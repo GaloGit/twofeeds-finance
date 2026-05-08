@@ -560,7 +560,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.7.4</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.7.5</div>
   </div>
 </div>
 
@@ -633,7 +633,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.7.4</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.7.5</div>
   </div>
 </div>
 
@@ -893,7 +893,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.7.4</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.7.5</span>
           </div>
         </div>
       </div>
@@ -1214,28 +1214,32 @@
         <div class="inv-proc-text" id="invProcText">Reading invoice...</div>
       </div>
 
-      <!-- Summary cards -->
-      <div class="summary-grid" id="invSummaryGrid" style="display:none">
-        <div class="summary-card blue" style="animation-delay:0.05s">
-          <div class="card-label">Invoices · <span id="invPeriodSub" class="card-label-sub"></span></div>
-          <div class="card-value" id="invCount" style="font-family:Arial">0</div>
+      <!-- Summary cards + payment bar on same row -->
+      <div id="invSummaryGrid" style="display:none;gap:12px;align-items:stretch;margin-bottom:18px;flex-wrap:wrap">
+        <div class="summary-grid" style="flex:3;min-width:320px;margin-bottom:0">
+          <div class="summary-card blue" style="animation-delay:0.05s">
+            <div class="card-label">Invoices · <span id="invPeriodSub" class="card-label-sub"></span></div>
+            <div class="card-value" id="invCount" style="font-family:Arial">0</div>
+          </div>
+          <div class="summary-card amber" style="animation-delay:0.1s">
+            <div class="card-label">Total Amount · <span class="card-label-sub">sum of invoices</span></div>
+            <div class="card-value" id="invTotal">$0</div>
+          </div>
+          <div class="summary-card amber" style="animation-delay:0.125s">
+            <div class="card-label">Total VAT · <span class="card-label-sub">sum of VAT</span></div>
+            <div class="card-value" id="invTotalVat">$0</div>
+          </div>
+          <div class="summary-card green" style="animation-delay:0.15s">
+            <div class="card-label">Paid · <span class="card-label-sub">fully paid</span></div>
+            <div class="card-value" id="invExtracted" style="font-family:Arial">0</div>
+          </div>
+          <div class="summary-card red" style="animation-delay:0.2s">
+            <div class="card-label">Waiting · <span class="card-label-sub">pending payment</span></div>
+            <div class="card-value" id="invReview" style="font-family:Arial">0</div>
+          </div>
         </div>
-        <div class="summary-card amber" style="animation-delay:0.1s">
-          <div class="card-label">Total Amount · <span class="card-label-sub">sum of invoices</span></div>
-          <div class="card-value" id="invTotal">$0</div>
-        </div>
-        <div class="summary-card amber" style="animation-delay:0.125s">
-          <div class="card-label">Total VAT · <span class="card-label-sub">sum of VAT</span></div>
-          <div class="card-value" id="invTotalVat">$0</div>
-        </div>
-        <div class="summary-card green" style="animation-delay:0.15s">
-          <div class="card-label">Paid · <span class="card-label-sub">fully paid</span></div>
-          <div class="card-value" id="invExtracted" style="font-family:Arial">0</div>
-        </div>
-        <div class="summary-card red" style="animation-delay:0.2s">
-          <div class="card-label">Waiting · <span class="card-label-sub">pending payment</span></div>
-          <div class="card-value" id="invReview" style="font-family:Arial">0</div>
-        </div>
+        <!-- Invoice payment progress bar -->
+        <div id="invProgressWrap" style="display:none;flex:2;min-width:260px"></div>
       </div>
 
       <!-- Toolbar -->
@@ -1260,9 +1264,6 @@
         <button onclick="handleInvDriveUrl()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">Extract</button>
         <button onclick="toggleDriveUrlInput()" style="background:transparent;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:11px;color:var(--muted);cursor:pointer">✕</button>
       </div>
-
-      <!-- Invoice payment progress bar -->
-      <div id="invProgressWrap" style="display:none;margin-bottom:18px"></div>
 
       <!-- Overdue notification banner -->
       <div id="invOverdueBanner" style="display:none;margin-bottom:18px"></div>
@@ -9176,7 +9177,7 @@
         const waitAmt    = total - paidAmt;
         const pct        = total > 0 ? Math.min(100, Math.round((paidAmt / total) * 100)) : 0;
         const barColor   = pct === 100 ? 'var(--green)' : pct >= 50 ? 'var(--accent)' : 'var(--amber)';
-        invProgressWrap.style.display = 'block';
+        invProgressWrap.style.display = 'flex';
         invProgressWrap.innerHTML = `
           <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 16px">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:12px;flex-wrap:wrap">
