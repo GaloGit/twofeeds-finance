@@ -560,7 +560,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.7.1</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.7.2</div>
   </div>
 </div>
 
@@ -633,7 +633,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.7.1</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.7.2</div>
   </div>
 </div>
 
@@ -893,7 +893,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.7.1</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.7.2</span>
           </div>
         </div>
       </div>
@@ -2518,29 +2518,37 @@
         </div>
       </div>
 
-      <!-- Add user form -->
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:24px">
-        <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:16px">Add or Update User</div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
-          <div style="flex:1;min-width:200px">
-            <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Email Address</div>
-            <input type="email" id="settingsEmail" placeholder="user@example.com" class="gate-input"
-              style="width:100%;margin-bottom:0;text-align:left;letter-spacing:0.03em;font-size:13px"/>
+      <!-- Add user form (collapsible) -->
+      <div id="settingsFormWrap" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:16px;display:none">
+        <div style="padding:20px 24px">
+          <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:16px">New User</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+            <div style="flex:1;min-width:200px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Email Address</div>
+              <input type="email" id="settingsEmail" placeholder="user@example.com" class="gate-input"
+                onkeydown="if(event.key==='Enter')addSettingsUser()"
+                style="width:100%;margin-bottom:0;text-align:left;letter-spacing:0.03em;font-size:13px"/>
+            </div>
+            <div>
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Role</div>
+              <select id="settingsRole" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none">
+                <option value="editor">✏️ Editor</option>
+                <option value="viewer">👁 Viewer</option>
+                <option value="admin">⚡ Admin</option>
+              </select>
+            </div>
+            <button onclick="addSettingsUser()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.05em;white-space:nowrap">+ Add</button>
+            <button onclick="toggleSettingsForm()" style="background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-family:var(--font-mono);font-size:11px;cursor:pointer;white-space:nowrap">Cancel</button>
           </div>
-          <div>
-            <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Role</div>
-            <select id="settingsRole" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none">
-              <option value="editor">✏️ Editor</option>
-              <option value="viewer">👁 Viewer</option>
-              <option value="admin">⚡ Admin</option>
-            </select>
-          </div>
-          <button onclick="addSettingsUser()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.05em;white-space:nowrap">+ ADD USER</button>
         </div>
       </div>
 
-      <!-- Users table -->
-      <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+      <!-- Users table toolbar -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px;flex-wrap:wrap">
+        <button onclick="toggleSettingsForm()" id="settingsAddBtn"
+          style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:0.06em;padding:5px 14px;border-radius:6px;border:1px solid var(--accent);background:rgba(99,102,241,0.12);color:var(--accent-light);cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap">
+          + Add User <span id="settingsFormArrow" style="font-size:11px;transition:transform 0.2s;display:inline-block">▼</span>
+        </button>
         <button id="settingsOrderBtn" onclick="toggleSettingsOrderEdit()" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">↕ Edit Order</button>
       </div>
       <div class="table-wrap">
@@ -4665,6 +4673,16 @@
   let _settingsDragFrom = null;
   let _settingsOrderEditMode = false;
 
+  function toggleSettingsForm() {
+    const wrap  = document.getElementById('settingsFormWrap');
+    const arrow = document.getElementById('settingsFormArrow');
+    if (!wrap) return;
+    const opening = wrap.style.display === 'none';
+    wrap.style.display = opening ? 'block' : 'none';
+    if (arrow) arrow.style.transform = opening ? 'rotate(180deg)' : '';
+    if (opening) setTimeout(() => document.getElementById('settingsEmail')?.focus(), 80);
+  }
+
   async function toggleSettingsOrderEdit() {
     _settingsOrderEditMode = !_settingsOrderEditMode;
     const btn = document.getElementById('settingsOrderBtn');
@@ -6165,7 +6183,7 @@
 
     const ok = await saveSettings();
     document.getElementById('settingsEmail').value = '';
-    if (ok) showToast('✓ User saved');
+    if (ok) { showToast('✓ User saved'); toggleSettingsForm(); }
     renderSettings();
   }
 
