@@ -559,7 +559,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.4.9</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.5.0</div>
   </div>
 </div>
 
@@ -632,7 +632,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.4.9</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.5.0</div>
   </div>
 </div>
 
@@ -814,7 +814,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.4.9</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.5.0</span>
           </div>
         </div>
       </div>
@@ -890,23 +890,28 @@
 
     <!-- PUBLISHERS TAB -->
     <div class="page" id="tab-publishers">
-      <div class="summary-grid">
-        <div class="summary-card blue" style="animation-delay:0.05s">
-          <div class="card-label">Publishers · <span id="pubPeriodLabel" class="card-label-sub"></span></div>
-          <div class="card-value" id="pubCount">0</div>
+      <!-- Stats + payment bar on same row -->
+      <div style="display:flex;gap:12px;align-items:stretch;margin-bottom:18px;flex-wrap:wrap">
+        <div class="summary-grid" style="flex:3;min-width:320px;margin-bottom:0">
+          <div class="summary-card blue" style="animation-delay:0.05s">
+            <div class="card-label">Publishers · <span id="pubPeriodLabel" class="card-label-sub"></span></div>
+            <div class="card-value" id="pubCount">0</div>
+          </div>
+          <div class="summary-card amber" style="animation-delay:0.1s">
+            <div class="card-label">Total Payable</div>
+            <div class="card-value" id="pubTotal">$0</div>
+          </div>
+          <div class="summary-card green" style="animation-delay:0.15s">
+            <div class="card-label">Avg per Publisher · <span class="card-label-sub">mean payment</span></div>
+            <div class="card-value" id="pubAvg">$0</div>
+          </div>
+          <div class="summary-card red" style="animation-delay:0.2s">
+            <div class="card-label">Top Publisher · <span id="pubTopAmt" class="card-label-sub"></span></div>
+            <div class="card-value" id="pubTop" style="font-size:16px;line-height:1.3">—</div>
+          </div>
         </div>
-        <div class="summary-card amber" style="animation-delay:0.1s">
-          <div class="card-label">Total Payable</div>
-          <div class="card-value" id="pubTotal">$0</div>
-        </div>
-        <div class="summary-card green" style="animation-delay:0.15s">
-          <div class="card-label">Avg per Publisher · <span class="card-label-sub">mean payment</span></div>
-          <div class="card-value" id="pubAvg">$0</div>
-        </div>
-        <div class="summary-card red" style="animation-delay:0.2s">
-          <div class="card-label">Top Publisher · <span id="pubTopAmt" class="card-label-sub"></span></div>
-          <div class="card-value" id="pubTop" style="font-size:16px;line-height:1.3">—</div>
-        </div>
+        <!-- Publisher payment progress bar -->
+        <div id="pubProgressWrap" style="display:none;flex:2;min-width:260px"></div>
       </div>
 
       <!-- Sync info bar -->
@@ -933,9 +938,6 @@
             style="padding:7px 14px;border-radius:7px;border:1px solid var(--accent);background:transparent;color:var(--accent-light);font-family:var(--font-mono);font-size:11px;cursor:pointer;white-space:nowrap">↓ Import</button>
         </div>
       </div>
-
-      <!-- Publisher payment progress bar -->
-      <div id="pubProgressWrap" style="display:none;margin-bottom:18px"></div>
 
       <!-- Publisher table (shown when data loaded) -->
       <div id="publisherTableWrap" style="display:none">
@@ -8241,9 +8243,9 @@
         const waitAmt   = total - paidAmt;
         const pct       = total > 0 ? Math.min(100, Math.round((paidAmt / total) * 100)) : 0;
         const barColor  = pct === 100 ? 'var(--green)' : pct >= 50 ? 'var(--accent)' : 'var(--amber)';
-        progressWrap.style.display = 'block';
+        progressWrap.style.display = 'flex';
         progressWrap.innerHTML = `
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 16px">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 16px;display:flex;flex-direction:column;justify-content:center;width:100%">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:12px;flex-wrap:wrap">
               <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
                 <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em">Payment Progress · ${periodLabel()}</span>
