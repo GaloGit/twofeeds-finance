@@ -560,7 +560,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.6.3</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.6.4</div>
   </div>
 </div>
 
@@ -633,7 +633,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.6.3</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.6.4</div>
   </div>
 </div>
 
@@ -815,7 +815,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.6.3</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.6.4</span>
           </div>
         </div>
       </div>
@@ -1503,11 +1503,6 @@
     <!-- COST SUMMARY TAB -->
     <div class="page" id="tab-costsummary" style="position:relative">
 
-      <!-- Loading overlay -->
-      <div id="csLoadingOverlay" style="display:none;position:absolute;inset:0;z-index:50;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;gap:14px">
-        <div class="spinner"></div>
-        <span style="font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">Loading cost data…</span>
-      </div>
 
       <!-- Summary cards -->
       <div class="summary-grid">
@@ -10372,8 +10367,6 @@
   async function renderCostSummary() {
     const pKey = 'pub_' + periodKey();
     const iKey = 'inv_' + periodKey();
-    const overlay = document.getElementById('csLoadingOverlay');
-    if (overlay) overlay.style.display = 'none';
     // Use cached raw API rows if available; otherwise fetch both in parallel
     let pubRows, invRawRows;
     if (_rawCache[pKey + '_raw'] && _rawCache[iKey + '_raw']) {
@@ -10381,12 +10374,12 @@
       invRawRows = _rawCache[iKey + '_raw'];
       if (_isSame('cs_' + periodKey(), [pubRows, invRawRows])) return;
     } else {
-      if (overlay) overlay.style.display = 'flex';
+      _showLoader('Loading cost data…');
       [pubRows, invRawRows] = await Promise.all([
         fetchPeriodData('getPublishers').catch(() => []),
         fetchPeriodData('getInvoices').catch(() => []),
       ]);
-      if (overlay) overlay.style.display = 'none';
+      _hideLoader();
       _rawCache[pKey + '_raw'] = pubRows;
       _rawCache[iKey + '_raw'] = invRawRows;
     }
