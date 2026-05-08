@@ -560,7 +560,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.6.5</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.6.6</div>
   </div>
 </div>
 
@@ -633,7 +633,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.6.5</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.6.6</div>
   </div>
 </div>
 
@@ -815,13 +815,13 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.6.5</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.6.6</span>
           </div>
         </div>
       </div>
 
       <nav class="nav-bar" id="financeNav">
-        <button class="nav-tab active" id="sourcesInfoTab" style="display:none" onclick="showTab('sourcesinfo', this); renderSourcesInfo()"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg><span>Sources Info</span></button>
+        <button class="nav-tab active" id="navTab_sourcesinfo" style="display:none" onclick="showTab('sourcesinfo', this); renderSourcesInfo()"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg><span>Sources Info</span></button>
         <button class="nav-tab" id="navTab_publishers" style="display:none" onclick="showTab('publishers', this)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg><span>Publishers Cost</span></button>
         <button class="nav-tab" id="navTab_pubview" style="display:none" onclick="showTab('pubview', this); initPubView()"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Publisher View</span></button>
         <button class="nav-tab" id="navTab_internal" style="display:none" onclick="showTab('internal', this); showInternalTab()"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg><span>Internal Sources</span></button>
@@ -829,8 +829,8 @@
         <button class="nav-tab" id="navTab_tfcost" style="display:none" onclick="showTab('tfcost', this); renderTfCost()"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>TF Cost</span></button>
         <button class="nav-tab" id="navTab_tfprofit" style="display:none" onclick="showTab('tfprofit', this); renderTfProfit()"><svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg><span>TF Profit</span></button>
         <button class="nav-tab" id="navTab_costsummary" style="display:none" onclick="showTab('costsummary', this); renderCostSummary()"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>Cost Summary</span></button>
-        <button class="nav-tab" id="advertisersTab" style="display:none" onclick="showTab('advertisers', this); renderAdvertisers()"><svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg><span>Advertisers Info</span></button>
-        <button class="nav-tab" id="revSummaryTab" style="display:none" onclick="showTab('revsummary', this); renderRevSummary()"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8h10M7 12h6"/></svg><span>Rev Summary</span></button>
+        <button class="nav-tab" id="navTab_advertisers" style="display:none" onclick="showTab('advertisers', this); renderAdvertisers()"><svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg><span>Advertisers Info</span></button>
+        <button class="nav-tab" id="navTab_revsummary" style="display:none" onclick="showTab('revsummary', this); renderRevSummary()"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8h10M7 12h6"/></svg><span>Rev Summary</span></button>
         <button class="nav-tab" id="navTab_profit" style="display:none" onclick="showTab('profit', this); renderProfitSummary()"><svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg><span>Profit Summary</span></button>
         <button class="nav-tab" id="navTab_overview" style="display:none" onclick="showTab('overview', this); renderOverview()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>General Overview</span></button>
       </nav>
@@ -2809,22 +2809,24 @@
 
   // ── TAB PERMISSIONS ──
   const TAB_DEFS = [
-    { key: 'publishers',   label: '📋 Publishers',       hasEdit: true  },
-    { key: 'pubview',      label: '🔍 Publisher View',   hasEdit: false },
-    { key: 'internal',     label: '🧾 Internal Sources', hasEdit: true  },
-    { key: 'mediabuy',     label: '📺 Media Buying',     hasEdit: true  },
+    { key: 'sourcesinfo',  label: '🗄️ Sources Info',      hasEdit: true  },
+    { key: 'publishers',   label: '📋 Publishers',        hasEdit: true  },
+    { key: 'pubview',      label: '🔍 Publisher View',    hasEdit: false },
+    { key: 'internal',     label: '🧾 Internal Sources',  hasEdit: true  },
+    { key: 'mediabuy',     label: '📺 Media Buying',      hasEdit: true  },
     { key: 'tfcost',       label: '💵 TF Cost',           hasEdit: true  },
     { key: 'tfprofit',     label: '📈 TF Profit',         hasEdit: false },
-    { key: 'costsummary',  label: '💰 Cost Summary',     hasEdit: false },
-    { key: 'profit',       label: '💹 Profit Summary',   hasEdit: true  },
-    { key: 'advertisers',  label: '🏢 Advertisers Info',   hasEdit: true  },
-    { key: 'revsummary',   label: '📊 Rev Summary',        hasEdit: false },
+    { key: 'costsummary',  label: '💰 Cost Summary',      hasEdit: false },
+    { key: 'profit',       label: '💹 Profit Summary',    hasEdit: true  },
+    { key: 'advertisers',  label: '🏢 Advertisers Info',  hasEdit: true  },
+    { key: 'revsummary',   label: '📊 Rev Summary',       hasEdit: false },
+    { key: 'overview',     label: '🌐 General Overview',  hasEdit: false },
   ];
 
   function defaultTabs() {
     const t = {};
     TAB_DEFS.forEach(d => {
-      t[d.key] = d.hasEdit ? { view: false, edit: false } : { view: false };
+      t[d.key] = d.hasEdit ? { view: true, edit: false } : { view: true };
     });
     return t;
   }
@@ -2869,37 +2871,17 @@
       const el = document.getElementById(id);
       if (el) el.style.display = admin ? 'flex' : 'none';
     });
-    const sit = document.getElementById('sourcesInfoTab');
-    if (sit) sit.style.display = admin ? 'inline-flex' : 'none';
-    const advt = document.getElementById('advertisersTab');
-    if (advt) advt.style.display = admin ? 'inline-flex' : 'none';
-    const revt = document.getElementById('revSummaryTab');
-    if (revt) revt.style.display = admin ? 'inline-flex' : 'none';
-    const ovrvw = document.getElementById('navTab_overview');
-    if (ovrvw) ovrvw.style.display = admin ? 'inline-flex' : 'none';
-    const prft = document.getElementById('navTab_profit');
-    if (prft) prft.style.display = admin ? 'inline-flex' : 'none';
+    // ── Tab visibility (all tabs controlled by TAB_DEFS + settings) ──
+    const user = (localStorage.getItem('tf_current_user')||'').toLowerCase();
+    const su = admin ? null : settingsUsers.find(u => u.email.toLowerCase() === user);
+    const tabs = su?.tabs || defaultTabs();
 
-    // ── Tab visibility ──
-    if (admin) {
-      // Admin sees all tabs
-      TAB_DEFS.forEach(d => {
-        const btn = document.getElementById('navTab_' + d.key);
-        if (btn) btn.style.display = 'inline-flex';
-      });
-    } else {
-      const user = (localStorage.getItem('tf_current_user')||'').toLowerCase();
-      const su = settingsUsers.find(u => u.email.toLowerCase() === user);
-      const tabs = su?.tabs || defaultTabs();
-
-      let visibleCount = 0;
-      TAB_DEFS.forEach(d => {
-        const btn = document.getElementById('navTab_' + d.key);
-        const viewOk = tabs[d.key]?.view === true;
-        if (btn) btn.style.display = viewOk ? 'inline-flex' : 'none';
-        if (viewOk) visibleCount++;
-      });
-    }
+    TAB_DEFS.forEach(d => {
+      const btn = document.getElementById('navTab_' + d.key);
+      if (!btn) return;
+      const visible = admin || tabs[d.key]?.view !== false;
+      btn.style.display = visible ? 'inline-flex' : 'none';
+    });
 
     // ── Inject CSS for per-tab edit restrictions ──
     // Uses a dynamic <style> tag so restrictions apply even to dynamically-rendered buttons
@@ -2912,9 +2894,6 @@
     if (admin) {
       permStyle.textContent = ''; // no restrictions
     } else {
-      const user = (localStorage.getItem('tf_current_user')||'').toLowerCase();
-      const su = settingsUsers.find(u => u.email.toLowerCase() === user);
-      const tabs = su?.tabs || defaultTabs();
       let css = '';
       TAB_DEFS.filter(d => d.hasEdit).forEach(d => {
         if (!tabs[d.key]?.edit) {
@@ -2938,7 +2917,7 @@
       const activePageId = activePage ? activePage.id.replace('tab-', '') : '';
 
       // These pages are admin-only and must never be visible to viewers/editors
-      const adminOnlyPages = ['settings', 'campaignmgr', 'sourcesinfo'];
+      const adminOnlyPages = ['settings', 'campaignmgr'];
       const isOnAdminPage = adminOnlyPages.includes(activePageId);
 
       // Also catch the case where the active nav button was just hidden
