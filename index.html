@@ -560,7 +560,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.6.8</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.6.9</div>
   </div>
 </div>
 
@@ -633,7 +633,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.6.8</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.6.9</div>
   </div>
 </div>
 
@@ -815,7 +815,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.6.8</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.6.9</span>
           </div>
         </div>
       </div>
@@ -3430,7 +3430,7 @@
             style="${_cmOrderEditMode?'cursor:grab;color:var(--muted);user-select:none;padding:0 4px;font-size:16px;text-align:center':'width:0;padding:0;font-size:0;overflow:hidden'}">${_cmOrderEditMode?'⠿':''}</td>
         ${cells}
         <td style="white-space:nowrap">
-          <button onclick="event.stopPropagation(); toggleCmRow(${i}, event)"
+          <button id="cmExpandBtn_${i}" onclick="event.stopPropagation(); toggleCmRow(${i}, event)"
             style="${btnBase} var(--accent);background:rgba(124,58,237,0.15);color:var(--accent-light)" title="Show details">▾</button>
           <button onclick="event.stopPropagation(); deleteCampaignMgr(${i})"
             style="${btnBase} var(--border);background:transparent;color:var(--red);margin-left:4px">✕</button>
@@ -3541,10 +3541,10 @@
   function toggleCmRow(i, e) {
     if (e) e.stopPropagation();
     const detail = document.getElementById('cmDetail_' + i);
+    const btn    = document.getElementById('cmExpandBtn_' + i);
     if (!detail) return;
     const isOpen = detail.style.display !== 'none';
-    detail.style.display = isOpen ? 'none' : '';
-    const btn = detail.previousElementSibling?.querySelector('button');
+    detail.style.display = isOpen ? 'none' : 'table-row';
     if (btn) btn.textContent = isOpen ? '▾' : '▴';
     if (!isOpen) setTimeout(() => detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
   }
