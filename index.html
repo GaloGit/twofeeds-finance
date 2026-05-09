@@ -560,7 +560,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.1</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.2</div>
   </div>
 </div>
 
@@ -633,7 +633,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.1</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.2</div>
   </div>
 </div>
 
@@ -893,7 +893,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.1</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.2</span>
           </div>
         </div>
       </div>
@@ -1252,8 +1252,15 @@
 
           <button id="invClearBtn" class="clear-btn" style="display:none" onclick="clearInvoices()">✕ Clear All</button>
           <button class="export-btn" onclick="exportInvoices()">↓ Export CSV</button>
+          <button id="invFolderBtn" onclick="invFolderClick()" style="font-family:var(--font-mono);font-size:10px;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:5px">📁 Drive Folder</button>
           <button class="add-btn" onclick="toggleDriveUrlInput()" id="invDriveBtn" style="background:rgba(124,58,237,0.15);border-color:rgba(124,58,237,0.4);color:#a78bfa">🔗 From Drive URL</button>
         </div>
+      </div>
+      <div id="invFolderUrlRow" style="display:none;align-items:center;gap:8px;margin-bottom:16px">
+        <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);white-space:nowrap">📁 Drive Folder URL</span>
+        <input id="invFolderUrlInput" type="text" placeholder="Paste Google Drive folder URL…" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none" onkeydown="if(event.key==='Enter')saveInvFolderUrl();if(event.key==='Escape')toggleInvFolderRow(false)"/>
+        <button onclick="saveInvFolderUrl()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">Save</button>
+        <button onclick="toggleInvFolderRow(false)" style="background:transparent;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:11px;color:var(--muted);cursor:pointer">✕</button>
       </div>
       <div id="invDriveUrlRow" style="display:none;align-items:center;gap:8px;margin-bottom:16px">
         <input id="invDriveUrlInput" type="text" placeholder="Paste Google Drive URL…" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none" onkeydown="if(event.key==='Enter')handleInvDriveUrl()"/>
@@ -8972,6 +8979,55 @@
     return parsed;
   }
 
+  function invFolderClick() {
+    const url = localStorage.getItem('invDriveFolderUrl') || '';
+    if (url) {
+      window.open(url, '_blank');
+    } else {
+      toggleInvFolderRow(true);
+    }
+  }
+
+  function toggleInvFolderRow(forceOpen) {
+    const row = document.getElementById('invFolderUrlRow');
+    if (!row) return;
+    const opening = forceOpen !== undefined ? forceOpen : row.style.display !== 'flex';
+    row.style.display = opening ? 'flex' : 'none';
+    if (opening) {
+      const input = document.getElementById('invFolderUrlInput');
+      if (input) {
+        input.value = localStorage.getItem('invDriveFolderUrl') || '';
+        setTimeout(() => input.focus(), 50);
+      }
+    }
+  }
+
+  function saveInvFolderUrl() {
+    const val = (document.getElementById('invFolderUrlInput')?.value || '').trim();
+    if (!val) { showToast('⚠ Paste a URL first'); return; }
+    localStorage.setItem('invDriveFolderUrl', val);
+    toggleInvFolderRow(false);
+    _refreshInvFolderBtn();
+    showToast('✓ Drive Folder link saved');
+  }
+
+  function _refreshInvFolderBtn() {
+    const btn = document.getElementById('invFolderBtn');
+    if (!btn) return;
+    const url = localStorage.getItem('invDriveFolderUrl') || '';
+    if (url) {
+      btn.style.color = 'var(--green)';
+      btn.style.borderColor = 'rgba(34,197,94,0.4)';
+      btn.style.background = 'rgba(34,197,94,0.08)';
+      btn.title = url;
+    } else {
+      btn.style.color = 'var(--muted)';
+      btn.style.borderColor = 'var(--border)';
+      btn.style.background = 'var(--surface2)';
+      btn.title = '';
+    }
+  }
+
   function toggleDriveUrlInput() {
     const row = document.getElementById('invDriveUrlRow');
     const visible = row.style.display === 'flex';
@@ -9071,6 +9127,7 @@
   }
 
   async function renderInvoices() {
+    _refreshInvFolderBtn();
     const cacheKey = 'inv_' + periodKey();
     let invoices = [];
     if (_rawCache[cacheKey]) {
