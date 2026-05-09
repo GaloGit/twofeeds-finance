@@ -560,7 +560,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.0</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.1</div>
   </div>
 </div>
 
@@ -633,7 +633,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.0</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.1</div>
   </div>
 </div>
 
@@ -893,7 +893,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.0</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.1</span>
           </div>
         </div>
       </div>
@@ -1463,16 +1463,16 @@
 
       <!-- TF Cost Charts -->
       <div id="tfcChartWrap" style="display:none;margin-top:18px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
-        <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Total Cost by Advertiser</div>
+        <div style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Total Cost by Advertiser</div>
         <div id="tfcChartBox" style="position:relative;width:100%"><canvas id="tfcChart"></canvas></div>
       </div>
       <div style="display:flex;flex-direction:column;gap:14px;margin-top:14px">
         <div id="tfcChartTfWrap" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
-          <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Cost by TF Manager</div>
+          <div style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Cost by TF Manager</div>
           <div id="tfcChartTfBox" style="position:relative;width:100%"><canvas id="tfcChartTf"></canvas></div>
         </div>
         <div id="tfcChartTo2Wrap" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
-          <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Cost by TO2 Mgr</div>
+          <div style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Cost by TO2 Mgr</div>
           <div id="tfcChartTo2Box" style="position:relative;width:100%"><canvas id="tfcChartTo2"></canvas></div>
         </div>
       </div>
@@ -1535,20 +1535,20 @@
 
       <!-- TF Profit Charts -->
       <div id="tfpChartWrap" style="display:none;margin-top:18px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
-        <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Profit by Advertiser</div>
+        <div style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Profit by Advertiser</div>
         <div id="tfpChartBox" style="position:relative;width:100%"><canvas id="tfpChart"></canvas></div>
       </div>
       <div id="tfpChartRevCostWrap" style="display:none;margin-top:14px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
-        <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Revenue vs TF Cost by Advertiser</div>
+        <div style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Revenue vs TF Cost by Advertiser</div>
         <div id="tfpChartRevCostBox" style="position:relative;width:100%"><canvas id="tfpChartRevCost"></canvas></div>
       </div>
       <div style="display:flex;flex-direction:column;gap:14px;margin-top:14px">
         <div id="tfpChartTfWrap" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
-          <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Profit by TF Manager</div>
+          <div style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Profit by TF Manager</div>
           <div id="tfpChartTfBox" style="position:relative;width:100%"><canvas id="tfpChartTf"></canvas></div>
         </div>
         <div id="tfpChartTo2Wrap" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
-          <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Profit by TO2 Mgr</div>
+          <div style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Profit by TO2 Mgr</div>
           <div id="tfpChartTo2Box" style="position:relative;width:100%"><canvas id="tfpChartTo2"></canvas></div>
         </div>
       </div>
@@ -2447,7 +2447,7 @@
 
       <!-- Bar chart: by advertiser -->
       <div id="revChartWrap" style="display:none;margin-top:18px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
-        <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Revenue by Advertiser</div>
+        <div style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Revenue by Advertiser</div>
         <div id="revChartBox" style="position:relative;width:100%">
           <canvas id="revChart"></canvas>
         </div>
@@ -2456,19 +2456,19 @@
       <!-- Bar charts: TF Manager + TO2 MGR stacked -->
       <div style="display:flex;flex-direction:column;gap:14px;margin-top:14px">
         <div id="revChartTfWrap" style="display:none;flex:1;min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
-          <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Revenue by TF Manager</div>
+          <div style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Revenue by TF Manager</div>
           <div id="revChartTfBox" style="position:relative;width:100%">
             <canvas id="revChartTf"></canvas>
           </div>
         </div>
         <div id="revChartTo2Wrap" style="display:none;flex:1;min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
-          <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Revenue by TO2 MGR</div>
+          <div style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Revenue by TO2 MGR</div>
           <div id="revChartTo2Box" style="position:relative;width:100%">
             <canvas id="revChartTo2"></canvas>
           </div>
         </div>
         <div id="revChartVertWrap" style="display:none;flex:1;min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
-          <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Revenue by Vertical</div>
+          <div style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Revenue by Vertical</div>
           <div id="revChartVertBox" style="position:relative;width:100%">
             <canvas id="revChartVert"></canvas>
           </div>
@@ -4232,7 +4232,7 @@
       const more = entries.length > 12 ? `<div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:4px">+${entries.length-12} more</div>` : '';
       return `
         <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
-          <div style="font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:${color};margin-bottom:12px">${label}</div>
+          <div style="font-family:var(--font-mono);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:${color};margin-bottom:12px">${label}</div>
           ${rows}${more}
         </div>`;
     };
@@ -4240,7 +4240,7 @@
     wrap.innerHTML = `
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:8px">
-          <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em">Portfolio Summary</div>
+          <div style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);text-transform:uppercase;letter-spacing:0.08em">Portfolio Summary</div>
           <div style="display:flex;gap:12px;align-items:center">
             <span style="font-family:var(--font-mono);font-size:10px;color:var(--green)">● ${liveCount} Live</span>
             ${pausedCount ? `<span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">⏸ ${pausedCount} Paused</span>` : ''}
@@ -4317,7 +4317,7 @@
 
       return `
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-top:20px">
-          <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px">By ${title}</div>
+          <div style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px">By ${title}</div>
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px">${cards}</div>
         </div>`;
     }
@@ -5511,7 +5511,7 @@
       const more = entries.length > 12 ? `<div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:4px">+${entries.length - 12} more</div>` : '';
       return `
         <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
-          <div style="font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:${color};margin-bottom:12px">${label}</div>
+          <div style="font-family:var(--font-mono);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:${color};margin-bottom:12px">${label}</div>
           ${rows}${more}
         </div>`;
     };
@@ -5519,7 +5519,7 @@
     wrap.innerHTML = `
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:8px">
-          <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em">Portfolio Summary</div>
+          <div style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-light);text-transform:uppercase;letter-spacing:0.08em">Portfolio Summary</div>
           <div style="display:flex;gap:12px;align-items:center">
             <span style="font-family:var(--font-mono);font-size:10px;color:var(--green)">● ${liveCount} Live</span>
             ${pausedCount ? `<span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">⏸ ${pausedCount} Paused</span>` : ''}
@@ -5589,7 +5589,7 @@
 
       return `
         <div style="margin-bottom:24px">
-          <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:${color};margin-bottom:12px">${title}</div>
+          <div style="font-family:var(--font-mono);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:${color};margin-bottom:12px">${title}</div>
           <div style="display:flex;flex-wrap:wrap;gap:12px">${cards}</div>
         </div>`;
     }
