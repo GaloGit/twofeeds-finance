@@ -560,7 +560,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.5</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.6</div>
   </div>
 </div>
 
@@ -633,7 +633,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.5</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.6</div>
   </div>
 </div>
 
@@ -893,7 +893,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.5</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.6</span>
           </div>
         </div>
       </div>
@@ -1035,12 +1035,6 @@
           <button class="clear-btn" onclick="clearPublishers()">✕ Clear All</button>
           <button class="add-btn" onclick="document.getElementById('pubUrlImportBar').style.display=document.getElementById('pubUrlImportBar').style.display==='none'?'flex':'none'">↓ From URL</button>
           <div id="pubLastUpdated" style="font-family:var(--font-mono);font-size:9px;color:var(--muted);white-space:nowrap;line-height:1.6;margin-left:4px"></div>
-        </div>
-        <div id="driveFolderRow_pub" style="display:none;align-items:center;gap:8px;margin-bottom:12px">
-          <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);white-space:nowrap">📁 Drive Folder URL</span>
-          <input id="driveFolderInput_pub" type="text" placeholder="Paste Google Drive folder URL…" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none" onkeydown="if(event.key==='Enter')saveDriveFolderUrl('pub');if(event.key==='Escape')toggleDriveFolderRow('pub',false)"/>
-          <button onclick="saveDriveFolderUrl('pub')" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">Save</button>
-          <button onclick="toggleDriveFolderRow('pub',false)" style="background:transparent;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:11px;color:var(--muted);cursor:pointer">✕</button>
         </div>
         <div id="pubUrlImportBar" style="display:none;align-items:center;gap:8px;padding:10px 0 4px">
           <input id="pubUrlInput" type="text" placeholder="Paste Google Sheet or Drive shared link…"
@@ -1263,12 +1257,6 @@
           <button class="add-btn" onclick="toggleDriveUrlInput()" id="invDriveBtn" style="background:rgba(124,58,237,0.15);border-color:rgba(124,58,237,0.4);color:#a78bfa">🔗 From Drive URL</button>
         </div>
       </div>
-      <div id="driveFolderRow_inv" style="display:none;align-items:center;gap:8px;margin-bottom:16px">
-        <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);white-space:nowrap">📁 Drive Folder URL</span>
-        <input id="driveFolderInput_inv" type="text" placeholder="Paste Google Drive folder URL…" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none" onkeydown="if(event.key==='Enter')saveDriveFolderUrl('inv');if(event.key==='Escape')toggleDriveFolderRow('inv',false)"/>
-        <button onclick="saveDriveFolderUrl('inv')" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">Save</button>
-        <button onclick="toggleDriveFolderRow('inv',false)" style="background:transparent;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:11px;color:var(--muted);cursor:pointer">✕</button>
-      </div>
       <div id="invDriveUrlRow" style="display:none;align-items:center;gap:8px;margin-bottom:16px">
         <input id="invDriveUrlInput" type="text" placeholder="Paste Google Drive URL…" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none" onkeydown="if(event.key==='Enter')handleInvDriveUrl()"/>
         <button onclick="handleInvDriveUrl()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">Extract</button>
@@ -1354,12 +1342,6 @@
             <button class="clear-btn" onclick="clearMediaBuying()">✕ Clear All</button>
             <button class="add-btn" onclick="document.getElementById('mbUrlImportBar').style.display=document.getElementById('mbUrlImportBar').style.display==='none'?'flex':'none'">🔗 From Drive URL</button>
           </div>
-        </div>
-        <div id="driveFolderRow_mb" style="display:none;align-items:center;gap:8px;margin-bottom:12px">
-          <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);white-space:nowrap">📁 Drive Folder URL</span>
-          <input id="driveFolderInput_mb" type="text" placeholder="Paste Google Drive folder URL…" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none" onkeydown="if(event.key==='Enter')saveDriveFolderUrl('mb');if(event.key==='Escape')toggleDriveFolderRow('mb',false)"/>
-          <button onclick="saveDriveFolderUrl('mb')" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">Save</button>
-          <button onclick="toggleDriveFolderRow('mb',false)" style="background:transparent;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:11px;color:var(--muted);cursor:pointer">✕</button>
         </div>
         <div id="mbUrlImportBar" style="display:none;align-items:center;gap:8px;padding:10px 0 4px">
           <input id="mbUrlInputBar" type="text" placeholder="Paste Google Sheet or Drive shared link…"
@@ -1456,12 +1438,6 @@
             <button class="add-btn" onclick="document.getElementById('tfcUrlImportBar').style.display=document.getElementById('tfcUrlImportBar').style.display==='none'?'flex':'none'">🔗 From Drive URL</button>
           </div>
         </div>
-        <div id="driveFolderRow_tfc" style="display:none;align-items:center;gap:8px;margin-bottom:12px">
-          <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);white-space:nowrap">📁 Drive Folder URL</span>
-          <input id="driveFolderInput_tfc" type="text" placeholder="Paste Google Drive folder URL…" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none" onkeydown="if(event.key==='Enter')saveDriveFolderUrl('tfc');if(event.key==='Escape')toggleDriveFolderRow('tfc',false)"/>
-          <button onclick="saveDriveFolderUrl('tfc')" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">Save</button>
-          <button onclick="toggleDriveFolderRow('tfc',false)" style="background:transparent;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:11px;color:var(--muted);cursor:pointer">✕</button>
-        </div>
         <div id="tfcUrlImportBar" style="display:none;align-items:center;gap:8px;padding:10px 0 4px">
           <input id="tfcUrlInputBar" type="text" placeholder="Paste Google Sheet or Drive shared link…"
             style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:7px 12px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none"
@@ -1517,12 +1493,6 @@
           <button id="driveFolderBtn_tfp" onclick="driveFolderClick('tfp')" style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">📁 Drive Folder</button>
           <button onclick="scrollToChart('tfpChartWrap',60)" style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap"><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" style="vertical-align:middle;margin-right:4px"><rect x="0" y="5" width="3" height="7" rx="1"/><rect x="4.5" y="2.5" width="3" height="9.5" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/></svg>Charts ↓</button>
         </div>
-      </div>
-      <div id="driveFolderRow_tfp" style="display:none;align-items:center;gap:8px;margin-bottom:16px">
-        <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);white-space:nowrap">📁 Drive Folder URL</span>
-        <input id="driveFolderInput_tfp" type="text" placeholder="Paste Google Drive folder URL…" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none" onkeydown="if(event.key==='Enter')saveDriveFolderUrl('tfp');if(event.key==='Escape')toggleDriveFolderRow('tfp',false)"/>
-        <button onclick="saveDriveFolderUrl('tfp')" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">Save</button>
-        <button onclick="toggleDriveFolderRow('tfp',false)" style="background:transparent;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:11px;color:var(--muted);cursor:pointer">✕</button>
       </div>
       <div class="summary-grid">
         <div class="summary-card green" style="animation-delay:0.05s">
@@ -9009,63 +8979,116 @@
     return parsed;
   }
 
+  let _driveFolderMenuTab = null;
+
+  function _getDriveFolderLinks(tab) {
+    const raw = (appConfig.driveFolderUrls || {})[tab];
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw;
+    if (typeof raw === 'string' && raw.startsWith('http')) return [{ label: 'Drive Folder', url: raw }];
+    return [];
+  }
+
   function driveFolderClick(tab) {
-    const url = (appConfig.driveFolderUrls || {})[tab] || '';
-    if (url) {
-      window.open(url, '_blank');
+    const menu = document.getElementById('driveFolderMenu');
+    if (!menu) return;
+    if (menu.style.display !== 'none' && _driveFolderMenuTab === tab) {
+      menu.style.display = 'none';
+      return;
+    }
+    _driveFolderMenuTab = tab;
+    _renderDriveFolderMenu();
+    const btn = document.getElementById('driveFolderBtn_' + tab);
+    if (btn) {
+      const rect = btn.getBoundingClientRect();
+      const menuW = 420;
+      let left = rect.left;
+      if (left + menuW > window.innerWidth - 12) left = window.innerWidth - menuW - 12;
+      menu.style.left = Math.max(8, left) + 'px';
+      menu.style.top  = (rect.bottom + 6) + 'px';
+    }
+    menu.style.display = 'block';
+    setTimeout(() => document.getElementById('driveFolderMenuLabel')?.focus(), 60);
+  }
+
+  function _renderDriveFolderMenu() {
+    const links = _getDriveFolderLinks(_driveFolderMenuTab);
+    const linksDiv = document.getElementById('driveFolderMenuLinks');
+    if (!linksDiv) return;
+    if (links.length === 0) {
+      linksDiv.innerHTML = '<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);padding:2px 0 6px">No links saved yet — add one below</div>';
     } else {
-      toggleDriveFolderRow(tab, true);
+      linksDiv.innerHTML = links.map((l, i) => `
+        <div style="display:flex;align-items:center;gap:6px;padding:4px 2px;border-radius:6px">
+          <a href="${esc(l.url)}" target="_blank" onclick="document.getElementById('driveFolderMenu').style.display='none'"
+            style="flex:1;font-family:var(--font-mono);font-size:12px;color:var(--accent-light);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:4px 6px;border-radius:5px;background:rgba(124,58,237,0.08)">
+            📁 ${esc(l.label || l.url)}
+          </a>
+          <button onclick="removeDriveFolderLink(${i})" title="Remove" style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:2px 5px;border-radius:4px;line-height:1">×</button>
+        </div>`).join('');
     }
   }
 
-  function toggleDriveFolderRow(tab, forceOpen) {
-    const row = document.getElementById('driveFolderRow_' + tab);
-    if (!row) return;
-    const opening = forceOpen !== undefined ? forceOpen : row.style.display !== 'flex';
-    row.style.display = opening ? 'flex' : 'none';
-    if (opening) {
-      const input = document.getElementById('driveFolderInput_' + tab);
-      if (input) {
-        input.value = (appConfig.driveFolderUrls || {})[tab] || '';
-        setTimeout(() => input.focus(), 50);
-      }
-    }
-  }
-
-  async function saveDriveFolderUrl(tab) {
-    const val = (document.getElementById('driveFolderInput_' + tab)?.value || '').trim();
-    if (!val) { showToast('⚠ Paste a URL first'); return; }
+  function addDriveFolderLink() {
+    const label = (document.getElementById('driveFolderMenuLabel')?.value || '').trim();
+    const url   = (document.getElementById('driveFolderMenuUrl')?.value   || '').trim();
+    if (!url) { showToast('⚠ Paste a URL first'); return; }
     if (!appConfig.driveFolderUrls) appConfig.driveFolderUrls = {};
-    appConfig.driveFolderUrls[tab] = val;
-    toggleDriveFolderRow(tab, false);
-    _refreshDriveFolderBtn(tab);
+    const links = _getDriveFolderLinks(_driveFolderMenuTab);
+    links.push({ label: label || url, url });
+    appConfig.driveFolderUrls[_driveFolderMenuTab] = links;
+    document.getElementById('driveFolderMenuLabel').value = '';
+    document.getElementById('driveFolderMenuUrl').value   = '';
+    _renderDriveFolderMenu();
+    _refreshDriveFolderBtn(_driveFolderMenuTab);
+    _persistDriveFolderUrls();
+  }
+
+  function removeDriveFolderLink(index) {
+    if (!appConfig.driveFolderUrls) return;
+    const links = _getDriveFolderLinks(_driveFolderMenuTab);
+    links.splice(index, 1);
+    appConfig.driveFolderUrls[_driveFolderMenuTab] = links;
+    _renderDriveFolderMenu();
+    _refreshDriveFolderBtn(_driveFolderMenuTab);
+    _persistDriveFolderUrls();
+  }
+
+  async function _persistDriveFolderUrls() {
     try {
       await fetch(FINANCE_API, {
         method: 'POST',
         body: JSON.stringify({ action: 'saveConfig', config: { driveFolderUrls: JSON.stringify(appConfig.driveFolderUrls) } })
       });
-      showToast('✓ Drive Folder link saved');
+      showToast('✓ Saved');
     } catch {
-      showToast('⚠ Saved locally but failed to sync — check connection');
+      showToast('⚠ Failed to sync — check connection');
     }
   }
 
   function _refreshDriveFolderBtn(tab) {
     const btn = document.getElementById('driveFolderBtn_' + tab);
     if (!btn) return;
-    const url = (appConfig.driveFolderUrls || {})[tab] || '';
-    if (url) {
-      btn.style.color = 'var(--green)';
+    const links = _getDriveFolderLinks(tab);
+    if (links.length > 0) {
+      btn.style.color       = 'var(--green)';
       btn.style.borderColor = 'rgba(34,197,94,0.4)';
-      btn.style.background = 'rgba(34,197,94,0.08)';
-      btn.title = url;
+      btn.style.background  = 'rgba(34,197,94,0.08)';
+      btn.textContent = `📁 Drive Folder (${links.length}) ▾`;
     } else {
-      btn.style.color = 'var(--muted)';
+      btn.style.color       = 'var(--muted)';
       btn.style.borderColor = 'var(--border)';
-      btn.style.background = 'var(--surface2)';
-      btn.title = '';
+      btn.style.background  = 'var(--surface2)';
+      btn.textContent = '📁 Drive Folder';
     }
   }
+
+  document.addEventListener('click', e => {
+    const menu = document.getElementById('driveFolderMenu');
+    if (!menu || menu.style.display === 'none') return;
+    const btn = _driveFolderMenuTab ? document.getElementById('driveFolderBtn_' + _driveFolderMenuTab) : null;
+    if (!menu.contains(e.target) && (!btn || !btn.contains(e.target))) menu.style.display = 'none';
+  });
 
   function toggleDriveUrlInput() {
     const row = document.getElementById('invDriveUrlRow');
@@ -14199,5 +14222,17 @@
   document.addEventListener('keydown', e => { if (e.key === 'Escape') _closeSdrop(); });
 })();
 </script>
+<!-- Drive Folder shared dropdown -->
+<div id="driveFolderMenu" style="display:none;position:fixed;z-index:9500;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;min-width:300px;max-width:420px;box-shadow:0 8px 28px rgba(0,0,0,0.45)">
+  <div id="driveFolderMenuLinks"></div>
+  <div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px;display:flex;flex-direction:column;gap:6px">
+    <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Add link</div>
+    <input id="driveFolderMenuLabel" type="text" placeholder="Label (e.g. Invoices Folder)" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 9px;font-family:var(--font-mono);font-size:11px;color:var(--text);outline:none;width:100%;box-sizing:border-box"/>
+    <div style="display:flex;gap:6px">
+      <input id="driveFolderMenuUrl" type="text" placeholder="Paste URL…" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 9px;font-family:var(--font-mono);font-size:11px;color:var(--text);outline:none" onkeydown="if(event.key==='Enter')addDriveFolderLink()"/>
+      <button onclick="addDriveFolderLink()" style="background:var(--accent);color:#fff;border:none;border-radius:6px;padding:6px 14px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">+ Add</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
