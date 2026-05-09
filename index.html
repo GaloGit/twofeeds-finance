@@ -560,7 +560,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.2</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.3</div>
   </div>
 </div>
 
@@ -633,7 +633,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.2</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.3</div>
   </div>
 </div>
 
@@ -893,7 +893,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.2</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.3</span>
           </div>
         </div>
       </div>
@@ -1030,10 +1030,17 @@
           <button id="pubOrderBtn" onclick="togglePubOrderEdit()" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px">↕ Edit Order</button>
           <button onclick="markAllPubStatus('paid')" style="font-family:var(--font-mono);font-size:10px;padding:5px 12px;border-radius:6px;border:1px solid rgba(34,197,94,0.3);background:rgba(34,197,94,0.08);color:var(--green);cursor:pointer">✓ All Paid</button>
           <button onclick="markAllPubStatus('waiting')" style="font-family:var(--font-mono);font-size:10px;padding:5px 12px;border-radius:6px;border:1px solid rgba(245,158,11,0.3);background:rgba(245,158,11,0.08);color:var(--amber);cursor:pointer">⏳ All Waiting</button>
+          <button id="driveFolderBtn_pub" onclick="driveFolderClick('pub')" style="font-family:var(--font-mono);font-size:10px;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:5px">📁 Drive Folder</button>
           <button class="export-btn" onclick="exportCSV()">↓ Export CSV</button>
           <button class="clear-btn" onclick="clearPublishers()">✕ Clear All</button>
           <button class="add-btn" onclick="document.getElementById('pubUrlImportBar').style.display=document.getElementById('pubUrlImportBar').style.display==='none'?'flex':'none'">↓ From URL</button>
           <div id="pubLastUpdated" style="font-family:var(--font-mono);font-size:9px;color:var(--muted);white-space:nowrap;line-height:1.6;margin-left:4px"></div>
+        </div>
+        <div id="driveFolderRow_pub" style="display:none;align-items:center;gap:8px;margin-bottom:12px">
+          <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);white-space:nowrap">📁 Drive Folder URL</span>
+          <input id="driveFolderInput_pub" type="text" placeholder="Paste Google Drive folder URL…" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none" onkeydown="if(event.key==='Enter')saveDriveFolderUrl('pub');if(event.key==='Escape')toggleDriveFolderRow('pub',false)"/>
+          <button onclick="saveDriveFolderUrl('pub')" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">Save</button>
+          <button onclick="toggleDriveFolderRow('pub',false)" style="background:transparent;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:11px;color:var(--muted);cursor:pointer">✕</button>
         </div>
         <div id="pubUrlImportBar" style="display:none;align-items:center;gap:8px;padding:10px 0 4px">
           <input id="pubUrlInput" type="text" placeholder="Paste Google Sheet or Drive shared link…"
@@ -1252,15 +1259,15 @@
 
           <button id="invClearBtn" class="clear-btn" style="display:none" onclick="clearInvoices()">✕ Clear All</button>
           <button class="export-btn" onclick="exportInvoices()">↓ Export CSV</button>
-          <button id="invFolderBtn" onclick="invFolderClick()" style="font-family:var(--font-mono);font-size:10px;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:5px">📁 Drive Folder</button>
+          <button id="driveFolderBtn_inv" onclick="driveFolderClick('inv')" style="font-family:var(--font-mono);font-size:10px;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:5px">📁 Drive Folder</button>
           <button class="add-btn" onclick="toggleDriveUrlInput()" id="invDriveBtn" style="background:rgba(124,58,237,0.15);border-color:rgba(124,58,237,0.4);color:#a78bfa">🔗 From Drive URL</button>
         </div>
       </div>
-      <div id="invFolderUrlRow" style="display:none;align-items:center;gap:8px;margin-bottom:16px">
+      <div id="driveFolderRow_inv" style="display:none;align-items:center;gap:8px;margin-bottom:16px">
         <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);white-space:nowrap">📁 Drive Folder URL</span>
-        <input id="invFolderUrlInput" type="text" placeholder="Paste Google Drive folder URL…" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none" onkeydown="if(event.key==='Enter')saveInvFolderUrl();if(event.key==='Escape')toggleInvFolderRow(false)"/>
-        <button onclick="saveInvFolderUrl()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">Save</button>
-        <button onclick="toggleInvFolderRow(false)" style="background:transparent;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:11px;color:var(--muted);cursor:pointer">✕</button>
+        <input id="driveFolderInput_inv" type="text" placeholder="Paste Google Drive folder URL…" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none" onkeydown="if(event.key==='Enter')saveDriveFolderUrl('inv');if(event.key==='Escape')toggleDriveFolderRow('inv',false)"/>
+        <button onclick="saveDriveFolderUrl('inv')" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">Save</button>
+        <button onclick="toggleDriveFolderRow('inv',false)" style="background:transparent;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:11px;color:var(--muted);cursor:pointer">✕</button>
       </div>
       <div id="invDriveUrlRow" style="display:none;align-items:center;gap:8px;margin-bottom:16px">
         <input id="invDriveUrlInput" type="text" placeholder="Paste Google Drive URL…" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none" onkeydown="if(event.key==='Enter')handleInvDriveUrl()"/>
@@ -1342,10 +1349,17 @@
             </div>
             <button onclick="scrollToChart('mbChartWrap')" style="font-family:var(--font-mono);font-size:10px;padding:5px 12px;border-radius:6px;border:1px solid rgba(124,58,237,0.4);background:rgba(124,58,237,0.12);color:#a78bfa;cursor:pointer;display:flex;align-items:center;gap:5px"><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" style="flex-shrink:0"><rect x="0" y="5" width="3" height="7" rx="1"/><rect x="4.5" y="2.5" width="3" height="9.5" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/></svg> Charts ↓</button>
             <button onclick="scrollToChart('mbCalcWrap',60)" style="font-family:var(--font-mono);font-size:10px;padding:5px 12px;border-radius:6px;border:1px solid rgba(34,197,94,0.4);background:rgba(34,197,94,0.08);color:var(--green);cursor:pointer;display:flex;align-items:center;gap:5px">🧮 Calculator ↓</button>
+            <button id="driveFolderBtn_mb" onclick="driveFolderClick('mb')" style="font-family:var(--font-mono);font-size:10px;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:5px">📁 Drive Folder</button>
             <button class="export-btn" onclick="exportMediaCSV()">↓ Export CSV</button>
             <button class="clear-btn" onclick="clearMediaBuying()">✕ Clear All</button>
             <button class="add-btn" onclick="document.getElementById('mbUrlImportBar').style.display=document.getElementById('mbUrlImportBar').style.display==='none'?'flex':'none'">🔗 From Drive URL</button>
           </div>
+        </div>
+        <div id="driveFolderRow_mb" style="display:none;align-items:center;gap:8px;margin-bottom:12px">
+          <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);white-space:nowrap">📁 Drive Folder URL</span>
+          <input id="driveFolderInput_mb" type="text" placeholder="Paste Google Drive folder URL…" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none" onkeydown="if(event.key==='Enter')saveDriveFolderUrl('mb');if(event.key==='Escape')toggleDriveFolderRow('mb',false)"/>
+          <button onclick="saveDriveFolderUrl('mb')" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">Save</button>
+          <button onclick="toggleDriveFolderRow('mb',false)" style="background:transparent;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:11px;color:var(--muted);cursor:pointer">✕</button>
         </div>
         <div id="mbUrlImportBar" style="display:none;align-items:center;gap:8px;padding:10px 0 4px">
           <input id="mbUrlInputBar" type="text" placeholder="Paste Google Sheet or Drive shared link…"
@@ -1436,10 +1450,17 @@
               <button class="search-clear-btn" id="tfcSearchClear" onclick="_clearSearch('tfcSearch',renderTfCost)">×</button>
             </div>
             <button onclick="scrollToChart('tfcChartWrap',60)" style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap"><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" style="vertical-align:middle;margin-right:4px"><rect x="0" y="5" width="3" height="7" rx="1"/><rect x="4.5" y="2.5" width="3" height="9.5" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/></svg>Charts ↓</button>
+            <button id="driveFolderBtn_tfc" onclick="driveFolderClick('tfc')" style="font-family:var(--font-mono);font-size:10px;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:5px">📁 Drive Folder</button>
             <button class="export-btn" onclick="exportTfCostCSV()">↓ Export CSV</button>
             <button class="clear-btn" onclick="clearTfCost()">✕ Clear All</button>
             <button class="add-btn" onclick="document.getElementById('tfcUrlImportBar').style.display=document.getElementById('tfcUrlImportBar').style.display==='none'?'flex':'none'">🔗 From Drive URL</button>
           </div>
+        </div>
+        <div id="driveFolderRow_tfc" style="display:none;align-items:center;gap:8px;margin-bottom:12px">
+          <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);white-space:nowrap">📁 Drive Folder URL</span>
+          <input id="driveFolderInput_tfc" type="text" placeholder="Paste Google Drive folder URL…" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none" onkeydown="if(event.key==='Enter')saveDriveFolderUrl('tfc');if(event.key==='Escape')toggleDriveFolderRow('tfc',false)"/>
+          <button onclick="saveDriveFolderUrl('tfc')" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">Save</button>
+          <button onclick="toggleDriveFolderRow('tfc',false)" style="background:transparent;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:11px;color:var(--muted);cursor:pointer">✕</button>
         </div>
         <div id="tfcUrlImportBar" style="display:none;align-items:center;gap:8px;padding:10px 0 4px">
           <input id="tfcUrlInputBar" type="text" placeholder="Paste Google Sheet or Drive shared link…"
@@ -1492,9 +1513,16 @@
           <div class="section-title">TF Profit</div>
           <div class="section-sub">Revenue vs TF Cost — <span id="tfpPeriodLabel" style="color:var(--accent-light)"></span></div>
         </div>
-        <div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button id="driveFolderBtn_tfp" onclick="driveFolderClick('tfp')" style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap">📁 Drive Folder</button>
           <button onclick="scrollToChart('tfpChartWrap',60)" style="font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap"><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" style="vertical-align:middle;margin-right:4px"><rect x="0" y="5" width="3" height="7" rx="1"/><rect x="4.5" y="2.5" width="3" height="9.5" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/></svg>Charts ↓</button>
         </div>
+      </div>
+      <div id="driveFolderRow_tfp" style="display:none;align-items:center;gap:8px;margin-bottom:16px">
+        <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);white-space:nowrap">📁 Drive Folder URL</span>
+        <input id="driveFolderInput_tfp" type="text" placeholder="Paste Google Drive folder URL…" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none" onkeydown="if(event.key==='Enter')saveDriveFolderUrl('tfp');if(event.key==='Escape')toggleDriveFolderRow('tfp',false)"/>
+        <button onclick="saveDriveFolderUrl('tfp')" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">Save</button>
+        <button onclick="toggleDriveFolderRow('tfp',false)" style="background:transparent;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:11px;color:var(--muted);cursor:pointer">✕</button>
       </div>
       <div class="summary-grid">
         <div class="summary-card green" style="animation-delay:0.05s">
@@ -8281,6 +8309,7 @@
   }
 
   async function renderPublishers() {
+    _refreshDriveFolderBtn('pub');
     const cacheKey = 'pub_' + periodKey();
     let all = [];
     let syncInfo = null;
@@ -8979,42 +9008,42 @@
     return parsed;
   }
 
-  function invFolderClick() {
-    const url = localStorage.getItem('invDriveFolderUrl') || '';
+  function driveFolderClick(tab) {
+    const url = localStorage.getItem('driveFolderUrl_' + tab) || '';
     if (url) {
       window.open(url, '_blank');
     } else {
-      toggleInvFolderRow(true);
+      toggleDriveFolderRow(tab, true);
     }
   }
 
-  function toggleInvFolderRow(forceOpen) {
-    const row = document.getElementById('invFolderUrlRow');
+  function toggleDriveFolderRow(tab, forceOpen) {
+    const row = document.getElementById('driveFolderRow_' + tab);
     if (!row) return;
     const opening = forceOpen !== undefined ? forceOpen : row.style.display !== 'flex';
     row.style.display = opening ? 'flex' : 'none';
     if (opening) {
-      const input = document.getElementById('invFolderUrlInput');
+      const input = document.getElementById('driveFolderInput_' + tab);
       if (input) {
-        input.value = localStorage.getItem('invDriveFolderUrl') || '';
+        input.value = localStorage.getItem('driveFolderUrl_' + tab) || '';
         setTimeout(() => input.focus(), 50);
       }
     }
   }
 
-  function saveInvFolderUrl() {
-    const val = (document.getElementById('invFolderUrlInput')?.value || '').trim();
+  function saveDriveFolderUrl(tab) {
+    const val = (document.getElementById('driveFolderInput_' + tab)?.value || '').trim();
     if (!val) { showToast('⚠ Paste a URL first'); return; }
-    localStorage.setItem('invDriveFolderUrl', val);
-    toggleInvFolderRow(false);
-    _refreshInvFolderBtn();
+    localStorage.setItem('driveFolderUrl_' + tab, val);
+    toggleDriveFolderRow(tab, false);
+    _refreshDriveFolderBtn(tab);
     showToast('✓ Drive Folder link saved');
   }
 
-  function _refreshInvFolderBtn() {
-    const btn = document.getElementById('invFolderBtn');
+  function _refreshDriveFolderBtn(tab) {
+    const btn = document.getElementById('driveFolderBtn_' + tab);
     if (!btn) return;
-    const url = localStorage.getItem('invDriveFolderUrl') || '';
+    const url = localStorage.getItem('driveFolderUrl_' + tab) || '';
     if (url) {
       btn.style.color = 'var(--green)';
       btn.style.borderColor = 'rgba(34,197,94,0.4)';
@@ -9127,7 +9156,7 @@
   }
 
   async function renderInvoices() {
-    _refreshInvFolderBtn();
+    _refreshDriveFolderBtn('inv');
     const cacheKey = 'inv_' + periodKey();
     let invoices = [];
     if (_rawCache[cacheKey]) {
@@ -9686,6 +9715,7 @@
   }
 
   async function renderMediaBuying() {
+    _refreshDriveFolderBtn('mb');
     const cacheKey = 'mb_' + periodKey();
     let all = [];
     if (_rawCache[cacheKey]) {
@@ -10103,6 +10133,7 @@
   }
 
   async function renderTfCost() {
+    _refreshDriveFolderBtn('tfc');
     const fmtAmt = v => '$' + Number(v).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
     const cacheKey = 'tfc_' + periodKey();
     let all = [];
@@ -10231,6 +10262,7 @@
 
   // ── TF PROFIT ──
   function renderTfProfit() {
+    _refreshDriveFolderBtn('tfp');
     const fmtAmt = v => '$' + Number(v).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
     const pk = periodKey();
 
