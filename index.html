@@ -560,7 +560,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.3</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.4</div>
   </div>
 </div>
 
@@ -633,7 +633,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.3</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.4</div>
   </div>
 </div>
 
@@ -893,7 +893,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.3</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.4</span>
           </div>
         </div>
       </div>
@@ -2870,7 +2870,7 @@
 <script>
   // ── CONFIG ──
   let appPassword = 'TFfinance'; // overridden by Config sheet on load; fallback for users with no personal password
-  let appConfig = { refreshInterval: 60, sessionTimeout: 0, extractionInstructions: '' };
+  let appConfig = { refreshInterval: 60, sessionTimeout: 0, extractionInstructions: '', driveFolderUrls: {} };
 
   // ── SHA-256 (for password hashing — never store plain text) ──
   async function sha256(str) {
@@ -6367,6 +6367,7 @@
         if (c.sessionTimeout)       appConfig.sessionTimeout       = parseInt(c.sessionTimeout)  || 0;
         if (c.extractionInstructions !== undefined) appConfig.extractionInstructions = c.extractionInstructions || '';
         if (c.revSheetUrls !== undefined) { try { appConfig.revSheetUrls = JSON.parse(c.revSheetUrls || '{}'); } catch { appConfig.revSheetUrls = {}; } }
+        if (c.driveFolderUrls !== undefined) { try { appConfig.driveFolderUrls = JSON.parse(c.driveFolderUrls || '{}'); } catch { appConfig.driveFolderUrls = {}; } }
         if (c.revAdvCol    !== undefined) appConfig.revAdvCol  = c.revAdvCol   || '';
         if (c.revAmtCol    !== undefined) appConfig.revAmtCol  = c.revAmtCol   || '';
         if (c.revCostCol   !== undefined) appConfig.revCostCol = c.revCostCol  || '';
@@ -9009,7 +9010,7 @@
   }
 
   function driveFolderClick(tab) {
-    const url = localStorage.getItem('driveFolderUrl_' + tab) || '';
+    const url = (appConfig.driveFolderUrls || {})[tab] || '';
     if (url) {
       window.open(url, '_blank');
     } else {
@@ -9025,25 +9026,34 @@
     if (opening) {
       const input = document.getElementById('driveFolderInput_' + tab);
       if (input) {
-        input.value = localStorage.getItem('driveFolderUrl_' + tab) || '';
+        input.value = (appConfig.driveFolderUrls || {})[tab] || '';
         setTimeout(() => input.focus(), 50);
       }
     }
   }
 
-  function saveDriveFolderUrl(tab) {
+  async function saveDriveFolderUrl(tab) {
     const val = (document.getElementById('driveFolderInput_' + tab)?.value || '').trim();
     if (!val) { showToast('⚠ Paste a URL first'); return; }
-    localStorage.setItem('driveFolderUrl_' + tab, val);
+    if (!appConfig.driveFolderUrls) appConfig.driveFolderUrls = {};
+    appConfig.driveFolderUrls[tab] = val;
     toggleDriveFolderRow(tab, false);
     _refreshDriveFolderBtn(tab);
-    showToast('✓ Drive Folder link saved');
+    try {
+      await fetch(FINANCE_API, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'saveConfig', config: { driveFolderUrls: JSON.stringify(appConfig.driveFolderUrls) } })
+      });
+      showToast('✓ Drive Folder link saved');
+    } catch {
+      showToast('⚠ Saved locally but failed to sync — check connection');
+    }
   }
 
   function _refreshDriveFolderBtn(tab) {
     const btn = document.getElementById('driveFolderBtn_' + tab);
     if (!btn) return;
-    const url = localStorage.getItem('driveFolderUrl_' + tab) || '';
+    const url = (appConfig.driveFolderUrls || {})[tab] || '';
     if (url) {
       btn.style.color = 'var(--green)';
       btn.style.borderColor = 'rgba(34,197,94,0.4)';
