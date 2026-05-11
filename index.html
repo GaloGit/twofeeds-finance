@@ -93,10 +93,10 @@
     .gate-logo { width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 32px rgba(124,58,237,0.35); border: 1px solid rgba(124,58,237,0.25); }
     .gate-logo img { width: 100%; height: 100%; object-fit: cover; }
     .gate-title { font-size: 24px; font-weight: 800; margin-bottom: 6px; }
-    .gate-sub { color: var(--muted); font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.05em; margin-bottom: 32px; }
-    .gate-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; color: var(--text); font-family: var(--font-mono); font-size: 14px; outline: none; transition: border-color 0.2s; letter-spacing: 0.15em; margin-bottom: 12px; text-align: center; }
+    .gate-sub { color: rgba(196,181,253,0.55); font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em; margin-bottom: 30px; }
+    .gate-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 13px 16px; color: var(--text); font-family: var(--font-mono); font-size: 13px; outline: none; transition: border-color 0.2s; letter-spacing: 0.03em; margin-bottom: 10px; text-align: left; }
     .gate-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
-    .gate-input::placeholder { letter-spacing: 0.05em; color: var(--muted); }
+    .gate-input::placeholder { letter-spacing: 0.04em; color: rgba(107,114,128,0.7); font-size: 12px; }
     .gate-input:-webkit-autofill,
     .gate-input:-webkit-autofill:hover,
     .gate-input:-webkit-autofill:focus,
@@ -113,8 +113,8 @@
     .gate-eye { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: transparent; border: none; cursor: pointer; font-size: 16px; opacity: 0.5; transition: opacity 0.2s; padding: 0; line-height: 1; }
     .gate-eye:hover { opacity: 1; }
     .gate-remember { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; justify-content: flex-start; }
-    .gate-btn { width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 10px; padding: 14px; font-family: var(--font-mono); font-size: 12px; font-weight: 700; cursor: pointer; letter-spacing: 0.1em; transition: all 0.2s; }
-    .gate-btn:hover { background: var(--accent-light); box-shadow: 0 0 20px var(--accent-glow); }
+    .gate-btn { width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 10px; padding: 14px; font-family: var(--font-mono); font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 0.07em; transition: all 0.2s; }
+    .gate-btn:hover { background: var(--accent-light); box-shadow: 0 0 24px var(--accent-glow); }
     .gate-error { color: var(--red); font-family: var(--font-mono); font-size: 11px; margin-top: 12px; min-height: 16px; }
 
     /* APP */
@@ -560,7 +560,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.7</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.8</div>
   </div>
 </div>
 
@@ -587,10 +587,10 @@
       </div>
       <div class="gate-remember">
         <input type="checkbox" id="rememberMe" style="accent-color:var(--accent);width:14px;height:14px;cursor:pointer"/>
-        <label for="rememberMe" style="font-family:var(--font-mono);font-size:11px;color:var(--muted);cursor:pointer">Remember me for 7 days</label>
+        <label for="rememberMe" style="font-family:var(--font-mono);font-size:11px;color:rgba(156,163,175,0.8);letter-spacing:0.04em;cursor:pointer">Remember me for 7 days</label>
       </div>
-      <button class="gate-btn" id="gateBtn1" onclick="submitCredentials()">CONTINUE →</button>
-      <button onclick="showChangePasswordPanel()" style="background:transparent;border:none;color:var(--muted);font-family:var(--font-mono);font-size:11px;cursor:pointer;margin-top:14px;width:100%;transition:color 0.15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">🔒 Change my password</button>
+      <button class="gate-btn" id="gateBtn1" onclick="submitCredentials()">Continue →</button>
+      <button onclick="showChangePasswordPanel()" style="background:transparent;border:none;color:rgba(107,114,128,0.6);font-family:var(--font-mono);font-size:11px;letter-spacing:0.04em;cursor:pointer;margin-top:16px;width:100%;transition:color 0.2s" onmouseover="this.style.color='rgba(196,181,253,0.7)'" onmouseout="this.style.color='rgba(107,114,128,0.6)'">🔒 Change my password</button>
     </div>
 
     <!-- Step 2: Verification Code -->
@@ -605,7 +605,7 @@
       <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin:8px 0 16px;text-align:center">
         Code expires in <span id="codeTimer" style="color:var(--amber)">10:00</span>
       </div>
-      <button class="gate-btn" onclick="submitCode()">VERIFY →</button>
+      <button class="gate-btn" onclick="submitCode()">Verify →</button>
       <a href="https://mail.google.com/mail/u/0/?pli=1#inbox" target="_blank" style="display:block;text-align:center;margin-top:10px;padding:9px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:var(--font-mono);font-size:11px;cursor:pointer;text-decoration:none">✉ Open Gmail</a>
       <button onclick="backToStep1()" style="background:transparent;border:none;color:var(--muted);font-family:var(--font-mono);font-size:11px;cursor:pointer;margin-top:8px;width:100%">← Use a different email</button>
     </div>
@@ -633,7 +633,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.7</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.8</div>
   </div>
 </div>
 
@@ -893,7 +893,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.7</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.8</span>
           </div>
         </div>
       </div>
@@ -6751,7 +6751,7 @@
         _loginSettingsCache = j.data || [];
       } catch {
         setGateError('Connection error. Please try again.');
-        btn.textContent = 'CONTINUE →'; btn.disabled = false; return;
+        btn.textContent = 'Continue →'; btn.disabled = false; return;
       }
     }
 
@@ -6765,14 +6765,14 @@
       if (hash !== userRecord.passwordHash) {
         setGateError('Incorrect password. Try again.');
         document.getElementById('gateInput').value = '';
-        btn.textContent = 'CONTINUE →'; btn.disabled = false; return;
+        btn.textContent = 'Continue →'; btn.disabled = false; return;
       }
     } else {
       // No personal password set (or user not in sheet) — fall back to shared password
       if (pass !== appPassword) {
         setGateError('Incorrect password. Try again.');
         document.getElementById('gateInput').value = '';
-        btn.textContent = 'CONTINUE →'; btn.disabled = false; return;
+        btn.textContent = 'Continue →'; btn.disabled = false; return;
       }
     }
 
@@ -6780,7 +6780,7 @@
     if (userRecord?.tabs?.skip2fa === true) {
       pendingEmail = email;
       completeLogin(email);
-      btn.textContent = 'CONTINUE →'; btn.disabled = false;
+      btn.textContent = 'Continue →'; btn.disabled = false;
       return;
     }
 
@@ -6806,7 +6806,7 @@
       setGateError('Failed to send code. Please try again.');
       console.error('EmailJS error:', err);
     }
-    btn.textContent = 'CONTINUE →';
+    btn.textContent = 'Continue →';
     btn.disabled = false;
   }
 
