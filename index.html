@@ -560,7 +560,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.10</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.11</div>
   </div>
 </div>
 
@@ -633,7 +633,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.10</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.11</div>
   </div>
 </div>
 
@@ -893,7 +893,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.10</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.11</span>
           </div>
         </div>
       </div>
@@ -2890,7 +2890,7 @@
 <script>
   // ── CONFIG ──
   let appPassword = 'TFfinance'; // overridden by Config sheet on load; fallback for users with no personal password
-  let appConfig = { refreshInterval: 60, sessionTimeout: 0, extractionInstructions: '', driveFolderUrls: {}, qaKnowledge: [] };
+  let appConfig = { refreshInterval: 60, sessionTimeout: 0, extractionInstructions: '', driveFolderUrls: {} };
 
   // ── SHA-256 (for password hashing — never store plain text) ──
   async function sha256(str) {
@@ -6432,7 +6432,6 @@
         if (c.extractionInstructions !== undefined) appConfig.extractionInstructions = c.extractionInstructions || '';
         if (c.revSheetUrls !== undefined) { try { appConfig.revSheetUrls = JSON.parse(c.revSheetUrls || '{}'); } catch { appConfig.revSheetUrls = {}; } }
         if (c.driveFolderUrls !== undefined) { try { appConfig.driveFolderUrls = JSON.parse(c.driveFolderUrls || '{}'); } catch { appConfig.driveFolderUrls = {}; } }
-        if (c.qaKnowledge    !== undefined) { try { appConfig.qaKnowledge    = JSON.parse(c.qaKnowledge    || '[]'); } catch { appConfig.qaKnowledge = []; } }
         if (c.revAdvCol    !== undefined) appConfig.revAdvCol  = c.revAdvCol   || '';
         if (c.revAmtCol    !== undefined) appConfig.revAmtCol  = c.revAmtCol   || '';
         if (c.revCostCol   !== undefined) appConfig.revCostCol = c.revCostCol  || '';
@@ -8114,13 +8113,25 @@
 
   // ── Q&A ─────────────────────────────────────────────────────────────────
 
-  let _qaHistory  = [];
-  let _qaManaging = false;
+  let _qaHistory        = [];
+  let _qaManaging       = false;
+  let _qaKnowledge      = [];
+  let _qaKnowledgeLoaded = false;
+
+  async function loadKnowledge() {
+    if (_qaKnowledgeLoaded) return;
+    try {
+      const res  = await fetch(`${FINANCE_API}?action=getKnowledge`);
+      const data = await res.json();
+      if (data.success) { _qaKnowledge = data.data || []; _qaKnowledgeLoaded = true; }
+    } catch {}
+  }
 
   function _initQAPage() {
     const manageBtn = document.getElementById('qaManageBtn');
     if (manageBtn) manageBtn.style.display = isAdmin() ? '' : 'none';
     if (!_qaHistory.length) _renderQAConversation();
+    loadKnowledge();
   }
 
   function toggleQAView() {
@@ -8168,7 +8179,13 @@
     _qaHistory.push({ q: question, a: null });
     _renderQAConversation();
     try {
-      const knowledge = appConfig.qaKnowledge.map(e => `## ${e.title || 'Untitled'}\n${e.content || ''}`).join('\n\n');
+      const knowledge = _qaKnowledge.map(e => {
+        let block = `## ${e.topic || 'Untitled'}`;
+        if (e.contact) block += `\nContact: ${e.contact}`;
+        if (e.date)    block += `\nAdded: ${e.date}`;
+        block += `\n\n${e.content || ''}`;
+        return block;
+      }).join('\n\n---\n\n');
       const res = await fetch(WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Access-Token': 'tf-2026-xK9mP3qL8nR5vW2j' },
@@ -8188,34 +8205,52 @@
   function renderKnowledgeList() {
     const list = document.getElementById('qaKnowledgeList');
     if (!list) return;
-    if (!appConfig.qaKnowledge.length) {
+    if (!_qaKnowledge.length) {
       list.innerHTML = `<div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:center;padding:20px 0">No entries yet. Click "+ Add Entry" to get started.</div>`;
       return;
     }
-    list.innerHTML = appConfig.qaKnowledge.map((e, i) => `
+    list.innerHTML = _qaKnowledge.map((e, i) => `
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-          <input value="${_escHtml(e.title||'')}" oninput="appConfig.qaKnowledge[${i}].title=this.value"
-            placeholder="Entry title (e.g. Billing Policy, Onboarding Process…)"
-            style="flex:1;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:var(--font-mono);font-size:11px;font-weight:700;outline:none"/>
+        <div style="display:flex;align-items:flex-end;gap:8px;margin-bottom:10px">
+          <div style="flex:1;display:grid;grid-template-columns:150px 1fr 1fr;gap:8px">
+            <div>
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Date Added</div>
+              <input type="date" value="${_escHtml(e.date||'')}" oninput="_qaKnowledge[${i}].date=this.value"
+                style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;box-sizing:border-box"/>
+            </div>
+            <div>
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Topic</div>
+              <input value="${_escHtml(e.topic||'')}" oninput="_qaKnowledge[${i}].topic=this.value"
+                placeholder="e.g. Billing Policy"
+                style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;box-sizing:border-box"/>
+            </div>
+            <div>
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Contact Person</div>
+              <input value="${_escHtml(e.contact||'')}" oninput="_qaKnowledge[${i}].contact=this.value"
+                placeholder="e.g. Gal R."
+                style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;box-sizing:border-box"/>
+            </div>
+          </div>
           <button onclick="deleteKnowledgeEntry(${i})"
-            style="background:transparent;border:1px solid rgba(239,68,68,0.4);color:rgba(239,68,68,0.7);border-radius:6px;padding:5px 10px;font-family:var(--font-mono);font-size:10px;cursor:pointer">✕</button>
+            style="background:transparent;border:1px solid rgba(239,68,68,0.4);color:rgba(239,68,68,0.7);border-radius:6px;padding:6px 12px;font-family:var(--font-mono);font-size:10px;cursor:pointer;white-space:nowrap">✕ Remove</button>
         </div>
-        <textarea oninput="appConfig.qaKnowledge[${i}].content=this.value" rows="5"
+        <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Content</div>
+        <textarea oninput="_qaKnowledge[${i}].content=this.value" rows="5"
           placeholder="Write the knowledge content here — principles, policies, processes, facts, guidelines…"
           style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;resize:vertical;box-sizing:border-box;line-height:1.5">${_escHtml(e.content||'')}</textarea>
       </div>`).join('');
   }
 
   function addKnowledgeEntry() {
-    appConfig.qaKnowledge.push({ title: '', content: '' });
+    const today = new Date().toISOString().split('T')[0];
+    _qaKnowledge.push({ date: today, topic: '', contact: '', content: '' });
     renderKnowledgeList();
     const list = document.getElementById('qaKnowledgeList');
     if (list?.lastElementChild) list.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
   function deleteKnowledgeEntry(i) {
-    appConfig.qaKnowledge.splice(i, 1);
+    _qaKnowledge.splice(i, 1);
     renderKnowledgeList();
   }
 
@@ -8223,13 +8258,14 @@
     try {
       const res = await fetch(FINANCE_API, {
         method: 'POST',
-        body: JSON.stringify({ action: 'saveConfig', config: { qaKnowledge: JSON.stringify(appConfig.qaKnowledge) } })
+        body: JSON.stringify({ action: 'saveKnowledge', entries: _qaKnowledge })
       });
       const j = await res.json();
       if (!j.success) throw new Error(j.error || 'Save failed');
+      _qaKnowledgeLoaded = true;
       const st = document.getElementById('qaKbStatus');
       if (st) { st.textContent = '✓ Saved!'; st.style.opacity = '1'; setTimeout(() => st.style.opacity = '0', 2500); }
-      logActivity('save_knowledge_base', `${appConfig.qaKnowledge.length} entries`);
+      logActivity('save_knowledge_base', `${_qaKnowledge.length} entries`);
     } catch (e) { showToast(`⚠ Failed to save — ${e.message}`, true); }
   }
 
