@@ -560,7 +560,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.11</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.12</div>
   </div>
 </div>
 
@@ -633,7 +633,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.11</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.12</div>
   </div>
 </div>
 
@@ -893,7 +893,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.11</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.12</span>
           </div>
         </div>
       </div>
@@ -6431,7 +6431,6 @@
         if (c.sessionTimeout)       appConfig.sessionTimeout       = parseInt(c.sessionTimeout)  || 0;
         if (c.extractionInstructions !== undefined) appConfig.extractionInstructions = c.extractionInstructions || '';
         if (c.revSheetUrls !== undefined) { try { appConfig.revSheetUrls = JSON.parse(c.revSheetUrls || '{}'); } catch { appConfig.revSheetUrls = {}; } }
-        if (c.driveFolderUrls !== undefined) { try { appConfig.driveFolderUrls = JSON.parse(c.driveFolderUrls || '{}'); } catch { appConfig.driveFolderUrls = {}; } }
         if (c.revAdvCol    !== undefined) appConfig.revAdvCol  = c.revAdvCol   || '';
         if (c.revAmtCol    !== undefined) appConfig.revAmtCol  = c.revAmtCol   || '';
         if (c.revCostCol   !== undefined) appConfig.revCostCol = c.revCostCol  || '';
@@ -6440,8 +6439,24 @@
     } catch {}
   }
 
+  async function loadDriveFolders() {
+    try {
+      const res  = await fetch(`${FINANCE_API}?action=getDriveFolders`);
+      const data = await res.json();
+      if (data.success) {
+        const dict = {};
+        (data.data || []).forEach(r => {
+          if (!dict[r.tab]) dict[r.tab] = [];
+          dict[r.tab].push({ label: r.label, url: r.url });
+        });
+        appConfig.driveFolderUrls = dict;
+      }
+    } catch {}
+  }
+
   // Load config immediately so password is ready before login
   const _configReady = loadConfig();
+  loadDriveFolders();
 
   // ── ACTIVITY LOG ──
   function logActivity(action, details = '') {
@@ -9322,9 +9337,15 @@
 
   async function _persistDriveFolderUrls() {
     try {
+      const entries = [];
+      Object.keys(appConfig.driveFolderUrls || {}).forEach(tab => {
+        (appConfig.driveFolderUrls[tab] || []).forEach(link => {
+          entries.push({ tab, label: link.label, url: link.url });
+        });
+      });
       await fetch(FINANCE_API, {
         method: 'POST',
-        body: JSON.stringify({ action: 'saveConfig', config: { driveFolderUrls: JSON.stringify(appConfig.driveFolderUrls) } })
+        body: JSON.stringify({ action: 'saveDriveFolders', entries })
       });
       showToast('✓ Saved');
     } catch {
