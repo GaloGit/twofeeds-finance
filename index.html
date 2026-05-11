@@ -560,7 +560,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.9</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.10</div>
   </div>
 </div>
 
@@ -633,7 +633,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.9</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.10</div>
   </div>
 </div>
 
@@ -893,7 +893,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.9</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.10</span>
           </div>
         </div>
       </div>
@@ -926,6 +926,7 @@
       <div id="sectionSwitcher" class="section-switcher" style="display:none">
         <button id="sswFinance" class="ssw-btn active" onclick="switchSection('finance')">Finance</button>
         <button id="sswOps"     class="ssw-btn"        onclick="switchSection('ops')">Operations</button>
+        <button id="sswQA"      class="ssw-btn"        onclick="switchSection('qa')">💬 Q&amp;A</button>
       </div>
       <div id="financePeriodBar" style="display:flex;gap:8px;align-items:center">
         <div class="period-dd" id="yearDropdown">
@@ -2832,6 +2833,55 @@
 
     </div><!-- /opsPages -->
 
+    <!-- Q&A PAGES -->
+    <div id="qaPages" style="display:none">
+      <div class="page active" id="tab-qa" style="max-width:860px">
+
+        <div class="section-header" style="margin-bottom:20px">
+          <div>
+            <div class="section-title">💬 Q&amp;A Assistant</div>
+            <div class="section-sub">Ask questions answered from the team knowledge base</div>
+          </div>
+          <button id="qaManageBtn" onclick="toggleQAView()"
+            style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 16px;color:var(--muted);font-family:var(--font-mono);font-size:11px;cursor:pointer;letter-spacing:0.04em">
+            📚 Manage Knowledge
+          </button>
+        </div>
+
+        <!-- CHAT VIEW -->
+        <div id="qaChatView">
+          <div id="qaConversation"
+            style="display:flex;flex-direction:column;gap:16px;margin-bottom:20px;min-height:80px;max-height:560px;overflow-y:auto;padding-right:4px">
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;gap:10px;align-items:flex-end">
+            <textarea id="qaInput" rows="2" placeholder="Ask a question…"
+              style="flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:var(--font-mono);font-size:13px;resize:none;line-height:1.5"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();askQuestion()}"></textarea>
+            <button id="qaSubmitBtn" onclick="askQuestion()"
+              style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;letter-spacing:0.04em">Ask →</button>
+          </div>
+          <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:7px;text-align:right">Shift+Enter for new line · Enter to send</div>
+        </div>
+
+        <!-- KNOWLEDGE MANAGEMENT VIEW (admin only) -->
+        <div id="qaManageView" style="display:none">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:18px">
+            <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px">📚 Knowledge Base Entries</div>
+            <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:16px">Add topics, policies, principles or any information you want users to be able to ask about. Each entry has a title and free-form content.</div>
+            <div id="qaKnowledgeList" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px"></div>
+            <button onclick="addKnowledgeEntry()"
+              style="background:transparent;border:1px dashed var(--border);color:var(--muted);border-radius:8px;padding:9px 20px;font-family:var(--font-mono);font-size:11px;cursor:pointer;width:100%;letter-spacing:0.04em">+ Add Entry</button>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center">
+            <button onclick="saveKnowledgeBase()"
+              style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 24px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.05em">SAVE KNOWLEDGE BASE</button>
+            <span id="qaKbStatus" style="font-family:var(--font-mono);font-size:11px;color:var(--green);opacity:0;transition:opacity 0.3s"></span>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /qaPages -->
+
   </div><!-- /container -->
 </div><!-- /app -->
 
@@ -2840,7 +2890,7 @@
 <script>
   // ── CONFIG ──
   let appPassword = 'TFfinance'; // overridden by Config sheet on load; fallback for users with no personal password
-  let appConfig = { refreshInterval: 60, sessionTimeout: 0, extractionInstructions: '', driveFolderUrls: {} };
+  let appConfig = { refreshInterval: 60, sessionTimeout: 0, extractionInstructions: '', driveFolderUrls: {}, qaKnowledge: [] };
 
   // ── SHA-256 (for password hashing — never store plain text) ──
   async function sha256(str) {
@@ -2900,6 +2950,7 @@
     });
     t.section_finance = true;
     t.section_ops     = true;
+    t.section_qa      = true;
     return t;
   }
 
@@ -2934,14 +2985,24 @@
       }
     }
 
+    // ── Tab permissions lookup (shared by section switcher + tab visibility) ──
+    const user = (localStorage.getItem('tf_current_user')||'').toLowerCase();
+    const su   = admin ? null : settingsUsers.find(u => u.email.toLowerCase() === user);
+    const tabs = su?.tabs || defaultTabs();
+
     // ── Section switcher ──
     const hasFinance = admin || tabs.section_finance !== false;
     const hasOps     = admin || tabs.section_ops     !== false;
+    const hasQA      = admin || tabs.section_qa      !== false;
     const sw = document.getElementById('sectionSwitcher');
-    if (sw) sw.style.display = (hasFinance && hasOps) ? 'flex' : 'none';
+    const accessCount = [hasFinance, hasOps, hasQA].filter(Boolean).length;
+    if (sw) sw.style.display = accessCount > 1 ? 'flex' : 'none';
+    const sswQABtn = document.getElementById('sswQA');
+    if (sswQABtn) sswQABtn.style.display = hasQA ? '' : 'none';
     if (!admin) {
-      if (!hasFinance && hasOps)  switchSection('ops');
-      else if (hasFinance && !hasOps) switchSection('finance');
+      if (!hasFinance && !hasOps && hasQA) switchSection('qa');
+      else if (!hasFinance && hasOps)      switchSection('ops');
+      else if (hasFinance && !hasOps)      switchSection('finance');
     }
 
     // ── Admin-only panel buttons (Settings + Team Roles moved out of nav) ──
@@ -2950,9 +3011,6 @@
       if (el) el.style.display = admin ? 'flex' : 'none';
     });
     // ── Tab visibility (all tabs controlled by TAB_DEFS + settings) ──
-    const user = (localStorage.getItem('tf_current_user')||'').toLowerCase();
-    const su = admin ? null : settingsUsers.find(u => u.email.toLowerCase() === user);
-    const tabs = su?.tabs || defaultTabs();
 
     TAB_DEFS.forEach(d => {
       const btn = document.getElementById('navTab_' + d.key);
@@ -6238,6 +6296,7 @@
     const btnBase = 'font-family:var(--font-mono);font-size:9px;border-radius:6px;cursor:pointer;padding:4px 10px;border:1px solid ';
     const finOn   = tabs.section_finance !== false;
     const opsOn   = tabs.section_ops     !== false;
+    const qaOn    = tabs.section_qa      !== false;
     const onStyle  = (c) => `background:rgba(${c},0.15);color:var(--green);border-color:rgba(${c},0.7)`;
     const offStyle = `background:var(--surface3);color:var(--muted);border-color:var(--border)`;
     const sectionHtml = `
@@ -6251,6 +6310,10 @@
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-family:var(--font-mono);font-size:11px;color:var(--text)">⚙️ Operations</span>
             <button onclick="toggleSectionPerm(${i},'section_ops',this)" style="${btnBase}${opsOn ? onStyle('34,197,94') : offStyle};min-width:64px">${opsOn?'✓ ON':'✕ OFF'}</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-family:var(--font-mono);font-size:11px;color:var(--text)">💬 Q&amp;A</span>
+            <button onclick="toggleSectionPerm(${i},'section_qa',this)" style="${btnBase}${qaOn ? onStyle('34,197,94') : offStyle};min-width:64px">${qaOn?'✓ ON':'✕ OFF'}</button>
           </div>
         </div>
       </div>`;
@@ -6369,6 +6432,7 @@
         if (c.extractionInstructions !== undefined) appConfig.extractionInstructions = c.extractionInstructions || '';
         if (c.revSheetUrls !== undefined) { try { appConfig.revSheetUrls = JSON.parse(c.revSheetUrls || '{}'); } catch { appConfig.revSheetUrls = {}; } }
         if (c.driveFolderUrls !== undefined) { try { appConfig.driveFolderUrls = JSON.parse(c.driveFolderUrls || '{}'); } catch { appConfig.driveFolderUrls = {}; } }
+        if (c.qaKnowledge    !== undefined) { try { appConfig.qaKnowledge    = JSON.parse(c.qaKnowledge    || '[]'); } catch { appConfig.qaKnowledge = []; } }
         if (c.revAdvCol    !== undefined) appConfig.revAdvCol  = c.revAdvCol   || '';
         if (c.revAmtCol    !== undefined) appConfig.revAmtCol  = c.revAmtCol   || '';
         if (c.revCostCol   !== undefined) appConfig.revCostCol = c.revCostCol  || '';
@@ -8033,15 +8097,140 @@
 
   function switchSection(section) {
     _activeSection = section;
-    const isOps = section === 'ops';
-    document.getElementById('sswFinance').classList.toggle('active', !isOps);
-    document.getElementById('sswOps').classList.toggle('active', isOps);
-    document.getElementById('financePeriodBar').style.display = isOps ? 'none' : 'flex';
-    document.getElementById('financeNav').style.display       = isOps ? 'none' : '';
-    document.getElementById('opsNav').style.display           = isOps ? 'flex' : 'none';
-    document.getElementById('financePages').style.display     = isOps ? 'none' : '';
-    document.getElementById('opsPages').style.display         = isOps ? '' : 'none';
-    if (isOps) _loadOpsData();
+    document.getElementById('sswFinance').classList.toggle('active', section === 'finance');
+    document.getElementById('sswOps').classList.toggle('active', section === 'ops');
+    const qa = document.getElementById('sswQA');
+    if (qa) qa.classList.toggle('active', section === 'qa');
+    document.getElementById('financePeriodBar').style.display = section === 'finance' ? 'flex' : 'none';
+    document.getElementById('financeNav').style.display       = section === 'finance' ? '' : 'none';
+    document.getElementById('opsNav').style.display           = section === 'ops' ? 'flex' : 'none';
+    document.getElementById('financePages').style.display     = section === 'finance' ? '' : 'none';
+    document.getElementById('opsPages').style.display         = section === 'ops' ? '' : 'none';
+    const qap = document.getElementById('qaPages');
+    if (qap) qap.style.display = section === 'qa' ? '' : 'none';
+    if (section === 'ops') _loadOpsData();
+    if (section === 'qa') _initQAPage();
+  }
+
+  // ── Q&A ─────────────────────────────────────────────────────────────────
+
+  let _qaHistory  = [];
+  let _qaManaging = false;
+
+  function _initQAPage() {
+    const manageBtn = document.getElementById('qaManageBtn');
+    if (manageBtn) manageBtn.style.display = isAdmin() ? '' : 'none';
+    if (!_qaHistory.length) _renderQAConversation();
+  }
+
+  function toggleQAView() {
+    _qaManaging = !_qaManaging;
+    document.getElementById('qaChatView').style.display    = _qaManaging ? 'none' : '';
+    document.getElementById('qaManageView').style.display  = _qaManaging ? '' : 'none';
+    const btn = document.getElementById('qaManageBtn');
+    if (btn) btn.textContent = _qaManaging ? '💬 Back to Chat' : '📚 Manage Knowledge';
+    if (_qaManaging) renderKnowledgeList();
+  }
+
+  function _escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function _renderQAConversation() {
+    const el = document.getElementById('qaConversation');
+    if (!el) return;
+    if (!_qaHistory.length) {
+      el.innerHTML = `<div style="font-family:var(--font-mono);font-size:12px;color:var(--muted);text-align:center;padding:48px 0;line-height:1.7">Ask anything —<br>answers come from the team knowledge base.</div>`;
+      return;
+    }
+    el.innerHTML = _qaHistory.map(h => `
+      <div>
+        <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+          <div style="background:var(--accent);color:#fff;border-radius:12px 12px 4px 12px;padding:10px 16px;max-width:72%;font-family:var(--font-mono);font-size:12px;line-height:1.5;white-space:pre-wrap">${_escHtml(h.q)}</div>
+        </div>
+        <div style="display:flex;justify-content:flex-start">
+          ${h.a !== null
+            ? `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px 12px 12px 4px;padding:10px 16px;max-width:82%;font-family:var(--font-mono);font-size:12px;line-height:1.6;color:var(--text);white-space:pre-wrap">${_escHtml(h.a)}</div>`
+            : `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 16px;font-family:var(--font-mono);font-size:12px;color:var(--muted)">Thinking…</div>`
+          }
+        </div>
+      </div>`).join('');
+    el.scrollTop = el.scrollHeight;
+  }
+
+  async function askQuestion() {
+    const input = document.getElementById('qaInput');
+    const question = (input?.value || '').trim();
+    if (!question) return;
+    const btn = document.getElementById('qaSubmitBtn');
+    if (btn) { btn.disabled = true; btn.textContent = '…'; }
+    input.value = '';
+    _qaHistory.push({ q: question, a: null });
+    _renderQAConversation();
+    try {
+      const knowledge = appConfig.qaKnowledge.map(e => `## ${e.title || 'Untitled'}\n${e.content || ''}`).join('\n\n');
+      const res = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Access-Token': 'tf-2026-xK9mP3qL8nR5vW2j' },
+        body: JSON.stringify({ action: 'qa', question, knowledge })
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      _qaHistory[_qaHistory.length - 1].a = data.answer;
+    } catch (e) {
+      _qaHistory[_qaHistory.length - 1].a = `⚠ Error: ${e.message}`;
+    }
+    _renderQAConversation();
+    if (btn) { btn.disabled = false; btn.textContent = 'Ask →'; }
+  }
+
+  function renderKnowledgeList() {
+    const list = document.getElementById('qaKnowledgeList');
+    if (!list) return;
+    if (!appConfig.qaKnowledge.length) {
+      list.innerHTML = `<div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:center;padding:20px 0">No entries yet. Click "+ Add Entry" to get started.</div>`;
+      return;
+    }
+    list.innerHTML = appConfig.qaKnowledge.map((e, i) => `
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <input value="${_escHtml(e.title||'')}" oninput="appConfig.qaKnowledge[${i}].title=this.value"
+            placeholder="Entry title (e.g. Billing Policy, Onboarding Process…)"
+            style="flex:1;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:var(--font-mono);font-size:11px;font-weight:700;outline:none"/>
+          <button onclick="deleteKnowledgeEntry(${i})"
+            style="background:transparent;border:1px solid rgba(239,68,68,0.4);color:rgba(239,68,68,0.7);border-radius:6px;padding:5px 10px;font-family:var(--font-mono);font-size:10px;cursor:pointer">✕</button>
+        </div>
+        <textarea oninput="appConfig.qaKnowledge[${i}].content=this.value" rows="5"
+          placeholder="Write the knowledge content here — principles, policies, processes, facts, guidelines…"
+          style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;resize:vertical;box-sizing:border-box;line-height:1.5">${_escHtml(e.content||'')}</textarea>
+      </div>`).join('');
+  }
+
+  function addKnowledgeEntry() {
+    appConfig.qaKnowledge.push({ title: '', content: '' });
+    renderKnowledgeList();
+    const list = document.getElementById('qaKnowledgeList');
+    if (list?.lastElementChild) list.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function deleteKnowledgeEntry(i) {
+    appConfig.qaKnowledge.splice(i, 1);
+    renderKnowledgeList();
+  }
+
+  async function saveKnowledgeBase() {
+    try {
+      const res = await fetch(FINANCE_API, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'saveConfig', config: { qaKnowledge: JSON.stringify(appConfig.qaKnowledge) } })
+      });
+      const j = await res.json();
+      if (!j.success) throw new Error(j.error || 'Save failed');
+      const st = document.getElementById('qaKbStatus');
+      if (st) { st.textContent = '✓ Saved!'; st.style.opacity = '1'; setTimeout(() => st.style.opacity = '0', 2500); }
+      logActivity('save_knowledge_base', `${appConfig.qaKnowledge.length} entries`);
+    } catch (e) { showToast(`⚠ Failed to save — ${e.message}`, true); }
   }
 
   const _TAB_NAMES = {
