@@ -578,7 +578,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.23</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.24</div>
   </div>
 </div>
 
@@ -651,7 +651,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.23</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.24</div>
   </div>
 </div>
 
@@ -911,7 +911,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.23</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.24</span>
           </div>
         </div>
       </div>
@@ -8500,8 +8500,11 @@
   }
 
   function _extractFileId(urlOrId) {
-    const m = urlOrId.match(/\/d\/([a-zA-Z0-9_-]{20,})/);
-    return m ? m[1] : urlOrId.trim();
+    const folder = urlOrId.match(/\/folders\/([a-zA-Z0-9_-]{20,})/);
+    if (folder) return folder[1];
+    const file = urlOrId.match(/\/d\/([a-zA-Z0-9_-]{20,})/);
+    if (file) return file[1];
+    return urlOrId.trim();
   }
 
   async function _fetchDriveFile(fileId) {
@@ -8545,7 +8548,7 @@
     const list = document.getElementById('qaSourcesList');
     if (!list) return;
     if (!_qaSources.length) {
-      list.innerHTML = `<div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:center;padding:20px 0">No sources yet. Click "+ Add Source" to register a Google Doc.</div>`;
+      list.innerHTML = `<div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:center;padding:20px 0">No sources yet. Click "+ Add Source" to register a Google Doc or Drive folder.</div>`;
       return;
     }
     list.innerHTML = _qaSources.map((s, i) => `
@@ -8557,8 +8560,8 @@
               style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;box-sizing:border-box"/>
           </div>
           <div>
-            <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Google Doc URL or File ID</div>
-            <input value="${_escHtml(s.fileId||'')}" oninput="_qaSources[${i}].fileId=_extractFileId(this.value)" placeholder="Paste Drive URL or file ID"
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Google Doc / Folder URL or ID</div>
+            <input value="${_escHtml(s.fileId||'')}" oninput="_qaSources[${i}].fileId=_extractFileId(this.value)" placeholder="Paste file or folder URL"
               style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;box-sizing:border-box"/>
           </div>
         </div>
