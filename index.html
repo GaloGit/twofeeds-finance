@@ -578,7 +578,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.27</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.28</div>
   </div>
 </div>
 
@@ -651,7 +651,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.27</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.28</div>
   </div>
 </div>
 
@@ -911,7 +911,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.27</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.28</span>
           </div>
         </div>
       </div>
@@ -8584,7 +8584,10 @@
     try {
       const res  = await fetch(`${FINANCE_API}?action=getSources`);
       const data = await res.json();
-      if (data.success) { _qaSources = data.data || []; _qaSourcesLoaded = true; }
+      if (data.success) {
+        _qaSources = (data.data || []).map(s => ({ ...s, tabName: s.tabName || '' }));
+        _qaSourcesLoaded = true;
+      }
     } catch {}
   }
 
@@ -8596,9 +8599,11 @@
     return urlOrId.trim();
   }
 
-  async function _fetchDriveFile(fileId) {
+  async function _fetchDriveFile(fileId, tabName) {
     try {
-      const res  = await fetch(`${FINANCE_API}?action=getDriveFile&fileId=${encodeURIComponent(fileId)}`);
+      let url = `${FINANCE_API}?action=getDriveFile&fileId=${encodeURIComponent(fileId)}`;
+      if (tabName) url += `&tabName=${encodeURIComponent(tabName)}`;
+      const res  = await fetch(url);
       const data = await res.json();
       return data.success ? { name: data.name || '', content: data.content || '' } : { name: '', content: '' };
     } catch { return { name: '', content: '' }; }
@@ -8642,15 +8647,20 @@
     }
     list.innerHTML = _qaSources.map((s, i) => `
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <div style="display:grid;grid-template-columns:1fr 1fr 0.6fr;gap:8px;margin-bottom:8px">
           <div>
             <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Source Name</div>
             <input value="${_escHtml(s.name||'')}" oninput="_qaSources[${i}].name=this.value" placeholder="e.g. Publisher Agreements"
               style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;box-sizing:border-box"/>
           </div>
           <div>
-            <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Google Doc / Folder URL or ID</div>
-            <input value="${_escHtml(s.fileId||'')}" oninput="_qaSources[${i}].fileId=_extractFileId(this.value)" placeholder="Paste file or folder URL"
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">File, Folder or Sheet URL</div>
+            <input value="${_escHtml(s.fileId||'')}" oninput="_qaSources[${i}].fileId=_extractFileId(this.value)" placeholder="Paste URL or ID"
+              style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;box-sizing:border-box"/>
+          </div>
+          <div>
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Sheet Tab <span style="text-transform:none;opacity:0.6">(optional)</span></div>
+            <input value="${_escHtml(s.tabName||'')}" oninput="_qaSources[${i}].tabName=this.value" placeholder="e.g. Sheet1"
               style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;box-sizing:border-box"/>
           </div>
         </div>
@@ -8672,7 +8682,7 @@
   }
 
   function addSourceEntry() {
-    _qaSources.push({ name: '', description: '', fileId: '', enabled: true });
+    _qaSources.push({ name: '', description: '', fileId: '', tabName: '', enabled: true });
     renderSourcesList();
   }
 
@@ -8852,7 +8862,7 @@
         const relevantIds = await _classifySources(question, enabledSources);
         const relevant = enabledSources.filter((_, i) => relevantIds.includes(`src_${i}`));
         if (relevant.length > 0) {
-          const files = await Promise.all(relevant.map(s => _fetchDriveFile(s.fileId)));
+          const files = await Promise.all(relevant.map(s => _fetchDriveFile(s.fileId, s.tabName)));
           driveContext = files.filter(f => f.content)
             .map((f, i) => `## ${relevant[i].name}\n\n${f.content}`)
             .join('\n\n---\n\n');
