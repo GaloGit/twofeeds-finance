@@ -578,7 +578,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.20</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.21</div>
   </div>
 </div>
 
@@ -651,7 +651,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.20</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.21</div>
   </div>
 </div>
 
@@ -911,7 +911,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.20</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.21</span>
           </div>
         </div>
       </div>
@@ -2882,13 +2882,13 @@
             <div style="display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:4px 10px">
               <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);white-space:nowrap">Keep</span>
               <select id="qaMaxMsgsSelect" onchange="setQAMaxMsgs(this.value)"
-                style="background:transparent;border:none;outline:none;color:var(--text);font-family:var(--font-mono);font-size:10px;cursor:pointer">
-                <option value="0">Unlimited</option>
-                <option value="500">500 msgs</option>
-                <option value="200">200 msgs</option>
-                <option value="100">100 msgs</option>
-                <option value="50">50 msgs</option>
-                <option value="25">25 msgs</option>
+                style="background:#1e1838;border:none;outline:none;color:#f0eeff;font-family:var(--font-mono);font-size:10px;cursor:pointer">
+                <option value="0"  style="background:#1e1838;color:#f0eeff">Unlimited</option>
+                <option value="500" style="background:#1e1838;color:#f0eeff">500 msgs</option>
+                <option value="200" style="background:#1e1838;color:#f0eeff">200 msgs</option>
+                <option value="100" style="background:#1e1838;color:#f0eeff">100 msgs</option>
+                <option value="50"  style="background:#1e1838;color:#f0eeff">50 msgs</option>
+                <option value="25"  style="background:#1e1838;color:#f0eeff">25 msgs</option>
               </select>
             </div>
             <button id="qaClearBtn" onclick="clearQAHistory()"
