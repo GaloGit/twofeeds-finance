@@ -578,7 +578,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.17</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.18</div>
   </div>
 </div>
 
@@ -651,7 +651,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.17</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.18</div>
   </div>
 </div>
 
@@ -911,7 +911,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.17</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.18</span>
           </div>
         </div>
       </div>
@@ -2867,14 +2867,22 @@
         </div>
 
         <!-- SUB-TAB SWITCHER -->
-        <div style="display:flex;gap:4px;margin-bottom:22px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:4px;width:fit-content">
-          <button id="qaTabKb" onclick="switchQASubTab('kb')"
-            style="font-family:var(--font-mono);font-size:11px;font-weight:700;border:none;border-radius:7px;padding:7px 18px;cursor:pointer;letter-spacing:0.04em;background:var(--accent);color:#fff;transition:all 0.15s">
-            💬 Knowledge Base
-          </button>
-          <button id="qaTabData" onclick="switchQASubTab('data')"
-            style="font-family:var(--font-mono);font-size:11px;font-weight:700;border:none;border-radius:7px;padding:7px 18px;cursor:pointer;letter-spacing:0.04em;background:transparent;color:var(--muted);transition:all 0.15s">
-            📊 System Data
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px">
+          <div style="display:flex;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:4px">
+            <button id="qaTabKb" onclick="switchQASubTab('kb')"
+              style="font-family:var(--font-mono);font-size:11px;font-weight:700;border:none;border-radius:7px;padding:7px 18px;cursor:pointer;letter-spacing:0.04em;background:var(--accent);color:#fff;transition:all 0.15s">
+              💬 Knowledge Base
+            </button>
+            <button id="qaTabData" onclick="switchQASubTab('data')"
+              style="font-family:var(--font-mono);font-size:11px;font-weight:700;border:none;border-radius:7px;padding:7px 18px;cursor:pointer;letter-spacing:0.04em;background:transparent;color:var(--muted);transition:all 0.15s">
+              📊 System Data
+            </button>
+          </div>
+          <button id="qaClearBtn" onclick="clearQAHistory()"
+            style="background:transparent;border:1px solid rgba(239,68,68,0.3);color:rgba(239,68,68,0.5);border-radius:7px;padding:6px 14px;font-family:var(--font-mono);font-size:10px;cursor:pointer;letter-spacing:0.04em;transition:all 0.15s"
+            onmouseover="this.style.borderColor='rgba(239,68,68,0.7)';this.style.color='rgba(239,68,68,0.9)'"
+            onmouseout="this.style.borderColor='rgba(239,68,68,0.3)';this.style.color='rgba(239,68,68,0.5)'">
+            🗑 Clear chat
           </button>
         </div>
 
@@ -8218,6 +8226,42 @@
     });
   }
 
+  function _qaUser() {
+    return (localStorage.getItem('tf_current_user') || 'default').toLowerCase();
+  }
+  function _saveQAHistory() {
+    try {
+      const clean = _qaHistory.filter(h => h.a !== null).slice(-50);
+      localStorage.setItem(`tf_qa_kb_${_qaUser()}`, JSON.stringify(clean));
+    } catch {}
+  }
+  function _saveQADataHistory() {
+    try {
+      const clean = _qaDataHistory.filter(h => h.a !== null).slice(-50);
+      localStorage.setItem(`tf_qa_data_${_qaUser()}`, JSON.stringify(clean));
+    } catch {}
+  }
+  function _loadQAHistory() {
+    try {
+      const kb = localStorage.getItem(`tf_qa_kb_${_qaUser()}`);
+      if (kb) _qaHistory = JSON.parse(kb);
+      const dt = localStorage.getItem(`tf_qa_data_${_qaUser()}`);
+      if (dt) _qaDataHistory = JSON.parse(dt);
+    } catch {}
+  }
+  function clearQAHistory() {
+    if (!confirm('Clear all chat history for this tab?')) return;
+    if (_qaActiveSubTab === 'kb') {
+      _qaHistory = [];
+      localStorage.removeItem(`tf_qa_kb_${_qaUser()}`);
+      _renderQAConversation();
+    } else {
+      _qaDataHistory = [];
+      localStorage.removeItem(`tf_qa_data_${_qaUser()}`);
+      _renderDataConversation();
+    }
+  }
+
   function switchQASubTab(tab) {
     _qaActiveSubTab = tab;
     const isKb = tab === 'kb';
@@ -8358,6 +8402,7 @@
       const conv   = document.getElementById('qaDataConversation');
       if (bubble) await _streamText(answer, bubble, conv);
       _qaDataHistory[idx].a = answer;
+      _saveQADataHistory();
     } catch (e) {
       _qaDataHistory[_qaDataHistory.length - 1].a = `⚠ Error: ${e.message}`;
       _renderDataConversation();
@@ -8401,11 +8446,16 @@
     } catch {}
   }
 
+  let _qaHistoryLoaded = false;
   function _initQAPage() {
+    if (!_qaHistoryLoaded) {
+      _loadQAHistory();
+      _qaHistoryLoaded = true;
+    }
     const manageBtn = document.getElementById('qaManageBtn');
     if (manageBtn) manageBtn.style.display = (_qaActiveSubTab === 'kb' && isAdmin()) ? '' : 'none';
-    if (!_qaHistory.length)     _renderQAConversation();
-    if (!_qaDataHistory.length) _renderDataConversation();
+    _renderQAConversation();
+    _renderDataConversation();
     _populateQAPeriods();
     loadKnowledge();
   }
@@ -8532,6 +8582,7 @@
       const conv   = document.getElementById('qaConversation');
       if (bubble) await _streamText(answer, bubble, conv);
       _qaHistory[idx].a = answer;
+      _saveQAHistory();
     } catch (e) {
       _qaHistory[_qaHistory.length - 1].a = `⚠ Error: ${e.message}`;
       _renderQAConversation();
