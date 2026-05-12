@@ -578,7 +578,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.40</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.41</div>
   </div>
 </div>
 
@@ -651,7 +651,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.40</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.41</div>
   </div>
 </div>
 
@@ -911,7 +911,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.40</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.41</span>
           </div>
         </div>
       </div>
@@ -8349,9 +8349,9 @@
     ['qaKbModeBtn','qaDataModeBtn'].forEach(id => {
       const btn = document.getElementById(id);
       if (!btn) return;
-      btn.textContent = isFull ? '⚡ Short answer' : '📝 Full answer';
       btn.style.color = isFull ? 'var(--accent-light)' : 'var(--muted)';
       btn.style.borderColor = isFull ? 'var(--accent)' : 'var(--border)';
+      btn.style.background = isFull ? 'rgba(139,92,246,0.12)' : 'transparent';
     });
   }
 
