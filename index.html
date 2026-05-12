@@ -578,7 +578,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.39</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.40</div>
   </div>
 </div>
 
@@ -651,7 +651,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.39</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.40</div>
   </div>
 </div>
 
@@ -911,7 +911,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.39</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.40</span>
           </div>
         </div>
       </div>
@@ -8523,14 +8523,14 @@
     _renderDataConversation();
     try {
       const data     = await _fetchSystemData(period);
-      const knowledge = _formatSystemData(data, period);
+      const knowledge = _formatSystemData(data, period).slice(0, 100000);
       const q = _qaAnswerMode === 'short' ? `${question}\n\n[Answer in 2-3 sentences max, be concise.]` : question;
       const res = await fetch(WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Access-Token': 'tf-2026-xK9mP3qL8nR5vW2j' },
         body: JSON.stringify({ action: 'qa', question: q, knowledge })
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || `HTTP ${res.status}`); }
       const j = await res.json();
       if (j.error) throw new Error(j.error);
       const answer = j.answer;
@@ -8890,14 +8890,15 @@
         _renderQAConversation();
       }
 
-      const knowledge = [kbContext, driveContext].filter(Boolean).join('\n\n---\n\n');
+      const MAX_KNOWLEDGE = 100000;
+      const knowledge = [kbContext, driveContext].filter(Boolean).join('\n\n---\n\n').slice(0, MAX_KNOWLEDGE);
       const q = _qaAnswerMode === 'short' ? `${question}\n\n[Answer in 2-3 sentences max, be concise.]` : question;
       const res = await fetch(WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Access-Token': 'tf-2026-xK9mP3qL8nR5vW2j' },
         body: JSON.stringify({ action: 'qa', question: q, knowledge })
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || `HTTP ${res.status}`); }
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       const answer = data.answer;
