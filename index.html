@@ -2934,10 +2934,10 @@
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">📁 Drive Sources</div>
               <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:16px">Register Google Docs from Drive. The AI will automatically route questions to relevant sources before answering. Paste the full Google Doc URL or just the file ID.</div>
               <div id="qaSourcesList" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px"></div>
-              <button onclick="addSourceEntry()"
+              <button id="qaSourcesAddBtn" onclick="addSourceEntry()"
                 style="background:transparent;border:1px dashed var(--border);color:var(--muted);border-radius:8px;padding:9px 20px;font-family:var(--font-mono);font-size:11px;cursor:pointer;width:100%;letter-spacing:0.04em">+ Add Source</button>
             </div>
-            <div style="display:flex;gap:12px;align-items:center">
+            <div id="qaSourcesSaveRow" style="display:flex;gap:12px;align-items:center">
               <button onclick="saveSourcesBase()"
                 style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 24px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.05em">SAVE SOURCES</button>
               <span id="qaSourcesStatus" style="font-family:var(--font-mono);font-size:11px;color:var(--green);opacity:0;transition:opacity 0.3s"></span>
@@ -8578,6 +8578,7 @@
   let _qaSources        = [];
   let _qaSourcesLoaded  = false;
   let _qaShowingSources = false;
+  let _qaSourcesEditMode = true;
   const _driveFileCache = {}; // key: fileId+tabName → {name, content}
 
   async function loadSources() {
@@ -8588,6 +8589,7 @@
       if (data.success) {
         _qaSources = (data.data || []).map(s => ({ ...s, fileId: _extractFileId(s.fileId || ''), tabName: s.tabName || '' }));
         _qaSourcesLoaded = true;
+        if (_qaSources.length > 0) _qaSourcesEditMode = false;
       }
     } catch {}
   }
@@ -8647,8 +8649,33 @@
   }
 
   function renderSourcesList() {
-    const list = document.getElementById('qaSourcesList');
+    const list    = document.getElementById('qaSourcesList');
+    const addBtn  = document.getElementById('qaSourcesAddBtn');
+    const saveRow = document.getElementById('qaSourcesSaveRow');
     if (!list) return;
+
+    if (!_qaSourcesEditMode) {
+      // ── Read-only summary view ──
+      if (addBtn)  addBtn.style.display  = 'none';
+      if (saveRow) saveRow.style.display = 'none';
+      if (!_qaSources.length) {
+        list.innerHTML = `<div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:center;padding:20px 0">No sources configured.</div>`;
+        return;
+      }
+      list.innerHTML = _qaSources.map(s => `
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px">
+          <span style="font-size:8px;color:${s.enabled !== false ? 'var(--green)' : 'var(--muted)'}">●</span>
+          <span style="font-family:var(--font-mono);font-size:11px;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${_escHtml(s.name || '—')}</span>
+          ${s.tabName ? `<span style="font-family:var(--font-mono);font-size:10px;color:var(--accent);border:1px solid var(--border);border-radius:4px;padding:2px 7px;white-space:nowrap">Tab: ${_escHtml(s.tabName)}</span>` : ''}
+          <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${_escHtml((s.fileId||'').slice(0,16))}${(s.fileId||'').length > 16 ? '…' : ''}</span>
+        </div>`).join('') +
+        `<button onclick="editSourcesMode()" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:9px 20px;font-family:var(--font-mono);font-size:11px;cursor:pointer;width:100%;letter-spacing:0.04em;margin-top:6px">✏ Edit Sources</button>`;
+      return;
+    }
+
+    // ── Edit mode ──
+    if (addBtn)  addBtn.style.display  = '';
+    if (saveRow) saveRow.style.display = '';
     if (!_qaSources.length) {
       list.innerHTML = `<div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:center;padding:20px 0">No sources yet. Click "+ Add Source" to register a Google Doc or Drive folder.</div>`;
       return;
@@ -8689,6 +8716,11 @@
       </div>`).join('');
   }
 
+  function editSourcesMode() {
+    _qaSourcesEditMode = true;
+    renderSourcesList();
+  }
+
   function addSourceEntry() {
     _qaSources.push({ name: '', description: '', fileId: '', tabName: '', enabled: true });
     renderSourcesList();
@@ -8709,9 +8741,11 @@
       const j = await res.json().catch(() => ({}));
       if (j.success === false) throw new Error(j.error || 'Save failed');
       _qaSourcesLoaded = false;
+      _qaSourcesEditMode = false;
       Object.keys(_driveFileCache).forEach(k => delete _driveFileCache[k]);
       if (st) { st.textContent = '✓ Saved'; st.style.opacity = '1'; setTimeout(() => st.style.opacity = '0', 2000); }
       showToast('✓ Sources saved');
+      renderSourcesList();
     } catch (err) {
       if (st) { st.textContent = '⚠ ' + (err.message || 'Failed'); st.style.opacity = '1'; setTimeout(() => st.style.opacity = '0', 3000); }
       showToast('⚠ ' + (err.message || 'Failed to save'), true);
