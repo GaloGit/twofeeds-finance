@@ -560,7 +560,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.15</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.16</div>
   </div>
 </div>
 
@@ -633,7 +633,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.15</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.16</div>
   </div>
 </div>
 
@@ -893,7 +893,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.15</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.16</span>
           </div>
         </div>
       </div>
@@ -2875,7 +2875,11 @@
               <button id="qaSubmitBtn" onclick="askQuestion()"
                 style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;letter-spacing:0.04em">Ask →</button>
             </div>
-            <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:7px;text-align:right">Shift+Enter for new line · Enter to send</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:7px">
+              <button id="qaKbModeBtn" onclick="toggleAnswerMode()"
+                style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-family:var(--font-mono);font-size:9px;cursor:pointer;color:var(--muted);letter-spacing:0.04em;transition:all 0.15s">📝 Full answer</button>
+              <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">Shift+Enter for new line · Enter to send</span>
+            </div>
           </div>
 
           <!-- KNOWLEDGE MANAGEMENT VIEW (admin only) -->
@@ -2921,7 +2925,11 @@
             <button id="qaDataSubmitBtn" onclick="askDataQuestion()"
               style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;letter-spacing:0.04em">Ask →</button>
           </div>
-          <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:7px;text-align:right">Shift+Enter for new line · Enter to send</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:7px">
+            <button id="qaDataModeBtn" onclick="toggleAnswerMode()"
+              style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-family:var(--font-mono);font-size:9px;cursor:pointer;color:var(--muted);letter-spacing:0.04em;transition:all 0.15s">📝 Full answer</button>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">Shift+Enter for new line · Enter to send</span>
+          </div>
 
         </div><!-- /qaDataPanel -->
 
@@ -8178,6 +8186,19 @@
   let _qaManaging       = false;
   let _qaDataHistory    = [];
   let _qaActiveSubTab   = 'kb';
+  let _qaAnswerMode     = 'full';
+
+  function toggleAnswerMode() {
+    _qaAnswerMode = _qaAnswerMode === 'full' ? 'short' : 'full';
+    const isFull = _qaAnswerMode === 'full';
+    ['qaKbModeBtn','qaDataModeBtn'].forEach(id => {
+      const btn = document.getElementById(id);
+      if (!btn) return;
+      btn.textContent = isFull ? '📝 Full answer' : '⚡ Short answer';
+      btn.style.color = isFull ? 'var(--muted)' : 'var(--accent-light)';
+      btn.style.borderColor = isFull ? 'var(--border)' : 'var(--accent)';
+    });
+  }
 
   function switchQASubTab(tab) {
     _qaActiveSubTab = tab;
@@ -8302,10 +8323,11 @@
     try {
       const data     = await _fetchSystemData(period);
       const knowledge = _formatSystemData(data, period);
+      const q = _qaAnswerMode === 'short' ? `${question}\n\n[Answer in 2-3 sentences max, be concise.]` : question;
       const res = await fetch(WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Access-Token': 'tf-2026-xK9mP3qL8nR5vW2j' },
-        body: JSON.stringify({ action: 'qa', question, knowledge })
+        body: JSON.stringify({ action: 'qa', question: q, knowledge })
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const j = await res.json();
@@ -8415,10 +8437,11 @@
         block += `\n\n${e.content || ''}`;
         return block;
       }).join('\n\n---\n\n');
+      const q = _qaAnswerMode === 'short' ? `${question}\n\n[Answer in 2-3 sentences max, be concise.]` : question;
       const res = await fetch(WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Access-Token': 'tf-2026-xK9mP3qL8nR5vW2j' },
-        body: JSON.stringify({ action: 'qa', question, knowledge })
+        body: JSON.stringify({ action: 'qa', question: q, knowledge })
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
