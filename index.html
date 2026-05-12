@@ -578,7 +578,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.29</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.30</div>
   </div>
 </div>
 
@@ -651,7 +651,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.29</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.30</div>
   </div>
 </div>
 
@@ -911,7 +911,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.29</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.30</span>
           </div>
         </div>
       </div>
@@ -8692,16 +8692,18 @@
   }
 
   async function saveSourcesBase() {
+    const st = document.getElementById('qaSourcesStatus');
     try {
-      await fetch(FINANCE_API, {
+      const res = await fetch(FINANCE_API, {
         method: 'POST',
         body: JSON.stringify({ action: 'saveSources', entries: _qaSources })
       });
-      const st = document.getElementById('qaSourcesStatus');
+      const j = await res.json().catch(() => ({}));
+      if (j.success === false) throw new Error(j.error || 'Save failed');
+      _qaSourcesLoaded = false; // force reload on next open
       if (st) { st.textContent = '✓ Saved'; st.style.opacity = '1'; setTimeout(() => st.style.opacity = '0', 2000); }
-    } catch {
-      const st = document.getElementById('qaSourcesStatus');
-      if (st) { st.textContent = '⚠ Failed'; st.style.opacity = '1'; setTimeout(() => st.style.opacity = '0', 2000); }
+    } catch (err) {
+      if (st) { st.textContent = '⚠ ' + (err.message || 'Failed'); st.style.opacity = '1'; setTimeout(() => st.style.opacity = '0', 3000); }
     }
   }
 
