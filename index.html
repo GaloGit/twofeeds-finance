@@ -578,7 +578,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.9.4</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.9.5</div>
   </div>
 </div>
 
@@ -651,7 +651,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.9.4</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.9.5</div>
   </div>
 </div>
 
@@ -911,7 +911,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.9.4</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.9.5</span>
           </div>
         </div>
       </div>
@@ -8953,7 +8953,12 @@
         const prevQ = _qaHistory.length > 1 ? _qaHistory[_qaHistory.length - 2].q : '';
         const classifyQ = prevQ ? `Previous question: "${prevQ}". Follow-up: ${question}` : question;
         const relevantIds = await _classifySources(classifyQ, enabledSources);
-        const relevant = enabledSources.filter((_, i) => relevantIds.includes(`src_${i}`));
+        let relevant = enabledSources.filter((_, i) => relevantIds.includes(`src_${i}`));
+        // Fallback: if classifier found nothing, reuse sources from the most recent answer that had sources
+        if (relevant.length === 0) {
+          const prevWithSources = [..._qaHistory].reverse().find(h => h.sourcesUsed && h.sourcesUsed.length > 0);
+          if (prevWithSources) relevant = enabledSources.filter(s => prevWithSources.sourcesUsed.some(u => u.startsWith(s.name)));
+        }
         if (relevant.length > 0) {
           const files = await Promise.all(relevant.map(s => _fetchDriveFile(s.fileId, s.tabName, s.columns)));
           const pairs = relevant.map((s, i) => ({ source: s, file: files[i] }));
