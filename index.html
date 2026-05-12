@@ -460,6 +460,10 @@
       .inv-toolbar { flex-wrap: wrap; gap: 8px; }
       .inv-toolbar > div { flex-wrap: wrap; gap: 6px; width: 100%; }
 
+      /* Last updated — always on its own line below toolbar buttons */
+      [id$="LastUpdated"] { width: 100%; order: 99; margin-left: 0 !important; padding-top: 2px; }
+      .section-header > div:last-child { flex-wrap: wrap !important; flex-shrink: 1 !important; }
+
       /* Upload areas */
       .upload-area { padding: 24px 14px; }
       .inv-upload-area { padding: 28px 14px; }
@@ -585,7 +589,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.10.0</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.10.1</div>
   </div>
 </div>
 
@@ -658,7 +662,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.10.0</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.10.1</div>
   </div>
 </div>
 
@@ -918,7 +922,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.10.0</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.10.1</span>
           </div>
         </div>
       </div>
