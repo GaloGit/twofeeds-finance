@@ -578,7 +578,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.47</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.48</div>
   </div>
 </div>
 
@@ -651,7 +651,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.47</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.48</div>
   </div>
 </div>
 
@@ -911,7 +911,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.47</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.48</span>
           </div>
         </div>
       </div>
@@ -8845,7 +8845,7 @@
             ? `<div style="font-family:var(--font-mono);font-size:9px;color:#f87171;padding:3px 8px;background:var(--surface2);border:1px solid #f8717144;border-radius:6px">${_escHtml(h.sourcesError)}</div>`
             : ''}
           ${h.truncated
-            ? `<div style="font-family:var(--font-mono);font-size:9px;color:#fb923c;padding:3px 8px;background:var(--surface2);border:1px solid #fb923c44;border-radius:6px">⚠ Source data was partially truncated — answer may be incomplete. Try specifying a Sheet Tab to reduce content size.</div>`
+            ? `<div style="font-family:var(--font-mono);font-size:9px;color:#fb923c;padding:3px 8px;background:var(--surface2);border:1px solid #fb923c44;border-radius:6px">⚠ Truncated: ${_escHtml(h.truncated)} — answer may be incomplete. Specify a Sheet Tab to reduce content size.</div>`
             : ''}
         </div>
       </div>`).join('');
@@ -8899,7 +8899,24 @@
       const fullKnowledge = [kbContext, driveContext].filter(Boolean).join('\n\n---\n\n');
       const knowledge = fullKnowledge.slice(0, MAX_KNOWLEDGE);
       const idx0 = _qaHistory.length - 1;
-      if (fullKnowledge.length > MAX_KNOWLEDGE) _qaHistory[idx0].truncated = true;
+      if (fullKnowledge.length > MAX_KNOWLEDGE) {
+        const cut = fullKnowledge.slice(0, MAX_KNOWLEDGE);
+        // Find which source section the cut falls in
+        let lastSource = '', lastSourcePos = -1;
+        const re = /^## (.+)$/gm; let m;
+        while ((m = re.exec(cut)) !== null) { lastSource = m[1]; lastSourcePos = m.index + m[0].length; }
+        let truncMsg = 'data was truncated';
+        if (lastSource && lastSourcePos >= 0) {
+          const cutContent = cut.slice(lastSourcePos + 1);
+          const includedRows = Math.max(0, cutContent.split('\n').filter(l => l.trim()).length - 1);
+          const fullSourceStart = fullKnowledge.indexOf('\n## ' + lastSource + '\n');
+          const fullSourceEnd   = fullKnowledge.indexOf('\n---\n', fullSourceStart + 1);
+          const fullSection = fullSourceEnd > 0 ? fullKnowledge.slice(fullSourceStart, fullSourceEnd) : fullKnowledge.slice(fullSourceStart);
+          const totalRows = Math.max(0, fullSection.split('\n').filter(l => l.trim()).length - 2);
+          truncMsg = `"${lastSource}" — rows 1–${includedRows} of ~${totalRows} included`;
+        }
+        _qaHistory[idx0].truncated = truncMsg;
+      }
       const q = _qaAnswerMode === 'short' ? `${question}\n\n[Answer in 2-3 sentences max, be concise.]` : question;
       const res = await fetch(WORKER_URL, {
         method: 'POST',
