@@ -578,7 +578,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.21</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.22</div>
   </div>
 </div>
 
@@ -651,7 +651,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.21</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.22</div>
   </div>
 </div>
 
@@ -911,7 +911,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.21</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.22</span>
           </div>
         </div>
       </div>
@@ -2860,10 +2860,16 @@
             <div class="section-title">💬 Q&amp;A Assistant</div>
             <div class="section-sub" id="qaSubTitle">Ask questions from the team knowledge base</div>
           </div>
-          <button id="qaManageBtn" onclick="toggleQAView()"
-            style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 16px;color:var(--muted);font-family:var(--font-mono);font-size:11px;cursor:pointer;letter-spacing:0.04em">
-            📚 Manage Knowledge
-          </button>
+          <div style="display:flex;gap:8px">
+            <button id="qaSourcesBtn" onclick="toggleSourcesView()"
+              style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 16px;color:var(--muted);font-family:var(--font-mono);font-size:11px;cursor:pointer;letter-spacing:0.04em">
+              📁 Drive Sources
+            </button>
+            <button id="qaManageBtn" onclick="toggleQAView()"
+              style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 16px;color:var(--muted);font-family:var(--font-mono);font-size:11px;cursor:pointer;letter-spacing:0.04em">
+              📚 Manage Knowledge
+            </button>
+          </div>
         </div>
 
         <!-- SUB-TAB SWITCHER -->
@@ -2919,6 +2925,22 @@
               <button id="qaKbModeBtn" onclick="toggleAnswerMode()"
                 style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-family:var(--font-mono);font-size:9px;cursor:pointer;color:var(--muted);letter-spacing:0.04em;transition:all 0.15s">📝 Full answer</button>
               <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">Shift+Enter for new line · Enter to send</span>
+            </div>
+          </div>
+
+          <!-- DRIVE SOURCES VIEW (admin only) -->
+          <div id="qaSourcesView" style="display:none">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:18px">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">📁 Drive Sources</div>
+              <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:16px">Register Google Docs from Drive. The AI will automatically route questions to relevant sources before answering. Paste the full Google Doc URL or just the file ID.</div>
+              <div id="qaSourcesList" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px"></div>
+              <button onclick="addSourceEntry()"
+                style="background:transparent;border:1px dashed var(--border);color:var(--muted);border-radius:8px;padding:9px 20px;font-family:var(--font-mono);font-size:11px;cursor:pointer;width:100%;letter-spacing:0.04em">+ Add Source</button>
+            </div>
+            <div style="display:flex;gap:12px;align-items:center">
+              <button onclick="saveSourcesBase()"
+                style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 24px;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.05em">SAVE SOURCES</button>
+              <span id="qaSourcesStatus" style="font-family:var(--font-mono);font-size:11px;color:var(--green);opacity:0;transition:opacity 0.3s"></span>
             </div>
           </div>
 
@@ -8464,6 +8486,122 @@
   }
   let _qaKnowledge      = [];
   let _qaKnowledgeLoaded = false;
+  let _qaSources        = [];
+  let _qaSourcesLoaded  = false;
+  let _qaShowingSources = false;
+
+  async function loadSources() {
+    if (_qaSourcesLoaded) return;
+    try {
+      const res  = await fetch(`${FINANCE_API}?action=getSources`);
+      const data = await res.json();
+      if (data.success) { _qaSources = data.data || []; _qaSourcesLoaded = true; }
+    } catch {}
+  }
+
+  function _extractFileId(urlOrId) {
+    const m = urlOrId.match(/\/d\/([a-zA-Z0-9_-]{20,})/);
+    return m ? m[1] : urlOrId.trim();
+  }
+
+  async function _fetchDriveFile(fileId) {
+    try {
+      const res  = await fetch(`${FINANCE_API}?action=getDriveFile&fileId=${encodeURIComponent(fileId)}`);
+      const data = await res.json();
+      return data.success ? { name: data.name || '', content: data.content || '' } : { name: '', content: '' };
+    } catch { return { name: '', content: '' }; }
+  }
+
+  async function _classifySources(question, sources) {
+    try {
+      const res = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Access-Token': 'tf-2026-xK9mP3qL8nR5vW2j' },
+        body: JSON.stringify({
+          action: 'classify',
+          question,
+          sources: sources.map((s, i) => ({ id: `src_${i}`, name: s.name, description: s.description }))
+        })
+      });
+      const data = await res.json();
+      return Array.isArray(data.ids) ? data.ids : sources.map((_, i) => `src_${i}`);
+    } catch { return sources.map((_, i) => `src_${i}`); }
+  }
+
+  function toggleSourcesView() {
+    _qaShowingSources = !_qaShowingSources;
+    if (_qaShowingSources && _qaManaging) { _qaManaging = false; }
+    document.getElementById('qaChatView').style.display    = (!_qaShowingSources && !_qaManaging) ? '' : 'none';
+    document.getElementById('qaManageView').style.display  = _qaManaging ? '' : 'none';
+    document.getElementById('qaSourcesView').style.display = _qaShowingSources ? '' : 'none';
+    const sb = document.getElementById('qaSourcesBtn');
+    const mb = document.getElementById('qaManageBtn');
+    if (sb) sb.textContent = _qaShowingSources ? '💬 Back to Chat' : '📁 Drive Sources';
+    if (mb) mb.textContent = '📚 Manage Knowledge';
+    if (_qaShowingSources) renderSourcesList();
+  }
+
+  function renderSourcesList() {
+    const list = document.getElementById('qaSourcesList');
+    if (!list) return;
+    if (!_qaSources.length) {
+      list.innerHTML = `<div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:center;padding:20px 0">No sources yet. Click "+ Add Source" to register a Google Doc.</div>`;
+      return;
+    }
+    list.innerHTML = _qaSources.map((s, i) => `
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <div>
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Source Name</div>
+            <input value="${_escHtml(s.name||'')}" oninput="_qaSources[${i}].name=this.value" placeholder="e.g. Publisher Agreements"
+              style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;box-sizing:border-box"/>
+          </div>
+          <div>
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Google Doc URL or File ID</div>
+            <input value="${_escHtml(s.fileId||'')}" oninput="_qaSources[${i}].fileId=_extractFileId(this.value)" placeholder="Paste Drive URL or file ID"
+              style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;box-sizing:border-box"/>
+          </div>
+        </div>
+        <div style="margin-bottom:8px">
+          <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Description <span style="text-transform:none;letter-spacing:0">(used for routing — what's in this file?)</span></div>
+          <input value="${_escHtml(s.description||'')}" oninput="_qaSources[${i}].description=this.value" placeholder="e.g. Active publisher deals, rate cards, exclusivity clauses, payment terms"
+            style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;box-sizing:border-box"/>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-family:var(--font-mono);font-size:10px;color:var(--muted)">
+            <input type="checkbox" ${s.enabled !== false ? 'checked' : ''} onchange="_qaSources[${i}].enabled=this.checked"
+              style="width:14px;height:14px;cursor:pointer;accent-color:var(--accent)"/>
+            Enabled (include in routing)
+          </label>
+          <button onclick="removeSourceEntry(${i})"
+            style="background:transparent;border:1px solid rgba(239,68,68,0.4);color:rgba(239,68,68,0.7);border-radius:6px;padding:5px 12px;font-family:var(--font-mono);font-size:10px;cursor:pointer">✕ Remove</button>
+        </div>
+      </div>`).join('');
+  }
+
+  function addSourceEntry() {
+    _qaSources.push({ name: '', description: '', fileId: '', enabled: true });
+    renderSourcesList();
+  }
+
+  function removeSourceEntry(i) {
+    _qaSources.splice(i, 1);
+    renderSourcesList();
+  }
+
+  async function saveSourcesBase() {
+    try {
+      await fetch(FINANCE_API, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'saveSources', entries: _qaSources })
+      });
+      const st = document.getElementById('qaSourcesStatus');
+      if (st) { st.textContent = '✓ Saved'; st.style.opacity = '1'; setTimeout(() => st.style.opacity = '0', 2000); }
+    } catch {
+      const st = document.getElementById('qaSourcesStatus');
+      if (st) { st.textContent = '⚠ Failed'; st.style.opacity = '1'; setTimeout(() => st.style.opacity = '0', 2000); }
+    }
+  }
 
   async function loadKnowledge() {
     if (_qaKnowledgeLoaded) return;
@@ -8481,20 +8619,29 @@
       _loadQAHistory();
       _qaHistoryLoaded = true;
     }
-    const manageBtn = document.getElementById('qaManageBtn');
-    if (manageBtn) manageBtn.style.display = (_qaActiveSubTab === 'kb' && isAdmin()) ? '' : 'none';
+    const isKb    = _qaActiveSubTab === 'kb';
+    const admin   = isAdmin();
+    const manageBtn  = document.getElementById('qaManageBtn');
+    const sourcesBtn = document.getElementById('qaSourcesBtn');
+    if (manageBtn)  manageBtn.style.display  = (isKb && admin) ? '' : 'none';
+    if (sourcesBtn) sourcesBtn.style.display = (isKb && admin) ? '' : 'none';
     _renderQAConversation();
     _renderDataConversation();
     _populateQAPeriods();
     loadKnowledge();
+    loadSources();
   }
 
   function toggleQAView() {
     _qaManaging = !_qaManaging;
-    document.getElementById('qaChatView').style.display    = _qaManaging ? 'none' : '';
+    if (_qaManaging && _qaShowingSources) { _qaShowingSources = false; }
+    document.getElementById('qaChatView').style.display    = (!_qaManaging && !_qaShowingSources) ? '' : 'none';
     document.getElementById('qaManageView').style.display  = _qaManaging ? '' : 'none';
+    document.getElementById('qaSourcesView').style.display = _qaShowingSources ? '' : 'none';
     const btn = document.getElementById('qaManageBtn');
+    const sb  = document.getElementById('qaSourcesBtn');
     if (btn) btn.textContent = _qaManaging ? '💬 Back to Chat' : '📚 Manage Knowledge';
+    if (sb)  sb.textContent  = '📁 Drive Sources';
     if (_qaManaging) renderKnowledgeList();
   }
 
@@ -8567,11 +8714,18 @@
         <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
           <div style="background:var(--accent);color:#fff;border-radius:12px 12px 4px 12px;padding:10px 16px;max-width:72%;font-family:var(--font-mono);font-size:12px;line-height:1.5;white-space:pre-wrap">${_escHtml(h.q)}</div>
         </div>
-        <div style="display:flex;justify-content:flex-start">
+        <div style="display:flex;justify-content:flex-start;flex-direction:column;gap:6px;align-items:flex-start">
           ${h.a === null
-            ? `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 16px;font-family:var(--font-mono);font-size:12px;color:var(--muted)"><div class="qa-thinking"><span></span><span></span><span></span></div></div>`
+            ? `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 16px;font-family:var(--font-mono);font-size:12px;color:var(--muted)">
+                ${h._routing
+                  ? `<span style="letter-spacing:0.04em">🔍 Routing to relevant sources…</span>`
+                  : `<div class="qa-thinking"><span></span><span></span><span></span></div>`}
+               </div>`
             : `<div class="qa-ans" id="qa-ans-${i}" style="background:var(--surface2);border:1px solid var(--border);border-radius:12px 12px 12px 4px;padding:12px 16px;max-width:82%;font-family:var(--font-mono);font-size:12px;line-height:1.6;color:var(--text)">${_md(h.a)}</div>`
           }
+          ${h.sourcesUsed && h.sourcesUsed.length
+            ? `<div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);padding:3px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:6px">📎 ${h.sourcesUsed.map(s => _escHtml(s)).join(' · ')}</div>`
+            : ''}
         </div>
       </div>`).join('');
     el.scrollTop = el.scrollHeight;
@@ -8584,16 +8738,38 @@
     const btn = document.getElementById('qaSubmitBtn');
     if (btn) { btn.disabled = true; btn.textContent = '…'; }
     input.value = '';
-    _qaHistory.push({ q: question, a: null });
+    _qaHistory.push({ q: question, a: null, sourcesUsed: [], _routing: false });
     _renderQAConversation();
     try {
-      const knowledge = _qaKnowledge.map(e => {
+      // Build KB context
+      const kbContext = _qaKnowledge.map(e => {
         let block = `## ${e.topic || 'Untitled'}`;
         if (e.contact) block += `\nContact: ${e.contact}`;
         if (e.date)    block += `\nAdded: ${e.date}`;
         block += `\n\n${e.content || ''}`;
         return block;
       }).join('\n\n---\n\n');
+
+      // Route & fetch Drive sources
+      let driveContext = '';
+      const enabledSources = _qaSources.filter(s => s.enabled !== false && s.fileId);
+      if (enabledSources.length > 0) {
+        const idx0 = _qaHistory.length - 1;
+        _qaHistory[idx0]._routing = true;
+        _renderQAConversation();
+        const relevantIds = await _classifySources(question, enabledSources);
+        const relevant = enabledSources.filter((_, i) => relevantIds.includes(`src_${i}`));
+        if (relevant.length > 0) {
+          const files = await Promise.all(relevant.map(s => _fetchDriveFile(s.fileId)));
+          driveContext = files.filter(f => f.content)
+            .map((f, i) => `## ${relevant[i].name}\n\n${f.content}`)
+            .join('\n\n---\n\n');
+          _qaHistory[idx0].sourcesUsed = relevant.map(s => s.name);
+        }
+        _qaHistory[idx0]._routing = false;
+      }
+
+      const knowledge = [kbContext, driveContext].filter(Boolean).join('\n\n---\n\n');
       const q = _qaAnswerMode === 'short' ? `${question}\n\n[Answer in 2-3 sentences max, be concise.]` : question;
       const res = await fetch(WORKER_URL, {
         method: 'POST',
