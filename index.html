@@ -578,7 +578,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.26</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.27</div>
   </div>
 </div>
 
@@ -651,7 +651,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.26</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.27</div>
   </div>
 </div>
 
@@ -911,7 +911,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.26</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.27</span>
           </div>
         </div>
       </div>
@@ -2966,11 +2966,16 @@
         <div id="qaDataPanel" style="display:none">
 
           <!-- Period selector -->
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 16px">
-            <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap">📅 Period</span>
-            <select id="qaDataPeriod"
-              style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;cursor:pointer;flex:1;max-width:220px">
-            </select>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 16px;flex-wrap:wrap">
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap">📅 PERIOD</span>
+            <div class="period-dd" id="qaYearDropdown">
+              <button class="period-dd-btn" id="qaYearDdBtn" onclick="toggleQAPeriodDd('year')"><span id="qaYearDdLabel">All Years</span> ▾</button>
+              <div class="period-dd-panel" id="qaYearDdPanel" style="display:none"></div>
+            </div>
+            <div class="period-dd" id="qaMonthDropdown">
+              <button class="period-dd-btn" id="qaMonthDdBtn" onclick="toggleQAPeriodDd('month')"><span id="qaMonthDdLabel">All Months</span> ▾</button>
+              <div class="period-dd-panel" id="qaMonthDdPanel" style="display:none"></div>
+            </div>
             <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);line-height:1.5">Answers are grounded in live sheet data for the selected period</span>
           </div>
 
@@ -7827,6 +7832,12 @@
   let _periodDirty = false;
 
   document.addEventListener('click', e => {
+    // Close Q&A period dropdowns
+    const qaYPanel = document.getElementById('qaYearDdPanel');
+    const qaMPanel = document.getElementById('qaMonthDdPanel');
+    if (qaYPanel && !e.target.closest('#qaYearDropdown'))  qaYPanel.style.display  = 'none';
+    if (qaMPanel && !e.target.closest('#qaMonthDropdown')) qaMPanel.style.display = 'none';
+
     const yearPanel  = document.getElementById('yearDdPanel');
     const monthPanel = document.getElementById('monthDdPanel');
     const yearWasOpen  = yearPanel.style.display  !== 'none';
@@ -8244,6 +8255,88 @@
 
   // ── Q&A ─────────────────────────────────────────────────────────────────
 
+  let _qaSelYear  = null; // null = All Years
+  let _qaSelMonth = null; // null = All Months (0-11 when set)
+
+  function toggleQAPeriodDd(which) {
+    const yPanel = document.getElementById('qaYearDdPanel');
+    const mPanel = document.getElementById('qaMonthDdPanel');
+    if (which === 'year') {
+      const open = yPanel.style.display !== 'none';
+      yPanel.style.display = open ? 'none' : 'block';
+      mPanel.style.display = 'none';
+    } else {
+      const open = mPanel.style.display !== 'none';
+      mPanel.style.display = open ? 'none' : 'block';
+      yPanel.style.display = 'none';
+    }
+  }
+
+  function buildQAPeriodPicker() {
+    const currentYear = new Date().getFullYear();
+
+    // ── Year panel ──
+    const yPanel = document.getElementById('qaYearDdPanel');
+    if (!yPanel) return;
+    yPanel.innerHTML = '';
+
+    yPanel.appendChild(_qaPickerItem('All Years', _qaSelYear === null, () => {
+      _qaSelYear = null; _qaSelMonth = null;
+      buildQAPeriodPicker();
+      document.getElementById('qaYearDdPanel').style.display = 'none';
+    }));
+    for (let y = currentYear; y >= START_YEAR; y--) {
+      const yy = y;
+      yPanel.appendChild(_qaPickerItem(String(y), _qaSelYear === y, () => {
+        _qaSelYear = yy;
+        buildQAPeriodPicker();
+        document.getElementById('qaYearDdPanel').style.display = 'none';
+      }));
+    }
+    const yLabel = document.getElementById('qaYearDdLabel');
+    const yBtn   = document.getElementById('qaYearDdBtn');
+    if (yLabel) yLabel.textContent = _qaSelYear === null ? 'All Years' : String(_qaSelYear);
+    if (yBtn)   yBtn.className     = 'period-dd-btn' + (_qaSelYear !== null ? ' active' : '');
+
+    // ── Month panel ──
+    const mPanel = document.getElementById('qaMonthDdPanel');
+    if (!mPanel) return;
+    mPanel.innerHTML = '';
+
+    mPanel.appendChild(_qaPickerItem('All Months', _qaSelMonth === null, () => {
+      _qaSelMonth = null;
+      buildQAPeriodPicker();
+      document.getElementById('qaMonthDdPanel').style.display = 'none';
+    }));
+    MONTHS.forEach((name, i) => {
+      const ii = i;
+      mPanel.appendChild(_qaPickerItem(name, _qaSelMonth === i, () => {
+        _qaSelMonth = ii;
+        buildQAPeriodPicker();
+        document.getElementById('qaMonthDdPanel').style.display = 'none';
+      }));
+    });
+    const mLabel = document.getElementById('qaMonthDdLabel');
+    const mBtn   = document.getElementById('qaMonthDdBtn');
+    if (mLabel) mLabel.textContent = _qaSelMonth === null ? 'All Months' : MONTHS[_qaSelMonth];
+    if (mBtn)   mBtn.className     = 'period-dd-btn' + (_qaSelMonth !== null ? ' active' : '');
+  }
+
+  function _qaPickerItem(label, active, onClick) {
+    const div = document.createElement('div');
+    div.className = 'period-dd-item' + (active ? ' checked' : '');
+    div.style.cssText = 'padding:6px 10px;cursor:pointer';
+    div.textContent = label;
+    div.addEventListener('click', onClick);
+    return div;
+  }
+
+  function _getQAPeriod() {
+    if (_qaSelYear === null) return 'ALL';
+    if (_qaSelMonth === null) return String(_qaSelYear); // year-only — filtered client-side
+    return `${_qaSelYear}-${String(_qaSelMonth + 1).padStart(2, '0')}`;
+  }
+
   let _qaHistory        = [];
   let _qaManaging       = false;
   let _qaDataHistory    = [];
@@ -8340,26 +8433,12 @@
   }
 
   function _populateQAPeriods() {
-    const sel = document.getElementById('qaDataPeriod');
-    if (!sel || sel.options.length > 1) return; // already populated
-    sel.innerHTML = '<option value="ALL">⬡  ALL Periods</option>';
-    const now = new Date();
-    const endY = now.getFullYear(), endM = now.getMonth() + 1;
-    for (let y = endY; y >= START_YEAR; y--) {
-      const maxM = y === endY ? endM : 12;
-      const minM = y === START_YEAR ? 1 : 1;
-      for (let m = maxM; m >= minM; m--) {
-        const p = `${y}-${String(m).padStart(2,'0')}`;
-        const opt = document.createElement('option');
-        opt.value = p;
-        opt.textContent = `${MONTHS[m-1]} ${y}`;
-        sel.appendChild(opt);
-      }
-    }
+    buildQAPeriodPicker();
   }
 
   async function _fetchSystemData(period) {
-    const q = period === 'ALL' ? '' : `&period=${encodeURIComponent(period)}`;
+    const yearOnly = period && /^\d{4}$/.test(period);
+    const q = (!yearOnly && period !== 'ALL') ? `&period=${encodeURIComponent(period)}` : '';
     const [pub, inv, mb, tfc, rev] = await Promise.all([
       fetch(`${FINANCE_API}?action=getPublishers${q}`).then(r=>r.json()).catch(()=>({data:[]})),
       fetch(`${FINANCE_API}?action=getInvoices${q}`).then(r=>r.json()).catch(()=>({data:[]})),
@@ -8367,17 +8446,26 @@
       fetch(`${FINANCE_API}?action=getTfCost${q}`).then(r=>r.json()).catch(()=>({data:[]})),
       fetch(`${FINANCE_API}?action=getRevData${q}`).then(r=>r.json()).catch(()=>({data:[]})),
     ]);
-    return {
+    let result = {
       publishers:  pub.data  || [],
       invoices:    inv.data  || [],
       mediaBuying: mb.data   || [],
       tfCost:      tfc.data  || [],
       revData:     rev.data  || [],
     };
+    if (yearOnly) {
+      const y = period;
+      result.publishers  = result.publishers.filter(r  => String(r['Period']||'').startsWith(y));
+      result.invoices    = result.invoices.filter(r    => String(r['Period']||'').startsWith(y));
+      result.mediaBuying = result.mediaBuying.filter(r => String(r['Period']||'').startsWith(y));
+      result.tfCost      = result.tfCost.filter(r      => String(r['Period']||'').startsWith(y));
+      result.revData     = result.revData.filter(r     => String(r['Period']||'').startsWith(y));
+    }
+    return result;
   }
 
   function _formatSystemData(d, period) {
-    const pLabel = period === 'ALL' ? 'ALL PERIODS' : period;
+    const pLabel = period === 'ALL' ? 'ALL PERIODS' : /^\d{4}$/.test(period) ? `ALL OF ${period}` : period;
     let s = `TWOFEEDS SYSTEM DATA — ${pLabel}\n${'─'.repeat(44)}\n\n`;
     if (d.publishers.length) {
       s += `PUBLISHERS COST (${d.publishers.length} rows):\n`;
@@ -8424,11 +8512,10 @@
     const input  = document.getElementById('qaDataInput');
     const question = (input?.value || '').trim();
     if (!question) return;
-    const period = document.getElementById('qaDataPeriod')?.value || 'ALL';
-    const periodLabel = period === 'ALL' ? 'All Periods' : (() => {
-      const [y,m] = period.split('-');
-      return `${MONTHS[parseInt(m)-1]} ${y}`;
-    })();
+    const period = _getQAPeriod();
+    const periodLabel = period === 'ALL' ? 'All Periods'
+      : /^\d{4}$/.test(period) ? `All of ${period}`
+      : (() => { const [y,m] = period.split('-'); return `${MONTHS[parseInt(m)-1]} ${y}`; })();
     const btn = document.getElementById('qaDataSubmitBtn');
     if (btn) { btn.disabled = true; btn.textContent = '…'; }
     input.value = '';
