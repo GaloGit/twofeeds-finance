@@ -578,7 +578,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.9.0</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.9.1</div>
   </div>
 </div>
 
@@ -651,7 +651,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.9.0</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.9.1</div>
   </div>
 </div>
 
@@ -911,7 +911,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.9.0</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.9.1</span>
           </div>
         </div>
       </div>
@@ -8578,7 +8578,8 @@
   let _qaSources        = [];
   let _qaSourcesLoaded  = false;
   let _qaShowingSources = false;
-  let _qaSourcesEditMode = true;
+  const _qaSourcesEditingSet = new Set();
+  const _qaSourcesSnapshots  = {};
   const _driveFileCache = {}; // key: fileId+tabName → {name, content}
 
   async function loadSources() {
@@ -8589,7 +8590,6 @@
       if (data.success) {
         _qaSources = (data.data || []).map(s => ({ ...s, fileId: _extractFileId(s.fileId || ''), tabName: s.tabName || '' }));
         _qaSourcesLoaded = true;
-        if (_qaSources.length > 0) _qaSourcesEditMode = false;
       }
     } catch {}
   }
@@ -8653,81 +8653,105 @@
     const addBtn  = document.getElementById('qaSourcesAddBtn');
     const saveRow = document.getElementById('qaSourcesSaveRow');
     if (!list) return;
-
-    if (!_qaSourcesEditMode) {
-      // ── Read-only summary view ──
-      if (addBtn)  addBtn.style.display  = 'none';
-      if (saveRow) saveRow.style.display = 'none';
-      if (!_qaSources.length) {
-        list.innerHTML = `<div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:center;padding:20px 0">No sources configured.</div>`;
-        return;
-      }
-      list.innerHTML = _qaSources.map(s => `
-        <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px">
-          <span style="font-size:8px;color:${s.enabled !== false ? 'var(--green)' : 'var(--muted)'}">●</span>
-          <span style="font-family:var(--font-mono);font-size:11px;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${_escHtml(s.name || '—')}</span>
-          ${s.tabName ? `<span style="font-family:var(--font-mono);font-size:10px;color:var(--accent);border:1px solid var(--border);border-radius:4px;padding:2px 7px;white-space:nowrap">Tab: ${_escHtml(s.tabName)}</span>` : ''}
-          <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${_escHtml((s.fileId||'').slice(0,16))}${(s.fileId||'').length > 16 ? '…' : ''}</span>
-        </div>`).join('') +
-        `<button onclick="editSourcesMode()" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:9px 20px;font-family:var(--font-mono);font-size:11px;cursor:pointer;width:100%;letter-spacing:0.04em;margin-top:6px">✏ Edit Sources</button>`;
-      return;
-    }
-
-    // ── Edit mode ──
     if (addBtn)  addBtn.style.display  = '';
-    if (saveRow) saveRow.style.display = '';
+    if (saveRow) saveRow.style.display = 'none';
+
     if (!_qaSources.length) {
       list.innerHTML = `<div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:center;padding:20px 0">No sources yet. Click "+ Add Source" to register a Google Doc or Drive folder.</div>`;
       return;
     }
-    list.innerHTML = _qaSources.map((s, i) => `
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
-        <div style="display:grid;grid-template-columns:1fr 1fr 0.6fr;gap:8px;margin-bottom:8px">
-          <div>
-            <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Source Name</div>
-            <input value="${_escHtml(s.name||'')}" oninput="_qaSources[${i}].name=this.value" placeholder="e.g. Publisher Agreements"
+
+    list.innerHTML = _qaSources.map((s, i) => {
+      if (_qaSourcesEditingSet.has(i)) {
+        return `<div style="background:var(--surface2);border:1px solid var(--accent);border-radius:10px;padding:14px 16px">
+          <div style="display:grid;grid-template-columns:1fr 1fr 0.6fr;gap:8px;margin-bottom:8px">
+            <div>
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Source Name</div>
+              <input value="${_escHtml(s.name||'')}" oninput="_qaSources[${i}].name=this.value" placeholder="e.g. Publisher Agreements"
+                style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;box-sizing:border-box"/>
+            </div>
+            <div>
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">File, Folder or Sheet URL</div>
+              <input value="${_escHtml(s.fileId||'')}" oninput="_qaSources[${i}].fileId=_extractFileId(this.value)" placeholder="Paste URL or ID"
+                style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;box-sizing:border-box"/>
+            </div>
+            <div>
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Sheet Tab <span style="text-transform:none;opacity:0.6">(optional)</span></div>
+              <input value="${_escHtml(s.tabName||'')}" oninput="_qaSources[${i}].tabName=this.value" placeholder="e.g. Sheet1"
+                style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;box-sizing:border-box"/>
+            </div>
+          </div>
+          <div style="margin-bottom:10px">
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Description <span style="text-transform:none;letter-spacing:0">(used for routing — what's in this file?)</span></div>
+            <input value="${_escHtml(s.description||'')}" oninput="_qaSources[${i}].description=this.value" placeholder="e.g. Active publisher deals, rate cards, exclusivity clauses, payment terms"
               style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;box-sizing:border-box"/>
           </div>
-          <div>
-            <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">File, Folder or Sheet URL</div>
-            <input value="${_escHtml(s.fileId||'')}" oninput="_qaSources[${i}].fileId=_extractFileId(this.value)" placeholder="Paste URL or ID"
-              style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;box-sizing:border-box"/>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-family:var(--font-mono);font-size:10px;color:var(--muted)">
+              <input type="checkbox" ${s.enabled !== false ? 'checked' : ''} onchange="_qaSources[${i}].enabled=this.checked"
+                style="width:14px;height:14px;cursor:pointer;accent-color:var(--accent)"/>
+              Enabled (include in routing)
+            </label>
+            <div style="display:flex;gap:6px">
+              <button onclick="removeSourceEntry(${i})" style="background:transparent;border:1px solid rgba(239,68,68,0.4);color:rgba(239,68,68,0.7);border-radius:6px;padding:5px 12px;font-family:var(--font-mono);font-size:10px;cursor:pointer">✕ Remove</button>
+              <button onclick="cancelEditSource(${i})" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:5px 12px;font-family:var(--font-mono);font-size:10px;cursor:pointer">Cancel</button>
+              <button onclick="saveSourcesBase()" style="background:var(--accent);color:#fff;border:none;border-radius:6px;padding:5px 14px;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer">Save</button>
+            </div>
           </div>
-          <div>
-            <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Sheet Tab <span style="text-transform:none;opacity:0.6">(optional)</span></div>
-            <input value="${_escHtml(s.tabName||'')}" oninput="_qaSources[${i}].tabName=this.value" placeholder="e.g. Sheet1"
-              style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;box-sizing:border-box"/>
-          </div>
-        </div>
-        <div style="margin-bottom:8px">
-          <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Description <span style="text-transform:none;letter-spacing:0">(used for routing — what's in this file?)</span></div>
-          <input value="${_escHtml(s.description||'')}" oninput="_qaSources[${i}].description=this.value" placeholder="e.g. Active publisher deals, rate cards, exclusivity clauses, payment terms"
-            style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;box-sizing:border-box"/>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-family:var(--font-mono);font-size:10px;color:var(--muted)">
-            <input type="checkbox" ${s.enabled !== false ? 'checked' : ''} onchange="_qaSources[${i}].enabled=this.checked"
-              style="width:14px;height:14px;cursor:pointer;accent-color:var(--accent)"/>
-            Enabled (include in routing)
-          </label>
-          <button onclick="removeSourceEntry(${i})"
-            style="background:transparent;border:1px solid rgba(239,68,68,0.4);color:rgba(239,68,68,0.7);border-radius:6px;padding:5px 12px;font-family:var(--font-mono);font-size:10px;cursor:pointer">✕ Remove</button>
-        </div>
-      </div>`).join('');
+        </div>`;
+      }
+      return `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px">
+        <span style="font-size:8px;color:${s.enabled !== false ? 'var(--green)' : 'var(--muted)'}">●</span>
+        <span style="font-family:var(--font-mono);font-size:11px;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${_escHtml(s.name || '—')}</span>
+        ${s.tabName ? `<span style="font-family:var(--font-mono);font-size:10px;color:var(--accent);border:1px solid var(--border);border-radius:4px;padding:2px 7px;white-space:nowrap">Tab: ${_escHtml(s.tabName)}</span>` : ''}
+        <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${_escHtml((s.fileId||'').slice(0,16))}${(s.fileId||'').length > 16 ? '…' : ''}</span>
+        <button onclick="editSourceEntry(${i})" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 10px;font-family:var(--font-mono);font-size:10px;cursor:pointer;white-space:nowrap;flex-shrink:0">✏ Edit</button>
+      </div>`;
+    }).join('');
   }
 
-  function editSourcesMode() {
-    _qaSourcesEditMode = true;
+  function editSourceEntry(i) {
+    _qaSourcesSnapshots[i] = { ..._qaSources[i] };
+    _qaSourcesEditingSet.add(i);
+    renderSourcesList();
+  }
+
+  function cancelEditSource(i) {
+    if (_qaSourcesSnapshots[i] !== undefined) {
+      _qaSources[i] = _qaSourcesSnapshots[i];
+      delete _qaSourcesSnapshots[i];
+      _qaSourcesEditingSet.delete(i);
+    } else {
+      _qaSources.splice(i, 1);
+      _qaSourcesEditingSet.delete(i);
+      const newSet = new Set();
+      _qaSourcesEditingSet.forEach(idx => newSet.add(idx > i ? idx - 1 : idx));
+      _qaSourcesEditingSet.clear(); newSet.forEach(idx => _qaSourcesEditingSet.add(idx));
+      const newSnaps = {};
+      Object.keys(_qaSourcesSnapshots).forEach(k => { const ki = parseInt(k); newSnaps[ki > i ? ki - 1 : ki] = _qaSourcesSnapshots[k]; });
+      Object.keys(_qaSourcesSnapshots).forEach(k => delete _qaSourcesSnapshots[k]);
+      Object.assign(_qaSourcesSnapshots, newSnaps);
+    }
     renderSourcesList();
   }
 
   function addSourceEntry() {
     _qaSources.push({ name: '', description: '', fileId: '', tabName: '', enabled: true });
+    _qaSourcesEditingSet.add(_qaSources.length - 1);
     renderSourcesList();
   }
 
   function removeSourceEntry(i) {
     _qaSources.splice(i, 1);
+    _qaSourcesEditingSet.delete(i);
+    delete _qaSourcesSnapshots[i];
+    const newSet = new Set();
+    _qaSourcesEditingSet.forEach(idx => newSet.add(idx > i ? idx - 1 : idx));
+    _qaSourcesEditingSet.clear(); newSet.forEach(idx => _qaSourcesEditingSet.add(idx));
+    const newSnaps = {};
+    Object.keys(_qaSourcesSnapshots).forEach(k => { const ki = parseInt(k); newSnaps[ki > i ? ki - 1 : ki] = _qaSourcesSnapshots[k]; });
+    Object.keys(_qaSourcesSnapshots).forEach(k => delete _qaSourcesSnapshots[k]);
+    Object.assign(_qaSourcesSnapshots, newSnaps);
     renderSourcesList();
   }
 
@@ -8741,7 +8765,8 @@
       const j = await res.json().catch(() => ({}));
       if (j.success === false) throw new Error(j.error || 'Save failed');
       _qaSourcesLoaded = false;
-      _qaSourcesEditMode = false;
+      _qaSourcesEditingSet.clear();
+      Object.keys(_qaSourcesSnapshots).forEach(k => delete _qaSourcesSnapshots[k]);
       Object.keys(_driveFileCache).forEach(k => delete _driveFileCache[k]);
       if (st) { st.textContent = '✓ Saved'; st.style.opacity = '1'; setTimeout(() => st.style.opacity = '0', 2000); }
       showToast('✓ Sources saved');
