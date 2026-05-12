@@ -575,6 +575,8 @@
   .qa-ans pre code { background:none; padding:0; font-size:11px }
   .qa-ans h3,.qa-ans h4 { margin:14px 0 5px; color:var(--text); font-weight:700; letter-spacing:0.01em }
   .qa-ans hr { border:none; border-top:1px solid var(--border); margin:12px 0 }
+  .qa-chart-wrap { background:var(--surface3);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin:10px 0;max-width:100% }
+  .qa-chart-wrap canvas { max-height:260px }
   @keyframes qa-dot { 0%,80%,100%{transform:scale(0.5);opacity:0.3} 40%{transform:scale(1);opacity:1} }
   .qa-thinking { display:inline-flex; gap:6px; align-items:center; padding:4px 2px }
   .qa-thinking span { display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--accent-light); opacity:0.5; animation:qa-dot 1.4s ease-in-out infinite }
@@ -590,7 +592,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.10.2</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.10.3</div>
   </div>
 </div>
 
@@ -663,7 +665,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.10.2</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.10.3</div>
   </div>
 </div>
 
@@ -923,7 +925,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.10.2</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.10.3</span>
           </div>
         </div>
       </div>
@@ -8867,6 +8869,11 @@
     if (!text) return '';
     let s = String(text)
       .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    // chart code blocks — render as Chart.js canvas
+    s = s.replace(/```chart\n?([\s\S]*?)```/g, (_, json) => {
+      const id = 'qachart_' + Math.random().toString(36).slice(2, 9);
+      return `<div class="qa-chart-wrap" data-chartdef="${encodeURIComponent(json.trim())}" data-chartid="${id}"><canvas id="${id}"></canvas></div>`;
+    });
     // fenced code blocks
     s = s.replace(/```[\w]*\n?([\s\S]*?)```/g,
       '<pre><code>$1</code></pre>');
@@ -8902,6 +8909,55 @@
     return s;
   }
 
+  function _initQACharts(container) {
+    if (!window.Chart) return;
+    (container || document).querySelectorAll('.qa-chart-wrap[data-chartdef]:not([data-chartinit])').forEach(wrap => {
+      wrap.dataset.chartinit = '1';
+      try {
+        const def = JSON.parse(decodeURIComponent(wrap.dataset.chartdef));
+        const canvas = document.getElementById(wrap.dataset.chartid);
+        if (!canvas) return;
+        const labels = def.labels || [];
+        const data   = def.data   || (def.datasets && def.datasets[0]?.data) || [];
+        const label  = (def.datasets && def.datasets[0]?.label) || def.title || '';
+        const type   = def.type === 'horizontalBar' ? 'bar' : (def.type || 'bar');
+        const hBar   = def.type === 'horizontalBar';
+        const isPie  = type === 'pie' || type === 'doughnut';
+        const palette = [
+          'rgba(124,58,237,0.82)','rgba(157,95,247,0.82)','rgba(99,102,241,0.82)',
+          'rgba(168,85,247,0.82)','rgba(79,70,229,0.82)','rgba(139,92,246,0.82)',
+          'rgba(109,40,217,0.82)','rgba(196,148,255,0.82)',
+        ];
+        new Chart(canvas, {
+          type,
+          data: {
+            labels,
+            datasets: [{
+              label,
+              data,
+              backgroundColor: isPie ? palette.slice(0, labels.length) : palette[0],
+              borderColor:     isPie ? palette.map(c => c.replace('0.82','1')) : palette[0].replace('0.82','1'),
+              borderWidth: 1,
+              borderRadius: type === 'bar' ? 5 : 0,
+            }]
+          },
+          options: {
+            indexAxis: hBar ? 'y' : 'x',
+            responsive: true,
+            plugins: {
+              title:  { display: !!def.title, text: def.title, color: '#f0eeff', font: { family:"'Space Mono',monospace", size:12 } },
+              legend: { display: isPie, labels: { color:'#b8aede', font:{ size:10 } } },
+            },
+            scales: isPie ? {} : {
+              x: { ticks:{ color:'#7b6ea8', font:{size:10} }, grid:{ color:'#2e2550' } },
+              y: { ticks:{ color:'#7b6ea8', font:{size:10} }, grid:{ color:'#2e2550' } },
+            }
+          }
+        });
+      } catch(e) { console.warn('QA chart init failed', e); }
+    });
+  }
+
   async function _streamText(text, el, scrollEl) {
     const words = text.split(' ');
     let built = '';
@@ -8914,6 +8970,7 @@
     }
     el.innerHTML = _md(text);
     if (scrollEl) scrollEl.scrollTop = scrollEl.scrollHeight;
+    _initQACharts(el.closest('.qa-ans') || el.parentElement);
   }
 
   function _renderQAConversation() {
@@ -8959,6 +9016,7 @@
         </div>
       </div>`).join('');
     el.scrollTop = el.scrollHeight;
+    _initQACharts(el);
   }
 
   async function askQuestion() {
