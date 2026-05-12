@@ -578,7 +578,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.19</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.20</div>
   </div>
 </div>
 
@@ -651,7 +651,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.19</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.20</div>
   </div>
 </div>
 
@@ -911,7 +911,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.19</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.20</span>
           </div>
         </div>
       </div>
@@ -2878,12 +2878,26 @@
               📊 System Data
             </button>
           </div>
-          <button id="qaClearBtn" onclick="clearQAHistory()"
-            style="background:transparent;border:1px solid rgba(239,68,68,0.3);color:rgba(239,68,68,0.5);border-radius:7px;padding:6px 14px;font-family:var(--font-mono);font-size:10px;cursor:pointer;letter-spacing:0.04em;transition:all 0.15s"
-            onmouseover="this.style.borderColor='rgba(239,68,68,0.7)';this.style.color='rgba(239,68,68,0.9)'"
-            onmouseout="this.style.borderColor='rgba(239,68,68,0.3)';this.style.color='rgba(239,68,68,0.5)'">
-            🗑 Clear chat
-          </button>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:4px 10px">
+              <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);white-space:nowrap">Keep</span>
+              <select id="qaMaxMsgsSelect" onchange="setQAMaxMsgs(this.value)"
+                style="background:transparent;border:none;outline:none;color:var(--text);font-family:var(--font-mono);font-size:10px;cursor:pointer">
+                <option value="0">Unlimited</option>
+                <option value="500">500 msgs</option>
+                <option value="200">200 msgs</option>
+                <option value="100">100 msgs</option>
+                <option value="50">50 msgs</option>
+                <option value="25">25 msgs</option>
+              </select>
+            </div>
+            <button id="qaClearBtn" onclick="clearQAHistory()"
+              style="background:transparent;border:1px solid rgba(239,68,68,0.3);color:rgba(239,68,68,0.5);border-radius:7px;padding:6px 14px;font-family:var(--font-mono);font-size:10px;cursor:pointer;letter-spacing:0.04em;transition:all 0.15s"
+              onmouseover="this.style.borderColor='rgba(239,68,68,0.7)';this.style.color='rgba(239,68,68,0.9)'"
+              onmouseout="this.style.borderColor='rgba(239,68,68,0.3)';this.style.color='rgba(239,68,68,0.5)'">
+              🗑 Clear chat
+            </button>
+          </div>
         </div>
 
         <!-- ── KNOWLEDGE BASE PANEL ── -->
@@ -8229,15 +8243,29 @@
   function _qaUser() {
     return (localStorage.getItem('tf_current_user') || 'default').toLowerCase();
   }
+  let _qaMaxMsgs = 0; // 0 = unlimited
+  function _loadQAMaxMsgs() {
+    const stored = localStorage.getItem(`tf_qa_max_${_qaUser()}`);
+    _qaMaxMsgs = stored !== null ? parseInt(stored) : 0;
+    const sel = document.getElementById('qaMaxMsgsSelect');
+    if (sel) sel.value = String(_qaMaxMsgs);
+  }
+  function setQAMaxMsgs(val) {
+    _qaMaxMsgs = parseInt(val);
+    localStorage.setItem(`tf_qa_max_${_qaUser()}`, String(_qaMaxMsgs));
+  }
+  function _trimHistory(arr) {
+    return _qaMaxMsgs > 0 ? arr.slice(-_qaMaxMsgs) : arr;
+  }
   function _saveQAHistory() {
     try {
-      const clean = _qaHistory.filter(h => h.a !== null).slice(-50);
+      const clean = _trimHistory(_qaHistory.filter(h => h.a !== null));
       localStorage.setItem(`tf_qa_kb_${_qaUser()}`, JSON.stringify(clean));
     } catch {}
   }
   function _saveQADataHistory() {
     try {
-      const clean = _qaDataHistory.filter(h => h.a !== null).slice(-50);
+      const clean = _trimHistory(_qaDataHistory.filter(h => h.a !== null));
       localStorage.setItem(`tf_qa_data_${_qaUser()}`, JSON.stringify(clean));
     } catch {}
   }
@@ -8449,6 +8477,7 @@
   let _qaHistoryLoaded = false;
   function _initQAPage() {
     if (!_qaHistoryLoaded) {
+      _loadQAMaxMsgs();
       _loadQAHistory();
       _qaHistoryLoaded = true;
     }
