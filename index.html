@@ -551,23 +551,23 @@
   .sdrop-group { padding:5px 12px 3px;font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);background:var(--surface2) }
   .sdrop-no-results { padding:12px;font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:center }
   /* Q&A answer bubbles */
-  .qa-ans { word-break:break-word }
-  .qa-ans p { margin:0 0 8px; line-height:1.65 }
+  .qa-ans { word-break:break-word; font-family:var(--font-display); font-size:13.5px; line-height:1.72 }
+  .qa-ans p { margin:0 0 10px; line-height:1.72 }
   .qa-ans p:last-child { margin-bottom:0 }
-  .qa-ans ul,.qa-ans ol { margin:4px 0 10px; padding-left:20px }
-  .qa-ans li { margin:3px 0; line-height:1.6 }
+  .qa-ans ul,.qa-ans ol { margin:4px 0 12px; padding-left:22px }
+  .qa-ans li { margin:4px 0; line-height:1.65 }
   .qa-ans strong { color:var(--text); font-weight:700 }
   .qa-ans em { font-style:italic; color:var(--accent-light) }
-  .qa-ans code { background:var(--surface3); border-radius:4px; padding:2px 5px; font-size:11px }
-  .qa-ans pre { background:var(--surface3); border:1px solid var(--border); border-radius:6px; padding:10px 12px; overflow-x:auto; margin:8px 0 }
-  .qa-ans pre code { background:none; padding:0 }
-  .qa-ans h3,.qa-ans h4 { margin:10px 0 4px; color:var(--text); font-weight:700 }
-  .qa-ans hr { border:none; border-top:1px solid var(--border); margin:10px 0 }
+  .qa-ans code { background:var(--surface3); border-radius:4px; padding:2px 6px; font-size:11.5px; font-family:var(--font-mono) }
+  .qa-ans pre { background:var(--surface3); border:1px solid var(--border); border-radius:8px; padding:12px 14px; overflow-x:auto; margin:10px 0 }
+  .qa-ans pre code { background:none; padding:0; font-size:11px }
+  .qa-ans h3,.qa-ans h4 { margin:14px 0 5px; color:var(--text); font-weight:700; letter-spacing:0.01em }
+  .qa-ans hr { border:none; border-top:1px solid var(--border); margin:12px 0 }
   @keyframes qa-dot { 0%,80%,100%{transform:scale(0.5);opacity:0.3} 40%{transform:scale(1);opacity:1} }
-  .qa-thinking { display:inline-flex; gap:5px; align-items:center; padding:2px 0 }
-  .qa-thinking span { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--muted); animation:qa-dot 1.3s ease-in-out infinite }
-  .qa-thinking span:nth-child(2) { animation-delay:.2s }
-  .qa-thinking span:nth-child(3) { animation-delay:.4s }
+  .qa-thinking { display:inline-flex; gap:6px; align-items:center; padding:4px 2px }
+  .qa-thinking span { display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--accent-light); opacity:0.5; animation:qa-dot 1.4s ease-in-out infinite }
+  .qa-thinking span:nth-child(2) { animation-delay:.22s }
+  .qa-thinking span:nth-child(3) { animation-delay:.44s }
   </style>
 </head>
 <body>
@@ -578,7 +578,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.9.6</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.9.7</div>
   </div>
 </div>
 
@@ -651,7 +651,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.9.6</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.9.7</div>
   </div>
 </div>
 
@@ -911,7 +911,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.9.6</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.9.7</span>
           </div>
         </div>
       </div>
@@ -2920,7 +2920,7 @@
           <!-- CHAT VIEW -->
           <div id="qaChatView">
             <div id="qaConversation"
-              style="display:flex;flex-direction:column;gap:16px;margin-bottom:20px;min-height:80px;max-height:520px;overflow-y:auto;padding-right:4px">
+              style="display:flex;flex-direction:column;gap:24px;margin-bottom:20px;min-height:80px;max-height:520px;overflow-y:auto;padding-right:6px">
             </div>
             <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;gap:10px;align-items:flex-end">
               <textarea id="qaInput" rows="2" placeholder="Ask a question…"
@@ -8913,26 +8913,27 @@
     }
     el.innerHTML = _qaHistory.map((h, i) => `
       <div>
-        <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
-          <div style="background:var(--accent);color:#fff;border-radius:12px 12px 4px 12px;padding:10px 16px;max-width:72%;font-family:var(--font-mono);font-size:12px;line-height:1.5;white-space:pre-wrap">${_escHtml(h.q)}</div>
+        <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+          <div style="background:var(--accent);color:#fff;border-radius:18px 18px 5px 18px;padding:11px 18px;max-width:74%;font-family:var(--font-display);font-size:13.5px;line-height:1.58;white-space:pre-wrap;box-shadow:0 2px 14px rgba(124,58,237,0.28)">${_escHtml(h.q)}</div>
         </div>
         <div style="display:flex;justify-content:flex-start;flex-direction:column;gap:6px;align-items:flex-start">
+          <span style="font-family:var(--font-mono);font-size:9px;color:var(--accent-light);opacity:0.65;letter-spacing:0.1em;padding-left:3px">✦ AI</span>
           ${h.a === null
-            ? `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 16px;font-family:var(--font-mono);font-size:12px;color:var(--muted)">
+            ? `<div style="background:var(--surface2);border:1px solid var(--border);border-left:2px solid var(--accent);border-radius:2px 14px 14px 14px;padding:13px 18px;color:var(--muted)">
                 ${h._routing
-                  ? `<span style="letter-spacing:0.04em">🔍 Routing to relevant sources…</span>`
+                  ? `<span style="font-family:var(--font-display);font-size:12px;letter-spacing:0.01em">🔍 Routing to relevant sources…</span>`
                   : `<div class="qa-thinking"><span></span><span></span><span></span></div>`}
                </div>`
-            : `<div class="qa-ans" id="qa-ans-${i}" style="background:var(--surface2);border:1px solid var(--border);border-radius:12px 12px 12px 4px;padding:12px 16px;max-width:82%;font-family:var(--font-mono);font-size:12px;line-height:1.6;color:var(--text)">${_md(h.a)}</div>`
+            : `<div class="qa-ans" id="qa-ans-${i}" style="background:var(--surface2);border:1px solid var(--border);border-left:2px solid var(--accent);border-radius:2px 14px 14px 14px;padding:14px 18px;max-width:85%;color:var(--text)">${_md(h.a)}</div>`
           }
           ${h.sourcesUsed && h.sourcesUsed.length
-            ? `<div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);padding:3px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:6px">📎 ${h.sourcesUsed.map(s => _escHtml(s)).join(' · ')}</div>`
+            ? `<div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);padding:4px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;letter-spacing:0.02em">📎 ${h.sourcesUsed.map(s => _escHtml(s)).join(' · ')}</div>`
             : ''}
           ${h.sourcesError
-            ? `<div style="font-family:var(--font-mono);font-size:9px;color:#f87171;padding:3px 8px;background:var(--surface2);border:1px solid #f8717144;border-radius:6px">${_escHtml(h.sourcesError)}</div>`
+            ? `<div style="font-family:var(--font-mono);font-size:9px;color:#f87171;padding:4px 10px;background:var(--surface2);border:1px solid #f8717133;border-radius:20px">${_escHtml(h.sourcesError)}</div>`
             : ''}
           ${h.truncated
-            ? `<div style="font-family:var(--font-mono);font-size:9px;color:#fb923c;padding:3px 8px;background:var(--surface2);border:1px solid #fb923c44;border-radius:6px">⚠ Truncated: ${_escHtml(h.truncated)} — answer may be incomplete. Specify a Sheet Tab to reduce content size.</div>`
+            ? `<div style="font-family:var(--font-mono);font-size:9px;color:#fb923c;padding:4px 10px;background:var(--surface2);border:1px solid #fb923c33;border-radius:20px">⚠ Truncated: ${_escHtml(h.truncated)} — answer may be incomplete. Specify a Sheet Tab to reduce content size.</div>`
             : ''}
           ${h.tokens ? (() => {
               const isSonnet = h.model === 'sonnet';
@@ -8941,7 +8942,7 @@
                 : (h.tokens.in * 0.80 + h.tokens.out * 4.00) / 1_000_000;
               const costStr = cost < 0.0001 ? '<$0.0001' : '$' + cost.toFixed(cost < 0.01 ? 4 : 3);
               const modelTag = isSonnet ? ' · Sonnet' : '';
-              return `<div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);padding:2px 7px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;opacity:0.6">⚡ ${h.tokens.in.toLocaleString()} in · ${h.tokens.out.toLocaleString()} out · ${costStr}${modelTag}</div>`;
+              return `<div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);padding:4px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;opacity:0.55">⚡ ${h.tokens.in.toLocaleString()} in · ${h.tokens.out.toLocaleString()} out · ${costStr}${modelTag}</div>`;
             })() : ''}
         </div>
       </div>`).join('');
