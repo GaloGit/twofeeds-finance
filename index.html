@@ -578,7 +578,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.48</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.49</div>
   </div>
 </div>
 
@@ -651,7 +651,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.48</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.49</div>
   </div>
 </div>
 
@@ -911,7 +911,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.48</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.49</span>
           </div>
         </div>
       </div>
@@ -8908,12 +8908,19 @@
         let truncMsg = 'data was truncated';
         if (lastSource && lastSourcePos >= 0) {
           const cutContent = cut.slice(lastSourcePos + 1);
-          const includedRows = Math.max(0, cutContent.split('\n').filter(l => l.trim()).length - 1);
+          const cutLines = cutContent.split('\n').filter(l => l.trim());
+          const csvHeader = cutLines[0] || '';
+          const totalCols = csvHeader ? csvHeader.split(',').length : 0;
+          const lastLine  = cutLines[cutLines.length - 1] || '';
+          const lastLineCols = lastLine ? lastLine.split(',').length : 0;
+          const midRow = totalCols > 0 && lastLineCols < totalCols;
+          const includedRows = Math.max(0, cutLines.length - 1 - (midRow ? 1 : 0));
           const fullSourceStart = fullKnowledge.indexOf('\n## ' + lastSource + '\n');
           const fullSourceEnd   = fullKnowledge.indexOf('\n---\n', fullSourceStart + 1);
           const fullSection = fullSourceEnd > 0 ? fullKnowledge.slice(fullSourceStart, fullSourceEnd) : fullKnowledge.slice(fullSourceStart);
           const totalRows = Math.max(0, fullSection.split('\n').filter(l => l.trim()).length - 2);
-          truncMsg = `"${lastSource}" — rows 1–${includedRows} of ~${totalRows} included`;
+          truncMsg = `"${lastSource}" — rows 1–${includedRows} of ~${totalRows}`;
+          if (midRow) truncMsg += `, last row cut at column ${lastLineCols} of ${totalCols}`;
         }
         _qaHistory[idx0].truncated = truncMsg;
       }
