@@ -578,7 +578,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.32</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.8.33</div>
   </div>
 </div>
 
@@ -651,7 +651,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.32</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.8.33</div>
   </div>
 </div>
 
@@ -911,7 +911,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.32</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.8.33</span>
           </div>
         </div>
       </div>
@@ -8605,8 +8605,9 @@
       if (tabName) url += `&tabName=${encodeURIComponent(tabName)}`;
       const res  = await fetch(url);
       const data = await res.json();
-      return data.success ? { name: data.name || '', content: data.content || '' } : { name: '', content: '' };
-    } catch { return { name: '', content: '' }; }
+      if (data.success) return { name: data.name || '', content: data.content || '' };
+      return { name: '', content: '', error: data.error || 'Failed to load' };
+    } catch (e) { return { name: '', content: '', error: e.message || 'Network error' }; }
   }
 
   async function _classifySources(question, sources) {
@@ -8830,6 +8831,9 @@
           ${h.sourcesUsed && h.sourcesUsed.length
             ? `<div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);padding:3px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:6px">📎 ${h.sourcesUsed.map(s => _escHtml(s)).join(' · ')}</div>`
             : ''}
+          ${h.sourcesError
+            ? `<div style="font-family:var(--font-mono);font-size:9px;color:#f87171;padding:3px 8px;background:var(--surface2);border:1px solid #f8717144;border-radius:6px">${_escHtml(h.sourcesError)}</div>`
+            : ''}
         </div>
       </div>`).join('');
     el.scrollTop = el.scrollHeight;
@@ -8865,9 +8869,12 @@
         const relevant = enabledSources.filter((_, i) => relevantIds.includes(`src_${i}`));
         if (relevant.length > 0) {
           const files = await Promise.all(relevant.map(s => _fetchDriveFile(s.fileId, s.tabName)));
-          const fetched = relevant.map((s, i) => ({ source: s, file: files[i] })).filter(p => p.file && p.file.content);
+          const pairs = relevant.map((s, i) => ({ source: s, file: files[i] }));
+          const fetched = pairs.filter(p => p.file && p.file.content);
+          const failed  = pairs.filter(p => !p.file || !p.file.content);
           driveContext = fetched.map(p => `## ${p.source.name}\n\n${p.file.content}`).join('\n\n---\n\n');
           _qaHistory[idx0].sourcesUsed = fetched.map(p => p.source.name);
+          if (failed.length) _qaHistory[idx0].sourcesError = failed.map(p => `⚠ "${p.source.name}": ${p.file?.error || 'empty response'}`).join(' · ');
         }
         _qaHistory[idx0]._routing = false;
       }
