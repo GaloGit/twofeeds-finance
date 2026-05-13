@@ -592,7 +592,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.10.9</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.10.10</div>
   </div>
 </div>
 
@@ -665,7 +665,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.10.9</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.10.10</div>
   </div>
 </div>
 
@@ -949,7 +949,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.10.9</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.10.10</span>
           </div>
         </div>
       </div>
@@ -3119,9 +3119,12 @@
     TAB_DEFS.forEach(d => {
       t[d.key] = d.hasEdit ? { view: true, edit: false } : { view: true };
     });
-    t.section_finance = true;
-    t.section_ops     = true;
-    t.section_qa      = true;
+    t.section_finance  = true;
+    t.section_ops      = true;
+    t.section_qa       = false;
+    t.show_help        = false;
+    t.show_info        = false;
+    t.show_teamroles   = false;
     return t;
   }
 
@@ -3164,7 +3167,7 @@
     // ── Section switcher ──
     const hasFinance = admin || tabs.section_finance !== false;
     const hasOps     = admin || tabs.section_ops     !== false;
-    const hasQA      = admin || tabs.section_qa      !== false;
+    const hasQA      = admin || tabs.section_qa      === true;
     const sw = document.getElementById('sectionSwitcher');
     const accessCount = [hasFinance, hasOps, hasQA].filter(Boolean).length;
     if (sw) sw.style.display = accessCount > 1 ? 'flex' : 'none';
@@ -3176,15 +3179,15 @@
       else if (hasFinance && !hasOps)      switchSection('finance');
     }
 
-    // ── Info button — visible to all logged-in users ──
+    // ── Panel buttons — admin always sees all; non-admins gated by per-user flags ──
+    const _helpBtn = document.getElementById('adminHelpBtn');
+    if (_helpBtn) _helpBtn.style.display = (admin || tabs.show_help === true) ? 'flex' : 'none';
     const _infoBtn = document.getElementById('adminInfoBtn');
-    if (_infoBtn) _infoBtn.style.display = 'flex';
-
-    // ── Admin-only panel buttons (Settings + Team Roles moved out of nav) ──
-    ['adminHelpBtn','adminBtn_settings','adminBtn_team'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.style.display = admin ? 'flex' : 'none';
-    });
+    if (_infoBtn) _infoBtn.style.display = (admin || tabs.show_info === true) ? 'flex' : 'none';
+    const _teamBtn = document.getElementById('adminBtn_team');
+    if (_teamBtn) _teamBtn.style.display = (admin || tabs.show_teamroles === true) ? 'flex' : 'none';
+    const _settingsBtn = document.getElementById('adminBtn_settings');
+    if (_settingsBtn) _settingsBtn.style.display = admin ? 'flex' : 'none';
     // ── Tab visibility (all tabs controlled by TAB_DEFS + settings) ──
 
     TAB_DEFS.forEach(d => {
@@ -6500,15 +6503,18 @@
   function _buildPermsGridHtml(i) {
     const tabs    = settingsUsers[i]?.tabs || defaultTabs();
     const btnBase = 'font-family:var(--font-mono);font-size:9px;border-radius:6px;cursor:pointer;padding:4px 10px;border:1px solid ';
-    const finOn   = tabs.section_finance !== false;
-    const opsOn   = tabs.section_ops     !== false;
-    const qaOn    = tabs.section_qa      !== false;
+    const finOn      = tabs.section_finance !== false;
+    const opsOn      = tabs.section_ops     !== false;
+    const qaOn       = tabs.section_qa      === true;
+    const helpOn     = tabs.show_help       === true;
+    const infoOn     = tabs.show_info       === true;
+    const teamOn     = tabs.show_teamroles  === true;
     const onStyle  = (c) => `background:rgba(${c},0.15);color:var(--green);border-color:rgba(${c},0.7)`;
     const offStyle = `background:var(--surface3);color:var(--muted);border-color:var(--border)`;
     const sectionHtml = `
       <div style="background:rgba(124,58,237,0.07);border:1px solid rgba(124,58,237,0.25);border-radius:8px;padding:10px 14px;margin-bottom:12px">
         <div style="font-family:var(--font-mono);font-size:9px;color:var(--accent-light);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">🔐 Main Section Access</div>
-        <div style="display:flex;gap:20px;flex-wrap:wrap">
+        <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:10px">
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-family:var(--font-mono);font-size:11px;color:var(--text)">💰 Finance</span>
             <button onclick="toggleSectionPerm(${i},'section_finance',this)" style="${btnBase}${finOn ? onStyle('34,197,94') : offStyle};min-width:64px">${finOn?'✓ ON':'✕ OFF'}</button>
@@ -6520,6 +6526,21 @@
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-family:var(--font-mono);font-size:11px;color:var(--text)">💬 Q&amp;A</span>
             <button onclick="toggleSectionPerm(${i},'section_qa',this)" style="${btnBase}${qaOn ? onStyle('34,197,94') : offStyle};min-width:64px">${qaOn?'✓ ON':'✕ OFF'}</button>
+          </div>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:9px;color:var(--accent-light);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">🧭 Panel Access</div>
+        <div style="display:flex;gap:20px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-family:var(--font-mono);font-size:11px;color:var(--text)">❓ Help</span>
+            <button onclick="toggleSectionPerm(${i},'show_help',this)" style="${btnBase}${helpOn ? onStyle('34,197,94') : offStyle};min-width:64px">${helpOn?'✓ ON':'✕ OFF'}</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-family:var(--font-mono);font-size:11px;color:var(--text)">ℹ️ Info</span>
+            <button onclick="toggleSectionPerm(${i},'show_info',this)" style="${btnBase}${infoOn ? onStyle('34,197,94') : offStyle};min-width:64px">${infoOn?'✓ ON':'✕ OFF'}</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-family:var(--font-mono);font-size:11px;color:var(--text)">👥 Team Roles</span>
+            <button onclick="toggleSectionPerm(${i},'show_teamroles',this)" style="${btnBase}${teamOn ? onStyle('34,197,94') : offStyle};min-width:64px">${teamOn?'✓ ON':'✕ OFF'}</button>
           </div>
         </div>
       </div>`;
@@ -6539,7 +6560,11 @@
 
   function toggleSectionPerm(i, key, btn) {
     if (!settingsUsers[i].tabs) settingsUsers[i].tabs = defaultTabs();
-    const curr = settingsUsers[i].tabs[key] !== false;
+    // show_* and section_qa use strict boolean (undefined = OFF); section_finance/ops use !== false (undefined = ON)
+    const strictKeys = ['show_help','show_info','show_teamroles','section_qa'];
+    const curr = strictKeys.includes(key)
+      ? settingsUsers[i].tabs[key] === true
+      : settingsUsers[i].tabs[key] !== false;
     settingsUsers[i].tabs[key] = !curr;
     const on      = settingsUsers[i].tabs[key];
     const btnBase = 'font-family:var(--font-mono);font-size:9px;border-radius:6px;cursor:pointer;padding:4px 10px;border:1px solid ';
