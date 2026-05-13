@@ -592,7 +592,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.10.4</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.10.5</div>
   </div>
 </div>
 
@@ -665,7 +665,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.10.4</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.10.5</div>
   </div>
 </div>
 
@@ -925,7 +925,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.10.4</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.10.5</span>
           </div>
         </div>
       </div>
@@ -2206,7 +2206,7 @@
             </div>
             <div style="flex:0 0 130px">
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Platform</div>
-              <select id="advPlatform" onchange="_applyStatusSelectColor(this,'')" style="width:100%;background:var(--surface3);color:var(--muted);border:1px solid rgba(148,163,184,0.35);border-radius:8px;padding:10px 14px;font-family:var(--font-mono);font-size:13px;font-weight:700;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none">
+              <select id="advPlatform" onchange="_applyAdvPlatformColor(this)" style="width:100%;background:var(--surface3);color:var(--muted);border:1px solid rgba(148,163,184,0.35);border-radius:8px;padding:10px 14px;font-family:var(--font-mono);font-size:13px;font-weight:700;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none">
                 <option value="">— Select —</option>
                 <option value="Appsflyer">Appsflyer</option>
                 <option value="Adjust">Adjust</option>
@@ -2221,7 +2221,7 @@
             </div>
             <div style="flex:0 0 110px">
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px">Type</div>
-              <select id="advType" style="width:100%;background:var(--surface3);color:var(--muted);border:1px solid rgba(148,163,184,0.35);border-radius:8px;padding:10px 14px;font-family:var(--font-mono);font-size:13px;font-weight:700;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none">
+              <select id="advType" onchange="_applyAdvTypeColor(this)" style="width:100%;background:var(--surface3);color:var(--muted);border:1px solid rgba(148,163,184,0.35);border-radius:8px;padding:10px 14px;font-family:var(--font-mono);font-size:13px;font-weight:700;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none">
                 <option value="">— Select —</option>
                 <option value="Direct">Direct</option>
                 <option value="Agency">Agency</option>
@@ -4179,6 +4179,35 @@
     const c = _SI_STATUS_COLORS[status];
     if (c) { el.style.background = c.bg; el.style.color = c.color; el.style.borderColor = c.border; }
     else   { el.style.background = 'var(--surface2)'; el.style.color = 'var(--text)'; el.style.borderColor = 'var(--border)'; }
+  }
+
+  const _ADV_PLATFORM_COLORS = {
+    'Appsflyer':         ['rgba(56,189,248,0.14)','#38bdf8','rgba(56,189,248,0.45)'],
+    'Adjust':            ['rgba(34,197,94,0.14)', '#22c55e','rgba(34,197,94,0.45)'],
+    'Affise':            ['rgba(249,115,22,0.14)','#f97316','rgba(249,115,22,0.45)'],
+    'Singular':          ['rgba(168,85,247,0.14)','#a855f7','rgba(168,85,247,0.45)'],
+    'Kochava':           ['rgba(251,146,60,0.14)','#fb923c','rgba(251,146,60,0.45)'],
+    'Impact':            ['rgba(245,158,11,0.14)','#f59e0b','rgba(245,158,11,0.45)'],
+    'Branch':            ['rgba(16,185,129,0.14)','#10b981','rgba(16,185,129,0.45)'],
+    'Network':           ['rgba(99,102,241,0.14)','#6366f1','rgba(99,102,241,0.45)'],
+    'Multiple Platforms':['rgba(236,72,153,0.14)','#ec4899','rgba(236,72,153,0.45)'],
+  };
+  const _ADV_TYPE_COLORS = {
+    'Direct':  ['rgba(56,189,248,0.14)','#38bdf8','rgba(56,189,248,0.45)'],
+    'Agency':  ['rgba(245,158,11,0.14)','#f59e0b','rgba(245,158,11,0.45)'],
+    'Network': ['rgba(99,102,241,0.14)','#6366f1','rgba(99,102,241,0.45)'],
+  };
+  function _applyAdvPlatformColor(el) {
+    const v = el.value;
+    if (!v) { el.style.background='var(--surface3)'; el.style.color='var(--muted)'; el.style.borderColor='rgba(148,163,184,0.35)'; return; }
+    const [bg, col, border] = _ADV_PLATFORM_COLORS[v] || ['var(--surface2)','var(--text)','var(--border)'];
+    el.style.background = bg; el.style.color = col; el.style.borderColor = border;
+  }
+  function _applyAdvTypeColor(el) {
+    const v = el.value;
+    if (!v) { el.style.background='var(--surface3)'; el.style.color='var(--muted)'; el.style.borderColor='rgba(148,163,184,0.35)'; return; }
+    const [bg, col, border] = _ADV_TYPE_COLORS[v] || ['var(--surface2)','var(--text)','var(--border)'];
+    el.style.background = bg; el.style.color = col; el.style.borderColor = border;
   }
 
   function _siTypeBadge(type) {
@@ -6258,10 +6287,10 @@
       const el = document.getElementById(id);
       if (el) { el.value = 'live'; el.dispatchEvent(new Event('change')); _applyStatusSelectColor(el, 'live'); }
     });
-    ['advPlatform','advType'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) { el.value = ''; el.dispatchEvent(new Event('change')); _applyStatusSelectColor(el, ''); }
-    });
+    const _platEl = document.getElementById('advPlatform');
+    if (_platEl) { _platEl.value = ''; _applyAdvPlatformColor(_platEl); }
+    const _typeEl = document.getElementById('advType');
+    if (_typeEl) { _typeEl.value = ''; _applyAdvTypeColor(_typeEl); }
     const fw = document.getElementById('advFormWrap');
     if (fw) fw.style.display = 'none';
     const advToggleBtn = document.getElementById('advFormToggle');
