@@ -592,7 +592,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.10.3</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.10.4</div>
   </div>
 </div>
 
@@ -665,7 +665,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.10.3</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.10.4</div>
   </div>
 </div>
 
@@ -925,7 +925,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.10.3</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.10.4</span>
           </div>
         </div>
       </div>
@@ -6250,16 +6250,18 @@
     }
     _renderAdvTable();
     ['advName','advLogoUrl','advTfId','advTo2Id','advGeo','advWebsiteUrl','advLinkedinUrl'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-    document.getElementById('advTo2Manager').value = '';
-    document.getElementById('advTfManager').value = '';
-    document.getElementById('advTlTo2').value = '';
+    ['advTo2Manager','advTfManager','advTlTo2'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.value = ''; el.dispatchEvent(new Event('change')); }
+    });
     ['advTfStatus','advTo2Status'].forEach(id => {
       const el = document.getElementById(id);
-      if (el) { el.value = 'live'; _applyStatusSelectColor(el, 'live'); }
+      if (el) { el.value = 'live'; el.dispatchEvent(new Event('change')); _applyStatusSelectColor(el, 'live'); }
     });
-    document.getElementById('advPlatform').value = '';
-    _applyStatusSelectColor(document.getElementById('advPlatform'), '');
-    document.getElementById('advType').value = '';
+    ['advPlatform','advType'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.value = ''; el.dispatchEvent(new Event('change')); _applyStatusSelectColor(el, ''); }
+    });
     const fw = document.getElementById('advFormWrap');
     if (fw) fw.style.display = 'none';
     const advToggleBtn = document.getElementById('advFormToggle');
