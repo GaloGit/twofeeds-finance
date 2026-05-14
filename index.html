@@ -417,9 +417,10 @@
       /* Period picker bar */
       .period-wrap { flex-wrap: wrap !important; gap: 8px; padding: 8px 0 4px; }
       .period-dd-btn { font-size: 9px; padding: 6px 10px; min-height: 32px; }
-      /* Help / Settings buttons on mobile */
-      #adminPanelBtns { margin-left: 0 !important; width: 100%; justify-content: flex-start !important; }
-      #adminPanelBtns button { font-size: 10px !important; padding: 7px 12px !important; min-height: 34px; gap: 5px !important; }
+      /* Panel buttons row on mobile — wraps to multiple rows, icon-only labels */
+      #adminPanelBtns { margin-left: 0 !important; width: 100%; justify-content: flex-start !important; flex-wrap: wrap; gap: 6px; }
+      #adminPanelBtns button { font-size: 9px !important; padding: 5px 8px !important; min-height: 30px; gap: 4px !important; }
+      #adminPanelBtns .btn-lbl { display: none; }
       #revSheetSourceLabel { display: none; }
 
       /* Nav tabs */
@@ -592,7 +593,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.10.19</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.10.20</div>
   </div>
 </div>
 
@@ -665,7 +666,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.10.19</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.10.20</div>
   </div>
 </div>
 
@@ -1097,7 +1098,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.10.19</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.10.20</span>
           </div>
         </div>
       </div>
@@ -1154,29 +1155,29 @@
         <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark mode" style="padding:4px 8px;border-radius:6px;font-size:12px">🌙</button>
         <button id="adminHelpBtn" onclick="showHelp()" title="Help & Instructions" style="display:none;align-items:center;gap:4px;background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.3);border-radius:6px;padding:4px 8px;cursor:pointer;font-family:var(--font-mono);font-size:9px;color:#a78bfa;transition:all 0.2s;white-space:nowrap">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          Help
+          <span class="btn-lbl">Help</span>
         </button>
         <button id="adminInfoBtn" onclick="showInfoPanel()" title="Info & Reference" style="display:none;align-items:center;gap:4px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.28);border-radius:6px;padding:4px 8px;cursor:pointer;font-family:var(--font-mono);font-size:9px;color:#38bdf8;transition:all 0.2s;white-space:nowrap">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          Info
+          <span class="btn-lbl">Info</span>
         </button>
         <button id="adminDetailsBtn" onclick="showDetailsPanel()" title="Platform Details" style="display:none;align-items:center;gap:4px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.28);border-radius:6px;padding:4px 8px;cursor:pointer;font-family:var(--font-mono);font-size:9px;color:#10b981;transition:all 0.2s;white-space:nowrap">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-          Details
+          <span class="btn-lbl">Details</span>
         </button>
         <button id="adminFilesBtn" onclick="showFilesPanel()" title="Drive Files & Folders" style="display:none;align-items:center;gap:4px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.28);border-radius:6px;padding:4px 8px;cursor:pointer;font-family:var(--font-mono);font-size:9px;color:#f59e0b;transition:all 0.2s;white-space:nowrap">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-          Files
+          <span class="btn-lbl">Files</span>
         </button>
         <button id="adminBtn_settings" onclick="showAdminPanel('settings')" title="Settings"
           style="display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;cursor:pointer;font-family:var(--font-mono);font-size:9px;color:var(--muted);transition:all 0.2s;white-space:nowrap">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          Settings
+          <span class="btn-lbl">Settings</span>
         </button>
         <button id="adminBtn_team" onclick="showAdminPanel('campaignmgr', renderCampaignMgr)" title="Team Roles"
           style="display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;cursor:pointer;font-family:var(--font-mono);font-size:9px;color:var(--muted);transition:all 0.2s;white-space:nowrap">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          Team Roles
+          <span class="btn-lbl">Team Roles</span>
         </button>
       </div>
     </div>
