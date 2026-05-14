@@ -592,7 +592,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.10.18</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.10.19</div>
   </div>
 </div>
 
@@ -665,7 +665,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.10.18</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.10.19</div>
   </div>
 </div>
 
@@ -713,6 +713,78 @@
 </div>
 
 <!-- INFO MODAL -->
+<!-- FILES MODAL -->
+<div id="filesModal" onclick="if(event.target===this)closeFilesPanel()" style="display:none;position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,0.65);align-items:center;justify-content:center">
+  <div style="background:var(--surface2);border:1px solid var(--border);border-radius:16px;width:min(820px,95vw);max-height:88vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,0.8);position:relative;overflow:hidden">
+    <!-- Saving overlay -->
+    <div id="filesSavingOverlay" style="display:none;position:absolute;inset:0;z-index:20;background:rgba(10,10,20,0.55);backdrop-filter:blur(3px);align-items:center;justify-content:center;border-radius:16px">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:14px">
+        <div style="width:36px;height:36px;border:3px solid rgba(245,158,11,0.2);border-top-color:#f59e0b;border-radius:50%;animation:spin 0.75s linear infinite"></div>
+        <span style="font-family:var(--font-mono);font-size:11px;color:#f59e0b;letter-spacing:0.08em">Saving…</span>
+      </div>
+    </div>
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 24px 14px;border-bottom:1px solid var(--border);flex-shrink:0">
+      <div style="display:flex;align-items:center;gap:10px">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <span style="font-family:var(--font-display);font-size:17px;font-weight:800;color:var(--text)">Drive Files & Folders</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button id="filesAddBtn" onclick="_filesShowAddForm()" style="display:none;align-items:center;gap:5px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);border-radius:7px;padding:5px 10px;cursor:pointer;font-family:var(--font-mono);font-size:10px;color:#f59e0b">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add File / Folder
+        </button>
+        <button onclick="closeFilesPanel()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:20px;line-height:1;padding:0">×</button>
+      </div>
+    </div>
+    <!-- Search -->
+    <div style="padding:14px 24px 8px;flex-shrink:0">
+      <div style="display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 12px">
+        <span style="font-size:13px;line-height:1;flex-shrink:0;color:var(--muted)">🔍</span>
+        <input id="filesSearch" type="text" placeholder="Search files and folders…"
+          style="flex:1;background:transparent;border:none;outline:none;font-family:var(--font-mono);font-size:12px;color:var(--text)"
+          oninput="_filesFilter(this.value)"/>
+        <button id="filesSearchClear" onclick="_filesFilter('');document.getElementById('filesSearch').value='';this.style.display='none'"
+          style="display:none;background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;padding:0;line-height:1">×</button>
+      </div>
+    </div>
+    <!-- Category filter chips -->
+    <div id="filesCatFilters" style="display:none;padding:0 24px 10px;flex-shrink:0;overflow-x:auto">
+      <div id="filesCatChips" style="display:flex;gap:6px;min-width:max-content"></div>
+    </div>
+    <!-- Add/Edit form (hidden by default) -->
+    <div id="filesForm" style="display:none;padding:0 24px 10px;flex-shrink:0">
+      <div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:14px 16px">
+        <div style="font-family:var(--font-mono);font-size:10px;color:#f59e0b;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px" id="filesFormTitle">Add File / Folder</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+          <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:130px">
+            <label style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Name</label>
+            <input id="filesFormName" type="text" placeholder="e.g. Monthly Reports" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:var(--font-mono);font-size:11px;color:var(--text);outline:none"/>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;flex:2;min-width:200px">
+            <label style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Drive URL</label>
+            <input id="filesFormUrl" type="text" placeholder="https://drive.google.com/…" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:var(--font-mono);font-size:11px;color:var(--text);outline:none"/>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:120px">
+            <label style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Category</label>
+            <input id="filesFormCat" type="text" placeholder="e.g. Finance" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:var(--font-mono);font-size:11px;color:var(--text);outline:none"/>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;flex:2;min-width:180px">
+            <label style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Description <span style="text-transform:none;font-size:8px">(optional)</span></label>
+            <input id="filesFormDesc" type="text" placeholder="Brief note about this file or folder" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:var(--font-mono);font-size:11px;color:var(--text);outline:none"/>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button onclick="_filesFormSave()" style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.4);border-radius:6px;padding:6px 14px;font-family:var(--font-mono);font-size:10px;color:#f59e0b;cursor:pointer;font-weight:700">Save</button>
+            <button onclick="_filesFormCancel()" style="background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:var(--font-mono);font-size:10px;color:var(--muted);cursor:pointer">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Files list -->
+    <div id="filesContent" style="overflow-y:auto;padding:10px 24px 24px"></div>
+  </div>
+</div>
+
 <!-- DETAILS MODAL -->
 <div id="detailsModal" onclick="if(event.target===this)closeDetailsPanel()" style="display:none;position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,0.65);align-items:center;justify-content:center">
   <div style="background:var(--surface2);border:1px solid var(--border);border-radius:16px;width:min(820px,95vw);max-height:88vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,0.8);position:relative;overflow:hidden">
@@ -1025,7 +1097,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.10.18</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.10.19</span>
           </div>
         </div>
       </div>
@@ -1091,6 +1163,10 @@
         <button id="adminDetailsBtn" onclick="showDetailsPanel()" title="Platform Details" style="display:none;align-items:center;gap:4px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.28);border-radius:6px;padding:4px 8px;cursor:pointer;font-family:var(--font-mono);font-size:9px;color:#10b981;transition:all 0.2s;white-space:nowrap">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
           Details
+        </button>
+        <button id="adminFilesBtn" onclick="showFilesPanel()" title="Drive Files & Folders" style="display:none;align-items:center;gap:4px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.28);border-radius:6px;padding:4px 8px;cursor:pointer;font-family:var(--font-mono);font-size:9px;color:#f59e0b;transition:all 0.2s;white-space:nowrap">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          Files
         </button>
         <button id="adminBtn_settings" onclick="showAdminPanel('settings')" title="Settings"
           style="display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;cursor:pointer;font-family:var(--font-mono);font-size:9px;color:var(--muted);transition:all 0.2s;white-space:nowrap">
@@ -3141,7 +3217,7 @@
 <script>
   // ── CONFIG ──
   let appPassword = 'TFfinance'; // overridden by Config sheet on load; fallback for users with no personal password
-  let appConfig = { refreshInterval: 60, sessionTimeout: 0, extractionInstructions: '', driveFolderUrls: {}, platformUrls: [] };
+  let appConfig = { refreshInterval: 60, sessionTimeout: 0, extractionInstructions: '', driveFolderUrls: {}, platformUrls: [], driveLinks: [] };
 
   // ── SHA-256 (for password hashing — never store plain text) ──
   async function sha256(str) {
@@ -3206,6 +3282,7 @@
     t.show_info        = false;
     t.show_teamroles   = false;
     t.show_details     = false;
+    t.show_files       = false;
     return t;
   }
 
@@ -3269,6 +3346,8 @@
     if (_teamBtn) _teamBtn.style.display = (admin || tabs.show_teamroles === true) ? 'flex' : 'none';
     const _detailsBtn = document.getElementById('adminDetailsBtn');
     if (_detailsBtn) _detailsBtn.style.display = (admin || tabs.show_details === true) ? 'flex' : 'none';
+    const _filesBtn = document.getElementById('adminFilesBtn');
+    if (_filesBtn) _filesBtn.style.display = (admin || tabs.show_files === true) ? 'flex' : 'none';
     const _settingsBtn = document.getElementById('adminBtn_settings');
     if (_settingsBtn) _settingsBtn.style.display = admin ? 'flex' : 'none';
     // ── Tab visibility (all tabs controlled by TAB_DEFS + settings) ──
@@ -6593,6 +6672,7 @@
     const infoOn     = tabs.show_info       === true;
     const teamOn     = tabs.show_teamroles  === true;
     const detailsOn  = tabs.show_details    === true;
+    const filesOn    = tabs.show_files      === true;
     const onStyle  = (c) => `background:rgba(${c},0.15);color:var(--green);border-color:rgba(${c},0.7)`;
     const offStyle = `background:var(--surface3);color:var(--muted);border-color:var(--border)`;
     const sectionHtml = `
@@ -6630,6 +6710,10 @@
             <span style="font-family:var(--font-mono);font-size:11px;color:var(--text)">🔗 Details</span>
             <button onclick="toggleSectionPerm(${i},'show_details',this)" style="${btnBase}${detailsOn ? onStyle('34,197,94') : offStyle};min-width:64px">${detailsOn?'✓ ON':'✕ OFF'}</button>
           </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-family:var(--font-mono);font-size:11px;color:var(--text)">📁 Files</span>
+            <button onclick="toggleSectionPerm(${i},'show_files',this)" style="${btnBase}${filesOn ? onStyle('34,197,94') : offStyle};min-width:64px">${filesOn?'✓ ON':'✕ OFF'}</button>
+          </div>
         </div>
       </div>`;
     const tabsHtml = TAB_DEFS.map(d => {
@@ -6649,7 +6733,7 @@
   function toggleSectionPerm(i, key, btn) {
     if (!settingsUsers[i].tabs) settingsUsers[i].tabs = defaultTabs();
     // show_* and section_qa use strict boolean (undefined = OFF); section_finance/ops use !== false (undefined = ON)
-    const strictKeys = ['show_help','show_info','show_teamroles','show_details','section_qa'];
+    const strictKeys = ['show_help','show_info','show_teamroles','show_details','show_files','section_qa'];
     const curr = strictKeys.includes(key)
       ? settingsUsers[i].tabs[key] === true
       : settingsUsers[i].tabs[key] !== false;
@@ -6751,6 +6835,7 @@
         if (c.extractionInstructions !== undefined) appConfig.extractionInstructions = c.extractionInstructions || '';
         if (c.revSheetUrls   !== undefined) { try { appConfig.revSheetUrls   = JSON.parse(c.revSheetUrls   || '{}'); } catch { appConfig.revSheetUrls   = {}; } }
         if (c.platformUrls  !== undefined) { try { appConfig.platformUrls  = JSON.parse(c.platformUrls  || '[]'); } catch { appConfig.platformUrls  = []; } }
+        if (c.driveLinks    !== undefined) { try { appConfig.driveLinks    = JSON.parse(c.driveLinks    || '[]'); } catch { appConfig.driveLinks    = []; } }
         if (c.revAdvCol    !== undefined) appConfig.revAdvCol  = c.revAdvCol   || '';
         if (c.revAmtCol    !== undefined) appConfig.revAmtCol  = c.revAmtCol   || '';
         if (c.revCostCol   !== undefined) appConfig.revCostCol = c.revCostCol  || '';
@@ -15411,6 +15496,278 @@
       if (ov) ov.style.display = 'none';
       if (!j.success) throw new Error(j.error || 'Save failed');
       showToast('✓ Platforms saved');
+    } catch (e) {
+      if (ov) ov.style.display = 'none';
+      showToast(`⚠ ${e.message}`, true);
+    }
+  }
+
+  // ── FILES PANEL ──
+  let _filesEditId = null;
+  let _filesDragId = null;
+  let _filesActiveCat = null; // null = All
+
+  function _filesGetTypeIcon(url) {
+    if (!url) return { icon: '📁', color: '#5f6368' };
+    const u = url.toLowerCase();
+    if (u.includes('drive.google.com/drive/folders'))       return { icon: '📁', color: '#5085ED' };
+    if (u.includes('docs.google.com/spreadsheets'))         return { icon: '📊', color: '#0F9D58' };
+    if (u.includes('docs.google.com/document'))             return { icon: '📝', color: '#4285F4' };
+    if (u.includes('docs.google.com/presentation'))         return { icon: '📑', color: '#F4B400' };
+    if (u.includes('docs.google.com/forms'))                return { icon: '📋', color: '#7B1FA2' };
+    if (u.includes('drive.google.com'))                     return { icon: '🗂️', color: '#5085ED' };
+    return { icon: '🔗', color: '#5f6368' };
+  }
+
+  function showFilesPanel() {
+    const m = document.getElementById('filesModal');
+    if (!m) return;
+    m.style.display = 'flex';
+    _filesFormCancel();
+    _filesActiveCat = null;
+    document.getElementById('filesSearch').value = '';
+    const addBtn = document.getElementById('filesAddBtn');
+    if (addBtn) addBtn.style.display = isAdmin() ? 'flex' : 'none';
+    _filesBuildCatChips();
+    _filesRender('');
+  }
+
+  function closeFilesPanel() {
+    const m = document.getElementById('filesModal');
+    if (m) m.style.display = 'none';
+    _filesFormCancel();
+  }
+
+  function _filesBuildCatChips() {
+    const links = appConfig.driveLinks || [];
+    const cats = [...new Set(links.map(f => f.category).filter(Boolean))].sort();
+    const bar   = document.getElementById('filesCatFilters');
+    const chips = document.getElementById('filesCatChips');
+    if (!bar || !chips) return;
+    if (cats.length === 0) { bar.style.display = 'none'; return; }
+    bar.style.display = '';
+    const active = _filesActiveCat;
+    const base = 'font-family:var(--font-mono);font-size:10px;border-radius:20px;padding:4px 12px;cursor:pointer;border:1px solid;white-space:nowrap;transition:all 0.15s';
+    const onSt  = `${base};background:rgba(245,158,11,0.15);color:#f59e0b;border-color:rgba(245,158,11,0.5)`;
+    const offSt = `${base};background:var(--surface);color:var(--muted);border-color:var(--border)`;
+    chips.innerHTML =
+      `<button style="${active === null ? onSt : offSt}" onclick="_filesSetCat(null)">All</button>` +
+      cats.map(c => `<button style="${active === c ? onSt : offSt}" onclick="_filesSetCat('${c.replace(/'/g,"\\'")}')"> ${c}</button>`).join('');
+  }
+
+  function _filesSetCat(cat) {
+    _filesActiveCat = cat;
+    _filesBuildCatChips();
+    _filesRender(document.getElementById('filesSearch')?.value || '');
+  }
+
+  function _filesFilter(q) {
+    const clear = document.getElementById('filesSearchClear');
+    if (clear) clear.style.display = q ? '' : 'none';
+    _filesRender(q);
+  }
+
+  function _filesRender(query) {
+    const content = document.getElementById('filesContent');
+    if (!content) return;
+    const links = appConfig.driveLinks || [];
+    const q = (query || '').toLowerCase().trim();
+    let filtered = q ? links.filter(f =>
+      f.name.toLowerCase().includes(q) ||
+      (f.category || '').toLowerCase().includes(q) ||
+      (f.description || '').toLowerCase().includes(q) ||
+      (f.url || '').toLowerCase().includes(q)
+    ) : [...links];
+    if (_filesActiveCat) filtered = filtered.filter(f => f.category === _filesActiveCat);
+
+    if (filtered.length === 0) {
+      content.innerHTML = `<div style="text-align:center;padding:40px 0;font-family:var(--font-mono);font-size:12px;color:var(--muted)">${(q || _filesActiveCat) ? 'No files match your filter.' : 'No files added yet. Click "Add File / Folder" to get started.'}</div>`;
+      return;
+    }
+
+    const admin = isAdmin();
+    const isDraggable = admin && !q && !_filesActiveCat;
+    let html = '<div style="display:flex;flex-direction:column;gap:6px">';
+
+    filtered.forEach(f => {
+      const { icon, color } = _filesGetTypeIcon(f.url || '');
+      const cat = f.category ? `<span style="font-family:var(--font-mono);font-size:9px;padding:2px 7px;border-radius:10px;background:var(--surface3);color:var(--muted);border:1px solid var(--border);white-space:nowrap">${f.category}</span>` : '';
+      const descLine = f.description ? `<div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f.description}</div>` : '';
+      const dragHandle = isDraggable
+        ? `<div draggable="false" style="flex-shrink:0;cursor:grab;color:var(--muted);padding:0 4px;display:flex;align-items:center;opacity:0.5" title="Drag to reorder">
+             <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor"><circle cx="3" cy="2" r="1.5"/><circle cx="7" cy="2" r="1.5"/><circle cx="3" cy="6" r="1.5"/><circle cx="7" cy="6" r="1.5"/><circle cx="3" cy="10" r="1.5"/><circle cx="7" cy="10" r="1.5"/><circle cx="3" cy="14" r="1.5"/><circle cx="7" cy="14" r="1.5"/></svg>
+           </div>` : '';
+
+      const dragAttrs = isDraggable
+        ? `draggable="true"
+           ondragstart="_filesDragStart(event,'${f.id}')"
+           ondragend="_filesDragEnd(event)"
+           ondragover="event.preventDefault();_filesDragOver(event,'${f.id}')"
+           ondragleave="_filesDragLeave(event)"
+           ondrop="_filesDrop(event,'${f.id}')"`
+        : '';
+
+      html += `<div data-fid="${f.id}" ${dragAttrs}
+        style="background:var(--surface);border:2px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;transition:border-color 0.15s,border-top-color 0.1s"
+        onmouseover="if(!this.dataset.dragging)this.style.borderColor='rgba(245,158,11,0.35)'"
+        onmouseout="if(!this.dataset.dragging)this.style.borderColor='var(--border)'">
+        ${dragHandle}
+        <div style="flex-shrink:0;width:32px;height:32px;border-radius:8px;background:${color}22;display:flex;align-items:center;justify-content:center;font-size:16px">${icon}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text)">${f.name}</span>
+            ${cat}
+          </div>
+          ${descLine}
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
+          <a href="${f.url}" target="_blank" rel="noopener"
+            style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:6px;text-decoration:none;color:#f59e0b" title="Open">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+          ${admin ? `
+          <button onclick="_filesShowEditForm('${f.id}')"
+            style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;cursor:pointer;color:var(--muted)" title="Edit">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button onclick="_filesDelete('${f.id}')"
+            style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:6px;cursor:pointer;color:#f87171" title="Delete">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          </button>` : ''}
+        </div>
+      </div>`;
+    });
+
+    html += '</div>';
+    content.innerHTML = html;
+  }
+
+  // ── Files drag-and-drop handlers ──
+  function _filesDragStart(e, id) {
+    _filesDragId = id;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', id);
+    setTimeout(() => {
+      const el = document.querySelector(`[data-fid="${id}"]`);
+      if (el) { el.style.opacity = '0.4'; el.dataset.dragging = '1'; }
+    }, 0);
+  }
+
+  function _filesDragEnd(e) {
+    document.querySelectorAll('[data-fid]').forEach(el => {
+      el.style.opacity = '1';
+      el.style.borderTopColor = 'var(--border)';
+      el.style.borderTopWidth = '2px';
+      delete el.dataset.dragging;
+    });
+    _filesDragId = null;
+  }
+
+  function _filesDragOver(e, id) {
+    if (!_filesDragId || _filesDragId === id) return;
+    document.querySelectorAll('[data-fid]').forEach(el => {
+      el.style.borderTopColor = 'var(--border)';
+      el.style.borderTopWidth = '2px';
+    });
+    const target = document.querySelector(`[data-fid="${id}"]`);
+    if (target) { target.style.borderTopColor = '#f59e0b'; target.style.borderTopWidth = '2px'; }
+  }
+
+  function _filesDragLeave(e) {
+    const el = e.currentTarget;
+    if (!el.dataset.dragging) {
+      el.style.borderTopColor = 'var(--border)';
+      el.style.borderTopWidth = '2px';
+    }
+  }
+
+  async function _filesDrop(e, targetId) {
+    e.preventDefault();
+    const fromId = _filesDragId;
+    _filesDragEnd(e);
+    if (!fromId || fromId === targetId) return;
+    const links = appConfig.driveLinks || [];
+    const fromIdx = links.findIndex(f => f.id === fromId);
+    const targetIdx = links.findIndex(f => f.id === targetId);
+    if (fromIdx < 0 || targetIdx < 0) return;
+    const [moved] = links.splice(fromIdx, 1);
+    const insertAt = links.findIndex(f => f.id === targetId);
+    links.splice(insertAt, 0, moved);
+    appConfig.driveLinks = links;
+    _filesBuildCatChips(); _filesRender(document.getElementById('filesSearch').value || '');
+    await _filesSave();
+  }
+
+  function _filesShowAddForm() {
+    _filesEditId = null;
+    document.getElementById('filesFormTitle').textContent = 'Add File / Folder';
+    document.getElementById('filesFormName').value = '';
+    document.getElementById('filesFormUrl').value = '';
+    document.getElementById('filesFormCat').value = '';
+    document.getElementById('filesFormDesc').value = '';
+    document.getElementById('filesForm').style.display = '';
+    document.getElementById('filesFormName').focus();
+  }
+
+  function _filesShowEditForm(id) {
+    const f = (appConfig.driveLinks || []).find(x => x.id === id);
+    if (!f) return;
+    _filesEditId = id;
+    document.getElementById('filesFormTitle').textContent = 'Edit File / Folder';
+    document.getElementById('filesFormName').value = f.name;
+    document.getElementById('filesFormUrl').value = f.url;
+    document.getElementById('filesFormCat').value = f.category || '';
+    document.getElementById('filesFormDesc').value = f.description || '';
+    document.getElementById('filesForm').style.display = '';
+    document.getElementById('filesFormName').focus();
+  }
+
+  function _filesFormCancel() {
+    _filesEditId = null;
+    const f = document.getElementById('filesForm');
+    if (f) f.style.display = 'none';
+  }
+
+  async function _filesFormSave() {
+    const name        = document.getElementById('filesFormName').value.trim();
+    const url         = document.getElementById('filesFormUrl').value.trim();
+    const cat         = document.getElementById('filesFormCat').value.trim();
+    const description = document.getElementById('filesFormDesc').value.trim();
+    if (!name || !url) { showToast('⚠ Name and URL are required', true); return; }
+    if (!appConfig.driveLinks) appConfig.driveLinks = [];
+
+    if (_filesEditId) {
+      const idx = appConfig.driveLinks.findIndex(f => f.id === _filesEditId);
+      if (idx >= 0) appConfig.driveLinks[idx] = { id: _filesEditId, name, url, category: cat, description };
+    } else {
+      const id = 'file_' + Math.random().toString(36).slice(2, 9);
+      appConfig.driveLinks.push({ id, name, url, category: cat, description });
+    }
+
+    await _filesSave();
+    _filesFormCancel();
+    _filesBuildCatChips(); _filesRender(document.getElementById('filesSearch').value || '');
+  }
+
+  async function _filesDelete(id) {
+    if (!confirm('Delete this file/folder link?')) return;
+    appConfig.driveLinks = (appConfig.driveLinks || []).filter(f => f.id !== id);
+    await _filesSave();
+    _filesBuildCatChips(); _filesRender(document.getElementById('filesSearch').value || '');
+  }
+
+  async function _filesSave() {
+    const ov = document.getElementById('filesSavingOverlay');
+    if (ov) ov.style.display = 'flex';
+    try {
+      const res = await fetch(FINANCE_API, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'saveConfig', config: { ...appConfig, driveLinks: JSON.stringify(appConfig.driveLinks) } })
+      });
+      const j = await res.json();
+      if (ov) ov.style.display = 'none';
+      if (!j.success) throw new Error(j.error || 'Save failed');
+      showToast('✓ Files saved');
     } catch (e) {
       if (ov) ov.style.display = 'none';
       showToast(`⚠ ${e.message}`, true);
