@@ -593,7 +593,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.10.21</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v8.0.0</div>
   </div>
 </div>
 
@@ -666,7 +666,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.10.21</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v8.0.0</div>
   </div>
 </div>
 
@@ -1098,7 +1098,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.10.21</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v8.0.0</span>
           </div>
         </div>
       </div>
@@ -6835,8 +6835,6 @@
         if (c.sessionTimeout)       appConfig.sessionTimeout       = parseInt(c.sessionTimeout)  || 0;
         if (c.extractionInstructions !== undefined) appConfig.extractionInstructions = c.extractionInstructions || '';
         if (c.revSheetUrls   !== undefined) { try { appConfig.revSheetUrls   = JSON.parse(c.revSheetUrls   || '{}'); } catch { appConfig.revSheetUrls   = {}; } }
-        if (c.platformUrls  !== undefined) { try { appConfig.platformUrls  = JSON.parse(c.platformUrls  || '[]'); } catch { appConfig.platformUrls  = []; } }
-        if (c.driveLinks    !== undefined) { try { appConfig.driveLinks    = JSON.parse(c.driveLinks    || '[]'); } catch { appConfig.driveLinks    = []; } }
         if (c.revAdvCol    !== undefined) appConfig.revAdvCol  = c.revAdvCol   || '';
         if (c.revAmtCol    !== undefined) appConfig.revAmtCol  = c.revAmtCol   || '';
         if (c.revCostCol   !== undefined) appConfig.revCostCol = c.revCostCol  || '';
@@ -6860,9 +6858,27 @@
     } catch {}
   }
 
+  async function loadDetails() {
+    try {
+      const res  = await fetch(`${FINANCE_API}?action=getDetails`);
+      const data = await res.json();
+      if (data.success) appConfig.platformUrls = data.data || [];
+    } catch {}
+  }
+
+  async function loadFiles() {
+    try {
+      const res  = await fetch(`${FINANCE_API}?action=getFiles`);
+      const data = await res.json();
+      if (data.success) appConfig.driveLinks = data.data || [];
+    } catch {}
+  }
+
   // Load config immediately so password is ready before login
   const _configReady = loadConfig();
   loadDriveFolders();
+  loadDetails();
+  loadFiles();
 
   // ── ACTIVITY LOG ──
   function logActivity(action, details = '') {
@@ -15212,9 +15228,9 @@
     _detailsBuildCatChips();
     _detailsRender('');
     // Silently refresh from server — picks up platforms added on other devices/browsers
-    fetch(`${FINANCE_API}?action=getConfig`).then(r => r.json()).then(data => {
-      if (data.success && data.data?.platformUrls !== undefined) {
-        try { appConfig.platformUrls = JSON.parse(data.data.platformUrls || '[]'); } catch {}
+    fetch(`${FINANCE_API}?action=getDetails`).then(r => r.json()).then(data => {
+      if (data.success) {
+        appConfig.platformUrls = data.data || [];
         _detailsBuildCatChips();
         _detailsRender(document.getElementById('detailsSearch')?.value || '');
       }
@@ -15499,7 +15515,7 @@
     try {
       const res = await fetch(FINANCE_API, {
         method: 'POST',
-        body: JSON.stringify({ action: 'saveConfig', config: { ...appConfig, platformUrls: JSON.stringify(appConfig.platformUrls) } })
+        body: JSON.stringify({ action: 'saveDetails', items: appConfig.platformUrls || [] })
       });
       const j = await res.json();
       if (ov) ov.style.display = 'none';
@@ -15540,9 +15556,9 @@
     _filesBuildCatChips();
     _filesRender('');
     // Silently refresh from server — picks up files added on other devices/browsers
-    fetch(`${FINANCE_API}?action=getConfig`).then(r => r.json()).then(data => {
-      if (data.success && data.data?.driveLinks !== undefined) {
-        try { appConfig.driveLinks = JSON.parse(data.data.driveLinks || '[]'); } catch {}
+    fetch(`${FINANCE_API}?action=getFiles`).then(r => r.json()).then(data => {
+      if (data.success) {
+        appConfig.driveLinks = data.data || [];
         _filesBuildCatChips();
         _filesRender(document.getElementById('filesSearch')?.value || '');
       }
@@ -15779,7 +15795,7 @@
     try {
       const res = await fetch(FINANCE_API, {
         method: 'POST',
-        body: JSON.stringify({ action: 'saveConfig', config: { ...appConfig, driveLinks: JSON.stringify(appConfig.driveLinks) } })
+        body: JSON.stringify({ action: 'saveFiles', items: appConfig.driveLinks || [] })
       });
       const j = await res.json();
       if (ov) ov.style.display = 'none';
