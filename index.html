@@ -108,6 +108,16 @@
       border-color: var(--border);
       background-color: var(--surface2) !important;
     }
+    /* Global autofill override — covers all modal/panel inputs (Chrome password manager) */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active {
+      -webkit-box-shadow: 0 0 0 999px var(--surface) inset !important;
+      box-shadow: 0 0 0 999px var(--surface) inset !important;
+      -webkit-text-fill-color: var(--text) !important;
+      caret-color: var(--text);
+    }
     .gate-pw-wrap { position: relative; margin-bottom: 12px; }
     .gate-pw-wrap .gate-input { margin-bottom: 0; padding-right: 48px; width: 100%; }
     .gate-eye { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: transparent; border: none; cursor: pointer; font-size: 16px; opacity: 0.5; transition: opacity 0.2s; padding: 0; line-height: 1; }
