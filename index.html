@@ -592,7 +592,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.10.15</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.10.16</div>
   </div>
 </div>
 
@@ -665,7 +665,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.10.15</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.10.16</div>
   </div>
 </div>
 
@@ -768,6 +768,10 @@
           <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:130px">
             <label style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Username</label>
             <input id="detailsFormUser" type="text" placeholder="e.g. admin@company.com" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:var(--font-mono);font-size:11px;color:var(--text);outline:none"/>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;flex:2;min-width:180px">
+            <label style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Logo URL <span style="color:var(--muted);text-transform:none;font-size:8px">(optional)</span></label>
+            <input id="detailsFormLogo" type="url" placeholder="https://…/logo.png" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:var(--font-mono);font-size:11px;color:var(--text);outline:none"/>
           </div>
           <div style="display:flex;gap:6px">
             <button onclick="_detailsFormSave()" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.4);border-radius:6px;padding:6px 14px;font-family:var(--font-mono);font-size:10px;color:#10b981;cursor:pointer;font-weight:700">Save</button>
@@ -1017,7 +1021,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.10.15</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.10.16</span>
           </div>
         </div>
       </div>
@@ -15122,17 +15126,34 @@
     _detailsFormCancel();
   }
 
-  function _detailsFaviconFallback(img, domain, attempt) {
+  function _detailsInitials(name) {
+    const w = name.trim().split(/[\s_\-]+/).filter(Boolean);
+    if (w.length >= 2) return (w[0][0] + w[1][0]).toUpperCase();
+    return name.replace(/[^A-Za-z0-9]/g,'').slice(0,2).toUpperCase() || '?';
+  }
+  function _detailsNameColor(str) {
+    let h = 0;
+    for (let i = 0; i < str.length; i++) h = str.charCodeAt(i) + ((h << 5) - h);
+    return `hsl(${Math.abs(h) % 360},50%,42%)`;
+  }
+  function _detailsFaviconFallback(img, domain, attempt, name) {
     const chain = [
       `https://icons.duckduckgo.com/ip3/${domain}.ico`,
       `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domain}&size=64`,
     ];
     if (attempt < chain.length) {
-      img.onerror = () => _detailsFaviconFallback(img, domain, attempt + 1);
+      img.onerror = () => _detailsFaviconFallback(img, domain, attempt + 1, name);
       img.src = chain[attempt];
     } else {
+      // All sources failed — show initials avatar
       img.style.display = 'none';
-      if (img.nextSibling) img.nextSibling.style.display = 'flex';
+      const wrap = img.parentElement;
+      if (wrap) {
+        const initials = _detailsInitials(name || domain || '?');
+        const color = _detailsNameColor(name || domain || '');
+        wrap.style.background = color;
+        wrap.innerHTML = `<span style="font-family:var(--font-mono);font-size:10px;font-weight:800;color:#fff;letter-spacing:0.03em">${initials}</span>`;
+      }
     }
   }
 
@@ -15166,7 +15187,8 @@
     filtered.forEach(p => {
       let domain = '';
       try { domain = new URL(p.url).hostname; } catch {}
-      const faviconSrc = domain ? `https://${domain}/favicon.ico` : '';
+      const logoSrc = p.logoUrl || (domain ? `https://${domain}/favicon.ico` : '');
+      const encodedName = encodeURIComponent(p.name);
       const cat = p.category ? `<span style="font-family:var(--font-mono);font-size:9px;padding:2px 7px;border-radius:10px;background:var(--surface3);color:var(--muted);border:1px solid var(--border);white-space:nowrap">${p.category}</span>` : '';
       const userLine = p.username ? `<div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">👤 ${p.username}</div>` : '';
       const dragHandle = isDraggable
@@ -15188,8 +15210,10 @@
         onmouseover="if(!this.dataset.dragging)this.style.borderColor='rgba(16,185,129,0.35)'"
         onmouseout="if(!this.dataset.dragging)this.style.borderColor='var(--border)'">
         ${dragHandle}
-        <div style="flex-shrink:0;width:30px;height:30px;border-radius:7px;background:var(--surface2);display:flex;align-items:center;justify-content:center;overflow:hidden">
-          ${faviconSrc ? `<img src="${faviconSrc}" width="20" height="20" onerror="_detailsFaviconFallback(this,'${domain}',0)" style="border-radius:3px;object-fit:contain"><span style="display:none;font-size:14px">🔗</span>` : '<span style="font-size:14px">🔗</span>'}
+        <div style="flex-shrink:0;width:30px;height:30px;border-radius:7px;background:${logoSrc ? 'var(--surface2)' : _detailsNameColor(p.name)};display:flex;align-items:center;justify-content:center;overflow:hidden">
+          ${logoSrc
+            ? `<img src="${logoSrc}" width="24" height="24" onerror="_detailsFaviconFallback(this,'${domain}',0,decodeURIComponent('${encodedName}'))" style="border-radius:3px;object-fit:contain">`
+            : `<span style="font-family:var(--font-mono);font-size:10px;font-weight:800;color:#fff;letter-spacing:0.03em">${_detailsInitials(p.name)}</span>`}
         </div>
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
@@ -15284,6 +15308,7 @@
     document.getElementById('detailsFormUrl').value = '';
     document.getElementById('detailsFormCat').value = '';
     document.getElementById('detailsFormUser').value = '';
+    document.getElementById('detailsFormLogo').value = '';
     document.getElementById('detailsForm').style.display = '';
     document.getElementById('detailsFormName').focus();
   }
@@ -15297,6 +15322,7 @@
     document.getElementById('detailsFormUrl').value = p.url;
     document.getElementById('detailsFormCat').value = p.category || '';
     document.getElementById('detailsFormUser').value = p.username || '';
+    document.getElementById('detailsFormLogo').value = p.logoUrl || '';
     document.getElementById('detailsForm').style.display = '';
     document.getElementById('detailsFormName').focus();
   }
@@ -15312,15 +15338,16 @@
     const url      = document.getElementById('detailsFormUrl').value.trim();
     const cat      = document.getElementById('detailsFormCat').value.trim();
     const username = document.getElementById('detailsFormUser').value.trim();
+    const logoUrl  = document.getElementById('detailsFormLogo').value.trim();
     if (!name || !url) { showToast('⚠ Name and URL are required', true); return; }
     if (!appConfig.platformUrls) appConfig.platformUrls = [];
 
     if (_detailsEditId) {
       const idx = appConfig.platformUrls.findIndex(p => p.id === _detailsEditId);
-      if (idx >= 0) appConfig.platformUrls[idx] = { id: _detailsEditId, name, url, category: cat, username };
+      if (idx >= 0) appConfig.platformUrls[idx] = { id: _detailsEditId, name, url, category: cat, username, logoUrl };
     } else {
       const id = 'plat_' + Math.random().toString(36).slice(2, 9);
-      appConfig.platformUrls.push({ id, name, url, category: cat, username });
+      appConfig.platformUrls.push({ id, name, url, category: cat, username, logoUrl });
     }
 
     await _detailsSave();
