@@ -592,7 +592,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.10.17</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.10.18</div>
   </div>
 </div>
 
@@ -665,7 +665,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.10.17</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.10.18</div>
   </div>
 </div>
 
@@ -747,6 +747,10 @@
         <button id="detailsSearchClear" onclick="_detailsFilter('');document.getElementById('detailsSearch').value='';this.style.display='none'"
           style="display:none;background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;padding:0;line-height:1">×</button>
       </div>
+    </div>
+    <!-- Category filter chips -->
+    <div id="detailsCatFilters" style="display:none;padding:0 24px 10px;flex-shrink:0;overflow-x:auto">
+      <div id="detailsCatChips" style="display:flex;gap:6px;min-width:max-content"></div>
     </div>
     <!-- Add/Edit form (hidden by default) -->
     <div id="detailsForm" style="display:none;padding:0 24px 10px;flex-shrink:0">
@@ -1021,7 +1025,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.10.17</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.10.18</span>
           </div>
         </div>
       </div>
@@ -15107,16 +15111,19 @@
 
   // ── DETAILS PANEL ──
   let _detailsEditId = null;
-  let _detailsDragId = null;
+  let _detailsDragId  = null;
+  let _detailsActiveCat = null; // null = All
 
   function showDetailsPanel() {
     const m = document.getElementById('detailsModal');
     if (!m) return;
     m.style.display = 'flex';
     _detailsFormCancel();
+    _detailsActiveCat = null;
     document.getElementById('detailsSearch').value = '';
     const addBtn = document.getElementById('detailsAddBtn');
     if (addBtn) addBtn.style.display = isAdmin() ? 'flex' : 'none';
+    _detailsBuildCatChips();
     _detailsRender('');
   }
 
@@ -15157,6 +15164,29 @@
     }
   }
 
+  function _detailsBuildCatChips() {
+    const platforms = appConfig.platformUrls || [];
+    const cats = [...new Set(platforms.map(p => p.category).filter(Boolean))].sort();
+    const bar   = document.getElementById('detailsCatFilters');
+    const chips = document.getElementById('detailsCatChips');
+    if (!bar || !chips) return;
+    if (cats.length === 0) { bar.style.display = 'none'; return; }
+    bar.style.display = '';
+    const active = _detailsActiveCat;
+    const base = 'font-family:var(--font-mono);font-size:10px;border-radius:20px;padding:4px 12px;cursor:pointer;border:1px solid;white-space:nowrap;transition:all 0.15s';
+    const onSt  = `${base};background:rgba(16,185,129,0.15);color:#10b981;border-color:rgba(16,185,129,0.5)`;
+    const offSt = `${base};background:var(--surface);color:var(--muted);border-color:var(--border)`;
+    chips.innerHTML =
+      `<button style="${active === null ? onSt : offSt}" onclick="_detailsSetCat(null)">All</button>` +
+      cats.map(c => `<button style="${active === c ? onSt : offSt}" onclick="_detailsSetCat('${c.replace(/'/g,"\\'")}')"> ${c}</button>`).join('');
+  }
+
+  function _detailsSetCat(cat) {
+    _detailsActiveCat = cat;
+    _detailsBuildCatChips();
+    _detailsBuildCatChips(); _detailsRender(document.getElementById('detailsSearch')?.value || '');
+  }
+
   function _detailsFilter(q) {
     const clear = document.getElementById('detailsSearchClear');
     if (clear) clear.style.display = q ? '' : 'none';
@@ -15168,15 +15198,17 @@
     if (!content) return;
     const platforms = appConfig.platformUrls || [];
     const q = (query || '').toLowerCase().trim();
-    const filtered = q ? platforms.filter(p =>
+    // Apply text search then category chip filter
+    let filtered = q ? platforms.filter(p =>
       p.name.toLowerCase().includes(q) ||
       (p.category || '').toLowerCase().includes(q) ||
       (p.username || '').toLowerCase().includes(q) ||
       p.url.toLowerCase().includes(q)
-    ) : platforms;
+    ) : [...platforms];
+    if (_detailsActiveCat) filtered = filtered.filter(p => p.category === _detailsActiveCat);
 
     if (filtered.length === 0) {
-      content.innerHTML = `<div style="text-align:center;padding:40px 0;font-family:var(--font-mono);font-size:12px;color:var(--muted)">${q ? 'No platforms match your search.' : 'No platforms added yet. Click "Add Platform" to get started.'}</div>`;
+      content.innerHTML = `<div style="text-align:center;padding:40px 0;font-family:var(--font-mono);font-size:12px;color:var(--muted)">${(q || _detailsActiveCat) ? 'No platforms match your filter.' : 'No platforms added yet. Click "Add Platform" to get started.'}</div>`;
       return;
     }
 
@@ -15302,7 +15334,7 @@
     const insertAt = platforms.findIndex(p => p.id === targetId);
     platforms.splice(insertAt, 0, moved);
     appConfig.platformUrls = platforms;
-    _detailsRender(document.getElementById('detailsSearch').value || '');
+    _detailsBuildCatChips(); _detailsRender(document.getElementById('detailsSearch').value || '');
     await _detailsSave();
   }
 
@@ -15357,14 +15389,14 @@
 
     await _detailsSave();
     _detailsFormCancel();
-    _detailsRender(document.getElementById('detailsSearch').value || '');
+    _detailsBuildCatChips(); _detailsRender(document.getElementById('detailsSearch').value || '');
   }
 
   async function _detailsDelete(id) {
     if (!confirm('Delete this platform link?')) return;
     appConfig.platformUrls = (appConfig.platformUrls || []).filter(p => p.id !== id);
     await _detailsSave();
-    _detailsRender(document.getElementById('detailsSearch').value || '');
+    _detailsBuildCatChips(); _detailsRender(document.getElementById('detailsSearch').value || '');
   }
 
   async function _detailsSave() {
