@@ -592,7 +592,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.10.16</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.10.17</div>
   </div>
 </div>
 
@@ -665,7 +665,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.10.16</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.10.17</div>
   </div>
 </div>
 
@@ -770,8 +770,8 @@
             <input id="detailsFormUser" type="text" placeholder="e.g. admin@company.com" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:var(--font-mono);font-size:11px;color:var(--text);outline:none"/>
           </div>
           <div style="display:flex;flex-direction:column;gap:4px;flex:2;min-width:180px">
-            <label style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Logo URL <span style="color:var(--muted);text-transform:none;font-size:8px">(optional)</span></label>
-            <input id="detailsFormLogo" type="url" placeholder="https://…/logo.png" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:var(--font-mono);font-size:11px;color:var(--text);outline:none"/>
+            <label style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Logo <span style="color:var(--muted);text-transform:none;font-size:8px">(Drive link or direct URL)</span></label>
+            <input id="detailsFormLogo" type="text" placeholder="https://drive.google.com/… or https://…/logo.png" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:var(--font-mono);font-size:11px;color:var(--text);outline:none"/>
           </div>
           <div style="display:flex;gap:6px">
             <button onclick="_detailsFormSave()" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.4);border-radius:6px;padding:6px 14px;font-family:var(--font-mono);font-size:10px;color:#10b981;cursor:pointer;font-weight:700">Save</button>
@@ -1021,7 +1021,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.10.16</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.10.17</span>
           </div>
         </div>
       </div>
@@ -15187,8 +15187,11 @@
     filtered.forEach(p => {
       let domain = '';
       try { domain = new URL(p.url).hostname; } catch {}
-      const logoSrc = p.logoUrl || (domain ? `https://${domain}/favicon.ico` : '');
       const encodedName = encodeURIComponent(p.name);
+      // Logo: if admin supplied a logoUrl, resolve it (handles Drive links); otherwise fall back to favicon chain
+      const resolvedLogo   = p.logoUrl ? (resolvePhotoUrl(p.logoUrl) || p.logoUrl) : '';
+      const driveFallback  = p.logoUrl && _driveId(p.logoUrl) ? `https://drive.google.com/uc?export=view&id=${_driveId(p.logoUrl)}` : '';
+      const faviconSrc     = domain ? `https://${domain}/favicon.ico` : '';
       const cat = p.category ? `<span style="font-family:var(--font-mono);font-size:9px;padding:2px 7px;border-radius:10px;background:var(--surface3);color:var(--muted);border:1px solid var(--border);white-space:nowrap">${p.category}</span>` : '';
       const userLine = p.username ? `<div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">👤 ${p.username}</div>` : '';
       const dragHandle = isDraggable
@@ -15210,10 +15213,12 @@
         onmouseover="if(!this.dataset.dragging)this.style.borderColor='rgba(16,185,129,0.35)'"
         onmouseout="if(!this.dataset.dragging)this.style.borderColor='var(--border)'">
         ${dragHandle}
-        <div style="flex-shrink:0;width:30px;height:30px;border-radius:7px;background:${logoSrc ? 'var(--surface2)' : _detailsNameColor(p.name)};display:flex;align-items:center;justify-content:center;overflow:hidden">
-          ${logoSrc
-            ? `<img src="${logoSrc}" width="24" height="24" onerror="_detailsFaviconFallback(this,'${domain}',0,decodeURIComponent('${encodedName}'))" style="border-radius:3px;object-fit:contain">`
-            : `<span style="font-family:var(--font-mono);font-size:10px;font-weight:800;color:#fff;letter-spacing:0.03em">${_detailsInitials(p.name)}</span>`}
+        <div style="flex-shrink:0;width:30px;height:30px;border-radius:7px;background:${(resolvedLogo||faviconSrc) ? 'var(--surface2)' : _detailsNameColor(p.name)};display:flex;align-items:center;justify-content:center;overflow:hidden">
+          ${resolvedLogo
+            ? `<img src="${resolvedLogo}" width="24" height="24" onerror="${driveFallback ? `this.src='${driveFallback}';this.onerror=function(){_detailsFaviconFallback(this,'${domain}',0,decodeURIComponent('${encodedName}'))}` : `_detailsFaviconFallback(this,'${domain}',0,decodeURIComponent('${encodedName}'))`}" style="border-radius:3px;object-fit:contain">`
+            : faviconSrc
+              ? `<img src="${faviconSrc}" width="24" height="24" onerror="_detailsFaviconFallback(this,'${domain}',0,decodeURIComponent('${encodedName}'))" style="border-radius:3px;object-fit:contain">`
+              : `<span style="font-family:var(--font-mono);font-size:10px;font-weight:800;color:#fff;letter-spacing:0.03em">${_detailsInitials(p.name)}</span>`}
         </div>
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
