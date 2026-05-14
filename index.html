@@ -592,7 +592,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.10.13</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.10.14</div>
   </div>
 </div>
 
@@ -665,7 +665,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.10.13</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.10.14</div>
   </div>
 </div>
 
@@ -715,7 +715,14 @@
 <!-- INFO MODAL -->
 <!-- DETAILS MODAL -->
 <div id="detailsModal" onclick="if(event.target===this)closeDetailsPanel()" style="display:none;position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,0.65);align-items:center;justify-content:center">
-  <div style="background:var(--surface2);border:1px solid var(--border);border-radius:16px;width:min(820px,95vw);max-height:88vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,0.8)">
+  <div style="background:var(--surface2);border:1px solid var(--border);border-radius:16px;width:min(820px,95vw);max-height:88vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,0.8);position:relative;overflow:hidden">
+    <!-- Saving overlay -->
+    <div id="detailsSavingOverlay" style="display:none;position:absolute;inset:0;z-index:20;background:rgba(10,10,20,0.55);backdrop-filter:blur(3px);align-items:center;justify-content:center;border-radius:16px">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:14px">
+        <div style="width:36px;height:36px;border:3px solid rgba(16,185,129,0.2);border-top-color:#10b981;border-radius:50%;animation:spin 0.75s linear infinite"></div>
+        <span style="font-family:var(--font-mono);font-size:11px;color:#10b981;letter-spacing:0.08em">Saving…</span>
+      </div>
+    </div>
     <!-- Header -->
     <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 24px 14px;border-bottom:1px solid var(--border);flex-shrink:0">
       <div style="display:flex;align-items:center;gap:10px">
@@ -1010,7 +1017,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.10.13</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.10.14</span>
           </div>
         </div>
       </div>
@@ -15316,17 +15323,21 @@
   }
 
   async function _detailsSave() {
+    const ov = document.getElementById('detailsSavingOverlay');
+    if (ov) ov.style.display = 'flex';
     try {
-      _showLoader();
       const res = await fetch(FINANCE_API, {
         method: 'POST',
         body: JSON.stringify({ action: 'saveConfig', config: { ...appConfig, platformUrls: JSON.stringify(appConfig.platformUrls) } })
       });
       const j = await res.json();
-      _hideLoader();
+      if (ov) ov.style.display = 'none';
       if (!j.success) throw new Error(j.error || 'Save failed');
       showToast('✓ Platforms saved');
-    } catch (e) { _hideLoader(); showToast(`⚠ ${e.message}`, true); }
+    } catch (e) {
+      if (ov) ov.style.display = 'none';
+      showToast(`⚠ ${e.message}`, true);
+    }
   }
 
   function _showLoader(msg) {
