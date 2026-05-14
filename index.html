@@ -592,7 +592,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.10.14</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.10.15</div>
   </div>
 </div>
 
@@ -665,7 +665,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.10.14</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.10.15</div>
   </div>
 </div>
 
@@ -1017,7 +1017,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.10.14</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.10.15</span>
           </div>
         </div>
       </div>
@@ -15122,6 +15122,20 @@
     _detailsFormCancel();
   }
 
+  function _detailsFaviconFallback(img, domain, attempt) {
+    const chain = [
+      `https://icons.duckduckgo.com/ip3/${domain}.ico`,
+      `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domain}&size=64`,
+    ];
+    if (attempt < chain.length) {
+      img.onerror = () => _detailsFaviconFallback(img, domain, attempt + 1);
+      img.src = chain[attempt];
+    } else {
+      img.style.display = 'none';
+      if (img.nextSibling) img.nextSibling.style.display = 'flex';
+    }
+  }
+
   function _detailsFilter(q) {
     const clear = document.getElementById('detailsSearchClear');
     if (clear) clear.style.display = q ? '' : 'none';
@@ -15152,8 +15166,7 @@
     filtered.forEach(p => {
       let domain = '';
       try { domain = new URL(p.url).hostname; } catch {}
-      const faviconUrl   = domain ? `https://icons.duckduckgo.com/ip3/${domain}.ico` : '';
-      const faviconFallback = domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=64` : '';
+      const faviconSrc = domain ? `https://${domain}/favicon.ico` : '';
       const cat = p.category ? `<span style="font-family:var(--font-mono);font-size:9px;padding:2px 7px;border-radius:10px;background:var(--surface3);color:var(--muted);border:1px solid var(--border);white-space:nowrap">${p.category}</span>` : '';
       const userLine = p.username ? `<div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">👤 ${p.username}</div>` : '';
       const dragHandle = isDraggable
@@ -15176,7 +15189,7 @@
         onmouseout="if(!this.dataset.dragging)this.style.borderColor='var(--border)'">
         ${dragHandle}
         <div style="flex-shrink:0;width:30px;height:30px;border-radius:7px;background:var(--surface2);display:flex;align-items:center;justify-content:center;overflow:hidden">
-          ${faviconUrl ? `<img src="${faviconUrl}" width="20" height="20" onerror="this.src='${faviconFallback}';this.onerror=function(){this.style.display='none';this.nextSibling.style.display='flex'}" style="border-radius:3px;object-fit:contain"><span style="display:none;font-size:14px">🔗</span>` : '<span style="font-size:14px">🔗</span>'}
+          ${faviconSrc ? `<img src="${faviconSrc}" width="20" height="20" onerror="_detailsFaviconFallback(this,'${domain}',0)" style="border-radius:3px;object-fit:contain"><span style="display:none;font-size:14px">🔗</span>` : '<span style="font-size:14px">🔗</span>'}
         </div>
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
