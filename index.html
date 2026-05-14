@@ -119,7 +119,7 @@
       caret-color: var(--text);
     }
     .gate-pw-wrap { position: relative; margin-bottom: 12px; }
-    .gate-pw-wrap .gate-input { margin-bottom: 0; padding-right: 48px; width: 100%; }
+    .gate-pw-wrap .gate-input { margin-bottom: 0; padding-right: 72px; width: 100%; }
     .gate-eye { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: transparent; border: none; cursor: pointer; font-size: 16px; opacity: 0.5; transition: opacity 0.2s; padding: 0; line-height: 1; }
     .gate-eye:hover { opacity: 1; }
     .gate-remember { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; justify-content: flex-start; }
@@ -618,18 +618,19 @@
 
     <!-- Step 1: Email + Password -->
     <div id="gateStep1">
-      <input type="email" class="gate-input" id="gateEmail" placeholder="Email address" style="margin-bottom:10px"/>
+      <div style="position:relative;margin-bottom:10px">
+        <input type="email" class="gate-input" id="gateEmail" placeholder="Email address" style="margin-bottom:0;padding-right:36px" oninput="document.getElementById('gateClearEmail').style.display=this.value?'flex':'none'"/>
+        <button id="gateClearEmail" type="button" title="Clear" onclick="document.getElementById('gateEmail').value='';this.style.display='none';document.getElementById('gateEmail').focus();" style="display:none;position:absolute;right:12px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:rgba(107,114,128,0.55);cursor:pointer;font-size:16px;line-height:1;padding:2px 4px;transition:color 0.15s;align-items:center;justify-content:center" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='rgba(107,114,128,0.55)'">×</button>
+      </div>
       <div class="gate-pw-wrap">
-        <input type="password" class="gate-input" id="gateInput" placeholder="Password"/>
+        <input type="password" class="gate-input" id="gateInput" placeholder="Password" style="padding-right:72px" oninput="document.getElementById('gateClearPass').style.display=this.value?'flex':'none'"/>
+        <button id="gateClearPass" type="button" title="Clear" onclick="document.getElementById('gateInput').value='';this.style.display='none';document.getElementById('gateInput').focus();" style="display:none;position:absolute;right:42px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:rgba(107,114,128,0.55);cursor:pointer;font-size:16px;line-height:1;padding:2px 4px;transition:color 0.15s;align-items:center;justify-content:center" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='rgba(107,114,128,0.55)'">×</button>
         <button class="gate-eye" onclick="toggleGateEye()" id="gateEye" title="Show/hide password">
           <!-- eye-on -->
           <svg id="gateEyeOn" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           <!-- eye-off -->
           <svg id="gateEyeOff" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
         </button>
-      </div>
-      <div style="display:flex;justify-content:flex-end;margin:-2px 0 6px">
-        <button type="button" onclick="document.getElementById('gateEmail').value='';document.getElementById('gateInput').value='';document.getElementById('gateEmail').focus();" style="background:transparent;border:none;color:rgba(107,114,128,0.5);font-family:var(--font-mono);font-size:10px;letter-spacing:0.04em;cursor:pointer;padding:2px 0;transition:color 0.2s;line-height:1" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='rgba(107,114,128,0.5)'" title="Clear fields">× clear</button>
       </div>
       <div class="gate-remember">
         <input type="checkbox" id="rememberMe" style="accent-color:var(--accent);width:14px;height:14px;cursor:pointer"/>
