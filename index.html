@@ -593,7 +593,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.10.20</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v7.10.21</div>
   </div>
 </div>
 
@@ -666,7 +666,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.10.20</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v7.10.21</div>
   </div>
 </div>
 
@@ -1098,7 +1098,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.10.20</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v7.10.21</span>
           </div>
         </div>
       </div>
@@ -15211,6 +15211,14 @@
     if (addBtn) addBtn.style.display = isAdmin() ? 'flex' : 'none';
     _detailsBuildCatChips();
     _detailsRender('');
+    // Silently refresh from server — picks up platforms added on other devices/browsers
+    fetch(`${FINANCE_API}?action=getConfig`).then(r => r.json()).then(data => {
+      if (data.success && data.data?.platformUrls !== undefined) {
+        try { appConfig.platformUrls = JSON.parse(data.data.platformUrls || '[]'); } catch {}
+        _detailsBuildCatChips();
+        _detailsRender(document.getElementById('detailsSearch')?.value || '');
+      }
+    }).catch(() => {});
   }
 
   function closeDetailsPanel() {
@@ -15531,6 +15539,14 @@
     if (addBtn) addBtn.style.display = isAdmin() ? 'flex' : 'none';
     _filesBuildCatChips();
     _filesRender('');
+    // Silently refresh from server — picks up files added on other devices/browsers
+    fetch(`${FINANCE_API}?action=getConfig`).then(r => r.json()).then(data => {
+      if (data.success && data.data?.driveLinks !== undefined) {
+        try { appConfig.driveLinks = JSON.parse(data.data.driveLinks || '[]'); } catch {}
+        _filesBuildCatChips();
+        _filesRender(document.getElementById('filesSearch')?.value || '');
+      }
+    }).catch(() => {});
   }
 
   function closeFilesPanel() {
