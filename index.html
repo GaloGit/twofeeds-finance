@@ -7306,8 +7306,10 @@
   function toggleNavBar() {
     const wrap    = document.getElementById('navCollapseWrap');
     const chevron = document.getElementById('navToggleChevron');
+    const label   = document.querySelector('#navToggleBtn .btn-lbl');
     const collapsed = wrap.classList.toggle('collapsed');
     chevron.style.transform = collapsed ? 'rotate(180deg)' : '';
+    if (label) label.textContent = collapsed ? 'Show Tabs' : 'Hide Tabs';
     localStorage.setItem('tf_nav_collapsed', collapsed ? '1' : '0');
   }
 
@@ -7315,8 +7317,10 @@
     if (localStorage.getItem('tf_nav_collapsed') === '1') {
       const wrap    = document.getElementById('navCollapseWrap');
       const chevron = document.getElementById('navToggleChevron');
+      const label   = document.querySelector('#navToggleBtn .btn-lbl');
       if (wrap)    wrap.classList.add('collapsed');
       if (chevron) chevron.style.transform = 'rotate(180deg)';
+      if (label)   label.textContent = 'Show Tabs';
     }
   })();
 
