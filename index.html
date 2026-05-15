@@ -4568,10 +4568,10 @@
                   <input id="siLegalEntity_${i}" class="editable" value="${esc(s.legalEntity||'')}" placeholder="e.g. TwoFeeds Ltd" style="flex:1;min-width:0" onblur="siFieldUpdate(${i},'legalEntity',this.value)"/>
                   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
                     <input id="siLegalCountry_${i}" class="editable" value="${esc(s.legalCountry||'')}" placeholder="IL" maxlength="2"
-                      oninput="this.value=this.value.toUpperCase();const f=document.getElementById('siLegalFlag_${i}');if(f)f.innerHTML=this.value.length===2?countryFlagImg(this.value,'20x15'):''"
+                      oninput="var v=this.value.toUpperCase();this.value=v;var f=document.getElementById('siLegalFlag_${i}');if(f)f.innerHTML=v.length===2?countryFlagImg(v,'20x15'):''"
                       onblur="siFieldUpdate(${i},'legalCountry',this.value.toUpperCase())"
                       style="width:52px;text-transform:uppercase"/>
-                    <span id="siLegalFlag_${i}">${s.legalCountry&&s.legalCountry.length===2?countryFlagImg(s.legalCountry,'20x15'):''}</span>
+                    <span id="siLegalFlag_${i}" style="line-height:1;display:flex;align-items:center">${s.legalCountry&&s.legalCountry.length===2?countryFlagImg(s.legalCountry,'20x15'):''}</span>
                   </div>
                 </div>
               </div>
@@ -4926,6 +4926,11 @@
     const trimmed = value.trim();
     if (sourcesInfo[i][field] === trimmed) return;
     sourcesInfo[i][field] = trimmed;
+    // Keep legal country flag in sync after save
+    if (field === 'legalCountry') {
+      const f = document.getElementById('siLegalFlag_' + i);
+      if (f) f.innerHTML = trimmed.length === 2 ? countryFlagImg(trimmed, '20x15') : '';
+    }
     if (await _saveSourcesInfo()) showToast('✓ Saved');
   }
 
