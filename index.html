@@ -166,9 +166,7 @@
     .nav-bar { display: flex; margin-top: 8px; gap: 4px; }
     #navCollapseWrap { overflow: hidden; transition: max-height 0.28s cubic-bezier(0.4,0,0.2,1); max-height: 120px; }
     #navCollapseWrap.collapsed { max-height: 0; }
-    #navToggleBtn { display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--muted);transition:all 0.15s;flex-shrink:0; }
-    #navToggleBtn:hover { color:var(--accent-light);border-color:var(--accent-light); }
-    #navToggleBtn svg { transition: transform 0.28s cubic-bezier(0.4,0,0.2,1); }
+    #navToggleBtn:hover { color:var(--accent-light) !important;border-color:var(--accent-light) !important; }
     .nav-tab { padding: 7px 16px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); cursor: pointer; border: none; background: transparent; border-bottom: 2px solid transparent; transition: all 0.2s; position: relative; bottom: -1px; display:inline-flex;flex-direction:column;align-items:center;gap:3px; }
     .nav-tab:hover { color: var(--accent-light); }
     .nav-tab.active { color: var(--text); border-bottom-color: var(--accent); font-weight: 700; background: rgba(124,58,237,0.12); border-radius: 6px 6px 0 0; }
@@ -1117,12 +1115,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <div style="display:flex;align-items:center;gap:6px">
-              <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v8.1.0</span>
-              <button id="navToggleBtn" onclick="toggleNavBar()" title="Collapse / expand tabs">
-                <svg id="navToggleChevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
-              </button>
-            </div>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v8.1.0</span>
           </div>
         </div>
       </div>
@@ -1204,6 +1197,11 @@
           style="display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;cursor:pointer;font-family:var(--font-mono);font-size:9px;color:var(--muted);transition:all 0.2s;white-space:nowrap">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           <span class="btn-lbl">Team Roles</span>
+        </button>
+        <button id="navToggleBtn" onclick="toggleNavBar()" title="Collapse / expand tabs"
+          style="display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;cursor:pointer;font-family:var(--font-mono);font-size:9px;color:var(--muted);transition:all 0.2s;white-space:nowrap">
+          <svg id="navToggleChevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.28s cubic-bezier(0.4,0,0.2,1)"><polyline points="18 15 12 9 6 15"/></svg>
+          <span class="btn-lbl">Hide Tabs</span>
         </button>
       </div>
     </div>
