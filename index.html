@@ -166,8 +166,8 @@
     .nav-bar { display: flex; margin-top: 8px; gap: 4px; }
     #navCollapseWrap { overflow: hidden; transition: max-height 0.28s cubic-bezier(0.4,0,0.2,1); max-height: 120px; }
     #navCollapseWrap.collapsed { max-height: 0; }
-    #navToggleBtn { width:100%;display:flex;align-items:center;justify-content:center;gap:6px;padding:3px 0;border:none;background:transparent;cursor:pointer;color:var(--muted);font-size:10px;font-family:var(--font-mono);letter-spacing:0.08em;text-transform:uppercase;transition:color 0.15s;border-top:1px solid var(--border); }
-    #navToggleBtn:hover { color: var(--accent-light); }
+    #navToggleBtn { display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--muted);transition:all 0.15s;flex-shrink:0; }
+    #navToggleBtn:hover { color:var(--accent-light);border-color:var(--accent-light); }
     #navToggleBtn svg { transition: transform 0.28s cubic-bezier(0.4,0,0.2,1); }
     .nav-tab { padding: 7px 16px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); cursor: pointer; border: none; background: transparent; border-bottom: 2px solid transparent; transition: all 0.2s; position: relative; bottom: -1px; display:inline-flex;flex-direction:column;align-items:center;gap:3px; }
     .nav-tab:hover { color: var(--accent-light); }
@@ -1117,7 +1117,12 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v8.1.0</span>
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v8.1.0</span>
+              <button id="navToggleBtn" onclick="toggleNavBar()" title="Collapse / expand tabs">
+                <svg id="navToggleChevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1145,10 +1150,6 @@
         <button class="nav-tab"        id="opsTab_tickets"  onclick="showOpsTab('tickets',this)"><svg viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/></svg><span>Tickets</span></button>
       </nav>
       </div>
-      <button id="navToggleBtn" onclick="toggleNavBar()" title="Collapse / expand tabs">
-        <svg id="navToggleChevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
-        <span id="navToggleLabel">COLLAPSE</span>
-      </button>
     </header>
 
     <!-- SECTION SWITCHER + PERIOD PICKER (below nav, dropdown opens into page) -->
@@ -7307,10 +7308,8 @@
   function toggleNavBar() {
     const wrap    = document.getElementById('navCollapseWrap');
     const chevron = document.getElementById('navToggleChevron');
-    const label   = document.getElementById('navToggleLabel');
     const collapsed = wrap.classList.toggle('collapsed');
     chevron.style.transform = collapsed ? 'rotate(180deg)' : '';
-    label.textContent = collapsed ? 'EXPAND' : 'COLLAPSE';
     localStorage.setItem('tf_nav_collapsed', collapsed ? '1' : '0');
   }
 
@@ -7318,10 +7317,8 @@
     if (localStorage.getItem('tf_nav_collapsed') === '1') {
       const wrap    = document.getElementById('navCollapseWrap');
       const chevron = document.getElementById('navToggleChevron');
-      const label   = document.getElementById('navToggleLabel');
-      if (wrap) wrap.classList.add('collapsed');
+      if (wrap)    wrap.classList.add('collapsed');
       if (chevron) chevron.style.transform = 'rotate(180deg)';
-      if (label)   label.textContent = 'EXPAND';
     }
   })();
 
