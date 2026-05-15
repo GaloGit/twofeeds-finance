@@ -1264,7 +1264,7 @@
         <div class="pub-toolbar" style="justify-content:flex-start">
           <div class="pub-search-wrap">
             <span class="pub-search-icon">🔍</span>
-            <input type="text" class="pub-search" id="pubSearch" placeholder="Search publishers..." oninput="renderPublishers();_updateSearchClear('pubSearch')"/>
+            <input type="text" class="pub-search" id="pubSearch" placeholder="Search publishers..." oninput="_pubSearchInput()"/>
             <button class="search-clear-btn" id="pubSearchClear" onclick="_clearSearch('pubSearch',renderPublishers)">×</button>
           </div>
 
@@ -10047,6 +10047,15 @@
   }
   let _pubSaving = false;
   let _pubLastSearch = null;
+  let _pubSearchTimer = null;
+
+  function _pubSearchInput() {
+    _updateSearchClear('pubSearch');
+    const tbody = document.getElementById('publisherBody');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="20" style="text-align:center;padding:28px 0"><span style="font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em;animation:pulse 1.2s ease-in-out infinite">Searching…</span></td></tr>';
+    clearTimeout(_pubSearchTimer);
+    _pubSearchTimer = setTimeout(() => renderPublishers(), 150);
+  }
   async function _pubSaveRows(rows) {
     if (_pubSaving) return; // skip if a save is already in-flight
     _pubSaving = true;
