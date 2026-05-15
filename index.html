@@ -603,7 +603,7 @@
     <img src="TwoFeeds_3D.png" alt="TwoFeeds" id="loadingLogo" data-logo onerror="this.style.display='none'"/>
     <div id="loadingWordmark">TwoFeeds Operations</div>
     <div id="loadingSpinner"></div>
-    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v8.0.2</div>
+    <div style="font-family:var(--font-mono);font-size:19px;color:var(--muted);margin-top:12px;letter-spacing:0.08em">v8.0.3</div>
   </div>
 </div>
 
@@ -680,7 +680,7 @@
     </div>
 
     <div class="gate-error" id="gateError"></div>
-    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v8.0.2</div>
+    <div style="text-align:center;margin-top:18px;font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.08em">v8.0.3</div>
   </div>
 </div>
 
@@ -1112,7 +1112,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px">
             <button class="logout-btn" onclick="logout()" title="Log out">⇠ LOG OUT</button>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v8.0.2</span>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">v8.0.3</span>
           </div>
         </div>
       </div>
@@ -4584,6 +4584,10 @@
                   </div>
                 </div>
               </div>
+              <div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Finance ID</div>
+                <input id="siFinanceId_${i}" class="editable" value="${esc(s.financeId||'')}" placeholder="ID..." style="width:100%" onblur="siFieldUpdate(${i},'financeId',this.value)"/>
+              </div>
             </div>
             <!-- Contacts -->
             <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px">
@@ -4961,6 +4965,7 @@
     sourcesInfo[i].thingOrToolsUrl  = (document.getElementById('siThingOrTools_' + i)?.value || '').trim();
     sourcesInfo[i].legalEntity   = (document.getElementById('siLegalEntity_' + i)?.value || '').trim();
     sourcesInfo[i].legalCountry  = (document.getElementById('siLegalCountry_' + i)?.value || '').trim().toUpperCase();
+    sourcesInfo[i].financeId     = (document.getElementById('siFinanceId_' + i)?.value || '').trim();
     const vatVal = document.getElementById('siVat_' + i)?.value;
     sourcesInfo[i].vat = vatVal !== '' && vatVal != null ? parseFloat(vatVal) : null;
     // Flush any pending new-contact row if it's visible (user opened it but didn't click ✓)
