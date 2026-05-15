@@ -4562,6 +4562,19 @@
                 <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">VAT %</div>
                 <input id="siVat_${i}" class="editable" type="number" min="0" max="100" step="0.1" value="${s.vat != null ? s.vat : ''}" placeholder="0" style="width:100%"/>
               </div>
+              <div style="grid-column:span 2">
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">⚖ Legal Identity</div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <input id="siLegalEntity_${i}" class="editable" value="${esc(s.legalEntity||'')}" placeholder="e.g. TwoFeeds Ltd" style="flex:1;min-width:0" onblur="siFieldUpdate(${i},'legalEntity',this.value)"/>
+                  <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+                    <input id="siLegalCountry_${i}" class="editable" value="${esc(s.legalCountry||'')}" placeholder="IL" maxlength="2"
+                      oninput="this.value=this.value.toUpperCase();const f=document.getElementById('siLegalFlag_${i}');if(f)f.innerHTML=this.value.length===2?countryFlagImg(this.value,'20x15'):''"
+                      onblur="siFieldUpdate(${i},'legalCountry',this.value.toUpperCase())"
+                      style="width:52px;text-transform:uppercase"/>
+                    <span id="siLegalFlag_${i}">${s.legalCountry&&s.legalCountry.length===2?countryFlagImg(s.legalCountry,'20x15'):''}</span>
+                  </div>
+                </div>
+              </div>
             </div>
             <!-- Contacts -->
             <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px">
@@ -4929,8 +4942,10 @@
     sourcesInfo[i].to2Id        = (document.getElementById('siTo2Id_' + i)?.value || '').trim();
     sourcesInfo[i].externalId   = (document.getElementById('siExtId_' + i)?.value || '').trim();
     sourcesInfo[i].tfId         = (document.getElementById('siTfId_' + i)?.value || '').trim();
-    sourcesInfo[i].linkedinUrl  = (document.getElementById('siLinkedin_' + i)?.value || '').trim();
-    sourcesInfo[i].websiteUrl   = (document.getElementById('siWebsite_' + i)?.value || '').trim();
+    sourcesInfo[i].linkedinUrl   = (document.getElementById('siLinkedin_' + i)?.value || '').trim();
+    sourcesInfo[i].websiteUrl    = (document.getElementById('siWebsite_' + i)?.value || '').trim();
+    sourcesInfo[i].legalEntity   = (document.getElementById('siLegalEntity_' + i)?.value || '').trim();
+    sourcesInfo[i].legalCountry  = (document.getElementById('siLegalCountry_' + i)?.value || '').trim().toUpperCase();
     const vatVal = document.getElementById('siVat_' + i)?.value;
     sourcesInfo[i].vat = vatVal !== '' && vatVal != null ? parseFloat(vatVal) : null;
     // Flush any pending new-contact row if it's visible (user opened it but didn't click ✓)
